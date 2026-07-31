@@ -1,0 +1,12 @@
+{
+  // Cloudflare Workers への配置設定。ビルダーは静的ファイルだけなので Worker の
+  // スクリプト (main) は持たず、assets だけを配る。
+  //
+  // 中身は `npm run build` が出す dist/。3段のビルド (プレイヤー → 同梱 → ビルダー) を
+  // 通したものでないと、書き出し機能が使う public/player が入らない。
+  "name": "tobidas",
+  "compatibility_date": "2026-07-31",
+  "assets": {
+    "directory": "./dist"
+  }
+}

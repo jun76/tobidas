@@ -1,0 +1,249 @@
+{
+  "spread-1/spread-1-mountain": {
+    "remove": true
+  },
+  "spread-1/spread-1-skyline": {
+    "position": [
+      0,
+      0,
+      -1.83
+    ],
+    "scale": [
+      1.7,
+      2.1,
+      1
+    ]
+  },
+  "spread-1/spread-1-house-4": {
+    "remove": true
+  },
+  "spread-1/spread-1-house-5": {
+    "position": [
+      2,
+      0.01,
+      -0.25
+    ]
+  },
+  "spread-1/spread-1-store": {
+    "remove": true
+  },
+  "spread-1/spread-1-dog": {
+    "position": [
+      -2.75,
+      0.01,
+      1.75
+    ],
+    "scale": [
+      3.05,
+      2.55,
+      1
+    ]
+  },
+  "spread-2/spread-2-far-row": {
+    "scale": [
+      1.45,
+      0.8,
+      1
+    ],
+    "position": [
+      0,
+      0,
+      -1.8
+    ]
+  },
+  "spread-2/spread-2-arcade": {
+    "position": [
+      0,
+      0,
+      -1
+    ]
+  },
+  "spread-2/spread-2-scooter": {
+    "scale": [
+      1.25,
+      1.15,
+      1
+    ]
+  },
+  "spread-3/spread-3-far-row": {
+    "position": [
+      0,
+      0,
+      -1.85
+    ],
+    "scale": [
+      1.4,
+      0.75,
+      1
+    ]
+  },
+  "spread-3/spread-3-kid-1": {
+    "position": [
+      -1.5,
+      0.01,
+      1.75
+    ]
+  },
+  "spread-3/spread-3-truck": {
+    "position": [
+      2.8,
+      0.01,
+      1.92
+    ]
+  },
+  "spread-3/spread-3-shiba": {
+    "position": [
+      1.25,
+      0.01,
+      2.5
+    ],
+    "scale": [
+      2.05,
+      1.95,
+      1
+    ]
+  },
+  "spread-4/spread-4-mountain": {
+    "scale": [
+      1.45,
+      0.75,
+      1
+    ],
+    "position": [
+      0,
+      0,
+      -1.8
+    ]
+  },
+  "spread-4/spread-4-school": {
+    "position": [
+      0,
+      0,
+      -1.25
+    ]
+  },
+  "spread-4/spread-4-house-1": {
+    "position": [
+      -0.5,
+      0.01,
+      1.25
+    ]
+  },
+  "spread-4/spread-4-house-2": {
+    "position": [
+      -1.75,
+      0.01,
+      -0.25
+    ]
+  },
+  "spread-4/spread-4-house-3": {
+    "position": [
+      1.75,
+      0,
+      0.2
+    ]
+  },
+  "spread-4/spread-4-house-4": {
+    "position": [
+      0.75,
+      0,
+      1.25
+    ]
+  },
+  "spread-4/spread-4-pole-2": {
+    "position": [
+      -0.25,
+      0.01,
+      2.048
+    ]
+  },
+  "spread-4/spread-4-cherry-1": {
+    "position": [
+      2.25,
+      0.01,
+      1.25
+    ]
+  },
+  "spread-4/spread-4-cherry-2": {
+    "position": [
+      -2.5,
+      0.01,
+      1.25
+    ]
+  },
+  "spread-4/spread-4-bakery": {
+    "remove": true
+  },
+  "spread-4/spread-4-clock": {
+    "remove": true
+  },
+  "spread-4/spread-4-climber": {
+    "position": [
+      -3.5,
+      0.01,
+      2.816
+    ]
+  },
+  "spread-4/spread-4-friend": {
+    "position": [
+      1.5,
+      0.01,
+      2.25
+    ]
+  },
+  "spread-5/spread-5-town-left": {
+    "scale": [
+      1,
+      0.7,
+      1
+    ]
+  },
+  "spread-5/spread-5-town-right": {
+    "position": [
+      -0.7,
+      0.01,
+      -2.368
+    ],
+    "scale": [
+      1.1,
+      0.65,
+      1
+    ]
+  },
+  "spread-5/spread-5-window": {
+    "position": [
+      0,
+      0,
+      -1
+    ],
+    "scale": [
+      1.2,
+      1,
+      1.2
+    ]
+  },
+  "spread-5/spread-5-curtain-l": {
+    "position": [
+      -5.75,
+      2.24,
+      -1.02
+    ],
+    "scale": [
+      1,
+      1.2,
+      1
+    ]
+  },
+  "spread-5/spread-5-curtain-r": {
+    "position": [
+      5.5,
+      2.24,
+      -1.02
+    ],
+    "scale": [
+      1,
+      1.25,
+      1
+    ]
+  }
+}

@@ -1,0 +1,284 @@
+import type { Book, Spread } from '../../schema/book'
+import type { StageElement } from '../../schema/stageElement'
+import { FIT_SCALE_ONSET_F, GLUE_WIDTH_FACTOR, settledT, vfoldLidAngle } from './evaluate'
+import type { CompiledSpreadStow, FaceSide, FallDirection, MechanismKind, SpanningVFold, StowItem } from './model'
+
+export type { CompiledSpreadStow, FaceSide, FallDirection, MechanismKind, SpanningVFold, StowItem } from './model'
+
+/**
+ * 収納コンパイラの割り当て段 (docs/006 §5, §7)。
+ *
+ * 完全に開いた姿勢から各要素へ支持機構を割り当て、
+ * 包含検証から開き始めの位相と相似縮小の目標値を導出する。
+ * 結果は保存されず、同じBookから決定的に再導出される。
+ */
+
+export function compileSpreadStow(book: Book, spread: Spread): CompiledSpreadStow {
+  const w = book.format.pageWidth
+  const d = w / book.format.pageAspect
+  const left: StowItem[] = []
+  const right: StowItem[] = []
+  const spanning: SpanningVFold[] = []
+  const warnings: string[] = []
+
+  // 先に見開きまたぎパネルを集める。面上の部品はパネルの蓋 (降りてくる翼)
+  // を第二の天井として包含検証するため、蓋の被覆範囲を先へ確定させる
+  for (const element of spread.elements) {
+    if (element.parent.type === 'element') continue
+    if (resolveMechanism(element, w) !== 'v-fold' || element.parent.type !== 'spread') continue
+    const span = makeSpanningVFold(element, warnings)
+    if (span) spanning.push(span)
+  }
+  const lid = spanning.length === 0 ? undefined : {
+    z0: Math.min(...spanning.map((s) => s.baseZ)),
+    zFront: Math.max(...spanning.map((s) => s.baseZ + s.height)),
+    reachLeft: Math.max(...spanning.map((s) => s.widthLeft)) / GLUE_WIDTH_FACTOR,
+    reachRight: Math.max(...spanning.map((s) => s.widthRight)) / GLUE_WIDTH_FACTOR,
+  }
+
+  for (const element of spread.elements) {
+    if (element.parent.type === 'element') continue // 子要素は親へ剛体追従する
+    const mechanism = resolveMechanism(element, w)
+    const homeFace: FaceSide = element.parent.type === 'left-page' ? 'left'
+      : element.parent.type === 'right-page' ? 'right'
+      : element.baseTransform.position[0] < 0 ? 'left' : 'right'
+
+    if (mechanism === 'v-fold' && element.parent.type === 'spread') continue // 収集済み
+    if (mechanism === 'v-fold') {
+      // ページ親のv-fold: 折り目でアートワークを分割し、両翼とも
+      // 同じ面で時間差なく畳まれる
+      for (const wing of ['left', 'right'] as const) {
+        const item = makeVFoldWing(element, wing, homeFace, w, d, warnings, lid)
+        if (item) (homeFace === 'left' ? left : right).push(item)
+      }
+      continue
+    }
+
+    const offset = faceOffset(element, homeFace, w)
+    const preferredFall = resolveFlapFall(element, offset, d)
+    const { phase, fitScale, fall, eject } = verifyAndCorrect(element, mechanism, preferredFall, homeFace, offset, w, d, warnings, lid)
+    const item: StowItem = { element, face: homeFace, offset, mechanism, fall, phase, fitScale, eject }
+    ;(homeFace === 'left' ? left : right).push(item)
+  }
+
+  const byLayer = (a: StowItem, b: StowItem) => a.element.layer - b.element.layer
+  left.sort(byLayer)
+  right.sort(byLayer)
+  spanning.sort((a, b) => a.element.layer - b.element.layer)
+  return { left, right, spanning, warnings }
+}
+
+/**
+ * 背をまたぐ一枚パネルの構成。折り目はアートワーク上で背表紙 (x=0) に
+ * 一致する位置へ置く。ヒンジが背表紙にないと畳めないため、制作者の
+ * crease値ではなく開姿勢の配置から導出する。
+ */
+function makeSpanningVFold(element: StageElement, warnings: string[]): SpanningVFold | null {
+  if (element.type !== 'image') {
+    warnings.push(`${element.name}: v-fold supports image parts only`)
+    return null
+  }
+  const width = element.width * element.baseTransform.scale[0]
+  const height = element.height * element.baseTransform.scale[1]
+  const xLeft = element.baseTransform.position[0] - element.pivot[0] * width
+  const creaseU = Math.min(0.95, Math.max(0.05, (0 - xLeft) / Math.max(1e-6, width)))
+  return {
+    element,
+    fall: element.stow.fallDirection === 'back' ? 'back' : 'front',
+    creaseU,
+    // 糊しろは背側へ角度を持つため、開き切りの水平スパンが制作値と
+    // 一致するよう糊しろ方向の長さを補正する
+    widthLeft: creaseU * width * GLUE_WIDTH_FACTOR,
+    widthRight: (1 - creaseU) * width * GLUE_WIDTH_FACTOR,
+    height,
+    baseY: element.baseTransform.position[1] - element.pivot[1] * height,
+    baseZ: element.baseTransform.position[2],
+  }
+}
+
+function resolveMechanism(element: StageElement, pageWidth: number): MechanismKind {
+  if (element.stow.mechanism !== 'auto') return element.stow.mechanism
+  const [x, y] = element.baseTransform.position
+  const rotX = element.baseTransform.rotation[0]
+  // 紙面に平行な平置き。浮いている平置きは支持片で紙面まで降ろす
+  if (Math.abs(rotX + 90) < 35 || Math.abs(rotX - 90) < 35) return y > 0.1 ? 'strut' : 'page-glue'
+  const width = 'width' in element ? element.width : 2
+  // 背をまたぐ幅広の直立部品
+  if (element.parent.type === 'spread' && width >= pageWidth * 0.6 && Math.abs(x) < pageWidth * 0.4 && y < 1) return 'v-fold'
+  // 空中の部品
+  if (y > 0.6) return 'strut'
+  return 'flap'
+}
+
+/**
+ * flapとv-foldの倒す方向の自動補正 (docs/006 §7)。
+ * 倒れた先端が紙面から出ない方向を選ぶ。どちらも足りなければ
+ * 空きの広い側を選び、残りは相似縮小が吸収する
+ */
+function resolveFlapFall(element: StageElement, offset: [number, number, number], pageDepth: number): FallDirection {
+  const hint = element.stow.fallDirection
+  if (hint !== 'auto') return hint === 'spine' || hint === 'outward' ? 'back' : hint
+  const z = element.baseTransform.position[2] + offset[2]
+  const height = ('height' in element ? element.height : 2) * Math.max(...element.baseTransform.scale)
+  const backRoom = z + pageDepth / 2
+  const frontRoom = pageDepth / 2 - z
+  if (height <= backRoom + 0.2) return 'back'
+  if (height <= frontRoom + 0.2) return 'front'
+  return backRoom >= frontRoom ? 'back' : 'front'
+}
+
+function faceOffset(element: StageElement, face: FaceSide, pageWidth: number): [number, number, number] {
+  if (element.parent.type !== 'spread') return [0, 0, 0]
+  // 見開き空間の座標を面ローカル (面中心原点) へ写す
+  return [face === 'left' ? pageWidth / 2 : -pageWidth / 2, 0, 0]
+}
+
+function makeVFoldWing(element: StageElement, wing: FaceSide, targetFace: FaceSide, pageWidth: number, pageDepth: number, warnings: string[], lid?: SpanLid): StowItem | null {
+  if (element.type !== 'image') {
+    warnings.push(`${element.name}: v-fold supports image parts only`)
+    return null
+  }
+  const crease = Math.min(0.95, Math.max(0.05, element.stow.crease ?? element.pivot[0]))
+  const u0 = wing === 'left' ? 0 : crease
+  const u1 = wing === 'left' ? crease : 1
+  const wingWidth = element.width * (u1 - u0)
+  if (wingWidth < 0.01) return null
+  // アートワークはpivot X位置が要素原点。翼の中心の要素原点からのずれ
+  const artLeft = -element.pivot[0] * element.width
+  const centerShiftX = artLeft + (u0 + (u1 - u0) / 2) * element.width
+  const offset = faceOffset(element, targetFace, pageWidth)
+  const preferredFall = resolveFlapFall(element, offset, pageDepth)
+  const { phase, fitScale, fall } = verifyAndCorrect(element, 'flap', preferredFall, targetFace, offset, pageWidth, pageDepth, warnings, lid, wingWidth, centerShiftX)
+  return { element, face: targetFace, offset, mechanism: 'v-fold', fall, half: { u0, u1, width: wingWidth, centerShiftX }, phase, fitScale, eject: 0 }
+}
+
+/** 見開きまたぎパネルの蓋の被覆範囲 (足元z0と、面ごとの水平到達距離) */
+interface SpanLid {
+  z0: number
+  zFront: number
+  reachLeft: number
+  reachRight: number
+}
+
+/**
+ * 包含検証と自動補正 (docs/006 §7)。
+ *
+ * 楔空間: 要素の帰属面に対し、対面は背表紙を通り角δをなす平面である。
+ * 部品の先端が全δで対面を越えないよう、開き始めの位相を進める。
+ * 見開きまたぎパネルがある場合は、降りてくる翼 (蓋) も第二の天井になる。
+ * 平坦時の足跡が紙面からはみ出す分は相似縮小の目標値にする。
+ * 相似縮小は先端の届く距離も縮めるため、位相の導出より先に確定させる。
+ * strutは小口の外を回る迂回で運ぶため包含検証を持たず、迂回振幅を決める。
+ */
+function verifyAndCorrect(
+  element: StageElement,
+  mechanism: MechanismKind,
+  fall: FallDirection,
+  face: FaceSide,
+  offset: [number, number, number],
+  pageWidth: number,
+  pageDepth: number,
+  warnings: string[],
+  lid?: SpanLid,
+  widthOverride?: number,
+  centerShiftX?: number,
+): { phase: number; fitScale: number; fall: FallDirection; eject: number } {
+  // 片面背景は隣接見開きにも存在する。ページ送りでは送り元と送り先の
+  // 二面角が相補的に変わるため、両方が同時に半起立すると背景同士が交差する。
+  // 0.5を挟んで旧背景を畳んだ後に新背景を起こし、わずかな空白も確保する。
+  const mechanismPhaseFloor = element.sourcePreset === 'depth-layer' ? 0.52 : 0
+  const authorPhase = Math.max(mechanismPhaseFloor, Math.min(0.6, element.stow.stagger * 0.6))
+  if (mechanism === 'page-glue') return { phase: authorPhase, fitScale: 1, fall, eject: 0 }
+
+  const pos: [number, number, number] = [
+    element.baseTransform.position[0] + offset[0] + (centerShiftX ?? 0),
+    element.baseTransform.position[1] + offset[1],
+    element.baseTransform.position[2] + offset[2],
+  ]
+  const height = ('height' in element ? element.height : 2) * Math.max(...element.baseTransform.scale)
+  const width = (widthOverride ?? ('width' in element ? element.width : 2)) * Math.max(...element.baseTransform.scale)
+  // 先端の届く高さ: flapは接地線から、strutは浮遊高さ+部品
+  const reach = mechanism === 'strut' ? pos[1] + height * (1 - element.pivot[1]) : height * (1 - element.pivot[1]) + Math.max(0, pos[1])
+  // 背表紙からの距離 (面ローカルで、左面は+w/2側、右面は-w/2側が背)
+  const spineDist = Math.max(0.05, face === 'left' ? pageWidth / 2 - pos[0] : pos[0] + pageWidth / 2)
+
+  // 平坦時の足跡: 倒れた先端が紙面の外へ出る分を縮小目標にする
+  let available: number
+  if (fall === 'back') available = pos[2] + pageDepth / 2
+  else if (fall === 'front') available = pageDepth / 2 - pos[2]
+  else if (fall === 'spine') available = spineDist + 0.3
+  else available = (face === 'left' ? pos[0] + pageWidth / 2 : pageWidth / 2 - pos[0]) + 0.3
+  const footprint = height
+  // 端の余白ぶんを引いて収める。相似縮小は閉じ際だけ働く (docs/006 §6)
+  const shrink = footprint > available - 0.2 ? Math.max(0.25, (available - 0.2) / Math.max(0.01, footprint)) : 1
+  // 横幅も紙面へ収める
+  const fitScale = Math.min(shrink, Math.min(1, pageWidth / Math.max(0.01, width)))
+
+  if (mechanism === 'strut') {
+    // ファンタジー迂回: 小口の外まで確実に張り出す振幅。
+    // 本の輪郭の外は紙が無いため位相遅延を要しない
+    const outwardRoom = pageWidth - spineDist
+    const eject = outwardRoom + 1.5 + width * 0.25
+    return { phase: authorPhase, fitScale, fall, eject }
+  }
+
+  // パネルの蓋の下にある部品か (z範囲と、翼の水平到達距離で判定)。
+  // 翼は折り目が傾くぶん糊しろの到達より外へ届くため、高さの一部を上乗せする
+  const lidReach = lid === undefined ? 0
+    : (face === 'left' ? lid.reachLeft : lid.reachRight) + (lid.zFront - lid.z0) * 0.25
+  const lidSpan = lid !== undefined
+    && pos[2] > lid.z0 - 0.1 && pos[2] < lid.zFront
+    && spineDist < lidReach
+    ? Math.max(0.05, pos[2] - lid.z0)
+    : undefined
+
+  // 位相の導出: 先端軌跡が全tで対面の天井とパネルの蓋を越えない最小の位相を探す
+  let phase = authorPhase
+  while (phase < 0.85 && !phaseIsContained(phase, reach, spineDist, fitScale, lidSpan)) phase += 0.025
+  phase = Math.min(phase, 0.85)
+  if (!phaseIsContained(phase, reach, spineDist, fitScale, lidSpan)) {
+    warnings.push(`${element.name}: no phase fits inside the wedge`)
+  }
+
+  return { phase, fitScale, fall, eject: 0 }
+}
+
+/**
+ * 展開位相 a で機構を駆動したとき、部品の先端 (接地線ヒンジの起き上がり、
+ * 閉じ際の相似縮小を合成) が次の両方を全tで越えないか:
+ *
+ * - 対面の天井平面 (背表紙を通り帰属面と角δをなす)。δ ≥ π/2 では
+ *   対面が垂直を越えるため制約しない
+ * - 見開きまたぎパネルの蓋 (lidSpan指定時)。パネル足元z0で面にヒンジ
+ *   した平面が角度 vfoldLidAngle(t) まで降りてくるとみなす
+ */
+function phaseIsContained(
+  a: number,
+  reach: number,
+  spineDist: number,
+  fitScale: number,
+  lidSpan?: number,
+): boolean {
+  for (let step = 1; step <= 40; step++) {
+    // t は生の二面角 δ/π。天井と蓋は実際の紙の角度で降りてくるが、
+    // 部品のほうは settledT で詰めた変数に従う (描画と同じ式)
+    const t = step / 40
+    const f = smooth(Math.min(1, Math.max(0, (settledT(t) - a) / Math.max(1e-6, 1 - a))))
+    if (f <= 0) continue
+    const scaleMul = fitScale < 1 && f < FIT_SCALE_ONSET_F
+      ? fitScale + (1 - fitScale) * smooth(f / FIT_SCALE_ONSET_F)
+      : 1
+    const tipHeight = reach * scaleMul * Math.sin((Math.PI / 2) * f)
+    if (tipHeight < 1e-4) continue
+    if (lidSpan !== undefined) {
+      const lidAngle = vfoldLidAngle(t)
+      if (lidAngle < Math.PI / 2 - 1e-3 && tipHeight > lidSpan * Math.tan(lidAngle) + 0.15) return false
+    }
+    if (t < 0.5 && Math.atan2(tipHeight, spineDist) > Math.PI * t + 1e-3) return false
+  }
+  return true
+}
+
+function smooth(t: number): number {
+  return t * t * (3 - 2 * t)
+}
