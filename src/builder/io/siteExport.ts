@@ -6,7 +6,7 @@ import type { BookProject } from '../../schema/bookPackage'
 import { safeFileName, saveBlobAs } from './browserFiles'
 
 /**
- * 公開用の書き出しは2通りある (docs/009 §1)。素材の実体をどこへ置くかだけが違う。
+ * 公開用の書き出しは2通りある。素材の実体をどこへ置くかだけが違う。
  *
  * - 単一HTML: 実体を data URL のまま埋め込む。1ファイルなので file:// で直接開ける
  * - 静的ホスト: 実体を元の形式のまま隣の `assets/` へ置き、HTMLは相対URLだけ持つ
@@ -17,7 +17,7 @@ import { safeFileName, saveBlobAs } from './browserFiles'
  * だから両立させずに、書き出す時点でどちらの配り方かを選ぶ。
  */
 
-/** 素材の実体を置くフォルダ。作品データが持つ相対URLの行き先 (docs/009 §2) */
+/** 素材の実体を置くフォルダ。作品データが持つ相対URLの行き先 */
 const ASSET_DIR = 'assets'
 
 /** 静的ホストへ上げる形。index.html + 元の形式のままの素材フォルダを ZIP に束ねる */

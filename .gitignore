@@ -30,7 +30,7 @@ coverage/
 .DS_Store
 Thumbs.db
 
-# Internal plans, references, and visual QA output
+# Local-only inputs and generated QA output
 docs/
 ref/
 qa/

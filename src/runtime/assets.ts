@@ -10,7 +10,7 @@ import { canvasFont, TEXT_LINE_HEIGHT, TEXT_SIDE_PAD, type TextStyle } from './t
  * - 同じ実体のテクスチャは配置物間で共有する
  *
  * 素材は制作中は data URL (SVGはテキスト) で、書き出したサイトでは外部ファイルへの
- * 相対URLで届く (docs/009 §3)。どちらも `<img>` に読ませられるので経路は一本で済む。
+ * 相対URLで届く。どちらも `<img>` に読ませられるので経路は一本で済む。
  */
 
 export interface TextureResult {

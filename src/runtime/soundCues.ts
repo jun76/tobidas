@@ -2,7 +2,7 @@ import type { Book } from '../schema/book'
 import { compileBookBeats, playbackDurationSeconds } from './signals'
 
 /**
- * 効果音の発火判定 (docs/008 §7.2)。
+ * 効果音の発火判定。
  *
  * 音は姿勢と違って冪等でない。「同じ進行値は必ず同じ姿勢を返す」の不変条件は
  * 空間の話であり、音を同じ規則で扱うとスクラブのたびに同じ音が何度も鳴る。

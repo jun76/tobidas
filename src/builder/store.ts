@@ -297,7 +297,7 @@ export const useBuilderStore = create<EditorState>((set, get) => {
       constrainSinglePageBackground(element, project.book.format.pageWidth)
     }),
     /**
-     * 選択中のプリセットで紙面へ置く (docs/008 §5.1)。
+     * 選択中のプリセットで紙面へ置く。
      *
      * どの型で置くかはプリセットが決める。プリセットを選ばずに置ける経路を
      * 残すと、結局「押した瞬間に出る」経路と二本立てに戻るので、
@@ -366,7 +366,7 @@ export const useBuilderStore = create<EditorState>((set, get) => {
     },
     addAsset: (asset) => commit((project) => project.assets.push(asset)),
     /**
-     * BGMは作品に一つ。冒頭からループ再生する (docs/008 §4.4)。
+     * BGMは作品に一つ。冒頭からループ再生する。
      * 既にあるときは差し替える。取り込みと割り当てを一度の操作にするので、
      * 取り消しも一度で戻る。
      */

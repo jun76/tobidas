@@ -7,7 +7,7 @@
 <p align="center"><strong>飛び出す絵本のようなWeb作品を、ブラウザで組み立てて公開する。</strong></p>
 
 <p align="center">
-  <a href="https://tobidas.9rsgy78c9c.workers.dev">オンライン版を使う</a>
+  <a href="https://tobidas.9rsgy78c9c.workers.dev/">オンライン版を使う</a>
   ·
   <a href="./README.en.md">English</a>
 </p>
@@ -24,7 +24,7 @@
 tobidasは、横開きの「飛び出す絵本風」Web作品を制作・再生するローカルファーストのビルダーです。
 完全に開いた見開きを編集すると、ページを開閉するときの紙面や部品の動きを自動で組み立てます。
 
-[tobidas.9rsgy78c9c.workers.dev](https://tobidas.9rsgy78c9c.workers.dev) ですぐに使えます。
+[tobidas.9rsgy78c9c.workers.dev](https://tobidas.9rsgy78c9c.workers.dev/) ですぐに使えます。
 作品データや読み込んだ素材はブラウザ内で処理され、tobidasのサーバーへアップロードされません。
 このリポジトリをクローンして、自分の環境や静的ホスティングで運用することもできます。
 
@@ -41,7 +41,7 @@ tobidasは、横開きの「飛び出す絵本風」Web作品を制作・再生�
 
 ## オンライン版を使う
 
-1. [tobidas.9rsgy78c9c.workers.dev](https://tobidas.9rsgy78c9c.workers.dev) をChromeまたはEdgeで開きます。
+1. [tobidas.9rsgy78c9c.workers.dev](https://tobidas.9rsgy78c9c.workers.dev/) をChromeまたはEdgeで開きます。
 2. 「新規作成」で作品を作るか、「開く」で既存の作品フォルダを選びます。
 3. 素材を読み込み、プリセットを選んで見開きへ配置します。
 4. 右上の「再生」でページの開閉と演出を確認します。
@@ -124,7 +124,8 @@ npm test
 npm run build
 ```
 
-実装規約、アーキテクチャ上の不変条件、サンプル生成手順は[AGENTS.md](./AGENTS.md)にまとめています。
+エージェント向けの作品制作規約は[AGENTS.md](./AGENTS.md)、
+tobidas本体の実装規約は[AGENTS_DEV.md](./AGENTS_DEV.md)にまとめています。
 
 ## プライバシー
 

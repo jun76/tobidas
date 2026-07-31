@@ -77,7 +77,7 @@ export function BookProperties() {
 }
 
 /**
- * BGM (docs/008 §4.6)。割り当てはプリセットのBGMボタンから行い、
+ * BGM。割り当てはプリセットのBGMボタンから行い、
  * ここは確認と微調整、そして解除に絞る。
  */
 function BookAudio() {

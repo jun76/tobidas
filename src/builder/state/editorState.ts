@@ -27,7 +27,7 @@ export interface EditorState {
   hidden: ReadonlySet<string>
   mode: EditorMode
   /**
-   * 掴んで置くプリセットの選択 (docs/008 §4.2)。
+   * 掴んで置くプリセットの選択。
    * 編集セッションの状態で、作品データには入らない。
    */
   placement: PlacementMode | null
@@ -97,4 +97,3 @@ export interface EditorState {
   replaceAsset(id: string, asset: Asset): void
   removeAsset(id: string): void
 }
-

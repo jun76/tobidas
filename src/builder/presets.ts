@@ -1,7 +1,7 @@
 import type { ParentSpace, SourcePreset, StageElement, StageElementType, StowMechanism } from '../schema/stageElement'
 
 /**
- * プリセットの分類 (docs/008 §4)。
+ * プリセットの分類。
  *
  * 分類は「何を掴んで置くか」で分かれる。画像は画像アセット、音声は音声アセットを
  * ドラッグして置き、その他はアセットを要さない。
@@ -34,7 +34,7 @@ export const PART_PRESETS: PartPreset[] = [
  * (BGM・パーティクル・テキスト) はここへ入らない。
  *
  * 'sound-cue' は要素を作らないので PART_PRESETS には無い。効果音は
- * タイムラインの点であって紙面の部品ではない (docs/008 §6.1)。
+ * タイムラインの点であって紙面の部品ではない。
  */
 export type PlacementMode = Exclude<SourcePreset, 'custom'> | 'sound-cue'
 

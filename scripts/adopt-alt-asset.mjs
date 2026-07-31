@@ -1,5 +1,5 @@
 /**
- * ref/assets_alt の生成済み素材を、公開サンプルの素材置き場へ取り込む道具。
+ * 任意の画像素材を、公開サンプルの素材置き場へ取り込む道具。
  *
  * サンプル定義 (scripts/samples/<work>.mjs) が宣言する世界寸法と、
  * scripts/samples/assets/<work>/<id>.webp の画素寸法は一致していなければ
@@ -8,10 +8,8 @@
  *   紙面背景   … 片面の 1250x1000 へ合わせる
  * という二通りで書き出し、貼り付けるべき数値を表示する。
  *
- * ref/ はgit追跡外なので、取り込んだ結果 (webp) だけが管理対象になる。
- *
- *   node scripts/adopt-alt-asset.mjs <work> <ref内のパス> <出力名.webp> --width 1.6
- *   node scripts/adopt-alt-asset.mjs <work> <ref内のパス> page-1-left.webp --page
+ *   node scripts/adopt-alt-asset.mjs <work> <入力画像> <出力名.webp> --width 1.6
+ *   node scripts/adopt-alt-asset.mjs <work> <入力画像> page-1-left.webp --page
  */
 import { mkdirSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -19,7 +17,7 @@ import { spawnSync } from 'node:child_process'
 
 const [, , work, source, outName, ...rest] = process.argv
 if (!work || !source || !outName) {
-  console.error('usage: node scripts/adopt-alt-asset.mjs <work> <ref-path> <out.webp> [--width W | --height H | --page]')
+  console.error('usage: node scripts/adopt-alt-asset.mjs <work> <source-image> <out.webp> [--width W | --height H | --page]')
   process.exit(2)
 }
 
@@ -31,7 +29,7 @@ const asPage = rest.includes('--page')
 const worldWidth = Number(flag('width'))
 const worldHeight = Number(flag('height'))
 
-const src = resolve('ref/assets_alt', source)
+const src = resolve(source)
 const out = resolve('scripts/samples/assets', work, outName)
 mkdirSync(dirname(out), { recursive: true })
 

@@ -8,7 +8,7 @@ import type { SpanningVFold, StowItem } from './model'
 import { GLUE_WIDTH_FACTOR } from './evaluate'
 
 /**
- * 開姿勢の包含検査 (docs/006 §7の紙面包含を、保持中の全時刻へ広げたもの)。
+ * 開姿勢の包含検査。保持中の全時刻について紙面包含を調べる。
  *
  * 収納コンパイラは「閉じられるか」を base transform だけで検証する。
  * こちらは反対に「開いている間ずっと紙の上にいるか」を、タイムラインで

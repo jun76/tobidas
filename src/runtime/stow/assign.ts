@@ -6,7 +6,7 @@ import type { CompiledSpreadStow, FaceSide, FallDirection, MechanismKind, Spanni
 export type { CompiledSpreadStow, FaceSide, FallDirection, MechanismKind, SpanningVFold, StowItem } from './model'
 
 /**
- * 収納コンパイラの割り当て段 (docs/006 §5, §7)。
+ * 収納コンパイラの割り当て段。
  *
  * 完全に開いた姿勢から各要素へ支持機構を割り当て、
  * 包含検証から開き始めの位相と相似縮小の目標値を導出する。
@@ -111,7 +111,7 @@ function resolveMechanism(element: StageElement, pageWidth: number): MechanismKi
 }
 
 /**
- * flapとv-foldの倒す方向の自動補正 (docs/006 §7)。
+ * flapとv-foldの倒す方向の自動補正。
  * 倒れた先端が紙面から出ない方向を選ぶ。どちらも足りなければ
  * 空きの広い側を選び、残りは相似縮小が吸収する
  */
@@ -161,7 +161,7 @@ interface SpanLid {
 }
 
 /**
- * 包含検証と自動補正 (docs/006 §7)。
+ * 包含検証と自動補正。
  *
  * 楔空間: 要素の帰属面に対し、対面は背表紙を通り角δをなす平面である。
  * 部品の先端が全δで対面を越えないよう、開き始めの位相を進める。
@@ -209,7 +209,7 @@ function verifyAndCorrect(
   else if (fall === 'spine') available = spineDist + 0.3
   else available = (face === 'left' ? pos[0] + pageWidth / 2 : pageWidth / 2 - pos[0]) + 0.3
   const footprint = height
-  // 端の余白ぶんを引いて収める。相似縮小は閉じ際だけ働く (docs/006 §6)
+  // 端の余白ぶんを引いて収める。相似縮小は閉じ際だけ働く
   const shrink = footprint > available - 0.2 ? Math.max(0.25, (available - 0.2) / Math.max(0.01, footprint)) : 1
   // 横幅も紙面へ収める
   const fitScale = Math.min(shrink, Math.min(1, pageWidth / Math.max(0.01, width)))

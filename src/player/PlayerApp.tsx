@@ -18,7 +18,7 @@ import { crossedSoundCues, soundCueAssetIds } from '../runtime/soundCues'
  * file:// で開かれるので、外部から作品を取りに行く経路は成立しない。
  *
  * ただし素材の実体は隣の `assets/` にある外部ファイルで、埋め込みデータは相対URLだけを
- * 持つ (docs/009)。fetch は file:// で落ちるため、実体を読むのは `<img>` と
+ * 持つ。fetch は file:// で落ちるため、実体を読むのは `<img>` と
  * HTMLAudioElement に限る。
  */
 export function PlayerApp() {
@@ -122,7 +122,7 @@ export function PlayerApp() {
   }, [project, bank])
 
   /**
-   * BGMは冒頭からループ再生する (docs/008 §7.1)。ただし自動再生制限があるので、
+   * BGMは冒頭からループ再生する。ただし自動再生制限があるので、
    * 最初のユーザー操作まで待つ。以降は音楽ボタンで切り替える。
    */
   const startBgm = () => {

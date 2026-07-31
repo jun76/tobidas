@@ -16,7 +16,7 @@ import { PaperSlab, assetFor } from './visuals/ElementVisuals'
 export type { BookRuntimeProps, RuntimeSelection } from './types'
 
 /**
- * 恒久フレーム木の描画層 (docs/005 §4, docs/006)。
+ * 恒久フレーム木の描画層。
  *
  * すべての要素は収納コンパイラが割り当てた面フレームの下だけで描画し、
  * Visibility Gate は二面角がほぼ0の見開きだけを描画対象から外す。

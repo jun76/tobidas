@@ -7,7 +7,7 @@
 <p align="center"><strong>Build and publish interactive web stories that unfold like pop-up books.</strong></p>
 
 <p align="center">
-  <a href="https://tobidas.9rsgy78c9c.workers.dev">Open the online builder</a>
+  <a href="https://tobidas.9rsgy78c9c.workers.dev/">Open the online builder</a>
   ·
   <a href="./README.md">日本語</a>
 </p>
@@ -24,7 +24,7 @@
 tobidas is a local-first browser builder for creating and playing landscape-oriented, pop-up-book-style web stories.
 You author each spread in its fully open state; tobidas derives how its pages and paper elements fold while the book opens and closes.
 
-You can start immediately at [tobidas.9rsgy78c9c.workers.dev](https://tobidas.9rsgy78c9c.workers.dev).
+You can start immediately at [tobidas.9rsgy78c9c.workers.dev](https://tobidas.9rsgy78c9c.workers.dev/).
 Project data and imported assets are processed in your browser and are not uploaded to the tobidas server.
 You can also clone this repository and run it locally or deploy it to your own static host.
 
@@ -41,7 +41,7 @@ You can also clone this repository and run it locally or deploy it to your own s
 
 ## Use the online builder
 
-1. Open [tobidas.9rsgy78c9c.workers.dev](https://tobidas.9rsgy78c9c.workers.dev) in Chrome or Edge.
+1. Open [tobidas.9rsgy78c9c.workers.dev](https://tobidas.9rsgy78c9c.workers.dev/) in Chrome or Edge.
 2. Choose **New** to start a project, or **Open** to select an existing project folder.
 3. Import assets, choose a preset, and place elements on a spread.
 4. Use **Play** in the upper-right corner to preview the book and its animation.
@@ -124,8 +124,8 @@ npm test
 npm run build
 ```
 
-Implementation rules, architectural invariants, and sample-generation instructions are documented in
-[AGENTS.md](./AGENTS.md).
+Agent instructions for creating books are in [AGENTS.md](./AGENTS.md).
+Instructions for developing tobidas itself are in [AGENTS_DEV.md](./AGENTS_DEV.md).
 
 ## Privacy
 

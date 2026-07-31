@@ -5,7 +5,7 @@ export const timelineTargetSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('element'), elementId: z.string().min(1) }),
   z.object({ type: z.literal('environment') }),
   z.object({ type: z.literal('camera') }),
-  // 効果音は紙面の部品ではなくタイムラインの点 (docs/008 §6.1)。
+  // 効果音は紙面の部品ではなくタイムラインの点。
   // 音声アセット1つにつき1トラックで、キーが「ここで鳴らす」印になる
   z.object({ type: z.literal('sound'), assetId: z.string().min(1) }),
 ])

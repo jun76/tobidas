@@ -23,7 +23,7 @@ export const contentMotionSchema = z.discriminatedUnion('type', [
 ])
 
 /**
- * 収納ヒント (docs/006 §10)。
+ * 収納ヒント。
  * 制作者の意図だけを表す。支持機構の内部構造(接着線、折り目、支持片、
  * 縮小カーブ)は保存せず、収納コンパイラが決定的に再導出する。
  */
@@ -50,7 +50,7 @@ export const stowHintSchema = z.object({
 })
 
 /**
- * 装飾トラック (docs/005 §6.4)。
+ * 装飾トラック。
  * uで評価するキーフレーム列に窓関数を乗じ、u=0とu=1では必ず効かない。
  */
 export const trackPropertySchema = z.enum([

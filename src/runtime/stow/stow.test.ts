@@ -58,7 +58,7 @@ describe('二面角の導出', () => {
   })
 })
 
-describe('支持機構の端点 (docs/006 §15)', () => {
+describe('支持機構の端点', () => {
   it('表示効果の混合係数も収納端で0、開姿勢で1になる', () => {
     const { book } = randomBookWithElement(rng(31))
     for (const item of collectItems(book)) {
@@ -225,8 +225,7 @@ describe('支持機構の端点 (docs/006 §15)', () => {
       return (b - a) / dt
     }
 
-    // 表示していた時間が長いほど酷くなるのが以前の症状だった。
-    // 送り 1.5 秒で f が 1 -> 0 へ動く間も、通常の速さのままでなければならない
+    // 表示時間にかかわらず、送り 1.5 秒で f が 1 -> 0 へ動く間も通常の速さを保つ
     for (const residency of [2, 10, 30, 60, 600]) {
       expect(rate(residency, 1, 0)).toBeCloseTo(expected)
       expect(rate(residency, 0.5, -1 / 1.5)).toBeCloseTo(expected)
@@ -291,7 +290,7 @@ describe('支持機構の端点 (docs/006 §15)', () => {
   })
 })
 
-describe('楔空間の包含 (docs/006 §7)', () => {
+describe('楔空間の包含', () => {
   it('全域で部品の先端が対面の天井を越えない', () => {
     const next = rng(4444)
     for (let trial = 0; trial < 150; trial++) {
@@ -406,7 +405,7 @@ describe('コンパイラの割り当て', () => {
   })
 })
 
-describe('背をまたぐ一枚パネル (docs/006 §5)', () => {
+describe('背をまたぐ一枚パネル', () => {
   function makeSpan(fallDirection: 'auto' | 'back' | 'front' = 'auto') {
     const book = createBook()
     const spread = book.spreads[0]

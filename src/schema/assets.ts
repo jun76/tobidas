@@ -3,15 +3,15 @@ import { z } from 'zod'
 export const assetTypeSchema = z.enum(['svg', 'image', 'audio'])
 
 /**
- * 音声1本の上限 (docs/008 §6.3)。
+ * 音声1本の上限。
  *
- * 書き出しでは実体が外部ファイルへ出るのでHTMLは太らないが (docs/009)、
+ * 書き出しでは実体が外部ファイルへ出るのでHTMLは太らないが、
  * 制作中は data URL のまま IndexedDB と undo スタックへ乗る。上限は編集の重さで決める。
  */
 export const AUDIO_BYTE_LIMIT = 3 * 1024 * 1024
 
 /**
- * 書き出したサイトが素材の実体を置く場所 (docs/009 §2)。
+ * 書き出したサイトが素材の実体を置く場所。
  *
  * `index.html` の隣の `assets/` で、作品パッケージと同じ相対配置。埋め込まれた
  * 作品データは実体のかわりにこの相対URLを持つ。

@@ -3,11 +3,11 @@ import type { CompiledBeat } from '../schema/sequence'
 import { spreadDihedrals } from './stow/dihedral'
 
 /**
- * Book進行値 → 蝶番角 → 見開き二面角の導出 (docs/005 §5, docs/006 §4)。
+ * Book進行値 → 蝶番角 → 見開き二面角の導出。
  *
  * 本の状態はシート(表紙、紙葉、裏表紙)の蝶番角の列がすべてであり、
  * ビートは蝶番角を動かすだけのペーシング層である。
- * 部品の運動は二面角だけで駆動され (docs/006)、Visibility Gateも
+ * 部品の運動は二面角だけで駆動され、Visibility Gateも
  * 同じ二面角を閾値判定に使う。露出度ランプは存在しない。
  */
 

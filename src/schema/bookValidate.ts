@@ -35,7 +35,7 @@ export function validateBookProject(data: unknown): BookValidationResult {
   const totalBytes = project.assets.reduce((total, asset) => total + (asset.bytes ?? 0), 0)
   if (totalBytes > 20 * 1024 * 1024) warnings.push(`package exceeds 20MB (${(totalBytes / 1024 / 1024).toFixed(1)}MB)`)
   // 音声は data URL のまま単一HTMLへ入る。取り込みでは弾くが、外から来た
-  // パッケージは読めなくする必要が無いので警告に留める (docs/008 §6.3)
+  // パッケージは読めなくする必要が無いので警告に留める
   for (const asset of project.assets) {
     if (asset.type !== 'audio' || (asset.bytes ?? 0) <= AUDIO_BYTE_LIMIT) continue
     warnings.push(`${asset.name}: audio exceeds 3MB (${((asset.bytes ?? 0) / 1024 / 1024).toFixed(1)}MB)`)
@@ -185,7 +185,7 @@ function timelineValueMatches(property: TimelineProperty, value: TimelineValue):
   if (NUMBER_PROPERTIES.has(property)) return typeof value === 'number' && Number.isFinite(value)
   if (COLOR_PROPERTIES.has(property)) return typeof value === 'string'
   if (property === 'visible') return typeof value === 'boolean'
-  // キューは時刻だけを持つ印。値は場所取りなので true で固定する (docs/008 §6.1)
+  // キューは時刻だけを持つ印。値は場所取りなので true で固定する
   if (property === 'cue') return value === true
   if (property === 'asset') return typeof value === 'string' && value.length > 0
   if (VEC3_PROPERTIES.has(property)) return Array.isArray(value) && value.length === 3 && value.every(Number.isFinite)

@@ -1,7 +1,7 @@
 import type { ContentMotion } from '../schema/stageElement'
 
 /**
- * Content Motionの評価 (docs/005 §8.2)。
+ * Content Motionの評価。
  * 入力はContent Clockの経過時間だけであり、Book進行値を参照しない。
  * 返すのは展開姿勢へ加える変位で、折り畳み写像が空間ごと圧縮する。
  */

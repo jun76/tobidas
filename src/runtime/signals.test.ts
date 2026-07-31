@@ -43,7 +43,7 @@ describe('蝶番角', () => {
   })
 })
 
-describe('見開き二面角 (docs/006 §4)', () => {
+describe('見開き二面角', () => {
   it('hold区間でπ、閉じた本で0になる', () => {
     const book = bookWithSpreads(3)
     const beats = compileBookBeats(book)

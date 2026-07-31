@@ -64,7 +64,7 @@ export function PageDropController() {
         return
       }
       // 画像プリセットを選んでいないときは紙面へ落とせない。どの型で置くかを
-      // 決めずに置ける経路を残すと、投入導線が二本立てへ戻る (docs/008 §5.1)
+      // 決めずに置ける経路を残すと、投入導線が二本立てへ戻る
       const placing = assetKindForMode(store.placement) === 'image'
       const hit = placing ? hitPage(detail.clientX, detail.clientY) : null
       if (detail.phase === 'move') {
@@ -92,4 +92,3 @@ export function PageDropController() {
     </mesh>
   </group>
 }
-

@@ -1,15 +1,14 @@
 /**
  * 表紙の絵へ英字タイトルを焼き込む (要 ImageMagick の `magick`)。
  *
- *   node scripts/bake-cover-titles.mjs            # 素材を差し替える
- *   node scripts/bake-cover-titles.mjs --preview  # ref/ へ出すだけ (目視用)
+ *   node scripts/bake-cover-titles.mjs <原画フォルダ>                    # 素材を差し替える
+ *   node scripts/bake-cover-titles.mjs <原画フォルダ> --preview-dir tmp  # 別フォルダへ出す
  *
  * タイトルは表紙の**絵の一部**として持つ。部品として立てるとページを開く区間には
  * 保持時刻が無く、表紙は要素を持てないので、字を置く先が絵しかない。
  *
- * **取り込み元は `ref/covers-src/<作品>.webp` の字の入っていない原画**で、
- * adopt-alt-asset と同じ約束 (取り込み元は ref/ でgit追跡外、成果物のWebPだけが
- * 管理対象)。差し替え済みの素材を入力にすると字が二重に焼けるので、ここを
+ * 取り込み元には `<原画フォルダ>/<作品>.webp` の字の入っていない原画を使う。
+ * 差し替え済みの素材を入力にすると字が二重に焼けるので、原画フォルダを
  * `scripts/samples/assets/` にしてはいけない。
  *
  * 置き方は作品ごとに違う。絵の空いている帯 (森は下の茂み、通学路は生成りの空、
@@ -20,8 +19,22 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 
-/** 字の入っていない原画の置き場 (git追跡外) */
-const SOURCE_DIR = 'ref/covers-src'
+const [, , sourceDir, ...args] = process.argv
+const option = (name) => {
+  const index = args.indexOf(`--${name}`)
+  return index >= 0 ? args[index + 1] : undefined
+}
+
+if (!sourceDir) {
+  console.error('usage: node scripts/bake-cover-titles.mjs <source-dir> [--preview-dir <dir>]')
+  process.exit(2)
+}
+
+const previewDir = option('preview-dir')
+if (args.includes('--preview-dir') && !previewDir) {
+  console.error('--preview-dir には出力先が必要です')
+  process.exit(2)
+}
 
 const WORKS = [
   {
@@ -62,16 +75,15 @@ const WORKS = [
   },
 ]
 
-const preview = process.argv.includes('--preview')
-if (preview) fs.mkdirSync('ref', { recursive: true })
+if (previewDir) fs.mkdirSync(previewDir, { recursive: true })
 
 for (const work of WORKS) {
-  const src = path.join(SOURCE_DIR, `${work.id}.webp`)
+  const src = path.join(sourceDir, `${work.id}.webp`)
   if (!fs.existsSync(src)) {
     throw new Error(`字の入っていない原画がありません: ${src}`)
   }
-  const out = preview
-    ? `ref/cover-front-${work.id}.webp`
+  const out = previewDir
+    ? path.join(previewDir, `cover-front-${work.id}.webp`)
     : `scripts/samples/assets/${work.id}/cover-front.webp`
   const text = ['-background', 'none', '-font', work.font, '-pointsize', String(work.size),
     '-interline-spacing', String(work.lineSpacing), '-gravity', 'center']

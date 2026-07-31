@@ -56,7 +56,7 @@ export function build(updatedAt) {
   // wide(高さ, 素材) は縦横比を実WebPから引く。余白を切っても定義は追従する
   const { art, wide } = work
 
-  // --- 仮素材 -------------------------------------------------------------
+  // --- 下書き素材 ---------------------------------------------------------
   /**
    * 紙面の地面。空も稜線も描かない。遠景の木立や丘は必ず立ち板として立てる。
    * 紙に描いた地平線は、その前に立てた板と二重の奥行きになって濁る。
@@ -68,7 +68,7 @@ export function build(updatedAt) {
   )), { opaque: true })
 
   /**
-   * ref/assets_alt から取り込んだ森の住人と下草 (scripts/adopt-alt-asset.mjs)。
+   * scripts/adopt-alt-asset.mjs で取り込んだ森の住人と下草。
    * 下書きは占める寸法の宣言だけを担い、絵は同名の生成済みWebPが持つ。
    */
   const adopted = (id, width, height) => art(id, svg(width, height,

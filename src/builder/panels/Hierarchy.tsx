@@ -70,7 +70,7 @@ export function BookNavigator() {
 }
 
 /**
- * 部品プリセット (docs/008 §4)。
+ * 部品プリセット。
  *
  * ボタンには2種類ある。混ぜない。
  *

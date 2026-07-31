@@ -50,8 +50,8 @@ describe('public samples', () => {
   })
 
   /**
-   * 目視では繰り返し見落とした「部品が本を貫通する・紙面からはみ出す」を、
-   * 保持中の全時刻について機械的に否定する (docs/006 §7 の包含を開姿勢へ拡張)。
+   * 目視では見落としやすい「部品が本を貫通する・紙面からはみ出す」を、
+   * 保持中の全時刻について機械的に否定する。
    */
   it.each(catalog.samples)('$id keeps every part on the paper for the whole hold', ({ id }) => {
     const report = analyzeBookContainment(load(id).book)
@@ -79,13 +79,13 @@ describe('public samples', () => {
     const project = load(id)
     const bytes = project.assets.reduce((total, asset) => total + (asset.bytes ?? 0), 0)
     expect(bytes).toBeLessThan(12 * 1024 * 1024)
-    // 絵は全WebP。音声だけが別形式で、1本ずつ3MBに収まる (docs/008 §6.3)
+    // 絵は全WebP。音声だけが別形式で、1本ずつ3MBに収まる
     expect(project.assets.every((asset) => asset.type === 'image'
       ? asset.mime === 'image/webp' && asset.id.endsWith('.webp')
       : asset.type === 'audio' && (asset.bytes ?? 0) <= 3 * 1024 * 1024)).toBe(true)
   })
 
-  /** BGMは作品に一つ、効果音は見開きの送り際に鳴るページめくり音 (docs/008 §6, §7) */
+  /** BGMは作品に一つ、効果音は見開きの送り際に鳴るページめくり音 */
   it.each(catalog.samples)('$id plays music and a page turn sound', ({ id }) => {
     const project = load(id)
     const audio = project.assets.filter((asset) => asset.type === 'audio')
@@ -108,7 +108,7 @@ describe('public samples', () => {
     })
 
     // 頭から通しで再生すると、送りの数だけ順に鳴る。置いただけでは足りず、
-    // 保持区間の中にあって連続再生で跨げる位置でないと鳴らない (docs/008 §7.2)
+    // 保持区間の中にあって連続再生で跨げる位置でないと鳴らない
     const steps = 4000
     const fired: string[] = []
     for (let step = 1; step <= steps; step++) {
@@ -142,7 +142,7 @@ describe('public samples', () => {
     expect(bookProjectSchema.safeParse(project).success).toBe(true)
   })
 
-  /** 効果音は音声トラックの点。値は場所取りなので true で固定する (docs/008 §6.1) */
+  /** 効果音は音声トラックの点。値は場所取りなので true で固定する */
   it('accepts sound cue tracks and rejects cues outside a sound track', () => {
     const project = raw('forest_lantern') as {
       assets: Array<Record<string, unknown>>
@@ -172,12 +172,8 @@ describe('public samples', () => {
     expect(result.warnings).toContain('long: audio exceeds 3MB (4.0MB)')
   })
 
-  /**
-   * 紙面の領域を押して鳴らす部品は、効果音をタイムラインの点として置く
-   * モデル (docs/008 §6) と別物なので消した。作れる経路が無かったため、
-   * この形のデータはどこにも無い
-   */
-  it('does not accept the removed sound trigger element', () => {
+  /** 効果音はタイムラインの点だけで表し、紙面を押して鳴らす部品は受け付けない */
+  it('does not accept a sound trigger element', () => {
     const project = raw('forest_lantern') as {
       book: { spreads: Array<{ elements: Array<Record<string, unknown>> }> }
     }
@@ -220,7 +216,7 @@ describe('public samples', () => {
     expect(validateBookProject(project).errors.some((error) => error.includes('exceeds the page width'))).toBe(true)
   })
 
-  // --- docs/007 §16 仮素材版5作品の実装要件 --------------------------------
+  // --- 公開サンプル3作品の実装要件 ------------------------------------------
 
   it('forest_lantern raises trees with the spread, drifts a light mote, and lights homes in order', () => {
     const project = load('forest_lantern')

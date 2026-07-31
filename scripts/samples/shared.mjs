@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 
 /**
- * 公開サンプルの共通制作基盤 (docs/007 §10)。
+ * 公開サンプルの共通制作基盤。
  *
  * ここが提供するのは「紙工作の語彙」である。制作者は世界座標ではなく、
  * どちらの紙面の・どのあたりに・どの支持機構で立てるかを書く。
@@ -156,7 +156,7 @@ export function defineWork(meta) {
     return file
   }
 
-  /** 作品に一つのBGM。冒頭からループする (docs/008 §7.1)。音量は編集UIの既定と揃える */
+  /** 作品に一つのBGM。冒頭からループする。音量は編集UIの既定と揃える */
   const bgm = (file) => {
     projectAudio = { bgmAsset: sound(file), volume: 0.7, loop: true }
   }
@@ -468,7 +468,7 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
   }
 
   /**
-   * 効果音の点 (docs/008 §6.1)。時刻だけを持ち、値は場所取りなので true で固定する。
+   * 効果音の点。時刻だけを持ち、値は場所取りなので true で固定する。
    * 保持区間の外へ置いた点はその端で鳴るが、意図せず端へ寄るのは事故なので弾く。
    */
   const cue = (assetId, times) => {

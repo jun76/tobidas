@@ -30,8 +30,8 @@ const castsShadow = (opacity: number): boolean => opacity > 0.01
  * 共面の2枚は傾きが同一なので定数項だけで足りる。
  *
  * **これを紙面との前後の拠り所にしてはいけない**。polygonOffset は実装依存で
- * 丸ごと無視されることがある (headless Chromium の WebKit WebGL では -5000 単位を
- * 与えても寝た部品が紙へ埋もれたまま動かなかった)。寝かせた部品を紙面より前に
+ * 丸ごと無視されることがある。headless Chromium の WebKit WebGL では -5000 単位を
+ * 与えても寝た部品が紙へ埋もれたまま動かない。寝かせた部品を紙面より前に
  * 置いているのは `stow/evaluate.ts` の SURFACE_Y のリフトで、こちらは幾何なので
  * どの実装でも効く。ここは同じ場所に重ねた板どうしの取り合いを均すだけの補助で、
  * 層の順そのものは下の `renderOrder` (100 + layer) が持っている。
@@ -100,7 +100,7 @@ function buildSparkleGeometry(seed: string, spread: number): THREE.BufferGeometr
  * 自前のシェーダなので、深度の書き方も自分で three に合わせる責任がある。
  *
  * 今は対数深度バッファを使っていない (view.ts の VIEW_GL) ので、以下のチャンクは
- * `#ifdef` で消える。将来また誰かが有効にしたときに粒だけ壊れないよう残してある。
+ * `#ifdef` で消える。将来有効にしたときに粒だけ壊れないよう残してある。
  *
  * `logarithmicDepthBuffer` を有効にすると、three の組み込み材質は
  * 深度を対数で書くよう `logdepthbuf` チャンクを差し込まれる。ここが線形のまま放っておくと

@@ -208,7 +208,7 @@ describe('AudioBank', () => {
   } as Asset
 
   /**
-   * 再生が止まっている間は効果音を鳴らさない (docs/008 §7.2)。
+   * 再生が止まっている間は効果音を鳴らさない。
    * 試し聞きは編集の操作なので、こちらには従わせない。
    */
   it('does not fire cues while muted, and lets previews through', async () => {

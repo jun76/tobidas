@@ -96,7 +96,7 @@ export function build(updatedAt) {
   )), { opaque: true })
 
   /**
-   * ref/assets_alt から取り込んだ部品 (scripts/adopt-alt-asset.mjs)。
+   * scripts/adopt-alt-asset.mjs で取り込んだ部品。
    * 下書きは占める寸法の宣言だけを担い、絵は同名の生成済みWebPが持つ。
    */
   const adopted = (id, width, height) => art(id, svg(width, height,
@@ -394,7 +394,7 @@ export function build(updatedAt) {
   const curtainArt = curtain('curtain.svg')
   const satchelArt = satchel('satchel.svg')
 
-  // ref/assets_alt から取り込んだ街の部品。紙面へ描かずに立てるためのもの
+  // 取り込んだ街の部品。紙面へ描かずに立てるためのもの
   const postboxArt = adopted('postbox.svg', 106, 200)
   const vendingArt = adopted('vending-machine.svg', 198, 304)
   const signalArt = adopted('traffic-signal.svg', 135, 513)

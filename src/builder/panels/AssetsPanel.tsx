@@ -38,7 +38,7 @@ export function AssetsPanel() {
     setReplacing(null)
   }
   /**
-   * 選択中のプリセットが、掴めるものだけを残す (docs/008 §4.3)。
+   * 選択中のプリセットが、掴めるものだけを残す。
    * 掴んでも落とせないものが並んでいると、置けない理由が操作から読めない。
    */
   const kind = assetKindForMode(store.placement)

@@ -1,5 +1,5 @@
 /**
- * Content Clock (docs/005 §8.2)。
+ * Content Clock。
  * 住人の経過時間はReactコンポーネントの外で要素キーごとに保持し、
  * Visibility Gateによるmountとunmountを跨いで継続する。
  */

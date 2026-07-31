@@ -119,7 +119,7 @@ export function build(updatedAt) {
   const { art } = work
 
   /**
-   * ref/assets_alt から取り込んだ季節の小物 (scripts/adopt-alt-asset.mjs)。
+   * scripts/adopt-alt-asset.mjs で取り込んだ季節の小物。
    * 下書きは占める寸法の宣言だけを担い、絵は同名の生成済みWebPが持つ。
    */
   const adopted = (id, width, height) => art(id, svg(width, height,

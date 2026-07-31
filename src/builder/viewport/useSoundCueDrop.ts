@@ -5,7 +5,7 @@ import { assetKindForMode } from '../presets'
 import { useBuilderStore } from '../store'
 
 /**
- * 効果音の投入 (docs/008 §5.2)。
+ * 効果音の投入。
  *
  * 受け口はビューポートとタイムラインパネルの全域で、どこへ落としても結果は
  * 変わらない。キューの時刻は落とした位置ではなく**スクラブの現在位置**にする。
