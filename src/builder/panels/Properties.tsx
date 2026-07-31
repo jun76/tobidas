@@ -52,6 +52,12 @@ export function BookProperties() {
     <Color label={t.properties.background} value={book.appearance.background}
       onChange={(value) => store.commit((project) => { project.book.appearance.background = value })}
       onKey={() => environmentKey('background', book.appearance.background)} />
+    <Asset label={t.properties.backgroundImage} value={book.appearance.backgroundAsset}
+      onChange={(value) => store.commit((project) => { project.book.appearance.backgroundAsset = value || undefined })} />
+    <Color label={t.properties.coverColor} value={book.appearance.coverColor ?? '#4f392c'}
+      onChange={(value) => store.commit((project) => { project.book.appearance.coverColor = value })} />
+    <Color label={t.properties.coverEdgeColor} value={book.appearance.coverEdgeColor ?? '#2d2019'}
+      onChange={(value) => store.commit((project) => { project.book.appearance.coverEdgeColor = value })} />
     <BookAudio />
     <div className={st.subsectionTitle}>{t.properties.camera}<OverlayEye hiddenId={hiddenKey.camera} label={t.properties.cameraFrustum} /></div>
     <Vec3 label={t.properties.position} value={book.camera.position} onChange={(value) => store.commit((project) => { project.book.camera.position = value })} />

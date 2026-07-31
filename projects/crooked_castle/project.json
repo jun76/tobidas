@@ -1,0 +1,5554 @@
+{
+  "id": "crooked_castle",
+  "name": "The Crooked Castle",
+  "book": {
+    "sequence": {
+      "coverOpenSeconds": 1.8
+    },
+    "format": {
+      "pageAspect": 1.25,
+      "pageWidth": 8,
+      "coverThickness": 0.18,
+      "pageThickness": 0.015,
+      "gutter": 0.08,
+      "binding": "left"
+    },
+    "appearance": {
+      "paperColor": "#eadfbe",
+      "edgeColor": "#4d5b46",
+      "roughness": 0.92,
+      "background": "#241321",
+      "backgroundAsset": "sky.webp",
+      "coverColor": "#1d6540",
+      "coverEdgeColor": "#0c3d27",
+      "shadowOpacity": 0
+    },
+    "camera": {
+      "position": [
+        -2.83,
+        -2.05,
+        11.352
+      ],
+      "target": [
+        0,
+        1.5,
+        -0.4
+      ],
+      "fov": 52
+    },
+    "lights": {
+      "ambient": {
+        "color": "#7885a8",
+        "intensity": 1.05
+      },
+      "directional": {
+        "color": "#ffe0a5",
+        "intensity": 1.65,
+        "position": [
+          -4,
+          10,
+          5
+        ]
+      }
+    },
+    "frontCover": {
+      "frontAsset": "cover.webp",
+      "backAsset": "sky.webp"
+    },
+    "spreads": [
+      {
+        "id": "spread-1",
+        "name": "The Crooked Castle",
+        "leftPage": {
+          "backgroundAsset": "page-left.webp",
+          "paperColor": "#eadfbe"
+        },
+        "rightPage": {
+          "backgroundAsset": "page-right.webp",
+          "paperColor": "#eadfbe"
+        },
+        "elements": [
+          {
+            "id": "ridge-left",
+            "name": "左ページの岩盤",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0.014,
+                0.4
+              ],
+              "rotation": [
+                -90,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 0,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "paper-stack",
+            "stow": {
+              "mechanism": "page-glue",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "ridge.webp",
+            "width": 8.6,
+            "height": 4.2,
+            "billboard": false
+          },
+          {
+            "id": "ridge-right",
+            "name": "右ページの岩盤",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0.014,
+                0.4
+              ],
+              "rotation": [
+                -90,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 0,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "paper-stack",
+            "stow": {
+              "mechanism": "page-glue",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "ridge.webp",
+            "width": 8.6,
+            "height": 4.2,
+            "billboard": false
+          },
+          {
+            "id": "forest-left-in",
+            "name": "左奥の枯れ森 (のど側)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.991,
+                0.025,
+                -3
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 1,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.028
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "forest.webp",
+            "width": 3.682,
+            "height": 1.752,
+            "billboard": false
+          },
+          {
+            "id": "forest-left-out",
+            "name": "左奥の枯れ森 (小口側)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.808,
+                0.025,
+                -3
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 2,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.056
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "forest.webp",
+            "width": 3.392,
+            "height": 1.614,
+            "billboard": false
+          },
+          {
+            "id": "forest-right-in",
+            "name": "右奥の枯れ森 (のど側)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.009,
+                0.025,
+                -3
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 3,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.084
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "forest.webp",
+            "width": 3.682,
+            "height": 1.752,
+            "billboard": false
+          },
+          {
+            "id": "forest-right-out",
+            "name": "右奥の枯れ森 (小口側)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.792,
+                0.025,
+                -3
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 4,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.112
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "forest.webp",
+            "width": 3.392,
+            "height": 1.614,
+            "billboard": false
+          },
+          {
+            "id": "back-left-1",
+            "name": "左奥の塔 1",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.953,
+                0.025,
+                -2.95
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 5,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.14
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerCrooked.webp",
+            "width": 1.282,
+            "height": 8.268,
+            "billboard": false
+          },
+          {
+            "id": "back-left-2",
+            "name": "左奥の塔 2",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.852,
+                0.025,
+                -2.72
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 6,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.168
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerBalcony.webp",
+            "width": 2.372,
+            "height": 6.948,
+            "billboard": false
+          },
+          {
+            "id": "back-left-3",
+            "name": "左奥の塔 3",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                0.648,
+                0.025,
+                -3
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 7,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.196
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerCrooked.webp",
+            "width": 1.434,
+            "height": 9.253,
+            "billboard": false
+          },
+          {
+            "id": "back-left-4",
+            "name": "左奥の塔 4",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.45,
+                0.025,
+                -2.7
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.224
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "witch.webp",
+            "width": 2.315,
+            "height": 7.455,
+            "billboard": false
+          },
+          {
+            "id": "back-left-5",
+            "name": "左奥の塔 5",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.598,
+                0.025,
+                -2.98
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 9,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.252
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerBalcony.webp",
+            "width": 2.834,
+            "height": 8.299,
+            "billboard": false
+          },
+          {
+            "id": "back-left-6",
+            "name": "左奥の塔 6",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.838,
+                0.025,
+                -2.75
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 10,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.28
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerCrooked.webp",
+            "width": 1.053,
+            "height": 6.792,
+            "billboard": false
+          },
+          {
+            "id": "mid-left-1",
+            "name": "左中景の塔 1",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.45,
+                0.025,
+                -1.15
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 11,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.308
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "round.webp",
+            "width": 2.99,
+            "height": 3.026,
+            "billboard": false
+          },
+          {
+            "id": "mid-left-2",
+            "name": "左中景の塔 2",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.2,
+                0.025,
+                -0.9
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 12,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.336
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "keep.webp",
+            "width": 2.295,
+            "height": 3.237,
+            "billboard": false
+          },
+          {
+            "id": "mid-left-3",
+            "name": "左中景の塔 3",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.031,
+                0.025,
+                -1.2
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 13,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.364
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerCrooked.webp",
+            "width": 0.854,
+            "height": 5.512,
+            "billboard": false
+          },
+          {
+            "id": "mid-left-4",
+            "name": "左中景の塔 4",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.2,
+                0.025,
+                -0.85
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 14,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.392
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "witch.webp",
+            "width": 1.523,
+            "height": 4.904,
+            "billboard": false
+          },
+          {
+            "id": "mid-left-5",
+            "name": "左中景の塔 5",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.5,
+                0.025,
+                -1.1
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 15,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.42
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "round.webp",
+            "width": 2.709,
+            "height": 2.742,
+            "billboard": false
+          },
+          {
+            "id": "near-left-1",
+            "name": "左手前の建物 1",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.7,
+                0.025,
+                0.95
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 16,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.448
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "gate.webp",
+            "width": 1.997,
+            "height": 1.764,
+            "billboard": false
+          },
+          {
+            "id": "near-left-2",
+            "name": "左手前の建物 2",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.4,
+                0.025,
+                1.2
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 17,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.47600000000000003
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "round.webp",
+            "width": 1.448,
+            "height": 1.466,
+            "billboard": false
+          },
+          {
+            "id": "near-left-3",
+            "name": "左手前の建物 3",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                0.101,
+                0.025,
+                0.9
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 18,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.504
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerBalcony.webp",
+            "width": 0.857,
+            "height": 2.509,
+            "billboard": false
+          },
+          {
+            "id": "near-left-4",
+            "name": "左手前の建物 4",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.1,
+                0.025,
+                1.25
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 19,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.532
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "keep.webp",
+            "width": 1.043,
+            "height": 1.471,
+            "billboard": false
+          },
+          {
+            "id": "near-left-5",
+            "name": "左手前の建物 5",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.413,
+                0.025,
+                1
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 20,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.56
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerCrooked.webp",
+            "width": 0.366,
+            "height": 2.362,
+            "billboard": false
+          },
+          {
+            "id": "back-right-1",
+            "name": "右奥の塔 1",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -3.298,
+                0.025,
+                -3.1100000000000003
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 21,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.588
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerBalcony.webp",
+            "width": 2.491,
+            "height": 7.295,
+            "billboard": false
+          },
+          {
+            "id": "back-right-2",
+            "name": "右奥の塔 2",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.3,
+                0.025,
+                -2.54
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 22,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.616
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "witch.webp",
+            "width": 2.455,
+            "height": 7.906,
+            "billboard": false
+          },
+          {
+            "id": "back-right-3",
+            "name": "右奥の塔 3",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.198,
+                0.025,
+                -3.16
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 23,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerCrooked.webp",
+            "width": 1.32,
+            "height": 8.514,
+            "billboard": false
+          },
+          {
+            "id": "back-right-4",
+            "name": "右奥の塔 4",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.048,
+                0.025,
+                -2.52
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 24,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerCrooked.webp",
+            "width": 1.321,
+            "height": 8.524,
+            "billboard": false
+          },
+          {
+            "id": "back-right-5",
+            "name": "右奥の塔 5",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.152,
+                0.025,
+                -3.14
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 25,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerBalcony.webp",
+            "width": 2.692,
+            "height": 7.884,
+            "billboard": false
+          },
+          {
+            "id": "back-right-6",
+            "name": "右奥の塔 6",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.35,
+                0.025,
+                -2.57
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 26,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "witch.webp",
+            "width": 2.227,
+            "height": 7.17,
+            "billboard": false
+          },
+          {
+            "id": "mid-right-1",
+            "name": "右中景の塔 1",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.9,
+                0.025,
+                -1.3099999999999998
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 27,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "round.webp",
+            "width": 2.69,
+            "height": 2.723,
+            "billboard": false
+          },
+          {
+            "id": "mid-right-2",
+            "name": "右中景の塔 2",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.65,
+                0.025,
+                -0.72
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 28,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "keep.webp",
+            "width": 2.295,
+            "height": 3.237,
+            "billboard": false
+          },
+          {
+            "id": "mid-right-3",
+            "name": "右中景の塔 3",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.45,
+                0.025,
+                -1.3599999999999999
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 29,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "witch.webp",
+            "width": 1.569,
+            "height": 5.051,
+            "billboard": false
+          },
+          {
+            "id": "mid-right-4",
+            "name": "右中景の塔 4",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                0.718,
+                0.025,
+                -0.6699999999999999
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 30,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerCrooked.webp",
+            "width": 0.87,
+            "height": 5.611,
+            "billboard": false
+          },
+          {
+            "id": "mid-right-5",
+            "name": "右中景の塔 5",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.05,
+                0.025,
+                -1.26
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 31,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "keep.webp",
+            "width": 1.919,
+            "height": 2.707,
+            "billboard": false
+          },
+          {
+            "id": "near-right-1",
+            "name": "右手前の建物 1",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -3.15,
+                0.025,
+                0.7899999999999999
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 32,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "round.webp",
+            "width": 1.56,
+            "height": 1.579,
+            "billboard": false
+          },
+          {
+            "id": "near-right-2",
+            "name": "右手前の建物 2",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.85,
+                0.025,
+                1.38
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 33,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "gate.webp",
+            "width": 1.673,
+            "height": 1.478,
+            "billboard": false
+          },
+          {
+            "id": "near-right-3",
+            "name": "右手前の建物 3",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.563,
+                0.025,
+                0.74
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 34,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerCrooked.webp",
+            "width": 0.365,
+            "height": 2.353,
+            "billboard": false
+          },
+          {
+            "id": "near-right-4",
+            "name": "右手前の建物 4",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                0.65,
+                0.025,
+                1.43
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 35,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "keep.webp",
+            "width": 1.043,
+            "height": 1.471,
+            "billboard": false
+          },
+          {
+            "id": "near-right-5",
+            "name": "右手前の建物 5",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.951,
+                0.025,
+                0.84
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 36,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerBalcony.webp",
+            "width": 0.751,
+            "height": 2.2,
+            "billboard": false
+          },
+          {
+            "id": "central-twin",
+            "name": "中央の青い双塔",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0,
+                -1.85
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 60,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "spine-arch",
+            "stow": {
+              "mechanism": "v-fold",
+              "fallDirection": "front",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "scale",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.4,
+                    "value": 0.16,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.62,
+                    "value": -0.07,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.8,
+                    "value": 0.03,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "towerTwin.webp",
+            "width": 4.044,
+            "height": 5.779,
+            "billboard": false
+          },
+          {
+            "id": "wall-left",
+            "name": "左手前の崩れた城壁",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.8,
+                0.025,
+                2.15
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 62,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "wall.webp",
+            "width": 3.131,
+            "height": 1.371,
+            "billboard": false
+          },
+          {
+            "id": "fence-left",
+            "name": "左の鉄柵",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.568,
+                0.025,
+                2.35
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 63,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "fence.webp",
+            "width": 1.65,
+            "height": 1.321,
+            "billboard": false
+          },
+          {
+            "id": "wall-right",
+            "name": "右手前の崩れた城壁",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.8,
+                0.025,
+                2.15
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 64,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "wall.webp",
+            "width": 3.131,
+            "height": 1.371,
+            "billboard": false
+          },
+          {
+            "id": "fence-right",
+            "name": "右の鉄柵",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                0.632,
+                0.025,
+                2.35
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 65,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "fence.webp",
+            "width": 1.65,
+            "height": 1.321,
+            "billboard": false
+          },
+          {
+            "id": "front-left-1",
+            "name": "左の枯れ木",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.886,
+                0.025,
+                2.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 66,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "tree.webp",
+            "width": 1.443,
+            "height": 1.888,
+            "billboard": false
+          },
+          {
+            "id": "front-left-2",
+            "name": "左の石の十字架",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.7,
+                0.025,
+                2.85
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 67,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "cross.webp",
+            "width": 0.687,
+            "height": 1.13,
+            "billboard": false
+          },
+          {
+            "id": "front-left-3",
+            "name": "左の二つの墓石",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                0.4,
+                0.025,
+                2.95
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 68,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "tombPair.webp",
+            "width": 0.814,
+            "height": 0.905,
+            "billboard": false
+          },
+          {
+            "id": "front-left-4",
+            "name": "左の古いランタン",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                1,
+                0.025,
+                2.6
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 69,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "lantern.webp",
+            "width": 0.459,
+            "height": 1.271,
+            "billboard": false
+          },
+          {
+            "id": "front-left-5",
+            "name": "左の尖った墓石",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.5,
+                0.025,
+                2.9
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 70,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "tombPoint.webp",
+            "width": 0.409,
+            "height": 1.086,
+            "billboard": false
+          },
+          {
+            "id": "front-left-6",
+            "name": "左の頭蓋骨の山",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                3.28,
+                0.025,
+                2.7
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 71,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": -3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": 1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": -0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "skulls.webp",
+            "width": 1,
+            "height": 0.718,
+            "billboard": false
+          },
+          {
+            "id": "front-right-1",
+            "name": "右の枯れ木",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.914,
+                0.025,
+                2.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 72,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "tree.webp",
+            "width": 1.443,
+            "height": 1.888,
+            "billboard": false
+          },
+          {
+            "id": "front-right-2",
+            "name": "右の石の十字架",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.7,
+                0.025,
+                2.85
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 73,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "cross.webp",
+            "width": 0.687,
+            "height": 1.13,
+            "billboard": false
+          },
+          {
+            "id": "front-right-3",
+            "name": "右の二つの墓石",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.4,
+                0.025,
+                2.95
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 74,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "tombPair.webp",
+            "width": 0.814,
+            "height": 0.905,
+            "billboard": false
+          },
+          {
+            "id": "front-right-4",
+            "name": "右の古いランタン",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1,
+                0.025,
+                2.6
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 75,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "lantern.webp",
+            "width": 0.459,
+            "height": 1.271,
+            "billboard": false
+          },
+          {
+            "id": "front-right-5",
+            "name": "右の尖った墓石",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.5,
+                0.025,
+                2.9
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 76,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "tombPoint.webp",
+            "width": 0.409,
+            "height": 1.086,
+            "billboard": false
+          },
+          {
+            "id": "front-right-6",
+            "name": "右の頭蓋骨の山",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -3.32,
+                0.025,
+                2.7
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 77,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0.62
+            },
+            "stowFlourish": [
+              {
+                "property": "rotation.z",
+                "keys": [
+                  {
+                    "t": 0,
+                    "value": 0,
+                    "ease": "linear"
+                  },
+                  {
+                    "t": 0.42,
+                    "value": 3.2,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.65,
+                    "value": -1.4,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 0.82,
+                    "value": 0.6,
+                    "ease": "easeInOut"
+                  },
+                  {
+                    "t": 1,
+                    "value": 0,
+                    "ease": "easeInOut"
+                  }
+                ]
+              }
+            ],
+            "type": "image",
+            "asset": "skulls.webp",
+            "width": 1,
+            "height": 0.718,
+            "billboard": false
+          },
+          {
+            "id": "bat-swarm",
+            "name": "塔を横切るコウモリ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                0.5,
+                5.3,
+                2.2
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 78,
+            "motion": [
+              {
+                "type": "bob",
+                "amplitude": 0.08,
+                "period": 3.4,
+                "phase": 0.7
+              }
+            ],
+            "clock": "visible-elapsed",
+            "sourcePreset": "floating-character",
+            "stow": {
+              "mechanism": "strut",
+              "fallDirection": "auto",
+              "stagger": 0.62
+            },
+            "type": "image",
+            "asset": "bats.webp",
+            "width": 3.9,
+            "height": 1.92,
+            "billboard": true
+          }
+        ],
+        "sequence": {
+          "holdSeconds": 8,
+          "turnSeconds": 1.7
+        },
+        "timeline": {
+          "tracks": [
+            {
+              "id": "back-left-1-spring",
+              "target": {
+                "type": "element",
+                "elementId": "back-left-1"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "back-left-1-spring-0",
+                  "time": 0.02,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-1-spring-1",
+                  "time": 0.28,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-1-spring-2",
+                  "time": 0.45,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-1-spring-3",
+                  "time": 0.6,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-1-spring-4",
+                  "time": 0.74,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "back-left-2-spring",
+              "target": {
+                "type": "element",
+                "elementId": "back-left-2"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "back-left-2-spring-0",
+                  "time": 0.04,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-2-spring-1",
+                  "time": 0.3,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-2-spring-2",
+                  "time": 0.47,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-2-spring-3",
+                  "time": 0.62,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-2-spring-4",
+                  "time": 0.76,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "back-left-3-spring",
+              "target": {
+                "type": "element",
+                "elementId": "back-left-3"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "back-left-3-spring-0",
+                  "time": 0.06,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-3-spring-1",
+                  "time": 0.32,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-3-spring-2",
+                  "time": 0.49,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-3-spring-3",
+                  "time": 0.6399999999999999,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-3-spring-4",
+                  "time": 0.78,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "back-left-4-spring",
+              "target": {
+                "type": "element",
+                "elementId": "back-left-4"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "back-left-4-spring-0",
+                  "time": 0.08,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-4-spring-1",
+                  "time": 0.34,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-4-spring-2",
+                  "time": 0.51,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-4-spring-3",
+                  "time": 0.6599999999999999,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-4-spring-4",
+                  "time": 0.7999999999999999,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "back-left-5-spring",
+              "target": {
+                "type": "element",
+                "elementId": "back-left-5"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "back-left-5-spring-0",
+                  "time": 0.1,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-5-spring-1",
+                  "time": 0.36,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-5-spring-2",
+                  "time": 0.53,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-5-spring-3",
+                  "time": 0.6799999999999999,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-5-spring-4",
+                  "time": 0.82,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "back-left-6-spring",
+              "target": {
+                "type": "element",
+                "elementId": "back-left-6"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "back-left-6-spring-0",
+                  "time": 0.12000000000000001,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-6-spring-1",
+                  "time": 0.38,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-6-spring-2",
+                  "time": 0.55,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-6-spring-3",
+                  "time": 0.7,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-left-6-spring-4",
+                  "time": 0.84,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "mid-left-1-spring",
+              "target": {
+                "type": "element",
+                "elementId": "mid-left-1"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "mid-left-1-spring-0",
+                  "time": 0.1,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-1-spring-1",
+                  "time": 0.36,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-1-spring-2",
+                  "time": 0.53,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-1-spring-3",
+                  "time": 0.6799999999999999,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-1-spring-4",
+                  "time": 0.82,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "mid-left-2-spring",
+              "target": {
+                "type": "element",
+                "elementId": "mid-left-2"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "mid-left-2-spring-0",
+                  "time": 0.12000000000000001,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-2-spring-1",
+                  "time": 0.38,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-2-spring-2",
+                  "time": 0.55,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-2-spring-3",
+                  "time": 0.7,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-2-spring-4",
+                  "time": 0.84,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "mid-left-3-spring",
+              "target": {
+                "type": "element",
+                "elementId": "mid-left-3"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "mid-left-3-spring-0",
+                  "time": 0.14,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-3-spring-1",
+                  "time": 0.4,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-3-spring-2",
+                  "time": 0.5700000000000001,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-3-spring-3",
+                  "time": 0.72,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-3-spring-4",
+                  "time": 0.86,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "mid-left-4-spring",
+              "target": {
+                "type": "element",
+                "elementId": "mid-left-4"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "mid-left-4-spring-0",
+                  "time": 0.16,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-4-spring-1",
+                  "time": 0.42000000000000004,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-4-spring-2",
+                  "time": 0.59,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-4-spring-3",
+                  "time": 0.74,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-4-spring-4",
+                  "time": 0.88,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "mid-left-5-spring",
+              "target": {
+                "type": "element",
+                "elementId": "mid-left-5"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "mid-left-5-spring-0",
+                  "time": 0.18,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-5-spring-1",
+                  "time": 0.44,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-5-spring-2",
+                  "time": 0.61,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-5-spring-3",
+                  "time": 0.76,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-left-5-spring-4",
+                  "time": 0.8999999999999999,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "back-right-1-spring",
+              "target": {
+                "type": "element",
+                "elementId": "back-right-1"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "back-right-1-spring-0",
+                  "time": 0.02,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-1-spring-1",
+                  "time": 0.28,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-1-spring-2",
+                  "time": 0.45,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-1-spring-3",
+                  "time": 0.6,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-1-spring-4",
+                  "time": 0.74,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "back-right-2-spring",
+              "target": {
+                "type": "element",
+                "elementId": "back-right-2"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "back-right-2-spring-0",
+                  "time": 0.04,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-2-spring-1",
+                  "time": 0.3,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-2-spring-2",
+                  "time": 0.47,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-2-spring-3",
+                  "time": 0.62,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-2-spring-4",
+                  "time": 0.76,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "back-right-3-spring",
+              "target": {
+                "type": "element",
+                "elementId": "back-right-3"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "back-right-3-spring-0",
+                  "time": 0.06,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-3-spring-1",
+                  "time": 0.32,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-3-spring-2",
+                  "time": 0.49,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-3-spring-3",
+                  "time": 0.6399999999999999,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-3-spring-4",
+                  "time": 0.78,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "back-right-4-spring",
+              "target": {
+                "type": "element",
+                "elementId": "back-right-4"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "back-right-4-spring-0",
+                  "time": 0.08,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-4-spring-1",
+                  "time": 0.34,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-4-spring-2",
+                  "time": 0.51,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-4-spring-3",
+                  "time": 0.6599999999999999,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-4-spring-4",
+                  "time": 0.7999999999999999,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "back-right-5-spring",
+              "target": {
+                "type": "element",
+                "elementId": "back-right-5"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "back-right-5-spring-0",
+                  "time": 0.1,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-5-spring-1",
+                  "time": 0.36,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-5-spring-2",
+                  "time": 0.53,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-5-spring-3",
+                  "time": 0.6799999999999999,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-5-spring-4",
+                  "time": 0.82,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "back-right-6-spring",
+              "target": {
+                "type": "element",
+                "elementId": "back-right-6"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "back-right-6-spring-0",
+                  "time": 0.12000000000000001,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-6-spring-1",
+                  "time": 0.38,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-6-spring-2",
+                  "time": 0.55,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-6-spring-3",
+                  "time": 0.7,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "back-right-6-spring-4",
+                  "time": 0.84,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "mid-right-1-spring",
+              "target": {
+                "type": "element",
+                "elementId": "mid-right-1"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "mid-right-1-spring-0",
+                  "time": 0.1,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-1-spring-1",
+                  "time": 0.36,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-1-spring-2",
+                  "time": 0.53,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-1-spring-3",
+                  "time": 0.6799999999999999,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-1-spring-4",
+                  "time": 0.82,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "mid-right-2-spring",
+              "target": {
+                "type": "element",
+                "elementId": "mid-right-2"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "mid-right-2-spring-0",
+                  "time": 0.12000000000000001,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-2-spring-1",
+                  "time": 0.38,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-2-spring-2",
+                  "time": 0.55,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-2-spring-3",
+                  "time": 0.7,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-2-spring-4",
+                  "time": 0.84,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "mid-right-3-spring",
+              "target": {
+                "type": "element",
+                "elementId": "mid-right-3"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "mid-right-3-spring-0",
+                  "time": 0.14,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-3-spring-1",
+                  "time": 0.4,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-3-spring-2",
+                  "time": 0.5700000000000001,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-3-spring-3",
+                  "time": 0.72,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-3-spring-4",
+                  "time": 0.86,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "mid-right-4-spring",
+              "target": {
+                "type": "element",
+                "elementId": "mid-right-4"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "mid-right-4-spring-0",
+                  "time": 0.16,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-4-spring-1",
+                  "time": 0.42000000000000004,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-4-spring-2",
+                  "time": 0.59,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-4-spring-3",
+                  "time": 0.74,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-4-spring-4",
+                  "time": 0.88,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "mid-right-5-spring",
+              "target": {
+                "type": "element",
+                "elementId": "mid-right-5"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "mid-right-5-spring-0",
+                  "time": 0.18,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-5-spring-1",
+                  "time": 0.44,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-5-spring-2",
+                  "time": 0.61,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-5-spring-3",
+                  "time": 0.76,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "mid-right-5-spring-4",
+                  "time": 0.8999999999999999,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "central-twin-spring",
+              "target": {
+                "type": "element",
+                "elementId": "central-twin"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "central-twin-spring-0",
+                  "time": 0.04,
+                  "value": 0.22,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "central-twin-spring-1",
+                  "time": 0.3,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "central-twin-spring-2",
+                  "time": 0.47,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "central-twin-spring-3",
+                  "time": 0.62,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "central-twin-spring-4",
+                  "time": 0.76,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "bat-swarm-fade",
+              "target": {
+                "type": "element",
+                "elementId": "bat-swarm"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "bat-swarm-fade-0",
+                  "time": 0,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "bat-swarm-fade-1",
+                  "time": 0.9,
+                  "value": 1,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "bat-swarm-fade-2",
+                  "time": 7.1,
+                  "value": 1,
+                  "ease": "linear"
+                },
+                {
+                  "id": "bat-swarm-fade-3",
+                  "time": 7.8,
+                  "value": 0,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "camera-position",
+              "target": {
+                "type": "camera"
+              },
+              "property": "position",
+              "keys": [
+                {
+                  "id": "camera-position-0",
+                  "time": 0,
+                  "value": [
+                    -2.508,
+                    -1.9,
+                    10.864
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "camera-position-1",
+                  "time": 1.3,
+                  "value": [
+                    -1.675,
+                    -1.25,
+                    10.011
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "camera-position-2",
+                  "time": 3.7,
+                  "value": [
+                    -0.518,
+                    -1.15,
+                    9.886
+                  ],
+                  "ease": "linear"
+                },
+                {
+                  "id": "camera-position-3",
+                  "time": 6,
+                  "value": [
+                    0.889,
+                    -1.02,
+                    10.161
+                  ],
+                  "ease": "linear"
+                },
+                {
+                  "id": "camera-position-4",
+                  "time": 8,
+                  "value": [
+                    2.283,
+                    -0.85,
+                    10.3
+                  ],
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "camera-target",
+              "target": {
+                "type": "camera"
+              },
+              "property": "target",
+              "keys": [
+                {
+                  "id": "camera-target-0",
+                  "time": 0,
+                  "value": [
+                    0.3,
+                    1.95,
+                    -0.8
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "camera-target-1",
+                  "time": 1.3,
+                  "value": [
+                    0.2,
+                    3.95,
+                    -1.2
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "camera-target-2",
+                  "time": 3.7,
+                  "value": [
+                    0.05,
+                    4.02,
+                    -1.2
+                  ],
+                  "ease": "linear"
+                },
+                {
+                  "id": "camera-target-3",
+                  "time": 6,
+                  "value": [
+                    -0.15,
+                    4.08,
+                    -1.2
+                  ],
+                  "ease": "linear"
+                },
+                {
+                  "id": "camera-target-4",
+                  "time": 8,
+                  "value": [
+                    -0.3,
+                    4.12,
+                    -1.2
+                  ],
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "camera-fov",
+              "target": {
+                "type": "camera"
+              },
+              "property": "fov",
+              "keys": [
+                {
+                  "id": "camera-fov-0",
+                  "time": 0,
+                  "value": 52,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "camera-fov-1",
+                  "time": 1.3,
+                  "value": 55,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "camera-fov-2",
+                  "time": 8,
+                  "value": 54,
+                  "ease": "linear"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "backCover": {
+      "frontAsset": "sky.webp",
+      "backAsset": "cover.webp"
+    }
+  },
+  "assets": [
+    {
+      "id": "sky.webp",
+      "name": "sky",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 395714
+    },
+    {
+      "id": "round.webp",
+      "name": "round",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 412,
+      "height": 417,
+      "bytes": 61482
+    },
+    {
+      "id": "keep.webp",
+      "name": "keep",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 436,
+      "height": 615,
+      "bytes": 62430
+    },
+    {
+      "id": "gate.webp",
+      "name": "gate",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 558,
+      "height": 493,
+      "bytes": 49606
+    },
+    {
+      "id": "witch.webp",
+      "name": "witch",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 191,
+      "height": 615,
+      "bytes": 22800
+    },
+    {
+      "id": "towerCrooked.webp",
+      "name": "towerCrooked",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 217,
+      "height": 1400,
+      "bytes": 69258
+    },
+    {
+      "id": "towerBalcony.webp",
+      "name": "towerBalcony",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 478,
+      "height": 1400,
+      "bytes": 156186
+    },
+    {
+      "id": "towerTwin.webp",
+      "name": "towerTwin",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 818,
+      "height": 1169,
+      "bytes": 186462
+    },
+    {
+      "id": "cover.webp",
+      "name": "cover",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 900,
+      "height": 720,
+      "bytes": 248872
+    },
+    {
+      "id": "tree.webp",
+      "name": "tree",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 308,
+      "height": 403,
+      "bytes": 28868
+    },
+    {
+      "id": "fence.webp",
+      "name": "fence",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 306,
+      "height": 245,
+      "bytes": 22172
+    },
+    {
+      "id": "skulls.webp",
+      "name": "skulls",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 294,
+      "height": 211,
+      "bytes": 18332
+    },
+    {
+      "id": "cross.webp",
+      "name": "cross",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 236,
+      "height": 388,
+      "bytes": 24244
+    },
+    {
+      "id": "tombPair.webp",
+      "name": "tombPair",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 206,
+      "height": 229,
+      "bytes": 16506
+    },
+    {
+      "id": "tombPoint.webp",
+      "name": "tombPoint",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 154,
+      "height": 409,
+      "bytes": 24008
+    },
+    {
+      "id": "lantern.webp",
+      "name": "lantern",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 139,
+      "height": 385,
+      "bytes": 11584
+    },
+    {
+      "id": "bats.webp",
+      "name": "bats",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 598,
+      "height": 275,
+      "bytes": 19154
+    },
+    {
+      "id": "forest.webp",
+      "name": "forest",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 599,
+      "height": 285,
+      "bytes": 46570
+    },
+    {
+      "id": "ridge.webp",
+      "name": "ridge",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 584,
+      "height": 241,
+      "bytes": 26746
+    },
+    {
+      "id": "wall.webp",
+      "name": "wall",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 580,
+      "height": 254,
+      "bytes": 34324
+    },
+    {
+      "id": "page-left.webp",
+      "name": "page-left",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 89536
+    },
+    {
+      "id": "page-right.webp",
+      "name": "page-right",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 87492
+    }
+  ],
+  "updatedAt": "2026-08-01T00:00:00.000Z"
+}

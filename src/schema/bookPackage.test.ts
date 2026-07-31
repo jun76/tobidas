@@ -216,6 +216,24 @@ describe('public samples', () => {
     expect(validateBookProject(project).errors.some((error) => error.includes('exceeds the page width'))).toBe(true)
   })
 
+  it('accepts a stage background image and validates its asset reference', () => {
+    const project = load('forest_lantern')
+    project.book.appearance.backgroundAsset = 'page-1-left.webp'
+    expect(validateBookProject(project)).toEqual({ ok: true, errors: [], warnings: [] })
+
+    project.book.appearance.backgroundAsset = 'missing.webp'
+    expect(validateBookProject(project).errors).toContain('stage background: unregistered asset missing.webp')
+  })
+
+  it('accepts project-specific cover and spine colors', () => {
+    const project = load('forest_lantern')
+    project.book.appearance.coverColor = '#17633c'
+    project.book.appearance.coverEdgeColor = '#0b3d25'
+    const parsed = bookProjectSchema.parse(project)
+    expect(parsed.book.appearance.coverColor).toBe('#17633c')
+    expect(parsed.book.appearance.coverEdgeColor).toBe('#0b3d25')
+  })
+
   // --- 公開サンプル3作品の実装要件 ------------------------------------------
 
   it('forest_lantern raises trees with the spread, drifts a light mote, and lights homes in order', () => {

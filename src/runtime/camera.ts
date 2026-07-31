@@ -22,9 +22,18 @@ export function evaluateTimelineCamera(book: Book, progress: number): CameraPose
       signals.beatProgress,
     )
   }
-  const time = signals.beat.kind === 'cover-open' ? 0
-    : signals.beat.kind === 'back-cover-close' ? spread.sequence.holdSeconds
-      : signals.spreadTimes[signals.activeSpreadIndex]
+  // 表紙を開いている間は見開きローカル時刻がまだ動かない。ここで姿勢まで止めると
+  // 開き終わるまで俯瞰のまま張りつき、白いだけの紙面を見せてしまう。
+  // 保存カメラ (閉じた本を写す既定の構え) から見開き先頭の姿勢へ、開き具合で寄せる
+  if (signals.beat.kind === 'cover-open') {
+    return blendCamera(
+      { position: [...book.camera.position], target: [...book.camera.target], fov: book.camera.fov },
+      evaluateSpreadCamera(spread, 0, book.camera),
+      signals.beatProgress,
+    )
+  }
+  const time = signals.beat.kind === 'back-cover-close' ? spread.sequence.holdSeconds
+    : signals.spreadTimes[signals.activeSpreadIndex]
   return evaluateSpreadCamera(spread, time, book.camera)
 }
 

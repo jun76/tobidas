@@ -12,6 +12,7 @@ import { stowIsDrawn } from './stow/evaluate'
 import { SpanningVFoldNode, StowElements } from './stow-renderer/StowRenderer'
 import type { BookRuntimeProps, RenderSpreadFrame } from './types'
 import { PaperSlab, assetFor } from './visuals/ElementVisuals'
+import { useImageTexture, useSvgTexture } from './assets'
 
 export type { BookRuntimeProps, RuntimeSelection } from './types'
 
@@ -29,6 +30,10 @@ export function BookRuntime({ project, progress, foldOverride, showGuides = fals
   const gates = useMemo(() => new GateSet(GATE_THRESHOLDS), [project.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const clocks = useMemo(() => new ClockStore(), [project.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const assets = useMemo(() => new Map(project.assets.map((asset) => [asset.id, asset])), [project.assets])
+  const stageBackgroundAsset = assetFor(assets, book.appearance.backgroundAsset)
+  const stageBackgroundImage = useImageTexture(stageBackgroundAsset?.type === 'image' ? stageBackgroundAsset : undefined)
+  const stageBackgroundSvg = useSvgTexture(stageBackgroundAsset?.type === 'svg' ? stageBackgroundAsset : undefined)
+  const stageBackgroundTexture = stageBackgroundImage?.texture ?? stageBackgroundSvg?.texture
   const compiled = useMemo(() => book.spreads.map((spread) => compileSpreadStow(book, spread)), [book])
   const scene = useThree((state) => state.scene)
   const camera = useThree((state) => state.camera)
@@ -43,6 +48,8 @@ export function BookRuntime({ project, progress, foldOverride, showGuides = fals
   const spreadCount = book.spreads.length
   const sheetAngles = signals.sheetAngles
   const stack = Math.max(book.format.pageThickness * (spreadCount + 1), coverThickness * 0.22)
+  const coverColor = book.appearance.coverColor ?? '#4f392c'
+  const coverEdgeColor = book.appearance.coverEdgeColor ?? '#2d2019'
   const rigX = -width * 0.5 * (1 - sheetAngles[0]) + width * 0.5 * sheetAngles[spreadCount]
 
   const frames: RenderSpreadFrame[] = book.spreads.map((spread, index) => {
@@ -73,8 +80,8 @@ export function BookRuntime({ project, progress, foldOverride, showGuides = fals
 
   const environment = useMemo(() => evaluateTimelineEnvironment(book, progress), [book, progress])
   useEffect(() => {
-    scene.background = new THREE.Color(environment.background)
-  }, [scene, environment.background])
+    scene.background = stageBackgroundTexture ?? new THREE.Color(environment.background)
+  }, [scene, environment.background, stageBackgroundTexture])
 
   useEffect(() => {
     if (showGuides) return
@@ -90,13 +97,17 @@ export function BookRuntime({ project, progress, foldOverride, showGuides = fals
 
   return <group>
     <ambientLight color={environment.lights.ambient.color} intensity={environment.lights.ambient.intensity} />
+    {/* shadowOpacity が 0 の作品は影を落とさない指定として扱い、影のパスごと省く。
+        影を受けるのは紙面と本の下の受け皿だけなので、落とす先が透明なら描く意味がない。
+        部品の数だけ影マップへの描画が増えるので、寝かせたカメラの作品では効く */}
     <directionalLight position={environment.lights.directional.position}
       color={environment.lights.directional.color}
-      intensity={environment.lights.directional.intensity} castShadow />
+      intensity={environment.lights.directional.intensity}
+      castShadow={book.appearance.shadowOpacity > 0} />
     <group position={[rigX, 0, 0]}>
       <group rotation={[0, 0, Math.PI * sheetAngles[0]]}>
         <PaperSlab position={[width / 2, coverThickness / 2, 0]} size={[width, coverThickness, depth]}
-          color="#4f392c" edge="#2d2019"
+          color={coverColor} edge={coverEdgeColor}
           asset={assetFor(assets, book.frontCover.frontAsset)}
           back={assetFor(assets, book.spreads[0].leftPage.backgroundAsset ?? book.frontCover.backAsset)}
           backColor={book.appearance.paperColor} />
@@ -139,7 +150,7 @@ export function BookRuntime({ project, progress, foldOverride, showGuides = fals
           color={book.appearance.paperColor} edge={book.appearance.edgeColor}
           asset={assetFor(assets, book.spreads[spreadCount - 1].rightPage.backgroundAsset)} />
         <PaperSlab position={[width / 2, -stack - coverThickness / 2, 0]}
-          size={[width, coverThickness, depth]} color="#4f392c" edge="#2d2019"
+          size={[width, coverThickness, depth]} color={coverColor} edge={coverEdgeColor}
           asset={assetFor(assets, book.backCover.frontAsset)}
           back={assetFor(assets, book.backCover.backAsset)} />
         <group position={[width / 2, 0.004, 0]}>

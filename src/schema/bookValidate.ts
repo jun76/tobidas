@@ -45,6 +45,7 @@ export function validateBookProject(data: unknown): BookValidationResult {
   useAsset(project.book.frontCover.backAsset, ['image', 'svg'], 'front cover reverse')
   useAsset(project.book.backCover.frontAsset, ['image', 'svg'], 'back cover inside')
   useAsset(project.book.backCover.backAsset, ['image', 'svg'], 'back cover')
+  useAsset(project.book.appearance.backgroundAsset, ['image', 'svg'], 'stage background')
   for (const spread of project.book.spreads) {
     useAsset(spread.leftPage.backgroundAsset, ['image', 'svg'], `${spread.name} left page`)
     useAsset(spread.rightPage.backgroundAsset, ['image', 'svg'], `${spread.name} right page`)

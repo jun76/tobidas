@@ -24,6 +24,23 @@ describe('見開きタイムラインのカメラ', () => {
     expect(pose.position).toEqual([2, 6, 13.5])
   })
 
+  /**
+   * 表紙を開く区間は見開きローカル時刻がまだ 0 のまま進まない。姿勢まで止めると
+   * 開き終わるまで最初の構えに張りつき、飛び出す前の紙面を見せてしまう。
+   */
+  it('表紙を開く間に保存カメラから見開き先頭の姿勢へ寄る', () => {
+    const book = createBook()
+    book.camera.position = [0, 10, 20]
+    book.spreads[0].timeline.tracks = [
+      cameraPosition('first', [0, 2, 12], [0, 2, 12], book.spreads[0].sequence.holdSeconds),
+    ]
+    const open = compileBookBeats(book).find((beat) => beat.kind === 'cover-open')!
+    const early = evaluateTimelineCamera(book, open.start + (open.end - open.start) * 0.05)
+    const late = evaluateTimelineCamera(book, open.start + (open.end - open.start) * 0.95)
+    expect(early.position[1]).toBeGreaterThan(late.position[1])
+    expect(late.position[1]).toBeCloseTo(2, 0)
+  })
+
   it('ページ送り中に送り元終端から送り先始端へ補間する', () => {
     const book = createBook()
     book.spreads.push(createSpread('次'))

@@ -70,6 +70,11 @@ export const bookSchema = z.object({
     edgeColor: z.string(),
     roughness: z.number().min(0).max(1),
     background: z.string(),
+    /** 単色背景の代わりに画面全体へ表示する舞台背景。未指定ならbackground色を使う。 */
+    backgroundAsset: z.string().min(1).optional(),
+    /** 表紙面と背の地色。未指定の既存作品は従来の茶色を使う。 */
+    coverColor: z.string().optional(),
+    coverEdgeColor: z.string().optional(),
     shadowOpacity: z.number().min(0).max(1),
   }),
   camera: cameraSchema,
