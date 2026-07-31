@@ -1,0 +1,5762 @@
+{
+  "id": "forest_lantern",
+  "name": "Chasing the Forest Lantern",
+  "book": {
+    "sequence": {
+      "coverOpenSeconds": 1.8
+    },
+    "format": {
+      "pageAspect": 1.25,
+      "pageWidth": 8,
+      "coverThickness": 0.18,
+      "pageThickness": 0.015,
+      "gutter": 0.08,
+      "binding": "left"
+    },
+    "appearance": {
+      "paperColor": "#efe3c8",
+      "edgeColor": "#c3ad86",
+      "roughness": 0.92,
+      "background": "#3b4b66",
+      "shadowOpacity": 0.34
+    },
+    "camera": {
+      "position": [
+        0,
+        8.8,
+        12.2
+      ],
+      "target": [
+        0,
+        1,
+        0.2
+      ],
+      "fov": 44
+    },
+    "lights": {
+      "ambient": {
+        "color": "#cfd8ef",
+        "intensity": 1
+      },
+      "directional": {
+        "color": "#ffd9a8",
+        "intensity": 1.5,
+        "position": [
+          -5,
+          9,
+          6
+        ]
+      }
+    },
+    "frontCover": {
+      "frontAsset": "cover-front.webp",
+      "backAsset": "cover-inside.webp"
+    },
+    "spreads": [
+      {
+        "id": "spread-1",
+        "name": "暗くなった森",
+        "leftPage": {
+          "backgroundAsset": "page-1-left.webp"
+        },
+        "rightPage": {
+          "backgroundAsset": "page-1-right.webp"
+        },
+        "elements": [
+          {
+            "id": "spread-1-far-line-l",
+            "name": "遠くの木立 (左)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.75,
+                0.01,
+                -2
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                0.45,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 0,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "depth-layer",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-fir-dark.webp",
+            "width": 7.9,
+            "height": 2.2,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-far-line-r",
+            "name": "遠くの木立 (右)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                2,
+                0.01,
+                -2.25
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                0.4,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 0,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "depth-layer",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-fir-dark.webp",
+            "width": 7.9,
+            "height": 2.2,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-canopy",
+            "name": "森のアーチ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0,
+                -1.792
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 2,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "spine-arch",
+            "stow": {
+              "mechanism": "v-fold",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "canopy-arch.webp",
+            "width": 9.4,
+            "height": 2.8,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-tree-1",
+            "name": "起き上がる木 1",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.6,
+                0.034,
+                1.1520000000000001
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 3,
+            "motion": [
+              {
+                "phase": 0,
+                "type": "sway",
+                "amplitude": 1.1,
+                "period": 4.2
+              }
+            ],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-fir-mid.webp",
+            "width": 2.47,
+            "height": 3.63,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-tree-2",
+            "name": "起き上がる木 2",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.2800000000000002,
+                0.031,
+                1.7920000000000007
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 4,
+            "motion": [
+              {
+                "phase": 0.7,
+                "type": "sway",
+                "amplitude": 1.1,
+                "period": 4.6000000000000005
+              }
+            ],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-round-dark.webp",
+            "width": 2.18,
+            "height": 3.05,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-tree-3",
+            "name": "起き上がる木 3",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.7599999999999998,
+                0.036,
+                1.2799999999999994
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 5,
+            "motion": [
+              {
+                "phase": 1.4,
+                "type": "sway",
+                "amplitude": 1.1,
+                "period": 5
+              }
+            ],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-round.webp",
+            "width": 2.61,
+            "height": 3.77,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-tree-4",
+            "name": "起き上がる木 4",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                0.96,
+                0.033,
+                1.1520000000000001
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 6,
+            "motion": [
+              {
+                "phase": 2.0999999999999996,
+                "type": "sway",
+                "amplitude": 1.1,
+                "period": 5.4
+              }
+            ],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-fir-mid.webp",
+            "width": 2.32,
+            "height": 3.34,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-tree-5",
+            "name": "起き上がる木 5",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.8,
+                0.03,
+                2.048
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 7,
+            "motion": [
+              {
+                "phase": 2.8,
+                "type": "sway",
+                "amplitude": 1.1,
+                "period": 5.800000000000001
+              }
+            ],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-fir-dark.webp",
+            "width": 2.03,
+            "height": 2.76,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-owl",
+            "name": "枝のフクロウ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -3,
+                0.01,
+                2
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1.8,
+                1.75,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "owl.webp",
+            "width": 0.35,
+            "height": 0.417,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-rabbit",
+            "name": "草むらのウサギ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                3,
+                0.01,
+                1.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                2.15,
+                1.85,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "rabbit.webp",
+            "width": 0.27,
+            "height": 0.333,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-mushroom",
+            "name": "光るキノコ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.5,
+                0.01,
+                2.25
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                2.35,
+                1.95,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "mushroom-cluster.webp",
+            "width": 0.28,
+            "height": 0.333,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-fern",
+            "name": "シダの下草",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.25,
+                0.01,
+                2.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1.55,
+                1.35,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fern-cluster.webp",
+            "width": 0.5,
+            "height": 0.5,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-fox",
+            "name": "子ぎつね",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                3.36,
+                0.01,
+                2.816
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 9,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fox.webp",
+            "width": 0.89,
+            "height": 0.833,
+            "billboard": false
+          },
+          {
+            "id": "spread-1-text",
+            "name": "The lamp that lit the village",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0.077,
+                2.3680000000000003
+              ],
+              "rotation": [
+                -90,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 9,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "page-text",
+            "stow": {
+              "mechanism": "page-glue",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "text",
+            "text": "The lamp that lit the village\nblinked out one night",
+            "width": 5.426400000000003,
+            "height": 0.84,
+            "fontSize": 0.42,
+            "color": "#efe3c4",
+            "align": "center"
+          },
+          {
+            "id": "spread-1-ember",
+            "name": "消えゆく残り火",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                0.25,
+                2.4,
+                2
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 12,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "light-particles",
+            "stow": {
+              "mechanism": "strut",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "effect",
+            "effect": "sparkles",
+            "color": "#ffcf6d",
+            "size": 2
+          }
+        ],
+        "sequence": {
+          "holdSeconds": 6.5,
+          "turnSeconds": 1.7
+        },
+        "timeline": {
+          "tracks": [
+            {
+              "id": "spread-1-ember-effect-size",
+              "target": {
+                "type": "element",
+                "elementId": "spread-1-ember"
+              },
+              "property": "effect.size",
+              "keys": [
+                {
+                  "id": "spread-1-ember-effect-size-0",
+                  "time": 0,
+                  "value": 2.4,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-1-ember-effect-size-1",
+                  "time": 6.5,
+                  "value": 0.5,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-1-ember-effect-color",
+              "target": {
+                "type": "element",
+                "elementId": "spread-1-ember"
+              },
+              "property": "effect.color",
+              "keys": [
+                {
+                  "id": "spread-1-ember-effect-color-0",
+                  "time": 0,
+                  "value": "#ffcf6d",
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-1-ember-effect-color-1",
+                  "time": 6.5,
+                  "value": "#4a5a78",
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-1-camera-position",
+              "target": {
+                "type": "camera"
+              },
+              "property": "position",
+              "keys": [
+                {
+                  "id": "spread-1-camera-position-0",
+                  "time": 0,
+                  "value": [
+                    0,
+                    9.4,
+                    13.2
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-1-camera-position-1",
+                  "time": 6.5,
+                  "value": [
+                    -0.8,
+                    7.4,
+                    10.4
+                  ],
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-1-camera-target",
+              "target": {
+                "type": "camera"
+              },
+              "property": "target",
+              "keys": [
+                {
+                  "id": "spread-1-camera-target-0",
+                  "time": 0,
+                  "value": [
+                    0,
+                    0.9,
+                    0.2
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-1-camera-target-1",
+                  "time": 6.5,
+                  "value": [
+                    -0.4,
+                    1.1,
+                    0.2
+                  ],
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-1-camera-fov",
+              "target": {
+                "type": "camera"
+              },
+              "property": "fov",
+              "keys": [
+                {
+                  "id": "spread-1-camera-fov-0",
+                  "time": 0,
+                  "value": 44,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-1-camera-fov-1",
+                  "time": 6.5,
+                  "value": 43,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-1-env-background",
+              "target": {
+                "type": "environment"
+              },
+              "property": "background",
+              "keys": [
+                {
+                  "id": "spread-1-env-background-0",
+                  "time": 0,
+                  "value": "#3b4b66",
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-1-env-background-1",
+                  "time": 6.5,
+                  "value": "#233248",
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-1-env-ambient-intensity",
+              "target": {
+                "type": "environment"
+              },
+              "property": "ambient.intensity",
+              "keys": [
+                {
+                  "id": "spread-1-env-ambient.intensity-0",
+                  "time": 0,
+                  "value": 1.05,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-1-env-ambient.intensity-1",
+                  "time": 6.5,
+                  "value": 0.72,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-1-env-directional-intensity",
+              "target": {
+                "type": "environment"
+              },
+              "property": "directional.intensity",
+              "keys": [
+                {
+                  "id": "spread-1-env-directional.intensity-0",
+                  "time": 0,
+                  "value": 1.5,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-1-env-directional.intensity-1",
+                  "time": 6.5,
+                  "value": 0.9,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-1-cue-page-turn-wav",
+              "target": {
+                "type": "sound",
+                "assetId": "page-turn.wav"
+              },
+              "property": "cue",
+              "keys": [
+                {
+                  "id": "spread-1-cue-page-turn-wav-0",
+                  "time": 6.5,
+                  "value": true,
+                  "ease": "hold"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "spread-2",
+        "name": "川辺の手がかり",
+        "leftPage": {
+          "backgroundAsset": "page-2-left.webp"
+        },
+        "rightPage": {
+          "backgroundAsset": "page-2-right.webp"
+        },
+        "elements": [
+          {
+            "id": "spread-2-bank-l",
+            "name": "対岸の木立",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.25,
+                0.01,
+                -1.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                0.5,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 1,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "depth-layer",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-fir-dark.webp",
+            "width": 7.9,
+            "height": 2.3,
+            "billboard": false
+          },
+          {
+            "id": "spread-2-bank-r",
+            "name": "対岸の木立 (右)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.5,
+                0.01,
+                -1.75
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                0.45,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 1,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "depth-layer",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-fir-dark.webp",
+            "width": 7.9,
+            "height": 2.3,
+            "billboard": false
+          },
+          {
+            "id": "spread-2-canopy",
+            "name": "川面へ差し出す枝",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0,
+                -1.6640000000000001
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 2,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "spine-arch",
+            "stow": {
+              "mechanism": "v-fold",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "canopy-arch.webp",
+            "width": 8.6,
+            "height": 2.4,
+            "billboard": false
+          },
+          {
+            "id": "spread-2-reed-1",
+            "name": "岸の草 (左)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.6,
+                0.01,
+                1.5359999999999996
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 4,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "reeds.webp",
+            "width": 2.2,
+            "height": 1.2,
+            "billboard": false
+          },
+          {
+            "id": "spread-2-reed-2",
+            "name": "岸の草 (右)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.2799999999999998,
+                0.01,
+                1.9200000000000008
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 4,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "reeds.webp",
+            "width": 2.4,
+            "height": 1.3,
+            "billboard": false
+          },
+          {
+            "id": "spread-2-reed-3",
+            "name": "岸の草 (奥)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.92,
+                0.01,
+                0.7679999999999998
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 3,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "reeds.webp",
+            "width": 1.8,
+            "height": 1.1,
+            "billboard": false
+          },
+          {
+            "id": "spread-2-fox",
+            "name": "子ぎつね",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.7199999999999998,
+                0.01,
+                2.7520000000000007
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 9,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fox.webp",
+            "width": 0.89,
+            "height": 0.833,
+            "billboard": false
+          },
+          {
+            "id": "spread-2-tree",
+            "name": "川辺の木",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.5599999999999996,
+                0.01,
+                1.2799999999999994
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 5,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-round.webp",
+            "width": 2.47,
+            "height": 3.48,
+            "billboard": false
+          },
+          {
+            "id": "spread-2-bridge",
+            "name": "丸木橋",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0.01,
+                0.1280000000000001
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 6,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "wooden-bridge.webp",
+            "width": 2.86,
+            "height": 1.333,
+            "billboard": false
+          },
+          {
+            "id": "spread-2-deer",
+            "name": "水を飲む鹿",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.56,
+                0.01,
+                1.7920000000000007
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1.35,
+                1.3,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 7,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "deer.webp",
+            "width": 0.54,
+            "height": 0.889,
+            "billboard": false
+          },
+          {
+            "id": "spread-2-log",
+            "name": "苔むした倒木",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.25,
+                0.01,
+                2.432
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1.8,
+                1.3,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fallen-log.webp",
+            "width": 1,
+            "height": 0.389,
+            "billboard": false
+          },
+          {
+            "id": "spread-2-fern",
+            "name": "シダの下草",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.88,
+                0.01,
+                2.4320000000000004
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fern-cluster.webp",
+            "width": 0.5,
+            "height": 0.5,
+            "billboard": false
+          },
+          {
+            "id": "spread-2-mote",
+            "name": "光の欠片",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                -6.9,
+                1.1,
+                1.1
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 10,
+            "motion": [
+              {
+                "phase": 0,
+                "type": "bob",
+                "amplitude": 0.16,
+                "period": 1.9
+              }
+            ],
+            "clock": "visible-elapsed",
+            "sourcePreset": "floating-character",
+            "stow": {
+              "mechanism": "strut",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "light-mote.webp",
+            "width": 0.8,
+            "height": 0.8,
+            "billboard": true
+          },
+          {
+            "id": "spread-2-text",
+            "name": "A shard of light on the water",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0.077,
+                2.4320000000000004
+              ],
+              "rotation": [
+                -90,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 9,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "page-text",
+            "stow": {
+              "mechanism": "page-glue",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "text",
+            "text": "A shard of light on the water\nwas pointing upstream",
+            "width": 5.168000000000003,
+            "height": 0.8,
+            "fontSize": 0.4,
+            "color": "#e6eef0",
+            "align": "center"
+          },
+          {
+            "id": "spread-2-spray",
+            "name": "水しぶき",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                -1.4,
+                1,
+                1.6
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 12,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "light-particles",
+            "stow": {
+              "mechanism": "strut",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "effect",
+            "effect": "sparkles",
+            "color": "#9fd7e8",
+            "size": 1.8
+          }
+        ],
+        "sequence": {
+          "holdSeconds": 6.5,
+          "turnSeconds": 1.7
+        },
+        "timeline": {
+          "tracks": [
+            {
+              "id": "spread-2-mote-position-x",
+              "target": {
+                "type": "element",
+                "elementId": "spread-2-mote"
+              },
+              "property": "position.x",
+              "keys": [
+                {
+                  "id": "spread-2-mote-position-x-0",
+                  "time": 0,
+                  "value": -6.9,
+                  "ease": "linear"
+                },
+                {
+                  "id": "spread-2-mote-position-x-1",
+                  "time": 6.5,
+                  "value": -0.8,
+                  "ease": "linear"
+                }
+              ]
+            },
+            {
+              "id": "spread-2-mote-position-y",
+              "target": {
+                "type": "element",
+                "elementId": "spread-2-mote"
+              },
+              "property": "position.y",
+              "keys": [
+                {
+                  "id": "spread-2-mote-position-y-0",
+                  "time": 0,
+                  "value": 0.9,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-2-mote-position-y-1",
+                  "time": 1.6,
+                  "value": 1.5,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-2-mote-position-y-2",
+                  "time": 3.2,
+                  "value": 1,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-2-mote-position-y-3",
+                  "time": 4.8,
+                  "value": 1.6,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-2-mote-position-y-4",
+                  "time": 6.5,
+                  "value": 1.1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-2-camera-position",
+              "target": {
+                "type": "camera"
+              },
+              "property": "position",
+              "keys": [
+                {
+                  "id": "spread-2-camera-position-0",
+                  "time": 0,
+                  "value": [
+                    -1.5,
+                    7.6,
+                    11.2
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-2-camera-position-1",
+                  "time": 6.5,
+                  "value": [
+                    1.5,
+                    7.6,
+                    11.2
+                  ],
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-2-camera-target",
+              "target": {
+                "type": "camera"
+              },
+              "property": "target",
+              "keys": [
+                {
+                  "id": "spread-2-camera-target-0",
+                  "time": 0,
+                  "value": [
+                    -1.2,
+                    0.9,
+                    0.4
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-2-camera-target-1",
+                  "time": 6.5,
+                  "value": [
+                    1.2,
+                    0.9,
+                    0.4
+                  ],
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-2-camera-fov",
+              "target": {
+                "type": "camera"
+              },
+              "property": "fov",
+              "keys": [
+                {
+                  "id": "spread-2-camera-fov-0",
+                  "time": 0,
+                  "value": 43,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-2-camera-fov-1",
+                  "time": 6.5,
+                  "value": 43,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-2-env-background",
+              "target": {
+                "type": "environment"
+              },
+              "property": "background",
+              "keys": [
+                {
+                  "id": "spread-2-env-background-0",
+                  "time": 0,
+                  "value": "#233248",
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-2-env-background-1",
+                  "time": 6.5,
+                  "value": "#1d2c44",
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-2-env-ambient-intensity",
+              "target": {
+                "type": "environment"
+              },
+              "property": "ambient.intensity",
+              "keys": [
+                {
+                  "id": "spread-2-env-ambient.intensity-0",
+                  "time": 0,
+                  "value": 0.72,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-2-env-ambient.intensity-1",
+                  "time": 6.5,
+                  "value": 0.66,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-2-cue-page-turn-wav",
+              "target": {
+                "type": "sound",
+                "assetId": "page-turn.wav"
+              },
+              "property": "cue",
+              "keys": [
+                {
+                  "id": "spread-2-cue-page-turn-wav-0",
+                  "time": 6.5,
+                  "value": true,
+                  "ease": "hold"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "spread-3",
+        "name": "風の丘",
+        "leftPage": {
+          "backgroundAsset": "page-3-left.webp"
+        },
+        "rightPage": {
+          "backgroundAsset": "page-3-right.webp"
+        },
+        "elements": [
+          {
+            "id": "spread-3-far-hill-l",
+            "name": "遠い稜線 (左)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0.01,
+                -2.56
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 1,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "depth-layer",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "hill-far.webp",
+            "width": 7.9,
+            "height": 1.8,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-far-hill-r",
+            "name": "遠い稜線 (右)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0.01,
+                -2.56
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 1,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "depth-layer",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "hill-far.webp",
+            "width": 7.9,
+            "height": 1.8,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-ridge",
+            "name": "丘の稜線",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0,
+                -1.536
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 2,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "spine-arch",
+            "stow": {
+              "mechanism": "v-fold",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "canopy-arch.webp",
+            "width": 9,
+            "height": 2.2,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-hill-mid",
+            "name": "中景の丘 (左)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0.01,
+                0.38400000000000034
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 3,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "hill-near.webp",
+            "width": 5.8,
+            "height": 1.7,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-hill-mid-r",
+            "name": "中景の丘 (右)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0.01,
+                0.6399999999999997
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 3,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "hill-near.webp",
+            "width": 5.8,
+            "height": 1.8,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-windmill",
+            "name": "風車の塔",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.7999999999999998,
+                0.01,
+                1.9200000000000008
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 6,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "windmill-tower.webp",
+            "width": 1.77,
+            "height": 4.556,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-windmill-rotor",
+            "name": "風車の羽根",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "element",
+              "elementId": "spread-3-windmill"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                3.84982,
+                0.02
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 7,
+            "motion": [
+              {
+                "type": "spin",
+                "axis": "z",
+                "speed": 0.9
+              }
+            ],
+            "clock": "visible-elapsed",
+            "sourcePreset": "floating-character",
+            "stow": {
+              "mechanism": "strut",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "windmill-rotor.webp",
+            "width": 3,
+            "height": 3,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-tree",
+            "name": "丘の木",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.76,
+                0.01,
+                1
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 5,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-round-dark.webp",
+            "width": 2.32,
+            "height": 3.19,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-deer",
+            "name": "丘を見上げる鹿",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.7599999999999998,
+                0.01,
+                2.048
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1.5,
+                1.15,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 7,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "deer.webp",
+            "width": 0.54,
+            "height": 0.889,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-log",
+            "name": "風に晒された倒木",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.6,
+                0.01,
+                2.5600000000000005
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1.6,
+                1.35,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fallen-log.webp",
+            "width": 1,
+            "height": 0.389,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-rabbit",
+            "name": "草むらのウサギ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                3,
+                0.01,
+                2.25
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                2.75,
+                2.45,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "rabbit.webp",
+            "width": 0.27,
+            "height": 0.333,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-fern",
+            "name": "シダの下草",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.4000000000000004,
+                0.01,
+                2.176
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fern-cluster.webp",
+            "width": 0.5,
+            "height": 0.5,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-mushroom",
+            "name": "光るキノコ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.75,
+                0.01,
+                1.25
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1.95,
+                1.7,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "mushroom-cluster.webp",
+            "width": 0.28,
+            "height": 0.333,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-fox",
+            "name": "子ぎつね",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.25,
+                0.01,
+                1.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 9,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fox.webp",
+            "width": 0.89,
+            "height": 0.833,
+            "billboard": false
+          },
+          {
+            "id": "spread-3-mote",
+            "name": "風に運ばれる欠片",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                -6.4,
+                2.4,
+                1.8
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 11,
+            "motion": [
+              {
+                "phase": 0,
+                "type": "bob",
+                "amplitude": 0.22,
+                "period": 2.3
+              }
+            ],
+            "clock": "visible-elapsed",
+            "sourcePreset": "floating-character",
+            "stow": {
+              "mechanism": "strut",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "light-mote.webp",
+            "width": 0.9,
+            "height": 0.9,
+            "billboard": true
+          },
+          {
+            "id": "spread-3-text",
+            "name": "The wind caught the shard",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0.077,
+                2.4320000000000004
+              ],
+              "rotation": [
+                -90,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 9,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "page-text",
+            "stow": {
+              "mechanism": "page-glue",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "text",
+            "text": "The wind caught the shard\nand carried it up the hill",
+            "width": 4.640000000000002,
+            "height": 0.8,
+            "fontSize": 0.4,
+            "color": "#e9f0f2",
+            "align": "center"
+          }
+        ],
+        "sequence": {
+          "holdSeconds": 6.5,
+          "turnSeconds": 1.7
+        },
+        "timeline": {
+          "tracks": [
+            {
+              "id": "spread-3-mote-position-x",
+              "target": {
+                "type": "element",
+                "elementId": "spread-3-mote"
+              },
+              "property": "position.x",
+              "keys": [
+                {
+                  "id": "spread-3-mote-position-x-0",
+                  "time": 0,
+                  "value": -6.4,
+                  "ease": "linear"
+                },
+                {
+                  "id": "spread-3-mote-position-x-1",
+                  "time": 6.5,
+                  "value": -0.9,
+                  "ease": "linear"
+                }
+              ]
+            },
+            {
+              "id": "spread-3-mote-position-y",
+              "target": {
+                "type": "element",
+                "elementId": "spread-3-mote"
+              },
+              "property": "position.y",
+              "keys": [
+                {
+                  "id": "spread-3-mote-position-y-0",
+                  "time": 0,
+                  "value": 1.3,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-3-mote-position-y-1",
+                  "time": 3.2,
+                  "value": 2.6,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-3-mote-position-y-2",
+                  "time": 6.5,
+                  "value": 3.4,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-3-camera-position",
+              "target": {
+                "type": "camera"
+              },
+              "property": "position",
+              "keys": [
+                {
+                  "id": "spread-3-camera-position-0",
+                  "time": 0,
+                  "value": [
+                    0,
+                    6.2,
+                    11
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-3-camera-position-1",
+                  "time": 6.5,
+                  "value": [
+                    0.5,
+                    9.2,
+                    11.4
+                  ],
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-3-camera-target",
+              "target": {
+                "type": "camera"
+              },
+              "property": "target",
+              "keys": [
+                {
+                  "id": "spread-3-camera-target-0",
+                  "time": 0,
+                  "value": [
+                    0,
+                    0.9,
+                    0.8
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-3-camera-target-1",
+                  "time": 6.5,
+                  "value": [
+                    0.2,
+                    1.4,
+                    0
+                  ],
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-3-camera-fov",
+              "target": {
+                "type": "camera"
+              },
+              "property": "fov",
+              "keys": [
+                {
+                  "id": "spread-3-camera-fov-0",
+                  "time": 0,
+                  "value": 45,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-3-camera-fov-1",
+                  "time": 6.5,
+                  "value": 42,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-3-env-background",
+              "target": {
+                "type": "environment"
+              },
+              "property": "background",
+              "keys": [
+                {
+                  "id": "spread-3-env-background-0",
+                  "time": 0,
+                  "value": "#1d2c44",
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-3-env-background-1",
+                  "time": 6.5,
+                  "value": "#182541",
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-3-env-ambient-intensity",
+              "target": {
+                "type": "environment"
+              },
+              "property": "ambient.intensity",
+              "keys": [
+                {
+                  "id": "spread-3-env-ambient.intensity-0",
+                  "time": 0,
+                  "value": 0.66,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-3-env-ambient.intensity-1",
+                  "time": 6.5,
+                  "value": 0.6,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-3-cue-page-turn-wav",
+              "target": {
+                "type": "sound",
+                "assetId": "page-turn.wav"
+              },
+              "property": "cue",
+              "keys": [
+                {
+                  "id": "spread-3-cue-page-turn-wav-0",
+                  "time": 6.5,
+                  "value": true,
+                  "ease": "hold"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "spread-4",
+        "name": "眠る大樹",
+        "leftPage": {
+          "backgroundAsset": "page-4-left.webp"
+        },
+        "rightPage": {
+          "backgroundAsset": "page-4-right.webp"
+        },
+        "elements": [
+          {
+            "id": "spread-4-far-line-l",
+            "name": "奥の木立 (左)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.5,
+                0.01,
+                -1.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                0.45,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 1,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "depth-layer",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-fir-dark.webp",
+            "width": 7.9,
+            "height": 2,
+            "billboard": false
+          },
+          {
+            "id": "spread-4-far-line-r",
+            "name": "奥の木立 (右)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                0.75,
+                0.01,
+                -1.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                0.45,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 1,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "depth-layer",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-fir-dark.webp",
+            "width": 7.9,
+            "height": 2,
+            "billboard": false
+          },
+          {
+            "id": "spread-4-great-tree",
+            "name": "眠る大樹",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0,
+                -1.2800000000000002
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 3,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "spine-arch",
+            "stow": {
+              "mechanism": "v-fold",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "great-tree.webp",
+            "width": 8.6,
+            "height": 3.4,
+            "billboard": false
+          },
+          {
+            "id": "spread-4-root-l",
+            "name": "根もとの倒木 (左)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                0.7999999999999998,
+                0.01,
+                0.7679999999999998
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1.6,
+                1.25,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 4,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fallen-log.webp",
+            "width": 1,
+            "height": 0.389,
+            "billboard": false
+          },
+          {
+            "id": "spread-4-root-r",
+            "name": "根もとの倒木 (右)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.7999999999999998,
+                0.01,
+                0.7679999999999998
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1.6,
+                1.25,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 4,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fallen-log.webp",
+            "width": 1,
+            "height": 0.389,
+            "billboard": false
+          },
+          {
+            "id": "spread-4-tree-a",
+            "name": "脇の木",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.4000000000000004,
+                0.01,
+                1.5359999999999996
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 5,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-fir-mid.webp",
+            "width": 2.18,
+            "height": 3.19,
+            "billboard": false
+          },
+          {
+            "id": "spread-4-tree-b",
+            "name": "脇の木 (右)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.5599999999999996,
+                0.01,
+                1.7920000000000007
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 5,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-round-dark.webp",
+            "width": 2.32,
+            "height": 3.19,
+            "billboard": false
+          },
+          {
+            "id": "spread-4-owl",
+            "name": "大樹のフクロウ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                2.7199999999999998,
+                0.01,
+                1.7920000000000007
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1.8,
+                1.6,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 7,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "owl.webp",
+            "width": 0.35,
+            "height": 0.417,
+            "billboard": false
+          },
+          {
+            "id": "spread-4-badger",
+            "name": "ランタンを運ぶアナグマ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.56,
+                0.01,
+                2.048
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 7,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "badger.webp",
+            "width": 0.78,
+            "height": 0.944,
+            "billboard": false
+          },
+          {
+            "id": "spread-4-mushroom",
+            "name": "光るキノコ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.7199999999999998,
+                0.01,
+                2.5600000000000005
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "mushroom-cluster.webp",
+            "width": 0.28,
+            "height": 0.333,
+            "billboard": false
+          },
+          {
+            "id": "spread-4-fern",
+            "name": "シダの下草",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                0.7999999999999998,
+                0.01,
+                2.5600000000000005
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1.6,
+                1.25,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fern-cluster.webp",
+            "width": 0.5,
+            "height": 0.5,
+            "billboard": false
+          },
+          {
+            "id": "spread-4-fox",
+            "name": "子ぎつね",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.75,
+                0.01,
+                1.25
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 9,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fox.webp",
+            "width": 0.89,
+            "height": 0.833,
+            "billboard": false
+          },
+          {
+            "id": "spread-4-lantern",
+            "name": "失われた灯り",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                2.4,
+                1.2
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 12,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "floating-character",
+            "stow": {
+              "mechanism": "strut",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "lantern.webp",
+            "width": 0.27,
+            "height": 0.556,
+            "billboard": true
+          },
+          {
+            "id": "spread-4-text",
+            "name": "Among the sleeping great tree",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0.077,
+                2.4320000000000004
+              ],
+              "rotation": [
+                -90,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 9,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "page-text",
+            "stow": {
+              "mechanism": "page-glue",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "text",
+            "text": "Among the sleeping great tree\nthe lantern lay hidden",
+            "width": 5.168000000000003,
+            "height": 0.8,
+            "fontSize": 0.4,
+            "color": "#ecf1de",
+            "align": "center"
+          },
+          {
+            "id": "spread-4-halo",
+            "name": "灯りの粒",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                2.5,
+                0.4
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 12,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "light-particles",
+            "stow": {
+              "mechanism": "strut",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "effect",
+            "effect": "sparkles",
+            "color": "#ffe9a8",
+            "size": 0.6
+          }
+        ],
+        "sequence": {
+          "holdSeconds": 7,
+          "turnSeconds": 1.8
+        },
+        "timeline": {
+          "tracks": [
+            {
+              "id": "spread-4-great-tree-scale",
+              "target": {
+                "type": "element",
+                "elementId": "spread-4-great-tree"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "spread-4-great-tree-scale-0",
+                  "time": 0,
+                  "value": 0.72,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-4-great-tree-scale-1",
+                  "time": 7,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-4-lantern-opacity",
+              "target": {
+                "type": "element",
+                "elementId": "spread-4-lantern"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "spread-4-lantern-opacity-0",
+                  "time": 0,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-4-lantern-opacity-1",
+                  "time": 2.6,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-4-lantern-opacity-2",
+                  "time": 4.2,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-4-lantern-position-y",
+              "target": {
+                "type": "element",
+                "elementId": "spread-4-lantern"
+              },
+              "property": "position.y",
+              "keys": [
+                {
+                  "id": "spread-4-lantern-position-y-0",
+                  "time": 0,
+                  "value": 2,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-4-lantern-position-y-1",
+                  "time": 7,
+                  "value": 2.7,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-4-halo-effect-size",
+              "target": {
+                "type": "element",
+                "elementId": "spread-4-halo"
+              },
+              "property": "effect.size",
+              "keys": [
+                {
+                  "id": "spread-4-halo-effect-size-0",
+                  "time": 0,
+                  "value": 0.5,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-4-halo-effect-size-1",
+                  "time": 7,
+                  "value": 2.6,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-4-camera-position",
+              "target": {
+                "type": "camera"
+              },
+              "property": "position",
+              "keys": [
+                {
+                  "id": "spread-4-camera-position-0",
+                  "time": 0,
+                  "value": [
+                    0,
+                    8,
+                    12
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-4-camera-position-1",
+                  "time": 7,
+                  "value": [
+                    0,
+                    6.6,
+                    11
+                  ],
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-4-camera-target",
+              "target": {
+                "type": "camera"
+              },
+              "property": "target",
+              "keys": [
+                {
+                  "id": "spread-4-camera-target-0",
+                  "time": 0,
+                  "value": [
+                    0,
+                    1.2,
+                    0.2
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-4-camera-target-1",
+                  "time": 7,
+                  "value": [
+                    0,
+                    1.9,
+                    0.2
+                  ],
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-4-camera-fov",
+              "target": {
+                "type": "camera"
+              },
+              "property": "fov",
+              "keys": [
+                {
+                  "id": "spread-4-camera-fov-0",
+                  "time": 0,
+                  "value": 44,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-4-camera-fov-1",
+                  "time": 7,
+                  "value": 42,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-4-env-background",
+              "target": {
+                "type": "environment"
+              },
+              "property": "background",
+              "keys": [
+                {
+                  "id": "spread-4-env-background-0",
+                  "time": 0,
+                  "value": "#182541",
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-4-env-background-1",
+                  "time": 7,
+                  "value": "#20304e",
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-4-env-ambient-intensity",
+              "target": {
+                "type": "environment"
+              },
+              "property": "ambient.intensity",
+              "keys": [
+                {
+                  "id": "spread-4-env-ambient.intensity-0",
+                  "time": 0,
+                  "value": 0.6,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-4-env-ambient.intensity-1",
+                  "time": 7,
+                  "value": 0.84,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-4-env-directional-color",
+              "target": {
+                "type": "environment"
+              },
+              "property": "directional.color",
+              "keys": [
+                {
+                  "id": "spread-4-env-directional.color-0",
+                  "time": 7,
+                  "value": "#ffe0ad",
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-4-cue-page-turn-wav",
+              "target": {
+                "type": "sound",
+                "assetId": "page-turn.wav"
+              },
+              "property": "cue",
+              "keys": [
+                {
+                  "id": "spread-4-cue-page-turn-wav-0",
+                  "time": 7,
+                  "value": true,
+                  "ease": "hold"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "spread-5",
+        "name": "森に戻る光",
+        "leftPage": {
+          "backgroundAsset": "page-5-left.webp"
+        },
+        "rightPage": {
+          "backgroundAsset": "page-5-right.webp"
+        },
+        "elements": [
+          {
+            "id": "spread-5-far-line-l",
+            "name": "奥の木立 (左)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.75,
+                0.01,
+                -1.25
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                0.35,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 1,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "depth-layer",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-fir-dark.webp",
+            "width": 7.9,
+            "height": 2.1,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-far-line-r",
+            "name": "奥の木立 (右)",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.75,
+                0.01,
+                -1.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                0.4,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 1,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "depth-layer",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "front",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "tree-fir-dark.webp",
+            "width": 7.9,
+            "height": 2.1,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-canopy",
+            "name": "森のアーチ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0,
+                -1.6640000000000001
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 2,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "spine-arch",
+            "stow": {
+              "mechanism": "v-fold",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "canopy-arch.webp",
+            "width": 9.4,
+            "height": 2.6,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-house-dark-1",
+            "name": "家 1",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.6,
+                0.01,
+                1.1520000000000001
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 4,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "cottage-dark.webp",
+            "width": 3,
+            "height": 2.778,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-house-lit-1",
+            "name": "灯った家 1",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.6,
+                0.01,
+                1.1520000000000001
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 5,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "cottage-lit.webp",
+            "width": 3,
+            "height": 2.778,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-house-dark-2",
+            "name": "家 2",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.2800000000000002,
+                0.01,
+                1.6640000000000006
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 6,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "cottage-dark.webp",
+            "width": 2.778,
+            "height": 2.556,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-house-lit-2",
+            "name": "灯った家 2",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.2800000000000002,
+                0.01,
+                1.6640000000000006
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 7,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "cottage-lit.webp",
+            "width": 2.778,
+            "height": 2.556,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-house-dark-3",
+            "name": "家 3",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.2799999999999998,
+                0.01,
+                1.024
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 8,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "cottage-dark.webp",
+            "width": 3.222,
+            "height": 3,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-house-lit-3",
+            "name": "灯った家 3",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.2799999999999998,
+                0.01,
+                1.024
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 9,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "cottage-lit.webp",
+            "width": 3.222,
+            "height": 3,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-house-dark-4",
+            "name": "家 4",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.7599999999999998,
+                0.01,
+                1.9200000000000008
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 10,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "cottage-dark.webp",
+            "width": 2.778,
+            "height": 2.556,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-house-lit-4",
+            "name": "灯った家 4",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                1.7599999999999998,
+                0.01,
+                1.9200000000000008
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 11,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "cottage-lit.webp",
+            "width": 2.778,
+            "height": 2.556,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-flower-1",
+            "name": "咲く花 1",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                2,
+                0.01,
+                1.75
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 14,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "flower.webp",
+            "width": 0.306,
+            "height": 0.333,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-flower-2",
+            "name": "咲く花 2",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -3.25,
+                0.01,
+                -0.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 15,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "flower.webp",
+            "width": 0.306,
+            "height": 0.333,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-flower-3",
+            "name": "咲く花 3",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -1.25,
+                0.01,
+                2.75
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 16,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "flower.webp",
+            "width": 0.278,
+            "height": 0.306,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-deer",
+            "name": "灯りを見にきた鹿",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -2.75,
+                0.01,
+                2.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 17,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "deer.webp",
+            "width": 0.54,
+            "height": 0.889,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-badger",
+            "name": "ランタンを運ぶアナグマ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                3.2,
+                0.01,
+                2.176
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 17,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "badger.webp",
+            "width": 0.78,
+            "height": 0.944,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-mushroom",
+            "name": "光るキノコ",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "right-page"
+            },
+            "baseTransform": {
+              "position": [
+                -0.5,
+                0.01,
+                2.25
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1.9,
+                1.75,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 17,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "mushroom-cluster.webp",
+            "width": 0.28,
+            "height": 0.333,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-fox",
+            "name": "子ぎつね",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                -3,
+                0.01,
+                2.75
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0
+            ],
+            "layer": 18,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "bottom-upright",
+            "stow": {
+              "mechanism": "flap",
+              "fallDirection": "back",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "fox.webp",
+            "width": 0.89,
+            "height": 0.833,
+            "billboard": false
+          },
+          {
+            "id": "spread-5-lantern",
+            "name": "空へ昇る灯り",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                1.6,
+                0.9
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 20,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "floating-character",
+            "stow": {
+              "mechanism": "strut",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "image",
+            "asset": "lantern.webp",
+            "width": 0.29,
+            "height": 0.611,
+            "billboard": true
+          },
+          {
+            "id": "spread-5-halo",
+            "name": "森へ戻る光",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "spread"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                3,
+                0.3
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 12,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "light-particles",
+            "stow": {
+              "mechanism": "strut",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "effect",
+            "effect": "sparkles",
+            "color": "#ffe9a8",
+            "size": 1.2
+          },
+          {
+            "id": "spread-5-text",
+            "name": "The lantern rose to the sky",
+            "visible": true,
+            "opacity": 1,
+            "parent": {
+              "type": "left-page"
+            },
+            "baseTransform": {
+              "position": [
+                0,
+                0.077,
+                2.4320000000000004
+              ],
+              "rotation": [
+                -90,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            },
+            "pivot": [
+              0.5,
+              0.5
+            ],
+            "layer": 9,
+            "motion": [],
+            "clock": "visible-elapsed",
+            "sourcePreset": "page-text",
+            "stow": {
+              "mechanism": "page-glue",
+              "fallDirection": "auto",
+              "stagger": 0
+            },
+            "type": "text",
+            "text": "The lantern rose to the sky\nand the forest was bright again",
+            "width": 5.244000000000003,
+            "height": 0.76,
+            "fontSize": 0.38,
+            "color": "#f5ecd6",
+            "align": "center"
+          }
+        ],
+        "sequence": {
+          "holdSeconds": 7.5,
+          "turnSeconds": 2.2
+        },
+        "timeline": {
+          "tracks": [
+            {
+              "id": "spread-5-house-lit-1-opacity",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-house-lit-1"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "spread-5-house-lit-1-opacity-0",
+                  "time": 0,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-lit-1-opacity-1",
+                  "time": 1.1,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-lit-1-opacity-2",
+                  "time": 1.9,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-house-dark-1-opacity",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-house-dark-1"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "spread-5-house-dark-1-opacity-0",
+                  "time": 0,
+                  "value": 1,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-dark-1-opacity-1",
+                  "time": 1.9,
+                  "value": 1,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-dark-1-opacity-2",
+                  "time": 2.4,
+                  "value": 0,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-house-lit-2-opacity",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-house-lit-2"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "spread-5-house-lit-2-opacity-0",
+                  "time": 0,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-lit-2-opacity-1",
+                  "time": 1.9500000000000002,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-lit-2-opacity-2",
+                  "time": 2.75,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-house-dark-2-opacity",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-house-dark-2"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "spread-5-house-dark-2-opacity-0",
+                  "time": 0,
+                  "value": 1,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-dark-2-opacity-1",
+                  "time": 2.75,
+                  "value": 1,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-dark-2-opacity-2",
+                  "time": 3.25,
+                  "value": 0,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-house-lit-3-opacity",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-house-lit-3"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "spread-5-house-lit-3-opacity-0",
+                  "time": 0,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-lit-3-opacity-1",
+                  "time": 2.8,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-lit-3-opacity-2",
+                  "time": 3.5999999999999996,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-house-dark-3-opacity",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-house-dark-3"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "spread-5-house-dark-3-opacity-0",
+                  "time": 0,
+                  "value": 1,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-dark-3-opacity-1",
+                  "time": 3.5999999999999996,
+                  "value": 1,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-dark-3-opacity-2",
+                  "time": 4.1,
+                  "value": 0,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-house-lit-4-opacity",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-house-lit-4"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "spread-5-house-lit-4-opacity-0",
+                  "time": 0,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-lit-4-opacity-1",
+                  "time": 3.65,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-lit-4-opacity-2",
+                  "time": 4.449999999999999,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-house-dark-4-opacity",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-house-dark-4"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "spread-5-house-dark-4-opacity-0",
+                  "time": 0,
+                  "value": 1,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-dark-4-opacity-1",
+                  "time": 4.449999999999999,
+                  "value": 1,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-house-dark-4-opacity-2",
+                  "time": 4.949999999999999,
+                  "value": 0,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-flower-1-opacity",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-flower-1"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "spread-5-flower-1-opacity-0",
+                  "time": 0,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-flower-1-opacity-1",
+                  "time": 3.4,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-flower-1-opacity-2",
+                  "time": 4.1,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-flower-1-scale",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-flower-1"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "spread-5-flower-1-scale-0",
+                  "time": 0,
+                  "value": 0.5,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-flower-1-scale-1",
+                  "time": 4.1,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-flower-2-opacity",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-flower-2"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "spread-5-flower-2-opacity-0",
+                  "time": 0,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-flower-2-opacity-1",
+                  "time": 4.1,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-flower-2-opacity-2",
+                  "time": 4.8,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-flower-2-scale",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-flower-2"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "spread-5-flower-2-scale-0",
+                  "time": 0,
+                  "value": 0.5,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-flower-2-scale-1",
+                  "time": 4.8,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-flower-3-opacity",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-flower-3"
+              },
+              "property": "opacity",
+              "keys": [
+                {
+                  "id": "spread-5-flower-3-opacity-0",
+                  "time": 0,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-flower-3-opacity-1",
+                  "time": 4.8,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-flower-3-opacity-2",
+                  "time": 5.5,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-flower-3-scale",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-flower-3"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "spread-5-flower-3-scale-0",
+                  "time": 0,
+                  "value": 0.5,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-flower-3-scale-1",
+                  "time": 5.5,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-lantern-position-y",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-lantern"
+              },
+              "property": "position.y",
+              "keys": [
+                {
+                  "id": "spread-5-lantern-position-y-0",
+                  "time": 0,
+                  "value": 1.4,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-lantern-position-y-1",
+                  "time": 7.5,
+                  "value": 3.4,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-lantern-scale",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-lantern"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "spread-5-lantern-scale-0",
+                  "time": 0,
+                  "value": 1,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-lantern-scale-1",
+                  "time": 7.5,
+                  "value": 1.25,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-halo-effect-size",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-halo"
+              },
+              "property": "effect.size",
+              "keys": [
+                {
+                  "id": "spread-5-halo-effect-size-0",
+                  "time": 0,
+                  "value": 0.8,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-halo-effect-size-1",
+                  "time": 7.5,
+                  "value": 3.4,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-camera-position",
+              "target": {
+                "type": "camera"
+              },
+              "property": "position",
+              "keys": [
+                {
+                  "id": "spread-5-camera-position-0",
+                  "time": 0,
+                  "value": [
+                    0,
+                    6.8,
+                    10.6
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-camera-position-1",
+                  "time": 7.5,
+                  "value": [
+                    0,
+                    10.8,
+                    12.6
+                  ],
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-camera-target",
+              "target": {
+                "type": "camera"
+              },
+              "property": "target",
+              "keys": [
+                {
+                  "id": "spread-5-camera-target-0",
+                  "time": 0,
+                  "value": [
+                    0,
+                    1.4,
+                    0.3
+                  ],
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-camera-target-1",
+                  "time": 7.5,
+                  "value": [
+                    0,
+                    1,
+                    0
+                  ],
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-camera-fov",
+              "target": {
+                "type": "camera"
+              },
+              "property": "fov",
+              "keys": [
+                {
+                  "id": "spread-5-camera-fov-0",
+                  "time": 0,
+                  "value": 43,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-camera-fov-1",
+                  "time": 7.5,
+                  "value": 46,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-env-background",
+              "target": {
+                "type": "environment"
+              },
+              "property": "background",
+              "keys": [
+                {
+                  "id": "spread-5-env-background-0",
+                  "time": 0,
+                  "value": "#20304e",
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-env-background-1",
+                  "time": 7.5,
+                  "value": "#3c4f6b",
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-env-ambient-intensity",
+              "target": {
+                "type": "environment"
+              },
+              "property": "ambient.intensity",
+              "keys": [
+                {
+                  "id": "spread-5-env-ambient.intensity-0",
+                  "time": 0,
+                  "value": 0.84,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-env-ambient.intensity-1",
+                  "time": 7.5,
+                  "value": 1.15,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-env-directional-color",
+              "target": {
+                "type": "environment"
+              },
+              "property": "directional.color",
+              "keys": [
+                {
+                  "id": "spread-5-env-directional.color-0",
+                  "time": 7.5,
+                  "value": "#ffe7bd",
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-env-directional-intensity",
+              "target": {
+                "type": "environment"
+              },
+              "property": "directional.intensity",
+              "keys": [
+                {
+                  "id": "spread-5-env-directional.intensity-0",
+                  "time": 7.5,
+                  "value": 1.7,
+                  "ease": "easeInOut"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "backCover": {
+      "frontAsset": "cover-inside.webp",
+      "backAsset": "cover-front.webp"
+    }
+  },
+  "assets": [
+    {
+      "id": "cover-front.webp",
+      "name": "cover-front",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 607838
+    },
+    {
+      "id": "cover-inside.webp",
+      "name": "cover-inside",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 479272
+    },
+    {
+      "id": "tree-fir-dark.webp",
+      "name": "tree-fir-dark",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 221,
+      "height": 439,
+      "bytes": 30778,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "tree-fir-mid.webp",
+      "name": "tree-fir-mid",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 223,
+      "height": 456,
+      "bytes": 32976,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "tree-round.webp",
+      "name": "tree-round",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 316,
+      "height": 370,
+      "bytes": 42244,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "tree-round-dark.webp",
+      "name": "tree-round-dark",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 316,
+      "height": 372,
+      "bytes": 35348,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "canopy-arch.webp",
+      "name": "canopy-arch",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 704,
+      "height": 282,
+      "bytes": 68954,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "great-tree.webp",
+      "name": "great-tree",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 585,
+      "height": 396,
+      "bytes": 84294,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "cottage-lit.webp",
+      "name": "cottage-lit",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 213,
+      "height": 246,
+      "bytes": 18054,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "cottage-dark.webp",
+      "name": "cottage-dark",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 213,
+      "height": 246,
+      "bytes": 8012,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "reeds.webp",
+      "name": "reeds",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 421,
+      "height": 207,
+      "bytes": 34792,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "hill-far.webp",
+      "name": "hill-far",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 944,
+      "height": 126,
+      "bytes": 38632,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "hill-near.webp",
+      "name": "hill-near",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 944,
+      "height": 140,
+      "bytes": 49316,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "windmill-tower.webp",
+      "name": "windmill-tower",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 150,
+      "height": 386,
+      "bytes": 20882,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "windmill-rotor.webp",
+      "name": "windmill-rotor",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 263,
+      "height": 265,
+      "bytes": 13884,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "fox.webp",
+      "name": "fox",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 189,
+      "height": 176,
+      "bytes": 10190,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "lantern.webp",
+      "name": "lantern",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 101,
+      "height": 211,
+      "bytes": 8208,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "light-mote.webp",
+      "name": "light-mote",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 92,
+      "height": 106,
+      "bytes": 3124,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "flower.webp",
+      "name": "flower",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 92,
+      "height": 159,
+      "bytes": 5552,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "owl.webp",
+      "name": "owl",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 177,
+      "height": 209,
+      "bytes": 14076,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "deer.webp",
+      "name": "deer",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 207,
+      "height": 342,
+      "bytes": 20500,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "badger.webp",
+      "name": "badger",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 220,
+      "height": 266,
+      "bytes": 21376,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "rabbit.webp",
+      "name": "rabbit",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 139,
+      "height": 171,
+      "bytes": 11110,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "mushroom-cluster.webp",
+      "name": "mushroom-cluster",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 158,
+      "height": 190,
+      "bytes": 13652,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "fern-cluster.webp",
+      "name": "fern-cluster",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 190,
+      "height": 190,
+      "bytes": 18226,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "fallen-log.webp",
+      "name": "fallen-log",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 456,
+      "height": 177,
+      "bytes": 32546,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "wooden-bridge.webp",
+      "name": "wooden-bridge",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 570,
+      "height": 266,
+      "bytes": 57188,
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "page-1-left.webp",
+      "name": "page-1-left",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 233676
+    },
+    {
+      "id": "page-1-right.webp",
+      "name": "page-1-right",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 235288
+    },
+    {
+      "id": "page-2-left.webp",
+      "name": "page-2-left",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 232344
+    },
+    {
+      "id": "page-2-right.webp",
+      "name": "page-2-right",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 243450
+    },
+    {
+      "id": "page-3-left.webp",
+      "name": "page-3-left",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 468488
+    },
+    {
+      "id": "page-3-right.webp",
+      "name": "page-3-right",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 466092
+    },
+    {
+      "id": "page-4-left.webp",
+      "name": "page-4-left",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 220594
+    },
+    {
+      "id": "page-4-right.webp",
+      "name": "page-4-right",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 209074
+    },
+    {
+      "id": "page-5-left.webp",
+      "name": "page-5-left",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 162872
+    },
+    {
+      "id": "page-5-right.webp",
+      "name": "page-5-right",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 151190
+    },
+    {
+      "id": "bgm.mp3",
+      "name": "bgm",
+      "type": "audio",
+      "mime": "audio/mpeg",
+      "bytes": 2716959
+    },
+    {
+      "id": "page-turn.wav",
+      "name": "page-turn",
+      "type": "audio",
+      "mime": "audio/wav",
+      "bytes": 176478
+    }
+  ],
+  "audio": {
+    "bgmAsset": "bgm.mp3",
+    "volume": 0.7,
+    "loop": true
+  },
+  "updatedAt": "2026-07-26T00:00:00.000Z"
+}

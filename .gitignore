@@ -1,0 +1,41 @@
+# Dependencies and package-manager logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+dist/
+dist-player/
+public/player/
+coverage/
+
+# Environment variables and Cloudflare local state
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+.wrangler/
+
+# Local agent, editor, and OS state
+.agents/
+.claude/
+.codex/
+.idea/
+.vscode/
+*.local
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Internal plans, references, and visual QA output
+docs/
+ref/
+qa/
+shots/
+tmp/
+
+# Locally exported works
+*.site.zip

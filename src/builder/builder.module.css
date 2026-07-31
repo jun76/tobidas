@@ -1,0 +1,1237 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #1c1c22;
+  color: #d8d8de;
+  font-size: 12px;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.left,
+.right {
+  width: 250px;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  background: #232329;
+  overflow: hidden;
+  border-right: 1px solid #333;
+}
+
+/* 縦に積んだ領域と、その境界のハンドル (SplitStack) */
+.splitStack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.splitPane {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.splitStackHandle {
+  flex: none;
+  height: 8px;
+  background: #1c1c22;
+  cursor: row-resize;
+  touch-action: none;
+}
+
+.splitStackHandle:hover,
+.splitStackHandle:active {
+  background: #5a68d8aa;
+}
+
+.right {
+  width: 300px;
+  min-width: 300px;
+  border-right: none;
+  border-left: 1px solid #333;
+}
+
+.viewport {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+/* 効果音を落とせる範囲。ビューポートとタイムラインの全域が受け口 */
+.viewportSoundDrop::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 2px solid #9aa6ff;
+  border-radius: 6px;
+  box-shadow: inset 0 0 24px #7382ff33;
+  pointer-events: none;
+}
+
+.panel {
+  border-bottom: 1px solid #333;
+  padding: 12px 12px 16px;
+}
+
+/* 行より下の空きも「余白のクリック」で拾えるよう、領域いっぱいに広げる */
+.navigatorPanel {
+  min-height: 100%;
+}
+
+.panelTitle {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #c6c6d2;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #3a3a44;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.subsectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 16px 0 10px;
+  padding-top: 12px;
+  border-top: 1px solid #34343e;
+  color: #b9bed2;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* --- toolbar --- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #2a2a32;
+  border-bottom: 1px solid #3a3a44;
+  flex-wrap: wrap;
+}
+
+.toolbar button,
+.miniBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #3a3a46;
+  color: #e0e0e6;
+  border: 1px solid #4a4a58;
+  border-radius: 4px;
+  padding: 3px 9px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* 処理中を示す回転。アイコンのSVG自体を回す */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(1turn); }
+}
+
+.toolbar button:hover,
+.panel button:hover {
+  background: #4a4a5a;
+}
+
+.toolbar button.active {
+  background: #5a68d8;
+  border-color: #7a88f0;
+}
+
+/* 表示言語。ツールバーのボタンと同じ見た目に揃える */
+.localePicker {
+  background: #3a3a46;
+  color: #e0e0e6;
+  border: 1px solid #4a4a58;
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* 編集中の見開き名。操作を邪魔しないよう当たり判定は持たせない */
+.viewportTitle {
+  position: absolute;
+  z-index: 5;
+  top: 14px;
+  left: 14px;
+  max-width: 45%;
+  overflow: hidden;
+  padding: 6px 11px;
+  border: 1px solid #4a4a58;
+  border-radius: 8px;
+  background: #202028f2;
+  color: #eee;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 22%);
+}
+
+.transformTools {
+  position: absolute;
+  z-index: 5;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.transformTools button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #525260;
+  border-radius: 5px;
+  background: #3a3a46;
+  color: #e8e8ee;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 22%);
+}
+
+.transformTools button:hover {
+  background: #4a4a5a;
+}
+
+.transformTools button.active {
+  border-color: #8996ff;
+  background: #5a68d8;
+  color: #fff;
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* --- hierarchy --- */
+.treeRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  box-sizing: border-box;
+  padding: 3px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.treeRow:hover {
+  background: #30303a;
+}
+
+.treeRow.selected {
+  background: #3d4a80;
+}
+
+.treeRow[draggable='true'] {
+  cursor: grab;
+}
+
+.treeRow[draggable='true']:active {
+  cursor: grabbing;
+}
+
+.treeDropTarget {
+  outline: 1px dashed #8b98ff;
+  outline-offset: -1px;
+  background: #4c5da055;
+}
+
+/* 編集できない値の表示 (割り当て済みのアセット名など) */
+.rowValue {
+  min-width: 0;
+  overflow: hidden;
+  color: #d0d0d8;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* プリセットの分類見出し。区切り線でグループを切る */
+.presetGroupTitle {
+  margin: 10px 0 6px;
+  padding-top: 8px;
+  border-top: 1px solid #33333d;
+  color: #8f8f9c;
+  font-size: 11px;
+  letter-spacing: .04em;
+}
+
+.presetGroupTitle:first-of-type {
+  margin-top: 2px;
+  padding-top: 0;
+  border-top: none;
+}
+
+.presetAsset {
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: #aaaab5;
+  font-size: 11px;
+}
+
+.presetAsset select {
+  min-width: 0;
+  width: 100%;
+  background: #1a1a20;
+  border: 1px solid #3a3a46;
+  color: #e0e0e6;
+  border-radius: 4px;
+  padding: 5px 7px;
+}
+
+.presetGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.panel button.presetButtonActive,
+.panel button.presetButtonActive:hover {
+  border-color: #9aa6ff;
+  background: #4c5da0;
+  box-shadow: 0 0 0 1px #9aa6ff, 0 0 10px #7382ff55;
+}
+
+.presetIdentity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 2px 0 12px;
+  padding: 8px 10px;
+  border: 1px solid #5966a8;
+  border-radius: 4px;
+  background: #303961;
+}
+
+.presetIdentity span {
+  color: #aab2da;
+  font-size: 10px;
+}
+
+.presetIdentity strong {
+  color: #eef0ff;
+  font-size: 12px;
+}
+
+.typeTag {
+  font-size: 9px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: #4a4a58;
+  color: #b8b8c8;
+  flex-shrink: 0;
+}
+
+.treeName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+/* 行内のアイコンボタン: 枠・背景なしの直置き。.panel button の箱スタイルを打ち消す */
+.panel button.ghostBtn {
+  background: none;
+  border: none;
+  min-width: 18px;
+  min-height: 18px;
+  height: 18px;
+  padding: 0 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  color: #8a8a96;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.panel button.ghostBtn:hover {
+  background: #ffffff1a;
+  color: #fff;
+}
+
+.panel button.twisty {
+  width: 18px;
+  min-width: 18px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #777783;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.panel button.twisty:hover {
+  background: none;
+  color: #b8b8c8;
+}
+
+.twistySpacer {
+  width: 18px;
+  min-width: 18px;
+}
+
+/* 削除系は常に赤。行ホバーで現れた時点で「消す操作」と分かるようにする */
+.panel button.ghostDanger,
+.timelineRow button.ghostDanger {
+  color: #e07a7a;
+}
+
+.panel button.ghostDanger:hover,
+.timelineRow button.ghostDanger:hover {
+  background: #ff5a5a26;
+  color: #ff9a9a;
+}
+
+/* 無効時まで赤いと押せそうに見えるので、色を戻して沈める */
+.panel button.ghostDanger:disabled,
+.timelineRow button.ghostDanger:disabled {
+  background: none;
+  color: #8a8a96;
+}
+
+/* 行のボタンは普段は潜め、行ホバー時に現れる (開閉アイコンは構造情報なので常時表示) */
+.treeRow .ghostBtn:not(.twisty),
+.assetRow .ghostBtn {
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.treeRow:hover .ghostBtn,
+.assetRow:hover .ghostBtn,
+.treeRow .ghostBtn:focus-visible,
+.assetRow .ghostBtn:focus-visible,
+.treeRow .ghostBtn.ghostOn {
+  opacity: 1;
+}
+
+/* --- properties --- */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.rowLabel {
+  width: 84px;
+  min-width: 84px;
+  color: #aaaab5;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.row input:not([type='color']):not([type='checkbox']):not([type='range']),
+.row textarea,
+.row select,
+.numField input {
+  background: #1a1a20;
+  border: 1px solid #3a3a46;
+  color: #e0e0e6;
+  box-sizing: border-box;
+  min-height: 28px;
+  border-radius: 4px;
+  padding: 5px 7px;
+  font-size: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.row input:not([type='color']):not([type='checkbox']):not([type='range']):focus,
+.row textarea:focus,
+.row select:focus,
+.numField input:focus {
+  outline: none;
+  border-color: #7382ff;
+  box-shadow: 0 0 0 1px #7382ff66;
+}
+
+.row select {
+  color-scheme: dark;
+}
+
+.row input[type='color'] {
+  width: 50px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #3a3a46;
+  border-radius: 4px;
+  background: none;
+}
+
+.vec3 {
+  display: flex;
+  gap: 5px;
+  flex: 1;
+}
+
+.numField {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.numField span {
+  color: #777;
+  font-size: 10px;
+}
+
+.numField input {
+  width: 100%;
+}
+
+.partCard {
+  border: 1px solid #3a3a46;
+  border-radius: 5px;
+  padding: 6px;
+  margin: 6px 0;
+  background: #26262e;
+}
+
+.partHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  color: #c0c8f0;
+  margin-bottom: 4px;
+}
+
+/* --- assets --- */
+.assetRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.assetDraggable {
+  cursor: grab;
+}
+
+.assetDraggable.assetDragging,
+.assetDraggable.assetDragging * {
+  cursor: grabbing !important;
+}
+
+.assetRow:hover {
+  background: #30303a;
+}
+
+/* 見本の画像。ドラッグを吸わないよう当たり判定を持たせない */
+.assetThumb {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  background: #fff2;
+  border-radius: 3px;
+  flex-shrink: 0;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/*
+ * 音声の試し聞き。見本の位置に置くが、こちらは押せないと用を成さないので
+ * 当たり判定を戻す。行のドラッグ開始はボタンの上では起きない (AssetsPanel)
+ */
+.panel button.assetThumbButton {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.assetDragShield {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  cursor: grabbing !important;
+  background: transparent;
+}
+
+.assetName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assetSectionTitle {
+  margin: 18px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #3a3a44;
+  color: #c2c2cf;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.assetEmpty {
+  padding: 8px 6px 12px;
+  color: #777784;
+  font-size: 11px;
+}
+
+.cameraViewStatus {
+  margin: 10px 0 8px;
+  color: #aeb4cf;
+  font-size: 11px;
+}
+
+.cameraViewList {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.cameraViewRow {
+  display: grid;
+  grid-template-columns: 24px minmax(60px, 1fr) 34px 24px;
+  gap: 5px;
+  align-items: center;
+  min-height: 28px;
+}
+
+.cameraViewRow > span {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #c9c9d4;
+}
+
+.panel button.cameraViewIndex {
+  display: grid;
+  width: 24px;
+  min-width: 24px;
+  padding: 0;
+  place-items: center;
+  text-align: center;
+}
+
+.panel button.cameraViewIndexActive,
+.panel button.cameraViewIndexActive:hover {
+  border-color: #7f8cff;
+  background: #4d5aa0;
+  box-shadow: 0 0 0 1px rgb(127 140 255 / 45%);
+  color: #fff;
+}
+
+.cameraViewProgress {
+  width: 100%;
+  min-width: 0;
+  accent-color: #e43d3d;
+  cursor: pointer;
+}
+
+.panel button {
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid #4a4a58;
+  border-radius: 4px;
+  background: #3a3a46;
+  color: #e0e0e6;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.panel button.cameraViewDelete {
+  padding-right: 0;
+  padding-left: 0;
+  color: #ff9b9b;
+}
+
+/* --- status bar --- */
+.status {
+  display: flex;
+  gap: 14px;
+  padding: 4px 10px;
+  background: #2a2a32;
+  border-top: 1px solid #3a3a44;
+  font-size: 11px;
+  align-items: center;
+}
+
+/* 一覧の各行はアイコン + 本文。ステータスバーの文字色としても使う */
+.issueList .err,
+.issueList .warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.issueList .err svg,
+.issueList .warn svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.err {
+  color: #ff7a7a;
+}
+
+.warn {
+  color: #f0c060;
+}
+
+.ok {
+  color: #7ad07a;
+}
+
+.issueList {
+  position: absolute;
+  bottom: 30px;
+  left: 10px;
+  right: 10px;
+  max-height: 40vh;
+  overflow-y: auto;
+  background: #26262ef0;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 10px;
+  z-index: 30;
+  white-space: pre-wrap;
+}
+
+.timeline {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(720px, calc(100% - 40px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  box-sizing: border-box;
+  padding: 9px 14px;
+  border: 1px solid #4a4a58;
+  border-radius: 20px;
+  background: #202028e8;
+  color: #fff;
+  font-size: 12px;
+  z-index: 6;
+}
+
+/* 再生ボタン / 進行バー / 音楽ボタン。音楽ボタンはBGMのある作品にだけ出るので、
+   3列目は auto にして無いときは潰れさせる (固定幅だと空白が残る) */
+.timelinePlayback {
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.timelineTrack {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+
+.playbackToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 26px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #626270;
+  border-radius: 7px;
+  background: #343440;
+  color: #f4f4f8;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.playbackToggle:hover {
+  border-color: #6bb6ff;
+  background: #414152;
+}
+
+.cameraCues {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 14px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.cameraCues button {
+  position: absolute;
+  top: 0;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  transform: translateX(-50%);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.cameraCues button::before {
+  position: absolute;
+  top: 0;
+  left: 5px;
+  width: 3px;
+  height: 14px;
+  border-radius: 1px;
+  background: #e43d3d;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 45%);
+  content: '';
+}
+
+.cameraCues button:hover::before,
+.cameraCues button.cameraCueActive::before {
+  left: 4px;
+  width: 5px;
+  background: #ff5a52;
+}
+
+.transformTools button.cameraViewSaved {
+  border-color: #b6bdff;
+  box-shadow: 0 0 0 2px rgb(109 124 255 / 45%);
+}
+
+.timeline input[type='range'] {
+  appearance: none;
+  width: 100%;
+  height: 14px;
+  min-width: 0;
+  margin: 0;
+  border-radius: 7px;
+  background: #d6d6dd;
+  cursor: pointer;
+}
+
+.timeline input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #6bb6ff;
+  border-radius: 50%;
+  background: #168af0;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 35%);
+}
+
+.timeline input[type='range']::-moz-range-track {
+  height: 14px;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.timeline input[type='range']::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #6bb6ff;
+  border-radius: 50%;
+  background: #168af0;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 35%);
+}
+
+/*
+ * 背後のビューを見ながら調整するため、パネル全体を透過前提で組む。
+ * 可読性はぼかしと縁の明度で確保し、面の不透明度は上げない。
+ * 高さと見出し幅は TimelinePanel が持つ (--timelineLabelWidth)。
+ * 右端のキー操作列は固定幅 (補間 + 削除ボタン + 余白) で、全行のレーン長を揃える。
+ */
+.timelineEditor {
+  --timelineToolsWidth: 128px;
+
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  left: 14px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #ffffff26;
+  border-radius: 8px;
+  background: #15151b80;
+  backdrop-filter: blur(0px) saturate(1.1);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 28%);
+  color: #f0f0f5;
+}
+
+.timelineResizeHandle {
+  flex: none;
+  height: 10px;
+  background: linear-gradient(#9a9aae, #9a9aae) center / 42px 2px no-repeat;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.timelineResizeHandle:hover {
+  background-color: #ffffff1a;
+}
+
+.timelineRow button {
+  min-height: 25px;
+  border: 1px solid #ffffff2e;
+  border-radius: 4px;
+  background: #3c3c48b8;
+  color: #eeeef4;
+  cursor: pointer;
+}
+
+/* 各行の右端に常設するキー操作。キー未選択のときは無効表示 */
+.timelineRowTools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 7px 0 0;
+}
+
+/* 見出しの削除は24pxのグリッド列に収まる。こちらは幅を明示して同じ見た目にする */
+.timelineRowTools button,
+.timelineRowLabel button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  min-width: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* 列幅に従わせる。中身 (easeInOut) に押し広げさせない */
+.timelineKeyEase {
+  width: 100%;
+  min-width: 0;
+  min-height: 25px;
+  border: 1px solid #ffffff2e;
+  border-radius: 4px;
+  background: #24242cd9;
+  color: #eeeef4;
+  color-scheme: dark;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.timelineRow button:disabled,
+.timelineKeyEase:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* 再生ボタン・進行バー・時刻。ボタンは再生画面と同じ .playbackToggle を使う */
+.timelineScrubberRow {
+  flex: none;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px;
+  border-bottom: 1px solid #ffffff1f;
+}
+
+.timelineTime {
+  color: #c8c8d6;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.timelineScrubber {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  accent-color: #168af0;
+}
+
+/* 行の並びと、見出し境界のハンドルを重ねる器 */
+.timelineBody {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.timelineRows {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 9px 9px;
+}
+
+/* 行の左端 (padding 9px + 枠線 1px) から見出し幅ぶん右が境界 */
+.timelineLabelHandle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(10px + var(--timelineLabelWidth, 170px));
+  width: 9px;
+  transform: translateX(-50%);
+  border-radius: 3px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.timelineLabelHandle:hover,
+.timelineLabelHandle:active {
+  background: #5a68d8aa;
+}
+
+.timelineEmpty {
+  padding: 12px;
+  color: #a6a6b6;
+  text-align: center;
+}
+
+/*
+ * スクロール領域の子なので、行数が増えても潰れないよう縮小させない。
+ * 面と枠は持たず、見出しとレーンの中身だけで行を成立させる (背景が透ける)
+ */
+/*
+ * 行ごとに独立したグリッドなので、右端を auto にすると補間の文字列長 (— / linear /
+ * easeInOut) がそのまま列幅になり、行ごとにレーンの長さがずれる。3列とも固定して
+ * 全行で境界を揃える。
+ */
+.timelineRow {
+  flex: none;
+  display: grid;
+  grid-template-columns: var(--timelineLabelWidth, 170px) minmax(0, 1fr) var(--timelineToolsWidth);
+  min-height: 36px;
+}
+
+.timelineRowLabel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 24px;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px;
+  border-right: 1px solid #ffffff26;
+}
+
+.timelineRowLabel span {
+  overflow: hidden;
+  color: #dcdce6;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timelineRowLabel strong {
+  color: #a3aeff;
+  font-size: 10px;
+}
+
+.timelineLane {
+  position: relative;
+  min-height: 34px;
+  margin: 0 12px;
+  background: linear-gradient(#ffffff2e 1px, transparent 1px) center / 100% 1px no-repeat;
+}
+
+.timelineRow button.timelineKey {
+  position: absolute;
+  top: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  min-height: 22px;
+  padding: 0;
+  transform: translateX(-50%);
+  border: 0;
+  background: transparent;
+  color: #f1ca58;
+}
+
+.timelineRow button.timelineKeySelected {
+  color: #ff725f;
+  filter: drop-shadow(0 0 3px #ff725f);
+}
+
+.panel button.keyButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  min-width: 26px;
+  padding: 0;
+  color: #f1ca58;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 40;
+  background: #2e2e38;
+  border: 1px solid #4a4a58;
+  border-radius: 5px;
+  padding: 4px;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdownMenu button {
+  text-align: left;
+  border: none;
+  background: none;
+}
+
+.dropdownMenu button:hover {
+  background: #4a4a5a;
+}
+
+.hintSmall {
+  margin: 6px 0 10px;
+  color: #858590;
+  font-size: 10.5px;
+  line-height: 1.55;
+}
+
+.assetName .hintSmall {
+  margin: 2px 0 0;
+}
+
+.panel > button + button {
+  margin-left: 6px;
+}
+
+/* 配置先の行: テキストとボタンを離し、ボタンは右寄せ */
+.destRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* アセットのドロップ先ハイライト */
+.dropOver {
+  outline: 1px dashed #7a88f0;
+  outline-offset: -1px;
+  background: #3d4a8055;
+}
+
+/* --- modal (ブラウザダイアログの代替) --- */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: #000a;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: #2e2e38;
+  border: 1px solid #4a4a58;
+  border-radius: 8px;
+  padding: 16px 18px;
+  min-width: 300px;
+  max-width: 440px;
+  box-shadow: 0 8px 30px #0008;
+}
+
+.modalTitle {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.modalBody {
+  color: #b8b8c2;
+  line-height: 1.6;
+  margin-bottom: 14px;
+  white-space: pre-wrap;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.modal button {
+  background: #3a3a46;
+  color: #e0e0e6;
+  border: 1px solid #4a4a58;
+  border-radius: 4px;
+  padding: 5px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.modal button:hover {
+  background: #4a4a5a;
+}
+
+/* 破壊的操作の実行ボタン */
+.modal button.modalDanger {
+  background: #a04444;
+  border-color: #c05a5a;
+}
+
+.modal button.modalDanger:hover {
+  background: #b85050;
+}
+
+/* サイドバー境界のリサイズハンドル */
+.splitter {
+  width: 5px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  background: transparent;
+  touch-action: none;
+}
+
+.splitter:hover,
+.splitter:active {
+  background: #5a68d8aa;
+}

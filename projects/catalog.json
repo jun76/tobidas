@@ -1,0 +1,28 @@
+{
+  "samples": [
+    {
+      "id": "forest_lantern",
+      "title": "Chasing the Forest Lantern",
+      "description": "A crayon-storybook chase after a lantern lost in the twilight forest.",
+      "projectPath": "/projects/forest_lantern/",
+      "thumbnail": "/projects/forest_lantern/assets/cover-front.webp",
+      "theme": "crayon-storybook"
+    },
+    {
+      "id": "morning_walk",
+      "title": "The Walk to School",
+      "description": "A cardboard miniature of one morning, from the houses to the classroom.",
+      "projectPath": "/projects/morning_walk/",
+      "thumbnail": "/projects/morning_walk/assets/cover-front.webp",
+      "theme": "cardboard-miniature"
+    },
+    {
+      "id": "four_seasons",
+      "title": "One Window, Four Seasons",
+      "description": "A watercolour piece: one windowsill, a whole year passing.",
+      "projectPath": "/projects/four_seasons/",
+      "thumbnail": "/projects/four_seasons/assets/cover-front.webp",
+      "theme": "watercolor-seasons"
+    }
+  ]
+}
