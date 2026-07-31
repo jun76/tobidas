@@ -71,11 +71,12 @@ my-book/
 
 ## サンプル作品
 
-`projects/`には、すぐに読み込める3つのサンプル作品があります。
+`projects/`には、すぐに読み込める4つのサンプル作品があります。
 
 - `forest_lantern` — Chasing the Forest Lantern
 - `morning_walk` — The Walk to School
 - `four_seasons` — One Window, Four Seasons
+- `crooked_castle` — The Crooked Castle
 
 リポジトリをダウンロードまたはクローンし、ビルダーの「開く」から各フォルダを選んでください。
 サンプル作品と同梱素材には、ソフトウェアとは別の利用条件があります。

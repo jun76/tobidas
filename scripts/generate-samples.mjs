@@ -1,12 +1,13 @@
 /**
- * 公開サンプル3作品の生成。
+ * 定義ファイルから作る公開サンプルの生成。
  *
  * 作品ごとの定義ファイルが紙工作の配置を宣言し、ここは書き出しだけを担う。
  * 配置の妥当性 (紙面からのはみ出し、収納時の縮小) は
- * scripts/samples/shared.mjs が投入時に検査し、
- * 開姿勢の通し検査は src/runtime/stow/containment.ts が npm test で行う。
+ * scripts/samples/shared.mjs が投入時に検査する。
+ *
+ * ここで作らない作品も `projects/` には入る。catalog.json の登録は残す。
  */
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { build as forestLantern } from './samples/forest-lantern.mjs'
 import { build as morningWalk } from './samples/morning-walk.mjs'
@@ -51,5 +52,12 @@ for (const builder of BUILDERS) {
     theme: work.meta.theme,
   })
 }
-writeFileSync(join(ROOT, 'catalog.json'), JSON.stringify({ samples: catalog }, null, 2) + '\n')
-console.log(`公開サンプルを${catalog.length}件生成しました`)
+// 手で組んだ作品の登録は残す。catalog.json を BUILDERS だけで書き直すと、
+// 生成のたびにその登録が消えてしまう
+const catalogPath = join(ROOT, 'catalog.json')
+const generated = new Set(catalog.map((entry) => entry.id))
+const handmade = existsSync(catalogPath)
+  ? JSON.parse(readFileSync(catalogPath, 'utf8')).samples.filter((entry) => !generated.has(entry.id))
+  : []
+writeFileSync(catalogPath, JSON.stringify({ samples: [...catalog, ...handmade] }, null, 2) + '\n')
+console.log(`公開サンプルを${catalog.length}件生成しました (生成対象外の登録 ${handmade.length}件は残置)`)

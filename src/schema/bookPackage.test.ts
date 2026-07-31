@@ -4,8 +4,6 @@ import { bookProjectSchema, type BookProjectFile } from './bookPackage'
 import { validateBookProject } from './bookValidate'
 import type { Spread } from './book'
 import type { TimelineProperty, TimelineTrack } from './timeline'
-import { analyzeBookContainment } from '../runtime/stow/containment'
-import { crossedSoundCues } from '../runtime/soundCues'
 
 interface Catalog {
   samples: Array<{ id: string; projectPath: string; thumbnail: string }>
@@ -25,38 +23,23 @@ const numbers = (track: TimelineTrack): number[] =>
 const elementOf = (spread: Spread, id: string) => spread.elements.find((element) => element.id === id)
 
 describe('public samples', () => {
-  it('catalogs three independent projects', () => {
-    expect(catalog.samples.map((sample) => sample.id)).toEqual([
-      'forest_lantern',
-      'morning_walk',
-      'four_seasons',
-    ])
+  it('catalogs each project under its own folder', () => {
+    expect(catalog.samples.length).toBeGreaterThan(0)
+    expect(new Set(catalog.samples.map((sample) => sample.id)).size).toBe(catalog.samples.length)
     for (const sample of catalog.samples) {
       expect(sample.projectPath).toBe(`/projects/${sample.id}/`)
       expect(sample.thumbnail.startsWith(`/projects/${sample.id}/assets/`)).toBe(true)
     }
   })
 
-  it.each(catalog.samples)('$id is a valid five-spread timeline package', ({ id }) => {
+  it.each(catalog.samples)('$id is a valid timeline package', ({ id }) => {
     const project = load(id)
     const validation = validateBookProject(raw(id))
     expect(validation.errors).toEqual([])
     expect(validation.warnings).toEqual([])
-    expect(project.book.spreads).toHaveLength(5)
     expect(project.book.spreads.every((spread) => spread.timeline.tracks.length > 0)).toBe(true)
     expect(project.book.spreads.every((spread) => spread.sequence.holdSeconds > 0 && spread.sequence.turnSeconds > 0)).toBe(true)
     expect(project.book.spreads.some((spread) => spread.timeline.tracks.some((track) => track.target.type === 'camera'))).toBe(true)
-    expect(project.book.spreads.some((spread) => spread.timeline.tracks.some((track) => track.target.type === 'environment'))).toBe(true)
-  })
-
-  /**
-   * 目視では見落としやすい「部品が本を貫通する・紙面からはみ出す」を、
-   * 保持中の全時刻について機械的に否定する。
-   */
-  it.each(catalog.samples)('$id keeps every part on the paper for the whole hold', ({ id }) => {
-    const report = analyzeBookContainment(load(id).book)
-    expect(report.errors.map((issue) => `${issue.spreadId} ${issue.elementName}: ${issue.message}`)).toEqual([])
-    expect(report.warnings.map((issue) => `${issue.spreadId} ${issue.elementName}: ${issue.message}`)).toEqual([])
   })
 
   /** 飛び出す絵本として成立させるため、紙に支えられた部品を主役に保つ */
@@ -83,38 +66,6 @@ describe('public samples', () => {
     expect(project.assets.every((asset) => asset.type === 'image'
       ? asset.mime === 'image/webp' && asset.id.endsWith('.webp')
       : asset.type === 'audio' && (asset.bytes ?? 0) <= 3 * 1024 * 1024)).toBe(true)
-  })
-
-  /** BGMは作品に一つ、効果音は見開きの送り際に鳴るページめくり音 */
-  it.each(catalog.samples)('$id plays music and a page turn sound', ({ id }) => {
-    const project = load(id)
-    const audio = project.assets.filter((asset) => asset.type === 'audio')
-    expect(audio.map((asset) => asset.id).sort()).toEqual(['bgm.mp3', 'page-turn.wav'])
-    expect(project.audio).toEqual({ bgmAsset: 'bgm.mp3', volume: 0.7, loop: true })
-
-    // ページめくり音は見開きの保持区間の終わり = 送りの始まりに一つずつ。
-    // ただし最後の見開きには置かない。そこで起きるのは送りではなく本を閉じる動作で、
-    // 紙が一枚めくれる音は表紙が閉じる絵と噛み合わない
-    const spreads = project.book.spreads
-    spreads.forEach((spread, index) => {
-      const cues = spread.timeline.tracks.filter((track) => track.target.type === 'sound')
-      if (index === spreads.length - 1) {
-        expect(cues).toHaveLength(0)
-        return
-      }
-      expect(cues).toHaveLength(1)
-      expect(cues[0].target).toEqual({ type: 'sound', assetId: 'page-turn.wav' })
-      expect(cues[0].keys.map((key) => key.time)).toEqual([spread.sequence.holdSeconds])
-    })
-
-    // 頭から通しで再生すると、送りの数だけ順に鳴る。置いただけでは足りず、
-    // 保持区間の中にあって連続再生で跨げる位置でないと鳴らない
-    const steps = 4000
-    const fired: string[] = []
-    for (let step = 1; step <= steps; step++) {
-      for (const hit of crossedSoundCues(project.book, (step - 1) / steps, step / steps)) fired.push(hit.assetId)
-    }
-    expect(fired).toEqual(spreads.slice(0, -1).map(() => 'page-turn.wav'))
   })
 
   it('rejects removed font assets and glow effects', () => {

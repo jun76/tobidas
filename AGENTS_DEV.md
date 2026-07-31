@@ -155,7 +155,8 @@ pageThickness / 4 <= SURFACE_Y + layer × LAYER_LIFT < pageThickness / 2
 2. `stow/containment.ts` が、保持中の全時刻と全モーション位相について開姿勢の紙面包含を検査する
 
 補正できない問題は `warnings` に残します。
-公開サンプルは `src/schema/bookPackage.test.ts` でerrorsとwarningsが0件であることを検査します。
+公開サンプルへの合否判定には使いません。紙面より高く積む作品のように、はみ出しを
+意図して選ぶことがあるためです。判断は `analyzeBookContainment` の結果を見て人が下します。
 
 `sourcePreset: 'depth-layer'` の背景は左右どちらか片面の直下に属し、片面幅を越えません。
 `constrainSinglePageBackground` と `bookValidate.ts` の両方で強制します。

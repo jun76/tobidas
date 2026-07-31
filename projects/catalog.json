@@ -23,6 +23,14 @@
       "projectPath": "/projects/four_seasons/",
       "thumbnail": "/projects/four_seasons/assets/cover-front.webp",
       "theme": "watercolor-seasons"
+    },
+    {
+      "id": "crooked_castle",
+      "title": "The Crooked Castle",
+      "description": "A storm-lit castle of crooked spires, seen from under the open book.",
+      "projectPath": "/projects/crooked_castle/",
+      "thumbnail": "/projects/crooked_castle/assets/cover.webp",
+      "theme": "spooky-cartoon"
     }
   ]
 }

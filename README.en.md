@@ -71,11 +71,12 @@ Two publishing formats are available:
 
 ## Sample projects
 
-The `projects/` directory contains three ready-to-open samples:
+The `projects/` directory contains four ready-to-open samples:
 
 - `forest_lantern` — Chasing the Forest Lantern
 - `morning_walk` — The Walk to School
 - `four_seasons` — One Window, Four Seasons
+- `crooked_castle` — The Crooked Castle
 
 Download or clone the repository, then select one of these folders with **Open** in the builder.
 The samples and bundled assets have terms separate from the software license.
