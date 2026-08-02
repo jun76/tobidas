@@ -69,6 +69,9 @@ const LAYER_STEP = 0.007
 /** 縁からの安全余白。収納コンパイラの余白 0.2 より広く取る */
 const EDGE_MARGIN = 0.12
 const FOLD_MARGIN = 0.3
+/** runtime/textStyle.ts と共有する文字枠の行高・左右余白 */
+const TEXT_LINE_HEIGHT = 1.25
+const TEXT_SIDE_PAD = 0.2
 
 /**
  * 揺れる立ち板を紙面から浮かせる量。
@@ -276,7 +279,7 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
     throw new Error(`${workId} / ${name}: ${message}`)
   }
 
-  const base = (id, { name: label, parent, position, rotation = [0, 0, 0], scale = [1, 1, 1], pivot = [0.5, 0.5], layer = 0, mechanism, preset, motion = [], fall = 'auto', stagger = 0 }) => ({
+  const base = (id, { name: label, parent, position, rotation = [0, 0, 0], scale = [1, 1, 1], pivot = [0.5, 0.5], layer = 0, motion = [], fall = 'auto', stagger = 0 }) => ({
     id: `${scene}-${id}`,
     name: label,
     visible: true,
@@ -288,8 +291,19 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
     // 位相は既定値へ頼らず必ず書き出す。生JSONを読む検査でもNaNにならない
     motion: motion.map((item) => (item.type === 'spin' ? item : { phase: 0, ...item })),
     clock: 'visible-elapsed',
-    sourcePreset: preset,
-    stow: { mechanism, fallDirection: fall, stagger },
+    stow: { fallDirection: fall, stagger },
+  })
+
+  const visual = (fields = {}) => ({
+    type: 'visual', width: 1, height: 1, billboard: false,
+    backgroundColor: '#00000000', foregroundColor: '#2e241b', text: '',
+    fontSize: .35, align: 'center', font: 'rounded', bold: true, italic: false, underline: false,
+    particles: { enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
+    ...fields,
+  })
+  const pageOwner = (x) => ({
+    parent: { type: x < 0 ? 'left-page' : 'right-page' },
+    localX: x + (x < 0 ? PAGE_WIDTH / 2 : -PAGE_WIDTH / 2),
   })
 
   const add = (element) => {
@@ -310,7 +324,7 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
         rotation: [-90, 0, 0], pivot: [0.5, 0.5],
         mechanism: 'page-glue', preset: 'paper-stack', motion,
       }),
-      type: 'image', asset, width, height: depth, billboard: false,
+      ...visual({ image: asset, width, height: depth }),
     })
   }
 
@@ -334,7 +348,7 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
         pivot: [0.5, 0], mechanism: 'flap', fall: chosen, stagger, motion,
         preset: backdrop ? 'depth-layer' : 'bottom-upright',
       }),
-      type: 'image', asset, width, height, billboard: false,
+      ...visual({ image: asset, width, height }),
     })
   }
 
@@ -351,13 +365,13 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
       if (Math.abs(z) + (billboard ? reach : 0) > PAGE_DEPTH / 2 - EDGE_MARGIN) fail(`${label} が紙面の奥行きより外にあります (z=${z})`)
       if (y - (billboard ? reach : height / 2) < 0) fail(`${label} の足元が紙面より下です (y=${y})`)
     }
+    const owner = parent ? null : pageOwner(x)
     return add({
       ...base(id, {
-        name: label, parent: parent ?? { type: 'spread' }, layer,
-        position: [x, y, z], pivot: [0.5, 0.5],
-        mechanism: 'auto', preset: 'floating-character', motion, fall,
+        name: label, parent: parent ?? owner.parent, layer,
+        position: [parent ? x : owner.localX, y, z], pivot: [0.5, 0.5], motion, fall,
       }),
-      type: 'image', asset, width, height, billboard,
+      ...visual({ image: asset, width, height, billboard }),
     })
   }
 
@@ -365,8 +379,8 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
   const caption = (page, { id, text, u, v, size = 0.42, color = '#3a3128', align = 'center', layer = 9 }) => {
     const lines = text.split('\n')
     const em = Math.max(...lines.map((line) => [...line].reduce((sum, ch) => sum + (/[ -~]/.test(ch) ? 0.55 : 1), 0)))
-    const height = size * lines.length
-    const width = size * (0.8 * em + 0.16)
+    const height = size * TEXT_LINE_HEIGHT * lines.length
+    const width = size * (em + TEXT_SIDE_PAD)
     const halfU = width / (2 * PAGE_WIDTH)
     const halfV = height / (2 * PAGE_DEPTH)
     if (u - halfU < -0.001 || u + halfU > 1.001) fail(`本文「${lines[0]}」が片面の幅をはみ出します`)
@@ -378,7 +392,7 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
         rotation: [-90, 0, 0], pivot: [0.5, 0.5],
         mechanism: 'page-glue', preset: 'page-text',
       }),
-      type: 'text', text, width, height, fontSize: size, color, align,
+      ...visual({ text, width, height, fontSize: size, foregroundColor: color, align }),
     })
   }
 
@@ -393,8 +407,8 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
     // 文字は箱いっぱいへ引き伸ばして描かれるので、箱は必ず文字から導く。
     // 板の高さ board を渡すと、その面の中央へ字が来る高さへ持ち上げる
     const em = [...text].reduce((sum, ch) => sum + (/[ -~]/.test(ch) ? 0.55 : 1), 0)
-    const height = size
-    const width = size * (0.8 * em + 0.16)
+    const height = size * TEXT_LINE_HEIGHT
+    const width = size * (em + TEXT_SIDE_PAD)
     const lift = Math.max(0.01, board / 2 - height / 2)
     const halfU = width / (2 * PAGE_WIDTH)
     if (u - halfU < -0.001 || u + halfU > 1.001) fail(`見出し「${text}」の幅 ${width.toFixed(2)} が片面をはみ出します`)
@@ -407,31 +421,39 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
         pivot: [0.5, 0], mechanism: 'flap', fall, stagger,
         preset: 'bottom-upright',
       }),
-      type: 'text', text, width, height, fontSize: size, color, align,
+      ...visual({ text, width, height, fontSize: size, foregroundColor: color, align }),
     })
   }
 
   /** 発光粒子。奥行きを持たない透明な縦置き平面として収納する */
-  const sparkle = ({ id, name: label, x, y, z, color, size = 1.4, layer = 12 }) => add({
-    ...base(id, {
-      name: label, parent: { type: 'spread' }, layer,
-      position: [x, y, z], mechanism: 'auto', preset: 'light-particles',
-    }),
-    type: 'effect', effect: 'sparkles', color, size,
-  })
+  const sparkle = ({ id, name: label, x, y, z, color, size = 1.4, layer = 12 }) => {
+    const owner = pageOwner(x)
+    return add({
+      ...base(id, { name: label, parent: owner.parent, layer, position: [owner.localX, y, z] }),
+      ...visual({ width: size, height: size,
+        particles: { enabled: true, color, count: 6, size: .45, drift: .05, period: 11 } }),
+    })
+  }
 
   /** 子部品をぶら下げるための無地の枠。回転させると子ごと回る */
-  const pivotGroup = ({ id, name: label, x, y, z, motion, rotation, mechanism = 'auto' }) => add({
-    ...base(id, {
-      name: label, parent: { type: 'spread' }, layer: 4,
-      position: [x, y, z], rotation: rotation ?? [0, 0, 0], mechanism, preset: 'custom', motion,
-    }),
-    type: 'group',
-  })
+  const pivotGroup = ({ id, name: label, x, y, z, motion, rotation }) => {
+    const owner = pageOwner(x)
+    return add({
+      ...base(id, { name: label, parent: owner.parent, layer: 4,
+        position: [owner.localX, y, z], rotation: rotation ?? [0, 0, 0], motion }),
+      type: 'group',
+    })
+  }
 
   const key = (id, time, value, ease) => ({ id, time, value, ease })
   const track = (elementId, property, points, ease = 'easeInOut') => {
-    const discrete = property === 'visible' || property === 'asset'
+    if (property === 'effect.size') {
+      track(elementId, 'visual.width', points, ease)
+      return track(elementId, 'visual.height', points, ease)
+    }
+    if (property === 'effect.color') property = 'visual.particles.color'
+    if (property === 'asset') property = 'visual.image'
+    const discrete = property === 'visible' || property === 'visual.image'
     const id = `${elementId}-${property.replaceAll('.', '-')}`
     if (tracks.some((item) => item.id === id)) fail(`${id} のトラックが重複しています`)
     tracks.push({

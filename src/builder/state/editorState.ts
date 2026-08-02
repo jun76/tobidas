@@ -1,7 +1,7 @@
 import type { Asset } from '../../schema/assets'
 import type { BookProject } from '../../schema/bookPackage'
 import type { BookValidationResult } from '../../schema/bookValidate'
-import type { ParentSpace, SourcePreset, StageElement, StageElementType, StowMechanism } from '../../schema/stageElement'
+import type { ParentSpace, StageElement, StageElementType } from '../../schema/stageElement'
 import type { TimelineKey, TimelineProperty, TimelineTarget, TimelineValue } from '../../schema/timeline'
 import type { RootParentType } from '../hierarchy'
 import type { PlacementMode } from '../presets'
@@ -76,9 +76,7 @@ export interface EditorState {
     spreadId: string,
     type: StageElementType,
     parent?: ParentSpace,
-    mechanism?: StowMechanism,
     assetId?: string,
-    preset?: SourcePreset,
   ): void
   moveElement(spreadId: string, id: string, parent: ParentSpace): void
   placeAsset(

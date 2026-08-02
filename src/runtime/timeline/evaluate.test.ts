@@ -36,13 +36,13 @@ describe('オーサードタイムライン評価', () => {
   })
 
   it('sRGB色を線形色空間で補間してsRGBへ戻す', () => {
-    const item = track('effect.color', [[0, '#000000'], [2, '#ffffff']])
+    const item = track('visual.particles.color', [[0, '#000000'], [2, '#ffffff']])
     expect(evaluateTimelineTrack(item, 1)).toBe('#bcbcbc')
   })
 
   it('要素の制作姿勢へトラック値を適用する', () => {
     const book = createBook()
-    const element = createStageElement('image')
+    const element = createStageElement('visual')
     element.id = 'subject'
     element.baseTransform.position[0] = 9
     book.spreads[0].elements.push(element)
@@ -52,7 +52,7 @@ describe('オーサードタイムライン評価', () => {
     ]
     const evaluated = evaluateElementTimeline(element, book.spreads[0], 1)
     expect(evaluated.baseTransform.position[0]).toBeCloseTo(0)
-    expect(evaluated.type === 'image' && evaluated.opacity).toBeCloseTo(0.5)
+    expect(evaluated.type === 'visual' && evaluated.opacity).toBeCloseTo(0.5)
     expect(element.baseTransform.position[0]).not.toBe(evaluated.baseTransform.position[0])
   })
 })

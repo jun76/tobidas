@@ -5,6 +5,8 @@ import { validateBookProject } from './bookValidate'
 import type { Spread } from './book'
 import type { TimelineProperty, TimelineTrack } from './timeline'
 import { compileSpreadStow } from '../runtime/stow/assign'
+import { pageAnchorX } from '../runtime/stow/geometry'
+import { measureTextBox } from '../runtime/textStyle'
 
 interface Catalog {
   samples: Array<{ id: string; projectPath: string; thumbnail: string }>
@@ -49,22 +51,148 @@ describe('public samples', () => {
     expect(project.book.spreads.some((spread) => spread.timeline.tracks.some((track) => track.target.type === 'camera'))).toBe(true)
   })
 
-  /** 飛び出す絵本として成立させるため、紙に支えられた部品を主役に保つ */
+  /** 保存形式はプリセットや支持機構を持たず、開姿勢だけを持つ。 */
   it.each(catalog.samples)('$id builds each spread out of paper mechanisms', ({ id }) => {
     const project = load(id)
     for (const spread of project.book.spreads) {
       const roots = spread.elements.filter((element) => element.parent.type !== 'element')
       const compiled = compileSpreadStow(project.book, spread)
       const items = [...compiled.left, ...compiled.right]
-      const supported = items.filter((item) => item.mechanism !== 'airborne-route')
-      const floating = items.filter((item) => item.mechanism === 'airborne-route'
-        && (item.element.type === 'image' || item.element.type === 'text'))
-      expect(supported.length).toBeGreaterThanOrEqual(8)
-      expect(floating.length).toBeLessThanOrEqual(supported.length / 4)
-      expect(compiled.spanning.length).toBeGreaterThan(0)
-      expect(roots.some((element) => element.stow.mechanism === 'page-glue')).toBe(true)
+      expect(items.length + compiled.spanning.length).toBeGreaterThan(0)
+      expect(roots.every((element) => element.parent.type === 'left-page' || element.parent.type === 'right-page')).toBe(true)
+      expect(JSON.stringify(spread)).not.toContain('"mechanism"')
+      expect(JSON.stringify(spread)).not.toContain('"sourcePreset"')
       expect(JSON.stringify(spread)).not.toContain('spine-arch')
       expect(JSON.stringify(spread)).not.toContain('"strut"')
+    }
+  })
+
+  it.each(catalog.samples)('$id gives every text visual enough room for all glyphs and lines', ({ id }) => {
+    const project = load(id)
+    for (const spread of project.book.spreads) {
+      for (const element of spread.elements) {
+        if (element.type !== 'visual' || !element.text) continue
+        const required = measureTextBox(element, element.fontSize)
+        expect(element.width, `${spread.id}/${element.id} width`).toBeGreaterThanOrEqual(required.width - 1e-6)
+        expect(element.height, `${spread.id}/${element.id} height`).toBeGreaterThanOrEqual(required.height - 1e-6)
+      }
+    }
+  })
+
+  it('forest_lantern first-spread trees are grounded with production lift to spare', () => {
+    const project = load('forest_lantern')
+    const spread = project.book.spreads[0]
+    const compiled = compileSpreadStow(project.book, spread)
+    const items = [...compiled.left, ...compiled.right]
+    for (let index = 1; index <= 5; index++) {
+      expect(items.find((item) => item.element.id === `spread-1-tree-${index}`)?.mechanism).toBe('flap')
+    }
+  })
+
+  it('forest_lantern keeps the spanning great tree at its authored size', () => {
+    const project = load('forest_lantern')
+    const spread = project.book.spreads[3]
+    const tree = elementOf(spread, 'spread-4-great-tree')
+    expect(tree?.type === 'visual' && tree.height).toBeCloseTo(6.8)
+    const tracks = spread.timeline.tracks.filter((track) =>
+      track.target.type === 'element' && track.target.elementId === 'spread-4-great-tree')
+    expect(tracks.some((track) => track.property === 'scale')).toBe(false)
+  })
+
+  it('crooked_castle raises the front row before the middle and rear towers', () => {
+    const project = load('crooked_castle')
+    const spread = project.book.spreads[0]
+    const compiled = compileSpreadStow(project.book, spread)
+    const items = [...compiled.left, ...compiled.right]
+    const front = items.filter((item) => /^front-(left|right)-/.test(item.element.id))
+    const rear = items.filter((item) => /^(near|mid|back)-(left|right)-/.test(item.element.id))
+    expect(front).toHaveLength(12)
+    expect(rear.length).toBeGreaterThan(0)
+    expect(Math.max(...front.map((item) => item.phase))).toBeLessThan(
+      Math.min(...rear.map((item) => item.phase)),
+    )
+    expect(elementOf(spread, 'central-twin')?.stow.stagger).toBeGreaterThan(0)
+    const delayed = spread.timeline.tracks.filter((track) =>
+      track.property === 'scale'
+      && track.target.type === 'element'
+      && (/^(near|mid|back)-(left|right)-/.test(track.target.elementId) || track.target.elementId === 'central-twin'))
+    expect(delayed).toHaveLength(33)
+    expect(delayed.every((track) => track.keys[0]?.value === 0)).toBe(true)
+    expect(delayed.every((track) => (track.keys.at(-1)?.time ?? 1) < 1)).toBe(true)
+  })
+
+  it.each(catalog.samples)('$id keeps page captions glued to their owning page', ({ id }) => {
+    const project = load(id)
+    for (const spread of project.book.spreads) {
+      const compiled = compileSpreadStow(project.book, spread)
+      const items = [...compiled.left, ...compiled.right]
+      for (const element of spread.elements) {
+        if (element.type !== 'visual' || !element.text) continue
+        expect(items.find((item) => item.element.id === element.id)?.mechanism).toBe('page-glue')
+      }
+    }
+  })
+
+  it('forest_lantern keeps foreground props behind the caption strip', () => {
+    const project = load('forest_lantern')
+    const foregroundProps = [
+      ['spread-1-fox'],
+      ['spread-2-fox', 'spread-2-fern'],
+      ['spread-3-rabbit', 'spread-3-fern'],
+      ['spread-4-mushroom'],
+      ['spread-5-flower-1', 'spread-5-badger', 'spread-5-fox'],
+    ]
+
+    for (const [index, spread] of project.book.spreads.entries()) {
+      const caption = spread.elements.find((element) => element.type === 'visual' && element.text)
+      expect(caption, `${spread.id} caption`).toBeDefined()
+      for (const id of foregroundProps[index]) {
+        const prop = elementOf(spread, id)
+        expect(prop, `${spread.id}/${id}`).toBeDefined()
+        expect(prop!.baseTransform.position[2], `${spread.id}/${id} depth`).toBeLessThanOrEqual(
+          caption!.baseTransform.position[2] - .6,
+        )
+      }
+    }
+  })
+
+  it.each(catalog.samples)('$id keeps every particle visual airborne', ({ id }) => {
+    const project = load(id)
+    for (const spread of project.book.spreads) {
+      const compiled = compileSpreadStow(project.book, spread)
+      const items = [...compiled.left, ...compiled.right]
+      for (const element of spread.elements) {
+        if (element.type !== 'visual' || !element.particles.enabled) continue
+        expect(items.find((item) => item.element.id === element.id)?.mechanism).toBe('airborne-route')
+      }
+    }
+  })
+
+  it('preserves pre-011 particle centers when assigning them to pages', () => {
+    const expected = {
+      forest_lantern: {
+        'spread-1-ember': [.25, 2.4, 2],
+        'spread-2-spray': [-1.4, 1, 1.6],
+        'spread-4-halo': [0, 2.5, .4],
+        'spread-5-halo': [0, 3, .3],
+      },
+      morning_walk: {
+        'spread-5-sunbeam': [0, 2, .2],
+      },
+    } as const
+    for (const [projectId, positions] of Object.entries(expected)) {
+      const project = load(projectId)
+      const elements = project.book.spreads.flatMap((spread) => spread.elements)
+      for (const [elementId, position] of Object.entries(positions)) {
+        const element = elements.find((candidate) => candidate.id === elementId)!
+        expect(element.type).toBe('visual')
+        expect(element.type === 'visual' && element.particles.enabled).toBe(true)
+        expect([
+          element.baseTransform.position[0] + pageAnchorX(element.parent, project.book.format.pageWidth),
+          element.baseTransform.position[1],
+          element.baseTransform.position[2],
+        ]).toEqual(position)
+      }
     }
   })
 
@@ -86,22 +214,16 @@ describe('public samples', () => {
     const bytes = project.assets.reduce((total, asset) => total + (asset.bytes ?? 0), 0)
     expect(bytes).toBeLessThan(12 * 1024 * 1024)
     // 絵は全WebP。音声だけが別形式で、1本ずつ3MBに収まる
-    expect(project.assets.every((asset) => asset.type === 'image'
+    expect(project.assets.every((asset) => asset.type === 'image' || asset.type === 'svg'
       ? asset.mime === 'image/webp' && asset.id.endsWith('.webp')
       : asset.type === 'audio' && (asset.bytes ?? 0) <= 3 * 1024 * 1024)).toBe(true)
   })
 
-  it('rejects removed font assets and glow effects', () => {
+  it('rejects removed font assets', () => {
     const withFont = raw('forest_lantern') as { assets: Array<Record<string, unknown>> }
     withFont.assets.push({ id: 'font.woff2', name: 'font', type: 'font', mime: 'font/woff2' })
     expect(bookProjectSchema.safeParse(withFont).success).toBe(false)
 
-    const withGlow = raw('forest_lantern') as {
-      book: { spreads: Array<{ elements: Array<Record<string, unknown>> }> }
-    }
-    const effect = withGlow.book.spreads.flatMap((spread) => spread.elements).find((element) => element.type === 'effect')!
-    effect.effect = 'glow'
-    expect(bookProjectSchema.safeParse(withGlow).success).toBe(false)
   })
 
   it('keeps the BGM and spread cue contracts', () => {
@@ -171,23 +293,19 @@ describe('public samples', () => {
     expect('views' in bookProjectSchema.parse(project).book.camera).toBe(false)
   })
 
-  it('requires source preset and common opacity', () => {
+  it('requires common opacity', () => {
     const project = raw('forest_lantern') as {
       book: { spreads: Array<{ elements: Array<Record<string, unknown>> }> }
     }
-    delete project.book.spreads[0].elements[0].sourcePreset
     delete project.book.spreads[0].elements[1].opacity
     expect(bookProjectSchema.safeParse(project).success).toBe(false)
   })
 
-  it('rejects backgrounds outside a single page', () => {
+  it('all root visuals belong to a page even when they cross the spine', () => {
     const project = load('forest_lantern')
-    const background = project.book.spreads[0].elements.find((element) => element.sourcePreset === 'depth-layer')!
-    background.parent = { type: 'spread' }
-    expect(validateBookProject(project).errors.some((error) => error.includes('must sit directly under the left or right page'))).toBe(true)
-    background.parent = { type: 'right-page' }
-    background.baseTransform.position[0] = 20
-    expect(validateBookProject(project).errors.some((error) => error.includes('exceeds the page width'))).toBe(true)
+    expect(project.book.spreads.flatMap((spread) => spread.elements)
+      .filter((element) => element.parent.type !== 'element')
+      .every((element) => element.parent.type === 'left-page' || element.parent.type === 'right-page')).toBe(true)
   })
 
   it('accepts a stage background image and validates its asset reference', () => {
@@ -202,7 +320,7 @@ describe('public samples', () => {
   it('allows a particle plane to rotate like other planar parts', () => {
     const project = load('forest_lantern')
     const particle = project.book.spreads.flatMap((spread) => spread.elements)
-      .find((element) => element.sourcePreset === 'light-particles')!
+      .find((element) => element.type === 'visual' && element.particles.enabled)!
     particle.baseTransform.rotation[0] = 20
     expect(validateBookProject(project).errors).toEqual([])
   })
@@ -241,15 +359,31 @@ describe('public samples', () => {
       .find((track) => Math.abs(numbers(track).at(-1)! - numbers(track)[0]) > 4)!
     expect(mote).toBeDefined()
     const moteId = mote.target.type === 'element' ? mote.target.elementId : ''
-    expect(elementOf(river, moteId)?.motion.some((motion) => motion.type === 'bob')).toBe(true)
+    const moteElement = elementOf(river, moteId)!
+    expect(moteElement.motion.some((motion) => motion.type === 'bob')).toBe(true)
     expect(elementTracks(river, 'position.y').some((track) => track.keys.length >= 3)).toBe(true)
+
+    const pageWidth = project.book.format.pageWidth
+    const worldX = (spread: Spread, elementId: string, values: number[]) => {
+      const element = elementOf(spread, elementId)!
+      const anchor = pageAnchorX(element.parent, pageWidth)
+      return values.map((value) => value + anchor)
+    }
+    expect(worldX(river, moteId, numbers(mote))[0]).toBeCloseTo(-6.9)
+    expect(worldX(river, moteId, numbers(mote)).at(-1)).toBeCloseTo(-.8)
+    const hill = project.book.spreads[2]
+    const hillMote = elementTracks(hill, 'position.x')
+      .find((track) => track.target.type === 'element' && track.target.elementId === 'spread-3-mote')!
+    expect(worldX(hill, 'spread-3-mote', numbers(hillMote))[0]).toBeCloseTo(-6.4)
+    expect(worldX(hill, 'spread-3-mote', numbers(hillMote)).at(-1)).toBeCloseTo(-.9)
 
     // 横へ走る部品はどれも背表紙を越えない。収納コンパイラは開始位置の符号だけで
     // 帰属面を決めるので、越えさせると左面の部品が右面の上へ出る。めくりの最中は
     // そこに次の見開きが来ているため、次のページを貫通して着地したように見える
     for (const spread of project.book.spreads) {
       for (const track of elementTracks(spread, 'position.x')) {
-        const values = numbers(track)
+        if (track.target.type !== 'element') continue
+        const values = worldX(spread, track.target.elementId, numbers(track))
         expect(Math.min(...values) * Math.max(...values)).toBeGreaterThanOrEqual(0)
       }
     }
@@ -289,11 +423,21 @@ describe('public samples', () => {
     const train = elementTracks(crossing, 'position.x')
       .find((track) => Math.abs(numbers(track).at(-1)! - numbers(track)[0]) > 8)!
     expect(train).toBeDefined()
-    const passes = numbers(train)
-    expect(passes[0]).toBeLessThan(0)
-    expect(passes.at(-1)).toBeGreaterThan(0)
+    const trainElement = elementOf(crossing, (train.target as { elementId: string }).elementId)!
+    const anchor = pageAnchorX(trainElement.parent, project.book.format.pageWidth)
+    const passes = numbers(train).map((value) => value + anchor)
+    expect(passes[0]).toBeLessThanOrEqual(-4)
+    expect(passes.at(-1)).toBeGreaterThanOrEqual(4)
     // 一度だけ通る: 往復しない
     expect(passes.every((value, index) => index === 0 || value >= passes[index - 1])).toBe(true)
+
+    const classroom = project.book.spreads[4]
+    const curtains = ['spread-5-curtain-l', 'spread-5-curtain-r'].map((id) => elementOf(classroom, id)!)
+    const curtainWorldX = curtains.map((element) =>
+      element.baseTransform.position[0] + pageAnchorX(element.parent, project.book.format.pageWidth))
+    expect(curtainWorldX[0]).toBeCloseTo(-5.75)
+    expect(curtainWorldX[1]).toBeCloseTo(5.5)
+    expect(curtainWorldX.every((x) => Math.abs(x) <= 6)).toBe(true)
 
     const slope = project.book.spreads[3]
     const camera = tracksOf(slope, 'position').find((track) => track.target.type === 'camera')!
@@ -365,18 +509,18 @@ describe('public samples', () => {
     const seasonOrder = ['spring', 'summer', 'autumn', 'winter']
     project.book.spreads.slice(0, 4).forEach((spread, index) => {
       // 見開き1〜4は一枚につき一季節。途中で絵が入れ替わらない
-      expect(elementTracks(spread, 'asset')).toHaveLength(0)
+      expect(elementTracks(spread, 'visual.image')).toHaveLength(0)
 
       // 景色は左右の面でパノラマの半分ずつ。両面に同じ絵を置かない
       const views = ['view-l', 'view-r'].map((suffix) =>
         spread.elements.find((element) => element.id.endsWith(suffix))!)
-      expect(views.map((element) => element.type === 'image' && element.asset))
+      expect(views.map((element) => element.type === 'visual' && element.image))
         .toEqual([`view-${seasonOrder[index]}-l.webp`, `view-${seasonOrder[index]}-r.webp`])
 
       // 粒子も同じ季節のものだけが落ちる
       const petals = ['particle-far', 'particle-near'].map((suffix) =>
         spread.elements.find((element) => element.id.endsWith(suffix))!)
-      expect(new Set(petals.map((element) => element.type === 'image' && element.asset)).size).toBe(1)
+      expect(new Set(petals.map((element) => element.type === 'visual' && element.image)).size).toBe(1)
 
       // 光も季節のあいだ動かない。動くのは明るさだけ
       for (const property of ['background', 'directional.color'] as const) {
@@ -414,7 +558,7 @@ describe('public samples', () => {
     expect(seasonSwaps).toHaveLength(3)
 
     // 粒子も景色と同じ順に四季を巡り、差し替えは景色の変わり目と同時刻
-    const seasonal = particles(finale, 'asset')
+    const seasonal = particles(finale, 'visual.image')
     expect(seasonal).toHaveLength(2)
     for (const track of seasonal) {
       expect(new Set(track.keys.map((key) => key.value)).size).toBe(4)
@@ -436,7 +580,7 @@ describe('public samples', () => {
     expect(seasonal.every((track) => track.keys.every((key, index) =>
       String(key.value).includes(petalOrder[index])))).toBe(true)
     expect(finale.elements.filter((element) => element.id.includes('layer-left-'))
-      .every((element, index) => element.type === 'image' && element.asset.includes(viewOrder[index]))).toBe(true)
+      .every((element, index) => element.type === 'visual' && element.image?.includes(viewOrder[index]))).toBe(true)
   })
 
   /**

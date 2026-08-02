@@ -1,4 +1,4 @@
-import type { TextElement, TextFont } from '../schema/stageElement'
+import type { TextFont, VisualElement } from '../schema/stageElement'
 
 /**
  * 文字の書体と寸法。
@@ -27,7 +27,7 @@ export const TEXT_LINE_HEIGHT = 1.25
 /** 左右の余白 (フォントサイズ比)。同じく両者で共有する */
 export const TEXT_SIDE_PAD = 0.2
 
-export type TextStyle = Pick<TextElement, 'text' | 'font' | 'bold' | 'italic' | 'underline'>
+export type TextStyle = Pick<VisualElement, 'text' | 'font' | 'bold' | 'italic' | 'underline'>
 
 /** キャンバスの font 指定。斜体と太字はここだけで決める */
 export function canvasFont(style: Pick<TextStyle, 'font' | 'bold' | 'italic'>, px: number): string {
@@ -46,7 +46,7 @@ function measureContext(): CanvasRenderingContext2D | null {
 
 /** 端末に書体がない場所 (テスト・生成スクリプト) の見積り。半角0.55・全角1.0の粗い勘定 */
 function estimateEm(line: string): number {
-  return 0.8 * [...line].reduce((sum, ch) => sum + (/[ -~]/.test(ch) ? 0.55 : 1), 0)
+  return [...line].reduce((sum, ch) => sum + (/[ -~]/.test(ch) ? 0.55 : 1), 0)
 }
 
 /** いちばん長い行の幅をフォントサイズ比で返す */

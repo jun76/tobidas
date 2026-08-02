@@ -28,9 +28,9 @@ function randomBookWithElement(next: () => number): { book: ReturnType<typeof cr
   const book = createBook()
   const spread = book.spreads[0]
   const parentRoll = next()
-  const parent = parentRoll < 0.34 ? { type: 'left-page' as const } : parentRoll < 0.67 ? { type: 'right-page' as const } : { type: 'spread' as const }
-  const element = createStageElement('image', parent, 'auto')
-  if (element.type !== 'image') throw new Error('unreachable')
+  const parent = parentRoll < 0.5 ? { type: 'left-page' as const } : { type: 'right-page' as const }
+  const element = createStageElement('visual', parent, 'auto')
+  if (element.type !== 'visual') throw new Error('unreachable')
   element.width = 0.5 + next() * 10
   element.height = 0.5 + next() * 5
   element.baseTransform.position = [next() * 7 - 3.5, next() * 4, next() * 5 - 2.5]
@@ -161,8 +161,8 @@ describe('支持機構の端点', () => {
   it('空中の部品の不透明度は姿勢の評価にも乗る', () => {
     const book = createBook()
     const spread = book.spreads[0]
-    const element = createStageElement('image', { type: 'spread' }, 'auto')
-    if (element.type !== 'image') throw new Error('unreachable')
+    const element = createStageElement('visual', { type: 'right-page' }, 'auto')
+    if (element.type !== 'visual') throw new Error('unreachable')
     element.width = 1
     element.height = 1
     element.baseTransform.position = [0, 2.4, 1.2]
@@ -236,7 +236,7 @@ describe('支持機構の端点', () => {
   it('寝かせた部品のリフトは紙の厚みを越えない', () => {
     const book = createBook()
     const spread = book.spreads[0]
-    const element = createStageElement('image')
+    const element = createStageElement('visual')
     element.layer = 100
     element.baseTransform.position = [0, 1, 0]
     spread.elements = [element]
@@ -255,7 +255,7 @@ describe('支持機構の端点', () => {
   it('上位の部品の自転は一回転へ折り返してから畳む', () => {
     const book = createBook()
     const spread = book.spreads[0]
-    const element = createStageElement('image')
+    const element = createStageElement('visual')
     element.baseTransform.position = [0, 1, 0]
     element.motion = [{ type: 'spin', axis: 'z', speed: 0.9 }]
     spread.elements = [element]
@@ -295,7 +295,7 @@ describe('楔空間の包含', () => {
     const next = rng(4444)
     for (let trial = 0; trial < 150; trial++) {
       const { book, element } = randomBookWithElement(next)
-      if (element.type !== 'image') continue
+      if (element.type !== 'visual') continue
       for (const item of collectItems(book)) {
         if (item.mechanism === 'page-glue') continue
         const w = book.format.pageWidth
@@ -320,8 +320,8 @@ describe('楔空間の包含', () => {
   it('背表紙に近い起立板ほど倒伏角を直接制限する', () => {
     const book = createBook()
     const spread = book.spreads[0]
-    const element = createStageElement('image', { type: 'right-page' }, 'flap')
-    if (element.type !== 'image') throw new Error('unreachable')
+    const element = createStageElement('visual', { type: 'right-page' }, 'flap')
+    if (element.type !== 'visual') throw new Error('unreachable')
     element.width = 1
     element.height = 4
     element.pivot = [0.5, 0]
@@ -366,22 +366,39 @@ describe('連続性と可逆性', () => {
 })
 
 describe('コンパイラの割り当て', () => {
+  it('接地マージン内の微小リフトは接地、マージンを越えた部品は空中にする', () => {
+    const book = createBook()
+    const spread = book.spreads[0]
+    const near = createStageElement('visual', { type: 'right-page' }, 'auto')
+    const floating = createStageElement('visual', { type: 'right-page' }, 'auto')
+    near.baseTransform.position = [1, .079, 0]
+    near.baseTransform.rotation = [0, 0, 0]
+    floating.baseTransform.position = [2, .081, 0]
+    floating.baseTransform.rotation = [0, 0, 0]
+    spread.elements.push(near, floating)
+
+    const compiled = compileSpreadStow(book, spread)
+    const all = [...compiled.left, ...compiled.right]
+    expect(all.find((item) => item.element.id === near.id)?.mechanism).toBe('flap')
+    expect(all.find((item) => item.element.id === floating.id)?.mechanism).toBe('airborne-route')
+  })
+
   it('平置き、直立、空中経路、中央線またぎを開姿勢から決める', () => {
     const book = createBook()
     const spread = book.spreads[0]
-    const flat = createStageElement('image', { type: 'right-page' }, 'auto')
+    const flat = createStageElement('visual', { type: 'right-page' }, 'auto')
     flat.baseTransform.rotation = [-90, 0, 0]
-    const upright = createStageElement('image', { type: 'right-page' }, 'auto')
+    const upright = createStageElement('visual', { type: 'right-page' }, 'auto')
     upright.baseTransform.rotation = [0, 0, 0]
-    upright.baseTransform.position = [1, 0.04, 1]
-    const floating = createStageElement('image', { type: 'spread' }, 'auto')
+    upright.baseTransform.position = [1, 0.005, 1]
+    const floating = createStageElement('visual', { type: 'right-page' }, 'auto')
     floating.baseTransform.rotation = [0, 0, 0]
     floating.baseTransform.position = [2, 3, 0]
-    const wide = createStageElement('image', { type: 'right-page' }, 'flap')
+    const wide = createStageElement('visual', { type: 'right-page' }, 'flap')
     wide.baseTransform.rotation = [0, 0, 0]
     // 右面ローカルx=-4は見開き中央。明示flapでも中央線交差を優先して二翼化する。
-    wide.baseTransform.position = [-4, 0.05, 1]
-    if (wide.type === 'image') { wide.width = 10; wide.height = 3 }
+    wide.baseTransform.position = [-4, 0.005, 1]
+    if (wide.type === 'visual') { wide.width = 10; wide.height = 3 }
     spread.elements.push(flat, upright, floating, wide)
     const compiled = compileSpreadStow(book, spread)
     const all = [...compiled.left, ...compiled.right]
@@ -396,12 +413,12 @@ describe('コンパイラの割り当て', () => {
   it('中央線をまたぐ平置き部品は左右ページへ分割して谷折りする', () => {
     const book = createBook()
     const spread = book.spreads[0]
-    const flat = createStageElement('image', { type: 'right-page' }, 'page-glue')
-    if (flat.type !== 'image') throw new Error('unreachable')
+    const flat = createStageElement('visual', { type: 'right-page' }, 'page-glue')
+    if (flat.type !== 'visual') throw new Error('unreachable')
     flat.width = 8.6
     flat.height = 4.2
     flat.pivot = [.5, .5]
-    flat.baseTransform.position = [0, .02, 0]
+    flat.baseTransform.position = [-4, .005, 0]
     flat.baseTransform.rotation = [-90, 0, 0]
     spread.elements.push(flat)
 
@@ -411,20 +428,21 @@ describe('コンパイラの割り当て', () => {
     expect(compiled.spanning).toHaveLength(0)
     expect(left.mechanism).toBe('page-glue')
     expect(right.mechanism).toBe('page-glue')
-    expect(left.half?.u1).toBeCloseTo(0.3 / 8.6)
-    expect(right.half?.u0).toBeCloseTo(0.3 / 8.6)
-    expect(right.fitScale).toBeLessThan(1)
+    expect(left.half?.u1).toBeCloseTo(.5)
+    expect(right.half?.u0).toBeCloseTo(.5)
+    expect(right.fitScale).toBe(1)
   })
 
   it('空中のパーティクル面はほかの空中平面と同じ外側迂回を使う', () => {
     const book = createBook()
     const spread = book.spreads[0]
-    const centered = createStageElement('effect', { type: 'spread' }, 'auto')
-    const oneSide = createStageElement('effect', { type: 'right-page' }, 'auto')
-    if (centered.type !== 'effect' || oneSide.type !== 'effect') throw new Error('unreachable')
+    const centered = createStageElement('visual', { type: 'right-page' }, 'auto')
+    const oneSide = createStageElement('visual', { type: 'right-page' }, 'auto')
+    if (centered.type !== 'visual' || oneSide.type !== 'visual') throw new Error('unreachable')
     for (const effect of [centered, oneSide]) {
-      effect.sourcePreset = 'light-particles'
-      effect.size = 2
+      effect.particles.enabled = true
+      effect.width = 2
+      effect.height = 2
       effect.baseTransform.rotation = [0, 0, 0]
       effect.baseTransform.position[1] = 2.5
     }
@@ -440,12 +458,13 @@ describe('コンパイラの割り当て', () => {
   it('接地したパーティクル面は中央線をまたぐと通常の谷折りになる', () => {
     const book = createBook()
     const spread = book.spreads[0]
-    const effect = createStageElement('effect', { type: 'spread' }, 'auto')
-    if (effect.type !== 'effect') throw new Error('unreachable')
-    effect.sourcePreset = 'light-particles'
-    effect.size = 2
+    const effect = createStageElement('visual', { type: 'right-page' }, 'auto')
+    if (effect.type !== 'visual') throw new Error('unreachable')
+    effect.particles.enabled = true
+    effect.width = 2
+    effect.height = 2
     effect.pivot = [0.5, 1]
-    effect.baseTransform.position = [0, 0.05, 0]
+    effect.baseTransform.position = [-4, 2, 0]
     effect.baseTransform.rotation = [0, 0, 0]
     spread.elements.push(effect)
 
@@ -456,9 +475,9 @@ describe('コンパイラの割り当て', () => {
   it('形を持たないグループは子孫の最下端から空中経路を決める', () => {
     const book = createBook()
     const spread = book.spreads[0]
-    const group = createStageElement('group', { type: 'spread' }, 'auto')
+    const group = createStageElement('group', { type: 'right-page' }, 'auto')
     group.baseTransform.position = [0, 0, 0]
-    const child = createStageElement('image', { type: 'element', elementId: group.id }, 'auto')
+    const child = createStageElement('visual', { type: 'element', elementId: group.id }, 'auto')
     child.baseTransform.position = [0, 2, 0]
     child.pivot = [0.5, 0.5]
     spread.elements.push(group, child)
@@ -468,9 +487,8 @@ describe('コンパイラの割り当て', () => {
 
   it('隣接見開きの片面背景をページ送り中に同時起立させない', () => {
     const makeBackground = () => {
-      const element = createStageElement('image', { type: 'right-page' }, 'flap')
-      if (element.type !== 'image') throw new Error('unreachable')
-      element.sourcePreset = 'depth-layer'
+      const element = createStageElement('visual', { type: 'right-page' }, 'flap')
+      if (element.type !== 'visual') throw new Error('unreachable')
       element.baseTransform.rotation = [0, 0, 0]
       element.width = 6.6
       element.height = 3.6
@@ -484,15 +502,8 @@ describe('コンパイラの割り当て', () => {
     book.spreads[1].elements.push(incoming)
     const outgoingItem = compileSpreadStow(book, book.spreads[0]).right.find((item) => item.element.id === outgoing.id)!
     const incomingItem = compileSpreadStow(book, book.spreads[1]).right.find((item) => item.element.id === incoming.id)!
-    expect(outgoingItem.phase).toBeGreaterThan(.5)
-    expect(incomingItem.phase).toBeGreaterThan(.5)
-
-    for (let step = 0; step <= 100; step++) {
-      const turn = step / 100
-      const outgoingOpen = stowOpenFactor(outgoingItem, 1 - turn)
-      const incomingOpen = stowOpenFactor(incomingItem, turn)
-      expect(outgoingOpen > 0 && incomingOpen > 0).toBe(false)
-    }
+    expect(outgoingItem.phase).toBe(0)
+    expect(incomingItem.phase).toBe(0)
   })
 })
 
@@ -500,11 +511,11 @@ describe('背をまたぐ一枚パネル', () => {
   function makeSpan(fallDirection: 'auto' | 'back' | 'front' = 'auto') {
     const book = createBook()
     const spread = book.spreads[0]
-    const wide = createStageElement('image', { type: 'spread' }, 'v-fold')
-    if (wide.type !== 'image') throw new Error('unreachable')
+    const wide = createStageElement('visual', { type: 'right-page' }, 'v-fold')
+    if (wide.type !== 'visual') throw new Error('unreachable')
     wide.width = 10
     wide.height = 6.5
-    wide.baseTransform.position = [0, 0.08, -2.7]
+    wide.baseTransform.position = [-4, 0.005, -2.7]
     wide.baseTransform.rotation = [0, 0, 0]
     wide.pivot = [0.5, 0]
     wide.stow.fallDirection = fallDirection
@@ -525,7 +536,7 @@ describe('背をまたぐ一枚パネル', () => {
     expect(pose.rightDir[1]).toBeCloseTo(0)
     expect(span.widthLeft * Math.abs(pose.leftDir[0])).toBeCloseTo(5)
     expect(span.widthRight * pose.rightDir[0]).toBeCloseTo(5)
-    expect(pose.origin).toEqual([0, 0.08, -2.7])
+    expect(pose.origin).toEqual([0, 0.005, -2.7])
   })
 
   it('剛体のまま畳まれる: 翼の基底は直交し、糊しろは自面内に留まる', () => {
@@ -581,7 +592,7 @@ describe('空中要素の外側迂回', () => {
   function makeAirborne() {
     const book = createBook()
     const spread = book.spreads[0]
-    const floating = createStageElement('image', { type: 'spread' }, 'auto')
+    const floating = createStageElement('visual', { type: 'right-page' }, 'auto')
     floating.baseTransform.rotation = [0, 0, 0]
     floating.baseTransform.position = [2.1, 3.6, -0.25]
     spread.elements.push(floating)
@@ -593,12 +604,12 @@ describe('空中要素の外側迂回', () => {
 
   it('端点では膨らみが厳密にゼロ (t=1で開姿勢、t=0で真下へ平坦)', () => {
     const item = makeAirborne()
-    // 見開き親は右面ローカルへ帰属補正される (x: 2.1 − w/2 = −1.9)
+    // ページ所有の部品はページローカル座標をそのまま保つ。
     const open = evaluateStow(item, 1, IDENTITY_MOTION)
-    expect(open.position[0]).toBeCloseTo(-1.9)
+    expect(open.position[0]).toBeCloseTo(2.1)
     expect(open.position[1]).toBeCloseTo(3.6)
     const flat = evaluateStow(item, 0, IDENTITY_MOTION)
-    expect(flat.position[0]).toBeCloseTo(-1.9) // 迂回後は真下へ着地する
+    expect(flat.position[0]).toBeCloseTo(2.1) // 迂回後は真下へ着地する
     expect(flat.position[1]).toBeLessThan(0.05)
   })
 

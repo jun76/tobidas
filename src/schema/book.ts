@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { spreadAudioFields } from './audio'
-import { stageElementSchema } from './stageElement'
+import { migrateStageElementInput, stageElementSchema } from './stageElement'
 import { spreadSequenceSchema } from './sequence'
 import { vec3Schema } from './geometry'
 import { spreadTimelineSchema } from './timeline'
@@ -53,7 +53,7 @@ export const coverSchema = z.object({
 
 export type Cover = z.infer<typeof coverSchema>
 
-export const bookSchema = z.object({
+const currentBookSchema = z.object({
   sequence: z.object({
     coverOpenSeconds: z.number().positive(),
   }),
@@ -83,5 +83,39 @@ export const bookSchema = z.object({
   spreads: z.array(spreadSchema).min(1),
   backCover: coverSchema,
 })
+
+/** 旧要素型、見開き親、旧タイムラインを現行の保存契約へ正規化する。 */
+function migrateBookInput(value: unknown): unknown {
+  if (!value || typeof value !== 'object') return value
+  const input = structuredClone(value) as Record<string, unknown>
+  const format = input.format as { pageWidth?: unknown } | undefined
+  const pageWidth = typeof format?.pageWidth === 'number' ? format.pageWidth : 8
+  if (!Array.isArray(input.spreads)) return input
+  for (const rawSpread of input.spreads) {
+    if (!rawSpread || typeof rawSpread !== 'object') continue
+    const spread = rawSpread as Record<string, unknown>
+    if (Array.isArray(spread.elements)) {
+      spread.elements = spread.elements.map((element) => migrateStageElementInput(element, pageWidth))
+    }
+    const timeline = spread.timeline as { tracks?: unknown } | undefined
+    if (!Array.isArray(timeline?.tracks)) continue
+    timeline.tracks = timeline.tracks.flatMap((rawTrack) => {
+      if (!rawTrack || typeof rawTrack !== 'object') return [rawTrack]
+      const track = rawTrack as Record<string, unknown>
+      if (track.property === 'effect.size') {
+        return [
+          { ...track, id: `${String(track.id)}-width`, property: 'visual.width' },
+          { ...track, id: `${String(track.id)}-height`, property: 'visual.height' },
+        ]
+      }
+      if (track.property === 'asset') return [{ ...track, property: 'visual.image' }]
+      if (track.property === 'effect.color') return [{ ...track, property: 'visual.particles.color' }]
+      return [track]
+    })
+  }
+  return input
+}
+
+export const bookSchema = z.preprocess(migrateBookInput, currentBookSchema)
 
 export type Book = z.infer<typeof bookSchema>

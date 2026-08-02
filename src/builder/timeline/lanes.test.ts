@@ -5,7 +5,7 @@ import { collectTimelineLanes } from './lanes'
 describe('timeline lane model', () => {
   it('collects current visual tracks without coupling the renderer to schema lookup', () => {
     const spread = createSpread('lane')
-    const element = createStageElement('image')
+    const element = createStageElement('visual')
     element.name = '表紙の部品'
     spread.elements.push(element)
     spread.timeline.tracks.push({

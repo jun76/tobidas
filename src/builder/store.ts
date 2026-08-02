@@ -9,7 +9,7 @@ import { ProjectAutosave } from './persistence/autosave'
 import { saveProject } from './persistence/projectRepository'
 import { containerElementIds, elementDescendantIds, reparentElement } from './hierarchy'
 import type { EditorState } from './state/editorState'
-import { constrainSinglePageBackground } from './state/elementConstraints'
+import { normalizeElementLayout } from './state/elementConstraints'
 import { PART_PRESETS } from './presets'
 import { BGM_VOLUME } from '../audio/playback'
 import { createTimelineCommands } from './state/timelineCommands'
@@ -243,66 +243,27 @@ export const useBuilderStore = create<EditorState>((set, get) => {
       commit((project) => { project.book.spreads = project.book.spreads.filter((spread) => spread.id !== id) })
       get().setActiveSpread(get().project.book.spreads[0].id)
     },
-    addElement: (spreadId, type, parent = { type: 'right-page' }, mechanism = 'auto', assetId, preset) => {
-      const element = createStageElement(type, parent, mechanism)
-      element.sourcePreset = preset ?? 'custom'
+    addElement: (spreadId, type, parent = { type: 'right-page' }, assetId) => {
+      const element = createStageElement(type, parent)
       element.name = t().defaults.part
-      if (element.type === 'image') {
-        element.asset = assetId ?? ''
+      if (element.type === 'visual') {
+        element.image = assetId
         element.name = get().project.assets.find((asset) => asset.id === assetId)?.name ?? t().defaults.imagePart
-        if (mechanism === 'page-glue') element.pivot = [.5, .5]
-        else {
-          element.baseTransform.rotation = [0, 0, 0]
-          element.pivot = [.5, 0]
-        }
-        if (mechanism === 'v-fold') {
-          element.width = get().project.book.format.pageWidth * 1.25
-          element.height = 3
-          element.baseTransform.position = [0, .05, 0]
-        }
-        if (element.sourcePreset === 'floating-character') {
-          element.pivot = [.5, .5]
-          element.baseTransform.position = [0, 2, 0]
-        }
-        if (element.sourcePreset === 'depth-layer') {
-          const asset = get().project.assets.find((item) => item.id === assetId)
-          const pageWidth = get().project.book.format.pageWidth
-          const pageDepth = pageWidth / get().project.book.format.pageAspect
-          element.width = pageWidth * .82
-          element.height = asset?.width && asset.height
-            ? Math.min(pageDepth * .9, element.width * asset.height / asset.width)
-            : Math.min(3, pageDepth * .9)
-          element.baseTransform.position = [0, .05, 0]
-          element.pivot = [.5, 0]
-          constrainSinglePageBackground(element, pageWidth)
-        }
       }
-      if (element.type === 'text') {
-        // 紙面へ寝かせて、読み手が覗き込む向きに置く。箱は文字から導く (字が歪まない寸法)
-        element.text = t().defaults.text
-        element.name = element.text
-        element.pivot = [.5, .5]
-        element.baseTransform.rotation = [-90, 0, 0]
-        Object.assign(element, measureTextBox(element, element.fontSize))
-      }
-      if (element.type === 'effect' && element.sourcePreset === 'light-particles') {
-        // 粒は透明な起立平面に載せ、画像板と同じ中央線判定・谷折りへ渡す。
-        element.name = t().presets['light-particles']
-        element.size = 2
-        element.pivot = [.5, 0]
-        element.baseTransform.position = [0, .03, 0]
-        element.baseTransform.rotation = [0, 0, 0]
-      }
-      commit((project) => project.book.spreads.find((spread) => spread.id === spreadId)?.elements.push(element))
+      commit((project) => {
+        const spread = project.book.spreads.find((item) => item.id === spreadId)
+        if (!spread) return
+        spread.elements.push(element)
+        normalizeElementLayout(spread, element.id, project.book.format.pageWidth)
+      })
       set({ selection: { type: 'element', spreadId, elementId: element.id } })
     },
     moveElement: (spreadId, id, parent) => commit((project) => {
       const spread = project.book.spreads.find((item) => item.id === spreadId)
       const element = spread?.elements.find((item) => item.id === id)
       if (!spread || !element) return
-      if (element.sourcePreset === 'depth-layer' && parent.type !== 'left-page' && parent.type !== 'right-page') return
       reparentElement(spread, id, parent, project.book.format.pageWidth)
-      constrainSinglePageBackground(element, project.book.format.pageWidth)
+      normalizeElementLayout(spread, id, project.book.format.pageWidth)
     }),
     /**
      * 選択中のプリセットで紙面へ置く。
@@ -314,15 +275,13 @@ export const useBuilderStore = create<EditorState>((set, get) => {
     placeAsset: (spreadId, side, assetId, point) => {
       const placement = get().placement
       const preset = PART_PRESETS.find((item) => item.id === placement)
-      if (!preset || preset.group !== 'image') return
-      const parent = preset.parent.type === 'spread' ? { type: 'spread' as const } : { type: `${side}-page` as const }
-      const created = createStageElement('image', parent, preset.mechanism)
-      if (created.type !== 'image') return
+      if (!preset || !preset.requiresAsset) return
+      const parent = { type: `${side}-page` as const }
+      const created = createStageElement('visual', parent)
+      if (created.type !== 'visual') return
       const asset = get().project.assets.find((item) => item.id === assetId)
-      // 紙へ寝かせるのは平積みだけ。ほかは接地線で立てる
       const flat = preset.id === 'paper-stack'
-      created.sourcePreset = preset.id
-      created.asset = assetId
+      created.image = assetId
       created.name = asset?.name ?? t().defaults.image
       if (asset?.width && asset.height) created.height = created.width * asset.height / asset.width
       created.pivot = flat ? [.5, .5] : [.5, 0]
@@ -330,19 +289,31 @@ export const useBuilderStore = create<EditorState>((set, get) => {
       const depth = width / get().project.book.format.pageAspect
       const x = ((point?.x ?? .5) - .5) * width
       created.baseTransform.position = [
-        parent.type === 'spread' ? x + (side === 'left' ? -width / 2 : width / 2) : x,
-        flat ? .025 : preset.id === 'floating-character' ? 1.2 : .05,
+        x,
+        flat ? .005 : 0,
         ((point?.y ?? .5) - .5) * depth,
       ]
       created.baseTransform.rotation = flat ? [-90, 0, 0] : [0, 0, 0]
-      commit((project) => project.book.spreads.find((spread) => spread.id === spreadId)?.elements.push(created))
+      if (preset.id === 'depth-layer') {
+        created.width = width * 2
+        created.height = asset?.width && asset.height ? created.width * asset.height / asset.width : depth
+        created.pivot = [.5, 0]
+        created.baseTransform.position = [side === 'left' ? width / 2 : -width / 2, 0, -depth / 2]
+      }
+      commit((project) => {
+        const spread = project.book.spreads.find((item) => item.id === spreadId)
+        if (!spread) return
+        spread.elements.push(created)
+        normalizeElementLayout(spread, created.id, width)
+      })
       set({ selection: { type: 'element', spreadId, elementId: created.id } })
     },
     updateElement: (spreadId, id, change) => commit((project) => {
       const element = project.book.spreads.find((spread) => spread.id === spreadId)?.elements.find((item) => item.id === id)
       if (element) {
         change(element)
-        constrainSinglePageBackground(element, project.book.format.pageWidth)
+        const spread = project.book.spreads.find((item) => item.id === spreadId)
+        if (spread) normalizeElementLayout(spread, id, project.book.format.pageWidth)
       }
     }),
     removeElement: (spreadId, id) => {
@@ -368,9 +339,7 @@ export const useBuilderStore = create<EditorState>((set, get) => {
           (track) => track.target.type !== 'element' || !removed.has(track.target.elementId),
         )
       })
-      set(parentType === 'spread'
-        ? { selection: { type: 'spread', spreadId } }
-        : { selection: { type: 'page', spreadId, side: parentType === 'left-page' ? 'left' : 'right' } })
+      set({ selection: { type: 'page', spreadId, side: parentType === 'left-page' ? 'left' : 'right' } })
     },
     addAsset: (asset) => commit((project) => project.assets.push(asset)),
     /**

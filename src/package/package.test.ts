@@ -9,20 +9,21 @@ import { assetAccept, assetKindForFile, normalizeAssetPath } from './model'
 import { externalizeAssets, projectFileJson } from './serialize'
 
 describe('package ownership boundaries', () => {
-  it('v0.1.0のアーチとstrutを現在の自動機構へ正規化する', () => {
+  it('v0.1.0のアーチとstrutを単一ビジュアルへ正規化する', () => {
     const legacy = createBookProject('legacy') as unknown as Record<string, any>
     const element = {
       ...legacy.book.spreads[0].elements[0],
       id: 'legacy-floating', name: 'legacy', visible: true, opacity: 1,
       type: 'image', asset: '', width: 1, height: 1, billboard: false,
-      parent: { type: 'spread' }, baseTransform: { position: [0, 2, 0], rotation: [0, 0, 0], scale: [1, 1, 1] },
+      parent: { type: 'right-page' }, baseTransform: { position: [0, 2, 0], rotation: [0, 0, 0], scale: [1, 1, 1] },
       pivot: [0.5, 0.5], layer: 0, motion: [], clock: 'visible-elapsed',
       sourcePreset: 'spine-arch', stow: { mechanism: 'strut', fallDirection: 'auto', stagger: 0 },
     }
     legacy.book.spreads[0].elements = [element]
     const parsed = bookProjectSchema.parse(legacy)
-    expect(parsed.book.spreads[0].elements[0].sourcePreset).toBe('bottom-upright')
-    expect(parsed.book.spreads[0].elements[0].stow.mechanism).toBe('auto')
+    expect(parsed.book.spreads[0].elements[0].type).toBe('visual')
+    expect(parsed.book.spreads[0].elements[0].parent).toEqual({ type: 'right-page' })
+    expect(parsed.book.spreads[0].elements[0].stow).toEqual({ fallDirection: 'auto', stagger: 0 })
   })
 
   it('round-trips project metadata and asset bodies', async () => {

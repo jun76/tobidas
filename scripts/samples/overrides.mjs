@@ -22,7 +22,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 
 const FIELDS = ['position', 'rotation', 'scale']
-const DIRECT = ['width', 'height', 'layer', 'opacity', 'asset', 'visible']
+const DIRECT = ['width', 'height', 'layer', 'opacity', 'image', 'visible']
 
 export function loadOverrides(workId) {
   const url = new URL(`./overrides/${workId}.json`, import.meta.url)
@@ -49,6 +49,7 @@ export function applyOverrides(project, overrides) {
       if (patch.remove) { removed++; continue }
       for (const field of FIELDS) if (patch[field]) { element.baseTransform[field] = [...patch[field]]; patched++ }
       for (const field of DIRECT) if (patch[field] !== undefined) { element[field] = patch[field]; patched++ }
+      if (patch.asset !== undefined) { element.image = patch.asset; patched++ }
       keep.push(element)
     }
     spread.elements = keep
@@ -79,13 +80,13 @@ function pruneAssets(project) {
     use(spread.enterSound)
     use(spread.pageTurnSound)
     for (const element of spread.elements) {
-      use(element.asset)
-      use(element.backAsset)
+      use(element.image)
+      use(element.backImage)
     }
     for (const track of spread.timeline.tracks) {
       // 効果音トラックは音声を指すだけで、キーは時刻しか持たない
       if (track.target.type === 'sound') { use(track.target.assetId); continue }
-      if (track.property !== 'asset') continue
+      if (track.property !== 'visual.image') continue
       for (const key of track.keys) if (typeof key.value === 'string') use(key.value)
     }
   }

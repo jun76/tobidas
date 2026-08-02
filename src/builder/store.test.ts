@@ -127,12 +127,11 @@ describe('preset placement', () => {
     useBuilderStore.getState().setPlacement('paper-stack')
     useBuilderStore.getState().placeAsset(spreadId, 'right', 'tree.png', { x: .5, y: .5 })
     const element = elements()[0]
-    expect(element.sourcePreset).toBe('paper-stack')
-    expect(element.stow.mechanism).toBe('page-glue')
+    expect(element.type).toBe('visual')
     expect(element.baseTransform.rotation[0]).toBe(-90)
     expect(element.pivot).toEqual([.5, .5])
     // 縦横比は素材から取る
-    expect(element.type === 'image' && element.height / element.width).toBe(2)
+    expect(element.type === 'visual' && element.height / element.width).toBe(2)
   })
 
   it('stands the part on its ground line for the upright preset', () => {
@@ -140,21 +139,16 @@ describe('preset placement', () => {
     useBuilderStore.getState().setPlacement('bottom-upright')
     useBuilderStore.getState().placeAsset(spreadId, 'left', 'tree.png', { x: .25, y: .5 })
     const element = elements()[0]
-    expect(element.sourcePreset).toBe('bottom-upright')
-    expect(element.stow.mechanism).toBe('flap')
+    expect(element.type).toBe('visual')
     expect(element.baseTransform.rotation).toEqual([0, 0, 0])
     expect(element.pivot).toEqual([.5, 0])
     expect(element.parent).toEqual({ type: 'left-page' })
   })
 
-  it('空中プリセットは見開き空間へ自動機構で置く', () => {
+  it('廃止した空中プリセットは選択肢に入らない', () => {
     const spreadId = setup()
-    useBuilderStore.getState().setPlacement('floating-character')
     useBuilderStore.getState().placeAsset(spreadId, 'left', 'tree.png', { x: .5, y: .4 })
-    const element = elements()[0]
-    expect(element.parent).toEqual({ type: 'spread' })
-    expect(element.stow.mechanism).toBe('auto')
-    expect(element.baseTransform.position[1]).toBeGreaterThan(0)
+    expect(elements()).toHaveLength(0)
   })
 
   it('ignores an audio preset on the page', () => {
@@ -235,7 +229,7 @@ describe('builder timeline operations', () => {
     const project = createBookProject('transform')
     const spread = project.book.spreads[0]
     useBuilderStore.getState().setProject(project, 'import')
-    useBuilderStore.getState().addElement(spread.id, 'image')
+    useBuilderStore.getState().addElement(spread.id, 'visual')
     const created = useBuilderStore.getState().project.book.spreads[0].elements[0]
     const before = useBuilderStore.getState().undoStack.length
     useBuilderStore.getState().applyGizmoTransform(spread.id, created.id, 1, {
@@ -254,7 +248,7 @@ describe('builder timeline operations', () => {
     const project = createBookProject('gizmo routing')
     const spread = project.book.spreads[0]
     useBuilderStore.getState().setProject(project, 'import')
-    useBuilderStore.getState().addElement(spread.id, 'image')
+    useBuilderStore.getState().addElement(spread.id, 'visual')
     const created = useBuilderStore.getState().project.book.spreads[0].elements[0]
     useBuilderStore.getState().upsertTimelineKey(
       spread.id, { type: 'element', elementId: created.id }, 'position.x', 0, -4,
@@ -280,7 +274,7 @@ describe('builder timeline operations', () => {
     const project = createBookProject('uniform scale')
     const spread = project.book.spreads[0]
     useBuilderStore.getState().setProject(project, 'import')
-    useBuilderStore.getState().addElement(spread.id, 'image')
+    useBuilderStore.getState().addElement(spread.id, 'visual')
     const created = useBuilderStore.getState().project.book.spreads[0].elements[0]
     useBuilderStore.getState().upsertTimelineKey(
       spread.id, { type: 'element', elementId: created.id }, 'scale', 0, 1,
@@ -351,7 +345,7 @@ describe('builder timeline operations', () => {
     useBuilderStore.getState().upsertTimelineKey(
       spreadId,
       { type: 'element', elementId: 'future-element' },
-      'asset',
+      'visual.image',
       1,
       'assets/final.svg',
     )
@@ -372,7 +366,7 @@ describe('builder timeline operations', () => {
 })
 
 describe('single-page background preset', () => {
-  it('keeps the background inside one page after editing', () => {
+  it('背景ショートカットは見開き幅へ合わせる', () => {
     const project = createBookProject('background')
     const spread = project.book.spreads[0]
     project.assets.push({
@@ -380,25 +374,15 @@ describe('single-page background preset', () => {
       width: 1200, height: 800, data: '<svg/>',
     })
     useBuilderStore.getState().setProject(project, 'import')
-    useBuilderStore.getState().addElement(
-      spread.id, 'image', { type: 'left-page' }, 'flap', 'background.svg', 'depth-layer',
-    )
+    useBuilderStore.getState().setPlacement('depth-layer')
+    useBuilderStore.getState().placeAsset(spread.id, 'left', 'background.svg')
     const created = useBuilderStore.getState().project.book.spreads[0].elements[0]
     expect(created.parent).toEqual({ type: 'left-page' })
-    expect(created.type === 'image' && created.width * created.baseTransform.scale[0]).toBeLessThan(project.book.format.pageWidth)
-
-    useBuilderStore.getState().updateElement(spread.id, created.id, (element) => {
-      element.baseTransform.position[0] = 99
-      element.baseTransform.scale = [4, 4, 4]
-    })
-    const constrained = useBuilderStore.getState().project.book.spreads[0].elements[0]
-    expect(constrained.parent).toEqual({ type: 'left-page' })
-    expect(constrained.baseTransform.position[0]).toBeLessThanOrEqual(project.book.format.pageWidth / 2)
-    expect(constrained.type === 'image' && constrained.width * constrained.baseTransform.scale[0])
-      .toBeLessThanOrEqual(project.book.format.pageWidth * .94)
+    expect(created.type === 'visual' && created.width).toBe(project.book.format.pageWidth * 2)
+    expect(created.baseTransform.position[2]).toBe(-project.book.format.pageWidth / project.book.format.pageAspect / 2)
   })
 
-  it('constrains background transform keys to the selected page', () => {
+  it('背景も作成後は通常のビジュアルとして編集できる', () => {
     const project = createBookProject('animated background')
     const spread = project.book.spreads[0]
     project.assets.push({
@@ -406,24 +390,11 @@ describe('single-page background preset', () => {
       width: 1200, height: 800, data: '<svg/>',
     })
     useBuilderStore.getState().setProject(project, 'import')
-    useBuilderStore.getState().addElement(
-      spread.id, 'image', { type: 'right-page' }, 'flap', 'background.svg', 'depth-layer',
-    )
+    useBuilderStore.getState().setPlacement('depth-layer')
+    useBuilderStore.getState().placeAsset(spread.id, 'right', 'background.svg')
     const created = useBuilderStore.getState().project.book.spreads[0].elements[0]
-    const target = { type: 'element' as const, elementId: created.id }
-    // 既にキーのある軸はギズモ操作もキーへ入る。その経路でも制約を効かせる
-    useBuilderStore.getState().upsertTimelineKey(spread.id, target, 'position.x', 0, 0)
-    useBuilderStore.getState().upsertTimelineKey(spread.id, target, 'scale.x', 0, 1)
-    useBuilderStore.getState().applyGizmoTransform(spread.id, created.id, 1, {
-      position: [99, .05, 0], rotation: [0, 0, 0], scale: [4, 4, 4],
-    })
-    const tracks = useBuilderStore.getState().project.book.spreads[0].timeline.tracks
-    const keyAt = (property: string) =>
-      tracks.find((track) => track.property === property)?.keys.find((key) => key.time === 1)?.value
-    const x = keyAt('position.x')
-    const scale = keyAt('scale.x')
-    expect(typeof x === 'number' && x).toBeLessThan(project.book.format.pageWidth / 2)
-    expect(typeof scale === 'number' && scale).toBeLessThan(4)
+    useBuilderStore.getState().updateElement(spread.id, created.id, (element) => { element.baseTransform.position[0] = 1 })
+    expect(useBuilderStore.getState().project.book.spreads[0].elements[0].baseTransform.position[0]).toBe(1)
   })
 })
 
@@ -432,11 +403,13 @@ describe('particle plane preset', () => {
     const project = createBookProject('particles')
     const spread = project.book.spreads[0]
     useBuilderStore.getState().setProject(project, 'import')
-    useBuilderStore.getState().addElement(
-      spread.id, 'effect', { type: 'spread' }, 'auto', undefined, 'light-particles',
-    )
+    useBuilderStore.getState().addElement(spread.id, 'visual', { type: 'right-page' })
+    const selected = useBuilderStore.getState().selection
+    if (selected.type === 'element') useBuilderStore.getState().updateElement(spread.id, selected.elementId, (element) => {
+      if (element.type === 'visual') { element.particles.enabled = true; element.baseTransform.rotation = [0, 0, 0] }
+    })
     const created = useBuilderStore.getState().project.book.spreads[0].elements[0]
-    expect(created.type).toBe('effect')
+    expect(created.type).toBe('visual')
     expect(created.baseTransform.rotation).toEqual([0, 0, 0])
 
     useBuilderStore.getState().updateElement(spread.id, created.id, (element) => {

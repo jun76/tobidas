@@ -100,7 +100,7 @@ export function analyzeSpreadContainment(book: Book, spread: Spread): Containmen
     }
     const item = byId.get(root.id)
     if (!item) continue
-    if (item.mechanism === 'airborne-route' && (element.type === 'image' || element.type === 'text')) airborne++
+    if (item.mechanism === 'airborne-route' && element.type === 'visual') airborne++
     if (root.id === element.id && item.fitScale < 1) {
       warnings.push(issue(element, 'shrunk-to-fit',
         `must shrink to ${(item.fitScale * 100).toFixed(0)}% while stowing to fit on the paper`
@@ -291,7 +291,7 @@ function chainBox(chain: StageElement[], motionTime: number): THREE.Box3 | undef
   const element = chain[chain.length - 1]
   let box = localBox(element)
   if (!box) return undefined
-  if (element.type === 'image' && element.billboard) {
+  if (element.type === 'visual' && element.billboard) {
     const reach = Math.max(box.min.length(), box.max.length())
     box = new THREE.Box3(new THREE.Vector3(-reach, -reach, -reach), new THREE.Vector3(reach, reach, reach))
   }
@@ -328,13 +328,6 @@ function livePoseMatrix(element: StageElement, motionTime: number, out: THREE.Ma
 /** 部品ローカルの板。Pivotは板の左下からの割合で、原点は板の外にも置ける */
 function localBox(element: StageElement): THREE.Box3 | undefined {
   if (element.type === 'group') return undefined
-  if (element.type === 'effect') {
-    const radius = element.size / 2
-    return new THREE.Box3(
-      new THREE.Vector3(-radius, -radius, -radius),
-      new THREE.Vector3(radius, radius, radius),
-    )
-  }
   const [pivotX, pivotY] = element.pivot
   return new THREE.Box3(
     new THREE.Vector3(-pivotX * element.width, -pivotY * element.height, 0),

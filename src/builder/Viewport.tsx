@@ -48,7 +48,6 @@ export function Viewport() {
     if (hidden.has(hiddenKey.element(element.id))) return true
     if (element.parent.type === 'left-page') return hidden.has(hiddenKey.page(spreadId, 'left'))
     if (element.parent.type === 'right-page') return hidden.has(hiddenKey.page(spreadId, 'right'))
-    if (element.parent.type === 'spread') return hidden.has(hiddenKey.space(spreadId))
     return false
   }, [hidden])
 

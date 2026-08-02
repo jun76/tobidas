@@ -565,7 +565,9 @@ export function build(updatedAt) {
     const trainId = s.hover({
       id: 'train', name: '通過する電車', asset: trainArt, x: -4.12, y: TRAIN_HEIGHT / 2 + .45, z: -.5, width: TRAIN_WIDTH, height: TRAIN_HEIGHT, layer: 10,
     })
-    s.track(trainId, 'position.x', [[0, -4.12], [2.2, -4.12], [5.0, 4.12], [7, 4.12]], 'linear')
+    // hover のルートは開始位置に応じた片面座標へ保存される。電車は左ページ所属なので、
+    // 見開き上の -4.12 → 4.12 を左ページローカルの -.12 → 8.12 へ直して追跡する。
+    s.track(trainId, 'position.x', [[0, -.12], [2.2, -.12], [5.0, 8.12], [7, 8.12]], 'linear')
     s.track(trainId, 'visible', [[0, false], [2.2, true], [5.2, false]])
 
     s.stand('left', { id: 'kid-1', name: '待つ子ども 1', asset: childRed, u: .66, v: .88, width: wide(near(REAL.child), childRed), height: near(REAL.child), fall: 'back', layer: 12 })
@@ -697,7 +699,7 @@ export function build(updatedAt) {
 
     const sun = s.sparkle({ id: 'sunbeam', name: '差し込む朝日', x: 0, y: 2.0, z: .2, color: '#ffe6b0', size: 1.2 })
     s.track(sun, 'effect.size', [[0, 1.0], [7, 3.2]])
-    s.caption('left', { id: 'text', text: 'Beyond the window\nthe same old town spreads out', u: .5, v: .94, size: .34, color: '#463726' })
+    s.caption('left', { id: 'text', text: 'Beyond the window\nthe same old town spreads out', u: .5, v: .92, size: .34, color: '#463726' })
     s.camera([
       { time: 0, position: [0, 8.2, 11.8], target: [0, 1.6, -.4], fov: 42 },
       { time: 7, position: [0, 13.6, 16.6], target: [0, 1.1, 0], fov: 45 },

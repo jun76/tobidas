@@ -96,7 +96,7 @@ describe('再生カメラの構図', () => {
     expect(portrait.target).toEqual(landscape.target)
   })
 
-  it('カメラキーのある見開きは画面の縦横比によらず保存値をそのまま使う', () => {
+  it('カメラキーの姿勢は横長で保存値を保ち、狭い画面では注視点から後退する', () => {
     const book = createBook()
     const spread = book.spreads[0]
     spread.timeline.tracks = [
@@ -109,11 +109,19 @@ describe('再生カメラの構図', () => {
       },
     ]
     const hold = compileBookBeats(book).find((beat) => beat.kind === 'hold')!
-    for (const aspect of [16 / 9, 1, 9 / 16]) {
-      const pose = evaluatePlayCameraPose(book, (hold.start + hold.end) / 2, aspect)
-      expect(pose.position).toEqual([1, 6, 9])
-      expect(pose.target).toEqual([0, 1, 0])
-    }
+    const wide = evaluatePlayCameraPose(book, (hold.start + hold.end) / 2, 16 / 9)
+    expect(wide.position).toEqual([1, 6, 9])
+    expect(wide.target).toEqual([0, 1, 0])
+
+    const square = evaluatePlayCameraPose(book, (hold.start + hold.end) / 2, 1)
+    expect(square.position[0]).toBeCloseTo(1.7)
+    expect(square.position[1]).toBeCloseTo(9.5)
+    expect(square.position[2]).toBeCloseTo(15.3)
+    expect(square.target).toEqual([0, 1, 0])
+
+    const portrait = evaluatePlayCameraPose(book, (hold.start + hold.end) / 2, 9 / 16)
+    expect(portrait.position[2]).toBeGreaterThan(square.position[2])
+    expect(portrait.target).toEqual([0, 1, 0])
   })
 
   it('カメラトラックのFOVを維持する', () => {

@@ -301,8 +301,8 @@ export function build(updatedAt) {
     // 子ぎつねは背表紙のきわ (本の中心) へ。小口ぎわに置くと、立っていても寝かせても
     // 同じ面の文字へかぶさる (文字の板は x=±2.71 まで届く)。開きと同時に flap で
     // 起きるだけにして、フェードインは持たせない
-    s.stand('left', { id: 'fox', name: '子ぎつね', asset: foxArt, u: .08, v: .94, width: wide(forest(CAST.fox), foxArt), height: forest(CAST.fox), fall: 'back', layer: 9 })
-    s.caption('left', { id: 'text', text: 'The lamp that lit the village\nblinked out one night', u: .5, v: .87, size: .42, color: '#efe3c4' })
+    s.stand('left', { id: 'fox', name: '子ぎつね', asset: foxArt, u: .08, v: .74, width: wide(forest(CAST.fox), foxArt), height: forest(CAST.fox), fall: 'back', layer: 9 })
+    s.caption('left', { id: 'text', text: 'The lamp that lit the village\nblinked out one night', u: .5, v: .91, size: .42, color: '#efe3c4' })
     // 粒子は手前の木立より前へ出す。z=.6 では5本すべての木の裏に回り、
     // 一粒も見えなかった (木立は z=.64〜2.05)
     const glow = s.sparkle({ id: 'ember', name: '消えゆく残り火', x: .6, y: 2.4, z: 1.9, color: C.lantern, size: 2.0 })
@@ -334,12 +334,12 @@ export function build(updatedAt) {
     s.stand('left', { id: 'reed-1', name: '岸の草 (左)', asset: reedArt, u: .30, v: .74, width: 2.2, height: 1.2, fall: 'back', layer: 4 })
     s.stand('right', { id: 'reed-2', name: '岸の草 (右)', asset: reedArt, u: .34, v: .80, width: 2.4, height: 1.3, fall: 'back', layer: 4 })
     s.stand('right', { id: 'reed-3', name: '岸の草 (奥)', asset: reedArt, u: .74, v: .62, width: 1.8, height: 1.1, fall: 'back', layer: 3 })
-    s.stand('left', { id: 'fox', name: '子ぎつね', asset: foxArt, u: .84, v: .93, width: wide(forest(CAST.fox), foxArt), height: forest(CAST.fox), fall: 'back', layer: 9 })
+    s.stand('left', { id: 'fox', name: '子ぎつね', asset: foxArt, u: .84, v: .72, width: wide(forest(CAST.fox), foxArt), height: forest(CAST.fox), fall: 'back', layer: 9 })
     s.stand('right', { id: 'tree', name: '川辺の木', asset: treeRound, u: .82, v: .70, width: 2.47, height: 3.48, fall: 'back', layer: 5 })
     s.stand('right', { id: 'bridge', name: '丸木橋', asset: bridgeArt, u: .50, v: .52, width: wide(forest(2.4), bridgeArt), height: forest(2.4), fall: 'back', layer: 6 })
     s.stand('left', { id: 'deer', name: '水を飲む鹿', asset: deerArt, u: .18, v: .78, width: wide(forest(CAST.deer), deerArt), height: forest(CAST.deer), fall: 'back', layer: 7 })
     s.stand('right', { id: 'log', name: '苔むした倒木', asset: logArt, u: .82, v: .88, width: wide(forest(.7), logArt), height: forest(.7), fall: 'back', layer: 8 })
-    s.stand('left', { id: 'fern', name: 'シダの下草', asset: fernArt, u: .14, v: .88, width: forest(.9), height: forest(.9), fall: 'back', layer: 8 })
+    s.stand('left', { id: 'fern', name: 'シダの下草', asset: fernArt, u: .14, v: .70, width: forest(.9), height: forest(.9), fall: 'back', layer: 8 })
 
     /**
      * 光の欠片: 川上から川下へ一方向に流れ、住人時間で上下する。
@@ -354,9 +354,10 @@ export function build(updatedAt) {
       id: 'mote', name: '光の欠片', asset: moteArt, x: -6.9, y: 1.1, z: 1.1, width: .8, height: .8, billboard: true, layer: 10,
       motion: [{ type: 'bob', amplitude: .16, period: 1.9 }],
     })
-    s.track(mote, 'position.x', [[0, -6.9], [6.5, -0.8]], 'linear')
+    // 左ページローカル座標。見開き上では -6.9 → -0.8 を走る。
+    s.track(mote, 'position.x', [[0, -2.9], [6.5, 3.2]], 'linear')
     s.track(mote, 'position.y', [[0, .9], [1.6, 1.5], [3.2, 1.0], [4.8, 1.6], [6.5, 1.1]])
-    s.caption('left', { id: 'text', text: 'A shard of light on the water\nwas pointing upstream', u: .5, v: .88, size: .40, color: '#e6eef0' })
+    s.caption('left', { id: 'text', text: 'A shard of light on the water\nwas pointing upstream', u: .5, v: .91, size: .40, color: '#e6eef0' })
     s.sparkle({ id: 'spray', name: '水しぶき', x: -1.4, y: 1.0, z: 1.6, color: '#9fd7e8', size: 1.8 })
     s.camera([
       { time: 0, position: [-1.5, 7.6, 11.2], target: [-1.2, .9, .4], fov: 43 },
@@ -389,8 +390,8 @@ export function build(updatedAt) {
     s.stand('left', { id: 'tree', name: '丘の木', asset: treeRoundDark, u: .28, v: .84, width: 2.32, height: 3.19, fall: 'back', layer: 5 })
     s.stand('right', { id: 'deer', name: '丘を見上げる鹿', asset: deerArt, u: .72, v: .82, width: wide(forest(CAST.deer), deerArt), height: forest(CAST.deer), fall: 'back', layer: 7 })
     s.stand('right', { id: 'log', name: '風に晒された倒木', asset: logArt, u: .30, v: .90, width: wide(forest(.7), logArt), height: forest(.7), fall: 'back', layer: 8 })
-    s.stand('left', { id: 'rabbit', name: '草むらのウサギ', asset: rabbitArt, u: .16, v: .88, width: wide(forest(.6), rabbitArt), height: forest(.6), fall: 'back', layer: 8 })
-    s.stand('left', { id: 'fern', name: 'シダの下草', asset: fernArt, u: .80, v: .84, width: forest(.9), height: forest(.9), fall: 'back', layer: 8 })
+    s.stand('left', { id: 'rabbit', name: '草むらのウサギ', asset: rabbitArt, u: .16, v: .72, width: wide(forest(.6), rabbitArt), height: forest(.6), fall: 'back', layer: 8 })
+    s.stand('left', { id: 'fern', name: 'シダの下草', asset: fernArt, u: .80, v: .70, width: forest(.9), height: forest(.9), fall: 'back', layer: 8 })
     s.stand('right', { id: 'mushroom', name: '光るキノコ', asset: mushroomArt, u: .90, v: .88, width: wide(forest(.6), mushroomArt), height: forest(.6), fall: 'back', layer: 8 })
     s.stand('left', { id: 'fox', name: '子ぎつね', asset: foxArt, u: .84, v: .92, width: wide(forest(CAST.fox), foxArt), height: forest(CAST.fox), fall: 'back', layer: 9 })
 
@@ -398,9 +399,10 @@ export function build(updatedAt) {
       id: 'mote', name: '風に運ばれる欠片', asset: moteArt, x: -6.4, y: 2.4, z: 1.0, width: .9, height: .9, billboard: true, layer: 11,
       motion: [{ type: 'bob', amplitude: .22, period: 2.3 }],
     })
-    s.track(mote, 'position.x', [[0, -6.4], [6.5, -0.9]], 'linear')
+    // 左ページローカル座標。見開き上では -6.4 → -0.9 を走る。
+    s.track(mote, 'position.x', [[0, -2.4], [6.5, 3.1]], 'linear')
     s.track(mote, 'position.y', [[0, 1.3], [3.2, 2.6], [6.5, 3.4]])
-    s.caption('left', { id: 'text', text: 'The wind caught the shard\nand carried it up the hill', u: .5, v: .88, size: .40, color: '#e9f0f2' })
+    s.caption('left', { id: 'text', text: 'The wind caught the shard\nand carried it up the hill', u: .5, v: .91, size: .40, color: '#e9f0f2' })
     s.camera([
       { time: 0, position: [0, 6.2, 11.0], target: [0, .9, .8], fov: 45 },
       { time: 6.5, position: [.5, 9.2, 11.4], target: [.2, 1.4, 0], fov: 42 },
@@ -420,23 +422,22 @@ export function build(updatedAt) {
     })
     s.stand('left', { id: 'far-line-l', name: '奥の木立 (左)', asset: firDark, u: .5, v: .11, width: BACKDROP_WIDTH, height: 2.0, backdrop: true })
     s.stand('right', { id: 'far-line-r', name: '奥の木立 (右)', asset: firDark, u: .5, v: .11, width: BACKDROP_WIDTH, height: 2.0, backdrop: true })
-    const tree = s.stand('right', { id: 'great-tree', name: '眠る大樹', asset: bigTreeArt, u: 0, width: 8.6, height: 3.4, v: .30, layer: 3 })
+    s.stand('right', { id: 'great-tree', name: '眠る大樹', asset: bigTreeArt, u: 0, width: 8.6, height: 6.8, v: .30, layer: 3 })
     s.stand('left', { id: 'root-l', name: '根もとの倒木 (左)', asset: logArt, u: .40, v: .62, width: wide(forest(.7), logArt), height: forest(.7), fall: 'back', layer: 4 })
     s.stand('right', { id: 'root-r', name: '根もとの倒木 (右)', asset: logArt, u: .40, v: .62, width: wide(forest(.7), logArt), height: forest(.7), fall: 'back', layer: 4 })
     s.stand('left', { id: 'tree-a', name: '脇の木', asset: firMid, u: .80, v: .74, width: 2.18, height: 3.19, fall: 'back', layer: 5 })
     s.stand('right', { id: 'tree-b', name: '脇の木 (右)', asset: treeRoundDark, u: .82, v: .78, width: 2.32, height: 3.19, fall: 'back', layer: 5 })
     s.stand('left', { id: 'owl', name: '大樹のフクロウ', asset: owlArt, u: .16, v: .78, width: wide(forest(.75), owlArt), height: forest(.75), fall: 'back', layer: 7 })
     s.stand('right', { id: 'badger', name: 'ランタンを運ぶアナグマ', asset: badgerArt, u: .18, v: .82, width: wide(forest(CAST.badger), badgerArt), height: forest(CAST.badger), fall: 'back', layer: 7 })
-    s.stand('left', { id: 'mushroom', name: '光るキノコ', asset: mushroomArt, u: .84, v: .90, width: wide(forest(.6), mushroomArt), height: forest(.6), fall: 'back', layer: 8 })
+    s.stand('left', { id: 'mushroom', name: '光るキノコ', asset: mushroomArt, u: .84, v: .70, width: wide(forest(.6), mushroomArt), height: forest(.6), fall: 'back', layer: 8 })
     s.stand('right', { id: 'fern', name: 'シダの下草', asset: fernArt, u: .60, v: .90, width: forest(.9), height: forest(.9), fall: 'back', layer: 8 })
     s.stand('left', { id: 'fox', name: '子ぎつね', asset: foxArt, u: .84, v: .92, width: wide(forest(CAST.fox), foxArt), height: forest(CAST.fox), fall: 'back', layer: 9 })
     const light = s.hover({ id: 'lantern', name: '失われた灯り', asset: lanternArt, x: 0, y: 2.4, z: 1.2, width: wide(forest(1.0), lanternArt), height: forest(1.0), billboard: true, layer: 12 })
 
-    // 大樹がゆっくり伸び上がり、枝の間から灯りが現れる
-    s.track(tree, 'scale', [[0, .72], [7, 1]])
+    // 大樹は紙工作の起立だけで姿を現し、枝の間から灯りが現れる
     s.track(light, 'opacity', [[0, 0], [2.6, 0], [4.2, 1]])
     s.track(light, 'position.y', [[0, 2.0], [7, 2.7]])
-    s.caption('left', { id: 'text', text: 'Among the sleeping great tree\nthe lantern lay hidden', u: .5, v: .88, size: .40, color: '#ecf1de' })
+    s.caption('left', { id: 'text', text: 'Among the sleeping great tree\nthe lantern lay hidden', u: .5, v: .91, size: .40, color: '#ecf1de' })
     // 明るい紙面の手前に置くと淡い粒が沈むので、暗い樹冠を背にする高さへ上げる
     const halo = s.sparkle({ id: 'halo', name: '灯りの粒', x: 0, y: 3.2, z: .4, color: C.glow, size: .6 })
     s.track(halo, 'effect.size', [[0, .5], [7, 2.6]])
@@ -490,7 +491,7 @@ export function build(updatedAt) {
       s.track(dark, 'opacity', [[0, 1], [litAt, 1], [litAt + .5, 0]])
     })
     const flowers = [
-      { page: 'left', u: .16, v: .90, w: forest(.55), h: forest(.6) },
+      { page: 'left', u: .16, v: .70, w: forest(.55), h: forest(.6) },
       { page: 'right', u: .52, v: .92, w: forest(.55), h: forest(.6) },
       { page: 'right', u: .88, v: .86, w: forest(.5), h: forest(.55) },
     ]
@@ -503,9 +504,9 @@ export function build(updatedAt) {
       s.track(id, 'scale', [[0, .5], [4.1 + index * .7, 1]])
     })
     s.stand('right', { id: 'deer', name: '灯りを見にきた鹿', asset: deerArt, u: .12, v: .88, width: wide(forest(CAST.deer), deerArt), height: forest(CAST.deer), fall: 'back', layer: 17 })
-    s.stand('left', { id: 'badger', name: 'ランタンを運ぶアナグマ', asset: badgerArt, u: .10, v: .84, width: wide(forest(CAST.badger), badgerArt), height: forest(CAST.badger), fall: 'back', layer: 17 })
+    s.stand('left', { id: 'badger', name: 'ランタンを運ぶアナグマ', asset: badgerArt, u: .10, v: .70, width: wide(forest(CAST.badger), badgerArt), height: forest(CAST.badger), fall: 'back', layer: 17 })
     s.stand('right', { id: 'mushroom', name: '光るキノコ', asset: mushroomArt, u: .90, v: .92, width: wide(forest(.6), mushroomArt), height: forest(.6), fall: 'back', layer: 17 })
-    s.stand('left', { id: 'fox', name: '子ぎつね', asset: foxArt, u: .84, v: .93, width: wide(forest(CAST.fox), foxArt), height: forest(CAST.fox), fall: 'back', layer: 18 })
+    s.stand('left', { id: 'fox', name: '子ぎつね', asset: foxArt, u: .84, v: .70, width: wide(forest(CAST.fox), foxArt), height: forest(CAST.fox), fall: 'back', layer: 18 })
 
     const light = s.hover({ id: 'lantern', name: '空へ昇る灯り', asset: lanternArt, x: 0, y: 1.6, z: .9, width: wide(forest(1.1), lanternArt), height: forest(1.1), billboard: true, layer: 20 })
     s.track(light, 'position.y', [[0, 1.4], [7.5, 3.4]])
@@ -513,7 +514,7 @@ export function build(updatedAt) {
     // 同上。雪明かりの紙面ではなく樹冠と空を背にする
     const halo = s.sparkle({ id: 'halo', name: '森へ戻る光', x: 0, y: 3.0, z: .3, color: C.glow, size: 1.2 })
     s.track(halo, 'effect.size', [[0, .8], [7.5, 3.4]])
-    s.caption('left', { id: 'text', text: 'The lantern rose to the sky\nand the forest was bright again', u: .5, v: .88, size: .38, color: '#f5ecd6' })
+    s.caption('left', { id: 'text', text: 'The lantern rose to the sky\nand the forest was bright again', u: .5, v: .91, size: .38, color: '#f5ecd6' })
     s.camera([
       { time: 0, position: [0, 6.8, 10.6], target: [0, 1.4, .3], fov: 43 },
       { time: 7.5, position: [0, 10.8, 12.6], target: [0, 1.0, 0], fov: 46 },

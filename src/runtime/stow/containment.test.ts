@@ -12,11 +12,11 @@ import { analyzeSpreadContainment } from './containment'
 const book = (): Book => createBookProject('containment').book
 const spreadOf = (source: Book): Spread => source.spreads[0]
 
-type ImageElement = Extract<StageElement, { type: 'image' }>
+type ImageElement = Extract<StageElement, { type: 'visual' }>
 
 function place(source: Book, build: (element: ImageElement) => void): StageElement {
-  const element = createStageElement('image', { type: 'right-page' }, 'flap')
-  if (element.type !== 'image') throw new Error('unreachable')
+  const element = createStageElement('visual', { type: 'right-page' }, 'flap')
+  if (element.type !== 'visual') throw new Error('unreachable')
   element.width = 2
   element.height = 2
   element.pivot = [0.5, 0]
@@ -88,9 +88,8 @@ describe('開姿勢の包含検査', () => {
   it('空中要素でも本の輪郭の外へは出られない', () => {
     const source = book()
     const element = place(source, (item) => {
-      item.stow.mechanism = 'auto'
       item.baseTransform.position = [0, 1.5, 0]
-      item.parent = { type: 'spread' }
+      item.parent = { type: 'right-page' }
     })
     spreadOf(source).timeline.tracks.push({
       id: 'fly',

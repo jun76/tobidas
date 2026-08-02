@@ -1,6 +1,6 @@
 import { DEFAULT_BOOK_LIGHTS, type Book, type Page, type Spread } from './book'
 import type { BookProject } from './bookPackage'
-import type { ParentSpace, StageElement, StageElementType, StowMechanism } from './stageElement'
+import type { ParentSpace, StageElement, StageElementType } from './stageElement'
 
 let counter = 0
 export function bookId(prefix = 'id') { counter = (counter + 1) % 1296; return `${prefix}_${Date.now().toString(36)}${counter.toString(36).padStart(2, '0')}` }
@@ -31,16 +31,22 @@ export function createBookProject(name = 'New pop-up book'): BookProject {
   return { id: bookId('book'), name, book: createBook(), assets: [], updatedAt: new Date().toISOString() }
 }
 
-export function createStageElement(type: StageElementType, parent: ParentSpace = { type: 'right-page' }, mechanism: StowMechanism = 'auto'): StageElement {
+export function createStageElement(
+  type: StageElementType = 'visual',
+  parent: ParentSpace = { type: 'right-page' },
+  _legacyMechanism?: unknown,
+): StageElement {
   const common = {
     id: bookId('element'), name: 'Part', visible: true, opacity: 1, parent,
-    baseTransform: { position: [0, .03, 0] as [number, number, number], rotation: [-90, 0, 0] as [number, number, number], scale: [1, 1, 1] as [number, number, number] },
+    baseTransform: { position: [0, .005, 0] as [number, number, number], rotation: [-90, 0, 0] as [number, number, number], scale: [1, 1, 1] as [number, number, number] },
     pivot: [0.5, 0] as [number, number], layer: 0, motion: [], clock: 'visible-elapsed' as const,
-    sourcePreset: 'custom' as const,
-    stow: { mechanism, fallDirection: 'auto' as const, stagger: 0 },
+    stow: { fallDirection: 'auto' as const, stagger: 0 },
   }
-  if (type === 'image') return { ...common, type, asset: '', width: 2, height: 2, opacity: 1, billboard: false }
-  if (type === 'text') return { ...common, type, text: 'Text', width: 3, height: 1, fontSize: .35, color: '#2e241b', align: 'center', font: 'rounded', bold: true, italic: false, underline: false }
-  if (type === 'effect') return { ...common, type, effect: 'sparkles', color: '#fff3a0', size: 1 }
-  return { ...common, type }
+  if (type === 'visual') return {
+    ...common, type, width: 2, height: 2, billboard: false,
+    backgroundColor: '#00000000', foregroundColor: '#2e241b', text: '', fontSize: .35,
+    align: 'center', font: 'rounded', bold: true, italic: false, underline: false,
+    particles: { enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
+  }
+  return { ...common, type, baseTransform: { ...common.baseTransform, rotation: [0, 0, 0] } }
 }

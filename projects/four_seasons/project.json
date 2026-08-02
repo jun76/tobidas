@@ -95,17 +95,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-spring-l.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-spring-l.webp"
           },
           {
             "id": "spread-1-view-r",
@@ -139,17 +154,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-spring-r.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-spring-r.webp"
           },
           {
             "id": "spread-1-window",
@@ -183,17 +213,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "window-frame.webp",
+            "type": "visual",
             "width": 7.03,
             "height": 3.61,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "window-frame.webp"
           },
           {
             "id": "spread-1-curtain-left",
@@ -234,17 +279,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "curtain-light.webp",
+            "type": "visual",
             "width": 1.929,
             "height": 2.714,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "curtain-light.webp"
           },
           {
             "id": "spread-1-curtain-right",
@@ -285,17 +345,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "curtain-cool.webp",
+            "type": "visual",
             "width": 1.929,
             "height": 2.714,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "curtain-cool.webp"
           },
           {
             "id": "spread-1-plant",
@@ -329,17 +404,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "pot-plant.webp",
+            "type": "visual",
             "width": 1.727,
             "height": 2.045,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "pot-plant.webp"
           },
           {
             "id": "spread-1-prop-1",
@@ -373,17 +463,32 @@
             "layer": 20,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cherry-blossom-branch.webp",
+            "type": "visual",
             "width": 2.16,
             "height": 2.73,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cherry-blossom-branch.webp"
           },
           {
             "id": "spread-1-prop-2",
@@ -417,17 +522,32 @@
             "layer": 21,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "spring-watering-can.webp",
+            "type": "visual",
             "width": 2.14,
             "height": 1.36,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "spring-watering-can.webp"
           },
           {
             "id": "spread-1-prop-3",
@@ -461,17 +581,32 @@
             "layer": 22,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "spring-rain-boot.webp",
+            "type": "visual",
             "width": 0.98,
             "height": 1.45,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "spring-rain-boot.webp"
           },
           {
             "id": "spread-1-prop-4",
@@ -505,17 +640,32 @@
             "layer": 23,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "spring-rain-boot.webp",
+            "type": "visual",
             "width": 0.833,
             "height": 1.233,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "spring-rain-boot.webp"
           },
           {
             "id": "spread-1-prop-5",
@@ -549,17 +699,32 @@
             "layer": 24,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "spring-bird.webp",
+            "type": "visual",
             "width": 0.66,
             "height": 0.68,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "spring-bird.webp"
           },
           {
             "id": "spread-1-fallen-left",
@@ -593,17 +758,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "paper-stack",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-petal.webp",
+            "type": "visual",
             "width": 2.2,
             "height": 1.1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-petal.webp"
           },
           {
             "id": "spread-1-fallen-right",
@@ -637,17 +817,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "paper-stack",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-petal.webp",
+            "type": "visual",
             "width": 3,
             "height": 1.5,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-petal.webp"
           },
           {
             "id": "spread-1-particle-far",
@@ -655,11 +850,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "left-page"
             },
             "baseTransform": {
               "position": [
-                -1.4,
+                2.6,
                 2.5,
                 -2.3
               ],
@@ -688,17 +883,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-petal.webp",
+            "type": "visual",
             "width": 2,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-petal.webp"
           },
           {
             "id": "spread-1-particle-near",
@@ -706,11 +916,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                1.3,
+                -2.7,
                 2.4,
                 -2.1
               ],
@@ -739,17 +949,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-petal.webp",
+            "type": "visual",
             "width": 2.4,
             "height": 1.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-petal.webp"
           },
           {
             "id": "spread-1-text",
@@ -783,19 +1008,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 3.6359999999999997,
+            "height": 0.8999999999999999,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#4b4a52",
             "text": "Beyond the window\npetals are falling",
-            "width": 2.9088,
-            "height": 0.72,
             "fontSize": 0.36,
-            "color": "#4b4a52",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -1535,17 +1772,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-summer-l.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-summer-l.webp"
           },
           {
             "id": "spread-2-view-r",
@@ -1579,17 +1831,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-summer-r.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-summer-r.webp"
           },
           {
             "id": "spread-2-window",
@@ -1623,17 +1890,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "window-frame.webp",
+            "type": "visual",
             "width": 7.03,
             "height": 3.61,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "window-frame.webp"
           },
           {
             "id": "spread-2-curtain-left",
@@ -1674,17 +1956,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "curtain-light.webp",
+            "type": "visual",
             "width": 1.929,
             "height": 2.714,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "curtain-light.webp"
           },
           {
             "id": "spread-2-curtain-right",
@@ -1725,17 +2022,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "curtain-cool.webp",
+            "type": "visual",
             "width": 1.929,
             "height": 2.714,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "curtain-cool.webp"
           },
           {
             "id": "spread-2-plant",
@@ -1769,17 +2081,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "pot-plant.webp",
+            "type": "visual",
             "width": 1.727,
             "height": 2.045,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "pot-plant.webp"
           },
           {
             "id": "spread-2-prop-1",
@@ -1813,17 +2140,32 @@
             "layer": 20,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "summer-parasol.webp",
+            "type": "visual",
             "width": 3.76,
             "height": 3.64,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "summer-parasol.webp"
           },
           {
             "id": "spread-2-prop-2",
@@ -1857,17 +2199,32 @@
             "layer": 21,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "summer-sun-hat.webp",
+            "type": "visual",
             "width": 2.72,
             "height": 1.59,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "summer-sun-hat.webp"
           },
           {
             "id": "spread-2-prop-3",
@@ -1901,17 +2258,32 @@
             "layer": 22,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "summer-butterfly.webp",
+            "type": "visual",
             "width": 0.49,
             "height": 0.36,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "summer-butterfly.webp"
           },
           {
             "id": "spread-2-prop-4",
@@ -1945,17 +2317,32 @@
             "layer": 23,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "summer-butterfly.webp",
+            "type": "visual",
             "width": 0.417,
             "height": 0.306,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "summer-butterfly.webp"
           },
           {
             "id": "spread-2-prop-5",
@@ -1989,17 +2376,32 @@
             "layer": 24,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "summer-seashell.webp",
+            "type": "visual",
             "width": 0.37,
             "height": 0.36,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "summer-seashell.webp"
           },
           {
             "id": "spread-2-fallen-left",
@@ -2033,17 +2435,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "paper-stack",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-leaf.webp",
+            "type": "visual",
             "width": 2.2,
             "height": 1.1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-leaf.webp"
           },
           {
             "id": "spread-2-fallen-right",
@@ -2077,17 +2494,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "paper-stack",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-leaf.webp",
+            "type": "visual",
             "width": 3,
             "height": 1.5,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-leaf.webp"
           },
           {
             "id": "spread-2-particle-far",
@@ -2095,11 +2527,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                1.4,
+                -2.6,
                 2.5,
                 -2.3
               ],
@@ -2128,17 +2560,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-leaf.webp",
+            "type": "visual",
             "width": 2,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-leaf.webp"
           },
           {
             "id": "spread-2-particle-near",
@@ -2146,11 +2593,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "left-page"
             },
             "baseTransform": {
               "position": [
-                -1.3,
+                2.7,
                 2.4,
                 -2.1
               ],
@@ -2179,17 +2626,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-leaf.webp",
+            "type": "visual",
             "width": 2.4,
             "height": 1.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-leaf.webp"
           },
           {
             "id": "spread-2-text",
@@ -2223,19 +2685,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 6.012000000000002,
+            "height": 0.8999999999999999,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#4b4a52",
             "text": "Deep green and towering clouds\nthe longest day of the year",
-            "width": 4.809600000000002,
-            "height": 0.72,
             "fontSize": 0.36,
-            "color": "#4b4a52",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -2975,17 +3449,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-autumn-l.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-autumn-l.webp"
           },
           {
             "id": "spread-3-view-r",
@@ -3019,17 +3508,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-autumn-r.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-autumn-r.webp"
           },
           {
             "id": "spread-3-window",
@@ -3063,17 +3567,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "window-frame.webp",
+            "type": "visual",
             "width": 7.03,
             "height": 3.61,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "window-frame.webp"
           },
           {
             "id": "spread-3-curtain-left",
@@ -3114,17 +3633,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "curtain-light.webp",
+            "type": "visual",
             "width": 1.929,
             "height": 2.714,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "curtain-light.webp"
           },
           {
             "id": "spread-3-curtain-right",
@@ -3165,17 +3699,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "curtain-cool.webp",
+            "type": "visual",
             "width": 1.929,
             "height": 2.714,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "curtain-cool.webp"
           },
           {
             "id": "spread-3-plant",
@@ -3209,17 +3758,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "pot-plant.webp",
+            "type": "visual",
             "width": 1.727,
             "height": 2.045,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "pot-plant.webp"
           },
           {
             "id": "spread-3-prop-1",
@@ -3253,17 +3817,32 @@
             "layer": 20,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "autumn-scarf.webp",
+            "type": "visual",
             "width": 2.63,
             "height": 3.18,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "autumn-scarf.webp"
           },
           {
             "id": "spread-3-prop-2",
@@ -3297,17 +3876,32 @@
             "layer": 21,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "autumn-pumpkins.webp",
+            "type": "visual",
             "width": 1.52,
             "height": 1.36,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "autumn-pumpkins.webp"
           },
           {
             "id": "spread-3-prop-3",
@@ -3341,17 +3935,32 @@
             "layer": 22,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "autumn-leaves.webp",
+            "type": "visual",
             "width": 1.39,
             "height": 1.36,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "autumn-leaves.webp"
           },
           {
             "id": "spread-3-prop-4",
@@ -3385,17 +3994,32 @@
             "layer": 23,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "autumn-leaves.webp",
+            "type": "visual",
             "width": 1.182,
             "height": 1.156,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "autumn-leaves.webp"
           },
           {
             "id": "spread-3-prop-5",
@@ -3429,17 +4053,32 @@
             "layer": 24,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "autumn-acorns.webp",
+            "type": "visual",
             "width": 0.41,
             "height": 0.36,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "autumn-acorns.webp"
           },
           {
             "id": "spread-3-fallen-left",
@@ -3473,17 +4112,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "paper-stack",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-maple.webp",
+            "type": "visual",
             "width": 2.2,
             "height": 1.1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-maple.webp"
           },
           {
             "id": "spread-3-fallen-right",
@@ -3517,17 +4171,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "paper-stack",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-maple.webp",
+            "type": "visual",
             "width": 3,
             "height": 1.5,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-maple.webp"
           },
           {
             "id": "spread-3-particle-far",
@@ -3535,11 +4204,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "left-page"
             },
             "baseTransform": {
               "position": [
-                -1.4,
+                2.6,
                 2.5,
                 -2.3
               ],
@@ -3568,17 +4237,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-maple.webp",
+            "type": "visual",
             "width": 2,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-maple.webp"
           },
           {
             "id": "spread-3-particle-near",
@@ -3586,11 +4270,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                1.3,
+                -2.7,
                 2.4,
                 -2.1
               ],
@@ -3619,17 +4303,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-maple.webp",
+            "type": "visual",
             "width": 2.4,
             "height": 1.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-maple.webp"
           },
           {
             "id": "spread-3-text",
@@ -3663,19 +4362,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 5.022000000000001,
+            "height": 0.8999999999999999,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#4b4a52",
             "text": "Red leaves drift sideways\nand evening comes early",
-            "width": 4.017600000000002,
-            "height": 0.72,
             "fontSize": 0.36,
-            "color": "#4b4a52",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -4415,17 +5126,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-winter-l.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-winter-l.webp"
           },
           {
             "id": "spread-4-view-r",
@@ -4459,17 +5185,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-winter-r.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-winter-r.webp"
           },
           {
             "id": "spread-4-window",
@@ -4503,17 +5244,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "window-frame.webp",
+            "type": "visual",
             "width": 7.03,
             "height": 3.61,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "window-frame.webp"
           },
           {
             "id": "spread-4-curtain-left",
@@ -4554,17 +5310,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "curtain-light.webp",
+            "type": "visual",
             "width": 1.929,
             "height": 2.714,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "curtain-light.webp"
           },
           {
             "id": "spread-4-curtain-right",
@@ -4605,17 +5376,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "curtain-cool.webp",
+            "type": "visual",
             "width": 1.929,
             "height": 2.714,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "curtain-cool.webp"
           },
           {
             "id": "spread-4-plant",
@@ -4649,17 +5435,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "pot-plant.webp",
+            "type": "visual",
             "width": 1.727,
             "height": 2.045,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "pot-plant.webp"
           },
           {
             "id": "spread-4-prop-1",
@@ -4693,17 +5494,32 @@
             "layer": 20,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "winter-scarf.webp",
+            "type": "visual",
             "width": 2.54,
             "height": 3.18,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "winter-scarf.webp"
           },
           {
             "id": "spread-4-prop-2",
@@ -4737,17 +5553,32 @@
             "layer": 21,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "winter-mitten.webp",
+            "type": "visual",
             "width": 0.76,
             "height": 1.14,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "winter-mitten.webp"
           },
           {
             "id": "spread-4-prop-3",
@@ -4781,17 +5612,32 @@
             "layer": 22,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "winter-snow-rabbit.webp",
+            "type": "visual",
             "width": 0.73,
             "height": 1.14,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "winter-snow-rabbit.webp"
           },
           {
             "id": "spread-4-prop-4",
@@ -4825,17 +5671,32 @@
             "layer": 23,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "winter-snow-rabbit.webp",
+            "type": "visual",
             "width": 0.62,
             "height": 0.969,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "winter-snow-rabbit.webp"
           },
           {
             "id": "spread-4-prop-5",
@@ -4869,17 +5730,32 @@
             "layer": 24,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "winter-snowflake.webp",
+            "type": "visual",
             "width": 0.31,
             "height": 0.45,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "winter-snowflake.webp"
           },
           {
             "id": "spread-4-fallen-left",
@@ -4913,17 +5789,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "paper-stack",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-snow.webp",
+            "type": "visual",
             "width": 2.2,
             "height": 1.1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-snow.webp"
           },
           {
             "id": "spread-4-fallen-right",
@@ -4957,17 +5848,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "paper-stack",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-snow.webp",
+            "type": "visual",
             "width": 3,
             "height": 1.5,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-snow.webp"
           },
           {
             "id": "spread-4-particle-far",
@@ -4975,11 +5881,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                1.4,
+                -2.6,
                 2.5,
                 -2.3
               ],
@@ -5008,17 +5914,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-snow.webp",
+            "type": "visual",
             "width": 2,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-snow.webp"
           },
           {
             "id": "spread-4-particle-near",
@@ -5026,11 +5947,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "left-page"
             },
             "baseTransform": {
               "position": [
-                -1.3,
+                2.7,
                 2.4,
                 -2.1
               ],
@@ -5059,17 +5980,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-snow.webp",
+            "type": "visual",
             "width": 2.4,
             "height": 1.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-snow.webp"
           },
           {
             "id": "spread-4-text",
@@ -5103,19 +6039,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 5.022000000000001,
+            "height": 0.8999999999999999,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#4b4a52",
             "text": "Grains of snow\nsome large and some small",
-            "width": 4.017600000000002,
-            "height": 0.72,
             "fontSize": 0.36,
-            "color": "#4b4a52",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -5855,17 +6803,32 @@
             "layer": 0,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-spring-l.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-spring-l.webp"
           },
           {
             "id": "spread-5-layer-right-1",
@@ -5899,17 +6862,32 @@
             "layer": 0,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-spring-r.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-spring-r.webp"
           },
           {
             "id": "spread-5-layer-left-2",
@@ -5943,17 +6921,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-summer-l.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-summer-l.webp"
           },
           {
             "id": "spread-5-layer-right-2",
@@ -5987,17 +6980,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-summer-r.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-summer-r.webp"
           },
           {
             "id": "spread-5-layer-left-3",
@@ -6031,17 +7039,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-autumn-l.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-autumn-l.webp"
           },
           {
             "id": "spread-5-layer-right-3",
@@ -6075,17 +7098,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-autumn-r.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-autumn-r.webp"
           },
           {
             "id": "spread-5-layer-left-4",
@@ -6119,17 +7157,32 @@
             "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-winter-l.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-winter-l.webp"
           },
           {
             "id": "spread-5-layer-right-4",
@@ -6163,17 +7216,32 @@
             "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "view-winter-r.webp",
+            "type": "visual",
             "width": 3.73,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "view-winter-r.webp"
           },
           {
             "id": "spread-5-window",
@@ -6207,17 +7275,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "window-frame.webp",
+            "type": "visual",
             "width": 7.03,
             "height": 3.61,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "window-frame.webp"
           },
           {
             "id": "spread-5-curtain-left",
@@ -6258,17 +7341,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "curtain-light.webp",
+            "type": "visual",
             "width": 1.929,
             "height": 2.714,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "curtain-light.webp"
           },
           {
             "id": "spread-5-curtain-right",
@@ -6309,17 +7407,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "curtain-cool.webp",
+            "type": "visual",
             "width": 1.929,
             "height": 2.714,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "curtain-cool.webp"
           },
           {
             "id": "spread-5-plant",
@@ -6353,17 +7466,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "pot-plant.webp",
+            "type": "visual",
             "width": 1.727,
             "height": 2.045,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "pot-plant.webp"
           },
           {
             "id": "spread-5-keepsake-1",
@@ -6397,17 +7525,32 @@
             "layer": 24,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "winter-scarf.webp",
+            "type": "visual",
             "width": 2.54,
             "height": 3.18,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "winter-scarf.webp"
           },
           {
             "id": "spread-5-keepsake-2",
@@ -6441,17 +7584,32 @@
             "layer": 25,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cherry-blossom-branch.webp",
+            "type": "visual",
             "width": 2.16,
             "height": 2.73,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cherry-blossom-branch.webp"
           },
           {
             "id": "spread-5-keepsake-3",
@@ -6485,17 +7643,32 @@
             "layer": 26,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "summer-sun-hat.webp",
+            "type": "visual",
             "width": 2.72,
             "height": 1.59,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "summer-sun-hat.webp"
           },
           {
             "id": "spread-5-keepsake-4",
@@ -6529,17 +7702,32 @@
             "layer": 27,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "autumn-pumpkins.webp",
+            "type": "visual",
             "width": 1.52,
             "height": 1.36,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "autumn-pumpkins.webp"
           },
           {
             "id": "spread-5-particle-far",
@@ -6547,11 +7735,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "left-page"
             },
             "baseTransform": {
               "position": [
-                -1.4,
+                2.6,
                 2.5,
                 -2.3
               ],
@@ -6580,17 +7768,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-petal.webp",
+            "type": "visual",
             "width": 2,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-petal.webp"
           },
           {
             "id": "spread-5-particle-near",
@@ -6598,11 +7801,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                1.3,
+                -2.7,
                 2.4,
                 -2.1
               ],
@@ -6631,17 +7834,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "particle-petal.webp",
+            "type": "visual",
             "width": 2.4,
             "height": 1.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "particle-petal.webp"
           },
           {
             "id": "spread-5-text",
@@ -6675,19 +7893,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 4.3690000000000015,
+            "height": 0.8500000000000001,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#4b4a52",
             "text": "Through the same window\na year of light goes by",
-            "width": 3.495200000000002,
-            "height": 0.68,
             "fontSize": 0.34,
-            "color": "#4b4a52",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -7235,33 +8465,33 @@
               ]
             },
             {
-              "id": "spread-5-particle-far-asset",
+              "id": "spread-5-particle-far-visual-image",
               "target": {
                 "type": "element",
                 "elementId": "spread-5-particle-far"
               },
-              "property": "asset",
+              "property": "visual.image",
               "keys": [
                 {
-                  "id": "spread-5-particle-far-asset-0",
+                  "id": "spread-5-particle-far-visual-image-0",
                   "time": 0,
                   "value": "particle-petal.webp",
                   "ease": "hold"
                 },
                 {
-                  "id": "spread-5-particle-far-asset-1",
+                  "id": "spread-5-particle-far-visual-image-1",
                   "time": 2.95,
                   "value": "particle-leaf.webp",
                   "ease": "hold"
                 },
                 {
-                  "id": "spread-5-particle-far-asset-2",
+                  "id": "spread-5-particle-far-visual-image-2",
                   "time": 4.25,
                   "value": "particle-maple.webp",
                   "ease": "hold"
                 },
                 {
-                  "id": "spread-5-particle-far-asset-3",
+                  "id": "spread-5-particle-far-visual-image-3",
                   "time": 5.550000000000001,
                   "value": "particle-snow.webp",
                   "ease": "hold"
@@ -7513,33 +8743,33 @@
               ]
             },
             {
-              "id": "spread-5-particle-near-asset",
+              "id": "spread-5-particle-near-visual-image",
               "target": {
                 "type": "element",
                 "elementId": "spread-5-particle-near"
               },
-              "property": "asset",
+              "property": "visual.image",
               "keys": [
                 {
-                  "id": "spread-5-particle-near-asset-0",
+                  "id": "spread-5-particle-near-visual-image-0",
                   "time": 0,
                   "value": "particle-petal.webp",
                   "ease": "hold"
                 },
                 {
-                  "id": "spread-5-particle-near-asset-1",
+                  "id": "spread-5-particle-near-visual-image-1",
                   "time": 2.95,
                   "value": "particle-leaf.webp",
                   "ease": "hold"
                 },
                 {
-                  "id": "spread-5-particle-near-asset-2",
+                  "id": "spread-5-particle-near-visual-image-2",
                   "time": 4.25,
                   "value": "particle-maple.webp",
                   "ease": "hold"
                 },
                 {
-                  "id": "spread-5-particle-near-asset-3",
+                  "id": "spread-5-particle-near-visual-image-3",
                   "time": 5.550000000000001,
                   "value": "particle-snow.webp",
                   "ease": "hold"

@@ -1,11 +1,10 @@
 import { Diamond, Eye, EyeOff, Trash2 } from 'lucide-react'
 import { Icon } from '../../ui/Icon'
-import type { StageElement, TextElement, TextFont } from '../../schema/stageElement'
+import type { StageElement, TextFont, VisualElement } from '../../schema/stageElement'
 import type { TimelineProperty, TimelineValue } from '../../schema/timeline'
 import { evaluateBookSignals } from '../../runtime/signals'
 import { useT } from '../i18n'
-import { measureTextBox, TEXT_FONT_IDS } from '../../runtime/textStyle'
-import { presetForElement } from '../presets'
+import { TEXT_FONT_IDS } from '../../runtime/textStyle'
 import { hiddenKey, useBuilderStore } from '../store'
 import { selectActiveSpread, selectSelectedElement, selectSpreadById } from '../state/selectors'
 import st from '../builder.module.css'
@@ -171,40 +170,13 @@ function Element({ element }: { element: StageElement }) {
   const selection = store.selection
   if (selection.type !== 'element') return null
   const update = (change: (item: StageElement) => void) => store.updateElement(selection.spreadId, element.id, change)
-  const preset = presetForElement(element)
-  const nested = element.parent.type === 'element'
   const time = activeSpreadTime()
   const key = (property: TimelineProperty, value: TimelineValue) =>
     store.upsertTimelineKey(selection.spreadId, { type: 'element', elementId: element.id }, property, time, value)
 
   return <Panel title={t.properties.element(element.type)}>
-    <div className={st.presetIdentity}><span>{t.properties.sourcePreset}</span>
-      <strong>{preset ? t.presets[preset.id] : t.properties.custom}</strong></div>
     <Text label={t.properties.name} value={element.name} onChange={(value) => update((item) => { item.name = value })} />
-    <Select label={t.properties.parentSpace} value={element.parent.type} options={element.sourcePreset === 'depth-layer'
-      ? [['left-page', t.properties.leftPage], ['right-page', t.properties.rightPage]]
-      : [['spread', t.properties.spreadSpace], ['left-page', t.properties.leftPage], ['right-page', t.properties.rightPage]]}
-      onChange={(value) => update((item) => { item.parent = { type: value as 'spread' | 'left-page' | 'right-page' } })} />
     <Transform value={element} update={update} onKey={key} />
-    {!nested && <>
-      <div className={st.subsectionTitle}>{t.properties.stow}</div>
-      <Select label={t.properties.mechanism} value={element.stow.mechanism} options={[
-        ['auto', t.properties.mechanismAuto], ['page-glue', t.properties.mechanismPageGlue],
-        ['flap', t.properties.mechanismFlap], ['v-fold', t.properties.mechanismVFold],
-      ]} onChange={(value) => update((item) => {
-        item.stow.mechanism = value as typeof item.stow.mechanism
-        if (item.stow.mechanism === 'page-glue') item.stow.fallDirection = 'auto'
-      })} />
-      {element.stow.mechanism !== 'page-glue' && <Select label={t.properties.fallDirection} value={element.stow.fallDirection}
-        options={[['auto', t.properties.fallAuto], ['back', t.properties.fallBack], ['front', t.properties.fallFront]]} onChange={(value) => update((item) => {
-          item.stow.fallDirection = value as typeof item.stow.fallDirection
-        })} />}
-      <Num label={t.properties.stagger} value={element.stow.stagger} onChange={(value) => update((item) => {
-        item.stow.stagger = Math.min(1, Math.max(0, value))
-      })} />
-      {element.stow.mechanism === 'v-fold' && <Num label={t.properties.crease} value={element.stow.crease ?? element.pivot[0]}
-        onChange={(value) => update((item) => { item.stow.crease = Math.min(.95, Math.max(.05, value)) })} />}
-    </>}
     <Num label={t.properties.pivotX} value={element.pivot[0]} onChange={(value) => update((item) => { item.pivot = [value, item.pivot[1]] })} />
     <Num label={t.properties.pivotY} value={element.pivot[1]} onChange={(value) => update((item) => { item.pivot = [item.pivot[0], value] })} />
     <Num label={t.properties.layer} value={element.layer} onChange={(value) => update((item) => { item.layer = Math.round(value) })} />
@@ -215,23 +187,41 @@ function Element({ element }: { element: StageElement }) {
     <Num label={t.properties.opacity} value={element.opacity} onChange={(value) => update((item) => {
       item.opacity = Math.min(1, Math.max(0, value))
     })} onKey={() => key('opacity', element.opacity)} />
-    {element.type === 'image' && <>
-      <Asset label={t.properties.image} value={element.asset} onChange={(value) => update((item) => { if (item.type === 'image') item.asset = value })}
-        onKey={() => key('asset', element.asset)} />
-      <Num label={t.properties.width} value={element.width} onChange={(value) => update((item) => { if (item.type === 'image') item.width = value })} />
-      <Num label={t.properties.height} value={element.height} onChange={(value) => update((item) => { if (item.type === 'image') item.height = value })} />
+    {element.type === 'visual' && <>
+      <Asset label={t.properties.image} value={element.image} onChange={(value) => update((item) => { if (item.type === 'visual') item.image = value || undefined })}
+        onKey={() => key('visual.image', element.image ?? '')} />
+      <Asset label={t.properties.backImage} value={element.backImage} onChange={(value) => update((item) => {
+        if (item.type === 'visual') item.backImage = value || undefined
+      })} />
+      <Num label={t.properties.width} value={element.width} onChange={(value) => update((item) => { if (item.type === 'visual') item.width = Math.max(.01, value) })} />
+      <Num label={t.properties.height} value={element.height} onChange={(value) => update((item) => { if (item.type === 'visual') item.height = Math.max(.01, value) })} />
       <label><input type="checkbox" checked={element.billboard} onChange={(event) => update((item) => {
-        if (item.type === 'image') item.billboard = event.target.checked
+        if (item.type === 'visual') item.billboard = event.target.checked
       })} /> {t.properties.billboard}</label>
-    </>}
-    {element.type === 'text' && <TextStyleFields element={element} update={update} />}
-    {element.type === 'effect' && <>
-      <Color label={t.properties.effectColor} value={element.color} onChange={(value) => update((item) => {
-        if (item.type === 'effect') item.color = value
-      })} onKey={() => key('effect.color', element.color)} />
-      <Num label={t.properties.effectSize} value={element.size} onChange={(value) => update((item) => {
-        if (item.type === 'effect') item.size = Math.max(.01, value)
-      })} onKey={() => key('effect.size', element.size)} />
+      <Text label={t.properties.backgroundColor} value={element.backgroundColor} onChange={(value) => update((item) => {
+        if (item.type === 'visual') item.backgroundColor = value
+      })} />
+      <TextStyleFields element={element} update={update} />
+      <label><input type="checkbox" checked={element.particles.enabled} onChange={(event) => update((item) => {
+        if (item.type === 'visual') item.particles.enabled = event.target.checked
+      })} /> {t.presets['light-particles']}</label>
+      {element.particles.enabled && <>
+        <Color label={t.properties.effectColor} value={element.particles.color} onChange={(value) => update((item) => {
+          if (item.type === 'visual') item.particles.color = value
+        })} onKey={() => key('visual.particles.color', element.particles.color)} />
+        <Num label={t.properties.effectSize} value={element.particles.size} onChange={(value) => update((item) => {
+          if (item.type === 'visual') item.particles.size = Math.max(.01, value)
+        })} onKey={() => key('visual.particles.size', element.particles.size)} />
+        <Num label={t.properties.particleCount} value={element.particles.count} onChange={(value) => update((item) => {
+          if (item.type === 'visual') item.particles.count = Math.min(200, Math.max(1, Math.round(value)))
+        })} />
+        <Num label={t.properties.particleDrift} value={element.particles.drift} onChange={(value) => update((item) => {
+          if (item.type === 'visual') item.particles.drift = Math.max(0, value)
+        })} />
+        <Num label={t.properties.particlePeriod} value={element.particles.period} onChange={(value) => update((item) => {
+          if (item.type === 'visual') item.particles.period = Math.max(.01, value)
+        })} />
+      </>}
     </>}
     <Select label={t.properties.motion} value={element.motion[0]?.type ?? ''} options={[
       ['', t.properties.motionNone], ['bob', t.properties.motionBob], ['sway', t.properties.motionSway],
@@ -256,14 +246,13 @@ function Element({ element }: { element: StageElement }) {
  * runtime/textStyle.ts が一手に持つ。
  */
 function TextStyleFields({ element, update }: {
-  element: TextElement
+  element: VisualElement
   update: (change: (item: StageElement) => void) => void
 }) {
   const t = useT()
-  const edit = (change: (item: TextElement) => void) => update((item) => {
-    if (item.type !== 'text') return
+  const edit = (change: (item: VisualElement) => void) => update((item) => {
+    if (item.type !== 'visual') return
     change(item)
-    Object.assign(item, measureTextBox(item, item.fontSize))
   })
   const toggle = (label: string, key: 'bold' | 'italic' | 'underline') =>
     <div className={st.row} key={key}><span className={st.rowLabel}>{label}</span><label>
@@ -281,10 +270,10 @@ function TextStyleFields({ element, update }: {
     <Num label={t.properties.fontSize} value={element.fontSize} onChange={(value) => edit((item) => {
       item.fontSize = Math.max(.02, value)
     })} />
-    <Color label={t.properties.textColor} value={element.color} onChange={(value) => edit((item) => { item.color = value })} />
+    <Color label={t.properties.textColor} value={element.foregroundColor} onChange={(value) => edit((item) => { item.foregroundColor = value })} />
     <Select label={t.properties.align} value={element.align}
       options={[['left', t.properties.alignLeft], ['center', t.properties.alignCenter], ['right', t.properties.alignRight]]}
-      onChange={(value) => edit((item) => { item.align = value as TextElement['align'] })} />
+      onChange={(value) => edit((item) => { item.align = value as VisualElement['align'] })} />
     {toggle(t.properties.bold, 'bold')}
     {toggle(t.properties.italic, 'italic')}
     {toggle(t.properties.underline, 'underline')}

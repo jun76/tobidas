@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as THREE from 'three'
 import { isExternalAssetData, type Asset } from '../schema/assets'
+import type { VisualElement } from '../schema/stageElement'
 import { canvasFont, TEXT_LINE_HEIGHT, TEXT_SIDE_PAD, type TextStyle } from './textStyle'
 
 /**
@@ -198,6 +199,52 @@ function makeTextTexture(opts: TextOptions): TextureResult & { lines: number } {
 export function useTextTexture(opts: TextOptions): (TextureResult & { lines: number }) | null {
   const result = useMemo(() => makeTextTexture(opts),
     [opts.text, opts.color, opts.font, opts.align, opts.bold, opts.italic, opts.underline])
+  useEffect(() => () => result?.texture.dispose(), [result])
+  return result
+}
+
+/** 背景色・画像・文字を、ビジュアル矩形と同じUVを持つ1枚へ合成する。 */
+export function useVisualTexture(element: VisualElement, asset?: Asset): TextureResult | null {
+  const image = useImageTexture(asset?.type === 'image' ? asset : undefined)
+  const svg = useSvgTexture(asset?.type === 'svg' ? asset : undefined)
+  const source = image ?? svg
+  const result = useMemo(() => {
+    const hasBackground = element.backgroundColor !== '#00000000'
+    if (!hasBackground && !source && !element.text) return null
+    const aspect = element.width / element.height
+    const canvas = document.createElement('canvas')
+    canvas.width = aspect >= 1 ? 1024 : Math.max(2, Math.round(1024 * aspect))
+    canvas.height = aspect >= 1 ? Math.max(2, Math.round(1024 / aspect)) : 1024
+    const c2d = canvas.getContext('2d')!
+    if (hasBackground) {
+      c2d.fillStyle = element.backgroundColor
+      c2d.fillRect(0, 0, canvas.width, canvas.height)
+    }
+    if (source) c2d.drawImage(source.texture.image as CanvasImageSource, 0, 0, canvas.width, canvas.height)
+    if (element.text) {
+      const px = Math.max(1, element.fontSize / element.height * canvas.height)
+      c2d.font = canvasFont(element, px)
+      c2d.fillStyle = element.foregroundColor
+      c2d.textBaseline = 'middle'
+      c2d.textAlign = element.align
+      const x = element.align === 'left' ? px * .1 : element.align === 'right' ? canvas.width - px * .1 : canvas.width / 2
+      const lines = element.text.split('\n')
+      const lineHeight = px * TEXT_LINE_HEIGHT
+      lines.forEach((line, index) => {
+        const y = canvas.height / 2 + (index - (lines.length - 1) / 2) * lineHeight
+        c2d.fillText(line, x, y)
+        if (!element.underline) return
+        const run = c2d.measureText(line).width
+        const left = element.align === 'left' ? x : element.align === 'right' ? x - run : x - run / 2
+        c2d.fillRect(left, y + px * .42, run, Math.max(1, px * .055))
+      })
+    }
+    const texture = new THREE.CanvasTexture(canvas)
+    texture.colorSpace = THREE.SRGBColorSpace
+    texture.anisotropy = 4
+    return { texture, aspect }
+  }, [element.width, element.height, element.backgroundColor, element.foregroundColor, element.text,
+    element.fontSize, element.font, element.bold, element.italic, element.underline, element.align, source])
   useEffect(() => () => result?.texture.dispose(), [result])
   return result
 }

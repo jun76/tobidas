@@ -100,17 +100,32 @@
             "layer": 0,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "paper-stack",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "ridge.webp",
+            "type": "visual",
             "width": 8.6,
             "height": 4.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "ridge.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "ridge-right",
@@ -144,17 +159,32 @@
             "layer": 0,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "paper-stack",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "ridge.webp",
+            "type": "visual",
             "width": 8.6,
             "height": 4.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "ridge.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "forest-left-in",
@@ -188,9 +218,7 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.028
             },
@@ -226,11 +254,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "forest.webp",
+            "type": "visual",
             "width": 3.682,
             "height": 1.752,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "forest.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "forest-left-out",
@@ -264,9 +309,7 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.056
             },
@@ -302,11 +345,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "forest.webp",
+            "type": "visual",
             "width": 3.392,
             "height": 1.614,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "forest.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "forest-right-in",
@@ -340,9 +400,7 @@
             "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.084
             },
@@ -378,11 +436,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "forest.webp",
+            "type": "visual",
             "width": 3.682,
             "height": 1.752,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "forest.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "forest-right-out",
@@ -416,9 +491,7 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.112
             },
@@ -454,11 +527,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "forest.webp",
+            "type": "visual",
             "width": 3.392,
             "height": 1.614,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "forest.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "back-left-1",
@@ -492,11 +582,9 @@
             "layer": 5,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.14
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -530,11 +618,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerCrooked.webp",
+            "type": "visual",
             "width": 1.282,
             "height": 8.268,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerCrooked.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "back-left-2",
@@ -568,11 +673,9 @@
             "layer": 6,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.168
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -606,11 +709,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerBalcony.webp",
+            "type": "visual",
             "width": 2.372,
             "height": 6.948,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerBalcony.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "back-left-3",
@@ -644,11 +764,9 @@
             "layer": 7,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.196
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -682,11 +800,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerCrooked.webp",
+            "type": "visual",
             "width": 1.434,
             "height": 9.253,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerCrooked.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "back-left-4",
@@ -720,11 +855,9 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.224
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -758,11 +891,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "witch.webp",
+            "type": "visual",
             "width": 2.315,
             "height": 7.455,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "witch.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "back-left-5",
@@ -796,11 +946,9 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.252
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -834,11 +982,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerBalcony.webp",
+            "type": "visual",
             "width": 2.834,
             "height": 8.299,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerBalcony.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "back-left-6",
@@ -872,11 +1037,9 @@
             "layer": 10,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.28
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -910,11 +1073,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerCrooked.webp",
+            "type": "visual",
             "width": 1.053,
             "height": 6.792,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerCrooked.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "mid-left-1",
@@ -948,11 +1128,9 @@
             "layer": 11,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.308
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -986,11 +1164,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "round.webp",
+            "type": "visual",
             "width": 2.99,
             "height": 3.026,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "round.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "mid-left-2",
@@ -1024,11 +1219,9 @@
             "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.336
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -1062,11 +1255,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "keep.webp",
+            "type": "visual",
             "width": 2.295,
             "height": 3.237,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "keep.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "mid-left-3",
@@ -1100,11 +1310,9 @@
             "layer": 13,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.364
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -1138,11 +1346,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerCrooked.webp",
+            "type": "visual",
             "width": 0.854,
             "height": 5.512,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerCrooked.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "mid-left-4",
@@ -1176,11 +1401,9 @@
             "layer": 14,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.392
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -1214,11 +1437,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "witch.webp",
+            "type": "visual",
             "width": 1.523,
             "height": 4.904,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "witch.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "mid-left-5",
@@ -1252,11 +1492,9 @@
             "layer": 15,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.42
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -1290,11 +1528,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "round.webp",
+            "type": "visual",
             "width": 2.709,
             "height": 2.742,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "round.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "near-left-1",
@@ -1328,11 +1583,9 @@
             "layer": 16,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.448
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -1366,11 +1619,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "gate.webp",
+            "type": "visual",
             "width": 1.997,
             "height": 1.764,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "gate.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "near-left-2",
@@ -1404,11 +1674,9 @@
             "layer": 17,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.47600000000000003
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -1442,11 +1710,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "round.webp",
+            "type": "visual",
             "width": 1.448,
             "height": 1.466,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "round.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "near-left-3",
@@ -1480,11 +1765,9 @@
             "layer": 18,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.504
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -1518,11 +1801,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerBalcony.webp",
+            "type": "visual",
             "width": 0.857,
             "height": 2.509,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerBalcony.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "near-left-4",
@@ -1556,11 +1856,9 @@
             "layer": 19,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.532
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -1594,11 +1892,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "keep.webp",
+            "type": "visual",
             "width": 1.043,
             "height": 1.471,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "keep.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "near-left-5",
@@ -1632,11 +1947,9 @@
             "layer": 20,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.56
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -1670,11 +1983,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerCrooked.webp",
+            "type": "visual",
             "width": 0.366,
             "height": 2.362,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerCrooked.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "back-right-1",
@@ -1708,11 +2038,9 @@
             "layer": 21,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.588
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -1746,11 +2074,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerBalcony.webp",
+            "type": "visual",
             "width": 2.491,
             "height": 7.295,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerBalcony.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "back-right-2",
@@ -1784,11 +2129,9 @@
             "layer": 22,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
-              "stagger": 0.616
+              "stagger": 0.62
             },
             "stowFlourish": [
               {
@@ -1822,11 +2165,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "witch.webp",
+            "type": "visual",
             "width": 2.455,
             "height": 7.906,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "witch.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "back-right-3",
@@ -1860,9 +2220,7 @@
             "layer": 23,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -1898,11 +2256,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerCrooked.webp",
+            "type": "visual",
             "width": 1.32,
             "height": 8.514,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerCrooked.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "back-right-4",
@@ -1936,9 +2311,7 @@
             "layer": 24,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -1974,11 +2347,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerCrooked.webp",
+            "type": "visual",
             "width": 1.321,
             "height": 8.524,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerCrooked.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "back-right-5",
@@ -2012,9 +2402,7 @@
             "layer": 25,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2050,11 +2438,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerBalcony.webp",
+            "type": "visual",
             "width": 2.692,
             "height": 7.884,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerBalcony.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "back-right-6",
@@ -2088,9 +2493,7 @@
             "layer": 26,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2126,11 +2529,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "witch.webp",
+            "type": "visual",
             "width": 2.227,
             "height": 7.17,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "witch.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "mid-right-1",
@@ -2164,9 +2584,7 @@
             "layer": 27,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2202,11 +2620,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "round.webp",
+            "type": "visual",
             "width": 2.69,
             "height": 2.723,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "round.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "mid-right-2",
@@ -2240,9 +2675,7 @@
             "layer": 28,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2278,11 +2711,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "keep.webp",
+            "type": "visual",
             "width": 2.295,
             "height": 3.237,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "keep.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "mid-right-3",
@@ -2316,9 +2766,7 @@
             "layer": 29,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2354,11 +2802,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "witch.webp",
+            "type": "visual",
             "width": 1.569,
             "height": 5.051,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "witch.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "mid-right-4",
@@ -2392,9 +2857,7 @@
             "layer": 30,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2430,11 +2893,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerCrooked.webp",
+            "type": "visual",
             "width": 0.87,
             "height": 5.611,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerCrooked.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "mid-right-5",
@@ -2468,9 +2948,7 @@
             "layer": 31,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2506,11 +2984,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "keep.webp",
+            "type": "visual",
             "width": 1.919,
             "height": 2.707,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "keep.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "near-right-1",
@@ -2544,9 +3039,7 @@
             "layer": 32,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2582,11 +3075,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "round.webp",
+            "type": "visual",
             "width": 1.56,
             "height": 1.579,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "round.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "near-right-2",
@@ -2620,9 +3130,7 @@
             "layer": 33,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2658,11 +3166,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "gate.webp",
+            "type": "visual",
             "width": 1.673,
             "height": 1.478,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "gate.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "near-right-3",
@@ -2696,9 +3221,7 @@
             "layer": 34,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2734,11 +3257,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerCrooked.webp",
+            "type": "visual",
             "width": 0.365,
             "height": 2.353,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerCrooked.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "near-right-4",
@@ -2772,9 +3312,7 @@
             "layer": 35,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2810,11 +3348,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "keep.webp",
+            "type": "visual",
             "width": 1.043,
             "height": 1.471,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "keep.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "near-right-5",
@@ -2848,9 +3403,7 @@
             "layer": 36,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2886,11 +3439,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerBalcony.webp",
+            "type": "visual",
             "width": 0.751,
             "height": 2.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerBalcony.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "central-twin",
@@ -2898,11 +3468,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 0,
                 -1.85
               ],
@@ -2924,9 +3494,7 @@
             "layer": 60,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
               "fallDirection": "front",
               "stagger": 0.62
             },
@@ -2962,11 +3530,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "towerTwin.webp",
+            "type": "visual",
             "width": 4.044,
             "height": 5.779,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "towerTwin.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "wall-left",
@@ -3000,9 +3585,7 @@
             "layer": 62,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0.62
             },
@@ -3038,11 +3621,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "wall.webp",
+            "type": "visual",
             "width": 3.131,
             "height": 1.371,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "wall.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "fence-left",
@@ -3076,9 +3676,7 @@
             "layer": 63,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0.62
             },
@@ -3114,11 +3712,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "fence.webp",
+            "type": "visual",
             "width": 1.65,
             "height": 1.321,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "fence.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "wall-right",
@@ -3152,9 +3767,7 @@
             "layer": 64,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0.62
             },
@@ -3190,11 +3803,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "wall.webp",
+            "type": "visual",
             "width": 3.131,
             "height": 1.371,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "wall.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "fence-right",
@@ -3228,9 +3858,7 @@
             "layer": 65,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0.62
             },
@@ -3266,11 +3894,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "fence.webp",
+            "type": "visual",
             "width": 1.65,
             "height": 1.321,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "fence.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "front-left-1",
@@ -3304,11 +3949,9 @@
             "layer": 66,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
-              "stagger": 0.62
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -3342,11 +3985,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "tree.webp",
+            "type": "visual",
             "width": 1.443,
             "height": 1.888,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "tree.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "front-left-2",
@@ -3380,11 +4040,9 @@
             "layer": 67,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
-              "stagger": 0.62
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -3418,11 +4076,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "cross.webp",
+            "type": "visual",
             "width": 0.687,
             "height": 1.13,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "cross.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "front-left-3",
@@ -3456,11 +4131,9 @@
             "layer": 68,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
-              "stagger": 0.62
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -3494,11 +4167,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "tombPair.webp",
+            "type": "visual",
             "width": 0.814,
             "height": 0.905,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "tombPair.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "front-left-4",
@@ -3532,11 +4222,9 @@
             "layer": 69,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
-              "stagger": 0.62
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -3570,11 +4258,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "lantern.webp",
+            "type": "visual",
             "width": 0.459,
             "height": 1.271,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "lantern.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "front-left-5",
@@ -3608,11 +4313,9 @@
             "layer": 70,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
-              "stagger": 0.62
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -3646,11 +4349,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "tombPoint.webp",
+            "type": "visual",
             "width": 0.409,
             "height": 1.086,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "tombPoint.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "front-left-6",
@@ -3684,11 +4404,9 @@
             "layer": 71,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
-              "stagger": 0.62
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -3722,11 +4440,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "skulls.webp",
+            "type": "visual",
             "width": 1,
             "height": 0.718,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "skulls.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "front-right-1",
@@ -3760,11 +4495,9 @@
             "layer": 72,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
-              "stagger": 0.62
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -3798,11 +4531,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "tree.webp",
+            "type": "visual",
             "width": 1.443,
             "height": 1.888,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "tree.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "front-right-2",
@@ -3836,11 +4586,9 @@
             "layer": 73,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
-              "stagger": 0.62
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -3874,11 +4622,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "cross.webp",
+            "type": "visual",
             "width": 0.687,
             "height": 1.13,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "cross.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "front-right-3",
@@ -3912,11 +4677,9 @@
             "layer": 74,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
-              "stagger": 0.62
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -3950,11 +4713,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "tombPair.webp",
+            "type": "visual",
             "width": 0.814,
             "height": 0.905,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "tombPair.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "front-right-4",
@@ -3988,11 +4768,9 @@
             "layer": 75,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
-              "stagger": 0.62
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -4026,11 +4804,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "lantern.webp",
+            "type": "visual",
             "width": 0.459,
             "height": 1.271,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "lantern.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "front-right-5",
@@ -4064,11 +4859,9 @@
             "layer": 76,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
-              "stagger": 0.62
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -4102,11 +4895,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "tombPoint.webp",
+            "type": "visual",
             "width": 0.409,
             "height": 1.086,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "tombPoint.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "front-right-6",
@@ -4140,11 +4950,9 @@
             "layer": 77,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
-              "stagger": 0.62
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -4178,11 +4986,28 @@
                 ]
               }
             ],
-            "type": "image",
-            "asset": "skulls.webp",
+            "type": "visual",
             "width": 1,
             "height": 0.718,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "skulls.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "bat-swarm",
@@ -4190,11 +5015,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0.5,
+                -3.5,
                 5.3,
                 2.2
               ],
@@ -4223,17 +5048,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0.62
             },
-            "type": "image",
-            "asset": "bats.webp",
+            "type": "visual",
             "width": 3.9,
             "height": 1.92,
-            "billboard": true
+            "billboard": true,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "image": "bats.webp",
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -4252,31 +5092,31 @@
               "keys": [
                 {
                   "id": "back-left-1-spring-0",
-                  "time": 0.02,
-                  "value": 0.22,
+                  "time": 0.020000000000000018,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-1-spring-1",
-                  "time": 0.28,
+                  "time": 0.28000000000000025,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-1-spring-2",
-                  "time": 0.45,
+                  "time": 0.4500000000000002,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-1-spring-3",
-                  "time": 0.6,
+                  "time": 0.6000000000000001,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-1-spring-4",
-                  "time": 0.74,
+                  "time": 0.7400000000000002,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4292,31 +5132,31 @@
               "keys": [
                 {
                   "id": "back-left-2-spring-0",
-                  "time": 0.04,
-                  "value": 0.22,
+                  "time": 0.040000000000000036,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-2-spring-1",
-                  "time": 0.3,
+                  "time": 0.2999999999999998,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-2-spring-2",
-                  "time": 0.47,
+                  "time": 0.46999999999999975,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-2-spring-3",
-                  "time": 0.62,
+                  "time": 0.6200000000000001,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-2-spring-4",
-                  "time": 0.76,
+                  "time": 0.7599999999999998,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4332,31 +5172,31 @@
               "keys": [
                 {
                   "id": "back-left-3-spring-0",
-                  "time": 0.06,
-                  "value": 0.22,
+                  "time": 0.06000000000000005,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-3-spring-1",
-                  "time": 0.32,
+                  "time": 0.3200000000000003,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-3-spring-2",
-                  "time": 0.49,
+                  "time": 0.4900000000000002,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-3-spring-3",
-                  "time": 0.6399999999999999,
+                  "time": 0.6399999999999997,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-3-spring-4",
-                  "time": 0.78,
+                  "time": 0.7800000000000002,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4372,31 +5212,31 @@
               "keys": [
                 {
                   "id": "back-left-4-spring-0",
-                  "time": 0.08,
-                  "value": 0.22,
+                  "time": 0.08000000000000007,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-4-spring-1",
-                  "time": 0.34,
+                  "time": 0.33999999999999986,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-4-spring-2",
-                  "time": 0.51,
+                  "time": 0.5099999999999998,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-4-spring-3",
-                  "time": 0.6599999999999999,
+                  "time": 0.6600000000000001,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-4-spring-4",
-                  "time": 0.7999999999999999,
+                  "time": 0.7999999999999998,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4412,31 +5252,31 @@
               "keys": [
                 {
                   "id": "back-left-5-spring-0",
-                  "time": 0.1,
-                  "value": 0.22,
+                  "time": 0.10000000000000009,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-5-spring-1",
-                  "time": 0.36,
+                  "time": 0.3599999999999999,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-5-spring-2",
-                  "time": 0.53,
+                  "time": 0.5300000000000002,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-5-spring-3",
-                  "time": 0.6799999999999999,
+                  "time": 0.6799999999999997,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-5-spring-4",
-                  "time": 0.82,
+                  "time": 0.8199999999999998,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4452,31 +5292,31 @@
               "keys": [
                 {
                   "id": "back-left-6-spring-0",
-                  "time": 0.12000000000000001,
-                  "value": 0.22,
+                  "time": 0.1200000000000001,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-6-spring-1",
-                  "time": 0.38,
+                  "time": 0.3799999999999999,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-6-spring-2",
-                  "time": 0.55,
+                  "time": 0.5499999999999998,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-6-spring-3",
-                  "time": 0.7,
+                  "time": 0.7000000000000002,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-left-6-spring-4",
-                  "time": 0.84,
+                  "time": 0.8399999999999999,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4492,31 +5332,31 @@
               "keys": [
                 {
                   "id": "mid-left-1-spring-0",
-                  "time": 0.1,
-                  "value": 0.22,
+                  "time": 0.10000000000000009,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-1-spring-1",
-                  "time": 0.36,
+                  "time": 0.3599999999999999,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-1-spring-2",
-                  "time": 0.53,
+                  "time": 0.5300000000000002,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-1-spring-3",
-                  "time": 0.6799999999999999,
+                  "time": 0.6799999999999997,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-1-spring-4",
-                  "time": 0.82,
+                  "time": 0.8199999999999998,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4532,31 +5372,31 @@
               "keys": [
                 {
                   "id": "mid-left-2-spring-0",
-                  "time": 0.12000000000000001,
-                  "value": 0.22,
+                  "time": 0.1200000000000001,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-2-spring-1",
-                  "time": 0.38,
+                  "time": 0.3799999999999999,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-2-spring-2",
-                  "time": 0.55,
+                  "time": 0.5499999999999998,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-2-spring-3",
-                  "time": 0.7,
+                  "time": 0.7000000000000002,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-2-spring-4",
-                  "time": 0.84,
+                  "time": 0.8399999999999999,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4572,31 +5412,31 @@
               "keys": [
                 {
                   "id": "mid-left-3-spring-0",
-                  "time": 0.14,
-                  "value": 0.22,
+                  "time": 0.14000000000000012,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-3-spring-1",
-                  "time": 0.4,
+                  "time": 0.3999999999999999,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-3-spring-2",
-                  "time": 0.5700000000000001,
+                  "time": 0.5700000000000003,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-3-spring-3",
-                  "time": 0.72,
+                  "time": 0.7199999999999998,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-3-spring-4",
-                  "time": 0.86,
+                  "time": 0.8599999999999999,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4612,31 +5452,31 @@
               "keys": [
                 {
                   "id": "mid-left-4-spring-0",
-                  "time": 0.16,
-                  "value": 0.22,
+                  "time": 0.16000000000000014,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-4-spring-1",
-                  "time": 0.42000000000000004,
+                  "time": 0.41999999999999993,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-4-spring-2",
-                  "time": 0.59,
+                  "time": 0.5899999999999999,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-4-spring-3",
-                  "time": 0.74,
+                  "time": 0.7400000000000002,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-4-spring-4",
-                  "time": 0.88,
+                  "time": 0.8799999999999999,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4652,25 +5492,25 @@
               "keys": [
                 {
                   "id": "mid-left-5-spring-0",
-                  "time": 0.18,
-                  "value": 0.22,
+                  "time": 0.17999999999999972,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-5-spring-1",
-                  "time": 0.44,
+                  "time": 0.43999999999999995,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-5-spring-2",
-                  "time": 0.61,
+                  "time": 0.6099999999999999,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-left-5-spring-3",
-                  "time": 0.76,
+                  "time": 0.7599999999999998,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
@@ -4692,31 +5532,31 @@
               "keys": [
                 {
                   "id": "back-right-1-spring-0",
-                  "time": 0.02,
-                  "value": 0.22,
+                  "time": 0.020000000000000018,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-1-spring-1",
-                  "time": 0.28,
+                  "time": 0.28000000000000025,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-1-spring-2",
-                  "time": 0.45,
+                  "time": 0.4500000000000002,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-1-spring-3",
-                  "time": 0.6,
+                  "time": 0.6000000000000001,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-1-spring-4",
-                  "time": 0.74,
+                  "time": 0.7400000000000002,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4732,31 +5572,31 @@
               "keys": [
                 {
                   "id": "back-right-2-spring-0",
-                  "time": 0.04,
-                  "value": 0.22,
+                  "time": 0.040000000000000036,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-2-spring-1",
-                  "time": 0.3,
+                  "time": 0.2999999999999998,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-2-spring-2",
-                  "time": 0.47,
+                  "time": 0.46999999999999975,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-2-spring-3",
-                  "time": 0.62,
+                  "time": 0.6200000000000001,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-2-spring-4",
-                  "time": 0.76,
+                  "time": 0.7599999999999998,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4772,31 +5612,31 @@
               "keys": [
                 {
                   "id": "back-right-3-spring-0",
-                  "time": 0.06,
-                  "value": 0.22,
+                  "time": 0.06000000000000005,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-3-spring-1",
-                  "time": 0.32,
+                  "time": 0.3200000000000003,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-3-spring-2",
-                  "time": 0.49,
+                  "time": 0.4900000000000002,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-3-spring-3",
-                  "time": 0.6399999999999999,
+                  "time": 0.6399999999999997,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-3-spring-4",
-                  "time": 0.78,
+                  "time": 0.7800000000000002,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4812,31 +5652,31 @@
               "keys": [
                 {
                   "id": "back-right-4-spring-0",
-                  "time": 0.08,
-                  "value": 0.22,
+                  "time": 0.08000000000000007,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-4-spring-1",
-                  "time": 0.34,
+                  "time": 0.33999999999999986,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-4-spring-2",
-                  "time": 0.51,
+                  "time": 0.5099999999999998,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-4-spring-3",
-                  "time": 0.6599999999999999,
+                  "time": 0.6600000000000001,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-4-spring-4",
-                  "time": 0.7999999999999999,
+                  "time": 0.7999999999999998,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4852,31 +5692,31 @@
               "keys": [
                 {
                   "id": "back-right-5-spring-0",
-                  "time": 0.1,
-                  "value": 0.22,
+                  "time": 0.10000000000000009,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-5-spring-1",
-                  "time": 0.36,
+                  "time": 0.3599999999999999,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-5-spring-2",
-                  "time": 0.53,
+                  "time": 0.5300000000000002,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-5-spring-3",
-                  "time": 0.6799999999999999,
+                  "time": 0.6799999999999997,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-5-spring-4",
-                  "time": 0.82,
+                  "time": 0.8199999999999998,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4892,31 +5732,31 @@
               "keys": [
                 {
                   "id": "back-right-6-spring-0",
-                  "time": 0.12000000000000001,
-                  "value": 0.22,
+                  "time": 0.1200000000000001,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-6-spring-1",
-                  "time": 0.38,
+                  "time": 0.3799999999999999,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-6-spring-2",
-                  "time": 0.55,
+                  "time": 0.5499999999999998,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-6-spring-3",
-                  "time": 0.7,
+                  "time": 0.7000000000000002,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "back-right-6-spring-4",
-                  "time": 0.84,
+                  "time": 0.8399999999999999,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4932,31 +5772,31 @@
               "keys": [
                 {
                   "id": "mid-right-1-spring-0",
-                  "time": 0.1,
-                  "value": 0.22,
+                  "time": 0.10000000000000009,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-1-spring-1",
-                  "time": 0.36,
+                  "time": 0.3599999999999999,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-1-spring-2",
-                  "time": 0.53,
+                  "time": 0.5300000000000002,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-1-spring-3",
-                  "time": 0.6799999999999999,
+                  "time": 0.6799999999999997,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-1-spring-4",
-                  "time": 0.82,
+                  "time": 0.8199999999999998,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -4972,31 +5812,31 @@
               "keys": [
                 {
                   "id": "mid-right-2-spring-0",
-                  "time": 0.12000000000000001,
-                  "value": 0.22,
+                  "time": 0.1200000000000001,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-2-spring-1",
-                  "time": 0.38,
+                  "time": 0.3799999999999999,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-2-spring-2",
-                  "time": 0.55,
+                  "time": 0.5499999999999998,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-2-spring-3",
-                  "time": 0.7,
+                  "time": 0.7000000000000002,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-2-spring-4",
-                  "time": 0.84,
+                  "time": 0.8399999999999999,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -5012,31 +5852,31 @@
               "keys": [
                 {
                   "id": "mid-right-3-spring-0",
-                  "time": 0.14,
-                  "value": 0.22,
+                  "time": 0.14000000000000012,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-3-spring-1",
-                  "time": 0.4,
+                  "time": 0.3999999999999999,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-3-spring-2",
-                  "time": 0.5700000000000001,
+                  "time": 0.5700000000000003,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-3-spring-3",
-                  "time": 0.72,
+                  "time": 0.7199999999999998,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-3-spring-4",
-                  "time": 0.86,
+                  "time": 0.8599999999999999,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -5052,31 +5892,31 @@
               "keys": [
                 {
                   "id": "mid-right-4-spring-0",
-                  "time": 0.16,
-                  "value": 0.22,
+                  "time": 0.16000000000000014,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-4-spring-1",
-                  "time": 0.42000000000000004,
+                  "time": 0.41999999999999993,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-4-spring-2",
-                  "time": 0.59,
+                  "time": 0.5899999999999999,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-4-spring-3",
-                  "time": 0.74,
+                  "time": 0.7400000000000002,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-4-spring-4",
-                  "time": 0.88,
+                  "time": 0.8799999999999999,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -5092,25 +5932,25 @@
               "keys": [
                 {
                   "id": "mid-right-5-spring-0",
-                  "time": 0.18,
-                  "value": 0.22,
+                  "time": 0.17999999999999972,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-5-spring-1",
-                  "time": 0.44,
+                  "time": 0.43999999999999995,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-5-spring-2",
-                  "time": 0.61,
+                  "time": 0.6099999999999999,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "mid-right-5-spring-3",
-                  "time": 0.76,
+                  "time": 0.7599999999999998,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
@@ -5132,31 +5972,31 @@
               "keys": [
                 {
                   "id": "central-twin-spring-0",
-                  "time": 0.04,
-                  "value": 0.22,
+                  "time": 0.040000000000000036,
+                  "value": 0,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "central-twin-spring-1",
-                  "time": 0.3,
+                  "time": 0.2999999999999998,
                   "value": 1.08,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "central-twin-spring-2",
-                  "time": 0.47,
+                  "time": 0.46999999999999975,
                   "value": 0.94,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "central-twin-spring-3",
-                  "time": 0.62,
+                  "time": 0.6200000000000001,
                   "value": 1.035,
                   "ease": "easeInOut"
                 },
                 {
                   "id": "central-twin-spring-4",
-                  "time": 0.76,
+                  "time": 0.7599999999999998,
                   "value": 1,
                   "ease": "easeInOut"
                 }
@@ -5338,6 +6178,406 @@
                   "time": 8,
                   "value": 54,
                   "ease": "linear"
+                }
+              ]
+            },
+            {
+              "id": "near-left-1-spring",
+              "target": {
+                "type": "element",
+                "elementId": "near-left-1"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "near-left-1-spring-0",
+                  "time": 0.02,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-1-spring-1",
+                  "time": 0.28,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-1-spring-2",
+                  "time": 0.45,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-1-spring-3",
+                  "time": 0.6,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-1-spring-4",
+                  "time": 0.74,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "near-left-2-spring",
+              "target": {
+                "type": "element",
+                "elementId": "near-left-2"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "near-left-2-spring-0",
+                  "time": 0.04,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-2-spring-1",
+                  "time": 0.3,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-2-spring-2",
+                  "time": 0.47,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-2-spring-3",
+                  "time": 0.62,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-2-spring-4",
+                  "time": 0.76,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "near-left-3-spring",
+              "target": {
+                "type": "element",
+                "elementId": "near-left-3"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "near-left-3-spring-0",
+                  "time": 0.06,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-3-spring-1",
+                  "time": 0.32,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-3-spring-2",
+                  "time": 0.49,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-3-spring-3",
+                  "time": 0.6399999999999999,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-3-spring-4",
+                  "time": 0.78,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "near-left-4-spring",
+              "target": {
+                "type": "element",
+                "elementId": "near-left-4"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "near-left-4-spring-0",
+                  "time": 0.08,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-4-spring-1",
+                  "time": 0.34,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-4-spring-2",
+                  "time": 0.51,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-4-spring-3",
+                  "time": 0.6599999999999999,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-4-spring-4",
+                  "time": 0.7999999999999999,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "near-left-5-spring",
+              "target": {
+                "type": "element",
+                "elementId": "near-left-5"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "near-left-5-spring-0",
+                  "time": 0.1,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-5-spring-1",
+                  "time": 0.36,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-5-spring-2",
+                  "time": 0.53,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-5-spring-3",
+                  "time": 0.6799999999999999,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-left-5-spring-4",
+                  "time": 0.82,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "near-right-1-spring",
+              "target": {
+                "type": "element",
+                "elementId": "near-right-1"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "near-right-1-spring-0",
+                  "time": 0.12000000000000001,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-1-spring-1",
+                  "time": 0.38,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-1-spring-2",
+                  "time": 0.55,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-1-spring-3",
+                  "time": 0.7,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-1-spring-4",
+                  "time": 0.84,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "near-right-2-spring",
+              "target": {
+                "type": "element",
+                "elementId": "near-right-2"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "near-right-2-spring-0",
+                  "time": 0.13999999999999999,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-2-spring-1",
+                  "time": 0.4,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-2-spring-2",
+                  "time": 0.57,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-2-spring-3",
+                  "time": 0.72,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-2-spring-4",
+                  "time": 0.86,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "near-right-3-spring",
+              "target": {
+                "type": "element",
+                "elementId": "near-right-3"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "near-right-3-spring-0",
+                  "time": 0.16,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-3-spring-1",
+                  "time": 0.42000000000000004,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-3-spring-2",
+                  "time": 0.59,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-3-spring-3",
+                  "time": 0.74,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-3-spring-4",
+                  "time": 0.88,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "near-right-4-spring",
+              "target": {
+                "type": "element",
+                "elementId": "near-right-4"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "near-right-4-spring-0",
+                  "time": 0.18,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-4-spring-1",
+                  "time": 0.44,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-4-spring-2",
+                  "time": 0.61,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-4-spring-3",
+                  "time": 0.76,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-4-spring-4",
+                  "time": 0.8999999999999999,
+                  "value": 1,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "near-right-5-spring",
+              "target": {
+                "type": "element",
+                "elementId": "near-right-5"
+              },
+              "property": "scale",
+              "keys": [
+                {
+                  "id": "near-right-5-spring-0",
+                  "time": 0.19999999999999998,
+                  "value": 0,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-5-spring-1",
+                  "time": 0.45999999999999996,
+                  "value": 1.08,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-5-spring-2",
+                  "time": 0.63,
+                  "value": 0.94,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-5-spring-3",
+                  "time": 0.7799999999999999,
+                  "value": 1.035,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "near-right-5-spring-4",
+                  "time": 0.9199999999999999,
+                  "value": 1,
+                  "ease": "easeInOut"
                 }
               ]
             }

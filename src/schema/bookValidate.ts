@@ -20,7 +20,7 @@ export function validateBookProject(data: unknown): BookValidationResult {
     for (const issue of parsed.error.issues) errors.push(`schema: ${issue.path.join('.')}: ${issue.message}`)
     return { ok: false, errors, warnings }
   }
-  const project = data as BookProject
+  const project = parsed.data as BookProject
   const assets = new Map(project.assets.map((asset) => [asset.id, asset]))
   const used = new Set<string>()
   const useAsset = (id: string | undefined, expected: string[], label: string) => {
@@ -55,46 +55,13 @@ export function validateBookProject(data: unknown): BookValidationResult {
     if (new Set(elementIds).size !== elementIds.length) errors.push(`${spread.name}: duplicate element id`)
     for (const element of spread.elements) {
       if (element.parent.type === 'element' && !elementIds.includes(element.parent.elementId)) errors.push(`${element.name}: parent element not found`)
-      if (element.sourcePreset === 'depth-layer') {
-        if (element.parent.type !== 'left-page' && element.parent.type !== 'right-page') {
-          errors.push(`${element.name}: a backdrop must sit directly under the left or right page`)
-        }
-        if (element.type === 'image') {
-          const tracks = spread.timeline.tracks.filter(
-            (track) => track.target.type === 'element' && track.target.elementId === element.id,
-          )
-          const positions = [
-            element.baseTransform.position[0],
-            ...tracks.filter((track) => track.property === 'position.x')
-              .flatMap((track) => track.keys.map((key) => key.value))
-              .filter((value): value is number => typeof value === 'number'),
-          ]
-          const scales = [
-            Math.abs(element.baseTransform.scale[0]),
-            ...tracks.filter((track) => track.property === 'scale.x' || track.property === 'scale')
-              .flatMap((track) => track.keys.map((key) => key.value))
-              .filter((value): value is number => typeof value === 'number')
-              .map(Math.abs),
-          ]
-          const width = element.width * Math.max(...scales)
-          const minimum = Math.min(...positions.map((x) => x - element.pivot[0] * width))
-          const maximum = Math.max(...positions.map((x) => x + (1 - element.pivot[0]) * width))
-          if (minimum < -project.book.format.pageWidth / 2 || maximum > project.book.format.pageWidth / 2) {
-            errors.push(`${element.name}: backdrop position or scale exceeds the page width`)
-          }
-        }
-      }
-      if (element.type === 'image') {
-        if (!element.asset) warnings.push(`${element.name}: no image assigned`)
-        useAsset(element.asset || undefined, ['image', 'svg'], element.name)
-        useAsset(element.backAsset, ['image', 'svg'], `${element.name} reverse`)
+      if (element.type === 'visual') {
+        useAsset(element.image, ['image', 'svg'], element.name)
+        useAsset(element.backImage, ['image', 'svg'], `${element.name} reverse`)
       }
       const elementTracks = spread.timeline.tracks.filter(
         (track) => track.target.type === 'element' && track.target.elementId === element.id,
       )
-      if (element.sourcePreset === 'light-particles') {
-        if (element.type !== 'effect') errors.push(`${element.name}: particle preset must be an effect`)
-      }
       const everVisible = element.visible || elementTracks.some(
         (track) => track.property === 'visible' && track.keys.some((key) => key.value === true),
       )
@@ -115,7 +82,8 @@ const ELEMENT_PROPERTIES = new Set<TimelineProperty>([
   'position.x', 'position.y', 'position.z',
   'rotation.x', 'rotation.y', 'rotation.z',
   'scale.x', 'scale.y', 'scale.z', 'scale',
-  'opacity', 'visible', 'asset', 'effect.color', 'effect.size',
+  'opacity', 'visible', 'visual.image', 'visual.backgroundColor', 'visual.foregroundColor',
+  'visual.width', 'visual.height', 'visual.particles.color', 'visual.particles.size',
 ])
 const ENVIRONMENT_PROPERTIES = new Set<TimelineProperty>([
   'background', 'ambient.color', 'ambient.intensity', 'directional.color', 'directional.intensity',
@@ -147,8 +115,7 @@ function validateTimeline(
       if (!element) {
         errors.push(`${lane}: target element not found`)
       } else if (!ELEMENT_PROPERTIES.has(track.property)
-        || track.property === 'asset' && element.type !== 'image'
-        || track.property.startsWith('effect.') && element.type !== 'effect') {
+        || track.property.startsWith('visual.') && element.type !== 'visual') {
         errors.push(`${lane}: property not available on element type ${element.type}`)
       }
     } else if (track.target.type === 'environment' && !ENVIRONMENT_PROPERTIES.has(track.property)) {
@@ -175,7 +142,7 @@ function validateTimeline(
       if (!timelineValueMatches(track.property, key.value)) errors.push(`${lane}: key value type does not match the property`)
       if (DISCRETE_PROPERTIES.has(track.property) && key.ease !== 'hold') errors.push(`${lane}: discrete properties only accept hold easing`)
       if (!DISCRETE_PROPERTIES.has(track.property) && key.ease === 'hold') errors.push(`${lane}: continuous properties cannot use hold easing`)
-      if (track.property === 'asset' && typeof key.value === 'string') {
+      if (track.property === 'visual.image' && typeof key.value === 'string') {
         used.add(key.value)
         const asset = assets.get(key.value)
         if (!asset) errors.push(`${lane}: unregistered asset ${key.value}`)
@@ -191,7 +158,7 @@ function timelineValueMatches(property: TimelineProperty, value: TimelineValue):
   if (property === 'visible') return typeof value === 'boolean'
   // キューは時刻だけを持つ印。値は場所取りなので true で固定する
   if (property === 'cue') return value === true
-  if (property === 'asset') return typeof value === 'string' && value.length > 0
+  if (property === 'visual.image') return typeof value === 'string' && value.length > 0
   if (VEC3_PROPERTIES.has(property)) return Array.isArray(value) && value.length === 3 && value.every(Number.isFinite)
   return false
 }

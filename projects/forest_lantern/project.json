@@ -95,17 +95,32 @@
             "layer": 0,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-fir-dark.webp",
+            "type": "visual",
             "width": 7.9,
             "height": 2.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-fir-dark.webp"
           },
           {
             "id": "spread-1-far-line-r",
@@ -139,17 +154,32 @@
             "layer": 0,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-fir-dark.webp",
+            "type": "visual",
             "width": 7.9,
             "height": 2.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-fir-dark.webp"
           },
           {
             "id": "spread-1-canopy",
@@ -183,17 +213,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "canopy-arch.webp",
+            "type": "visual",
             "width": 9.4,
             "height": 2.8,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "canopy-arch.webp"
           },
           {
             "id": "spread-1-tree-1",
@@ -234,17 +279,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-fir-mid.webp",
+            "type": "visual",
             "width": 2.47,
             "height": 3.63,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-fir-mid.webp"
           },
           {
             "id": "spread-1-tree-2",
@@ -285,17 +345,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-round-dark.webp",
+            "type": "visual",
             "width": 2.18,
             "height": 3.05,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-round-dark.webp"
           },
           {
             "id": "spread-1-tree-3",
@@ -336,17 +411,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-round.webp",
+            "type": "visual",
             "width": 2.61,
             "height": 3.77,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-round.webp"
           },
           {
             "id": "spread-1-tree-4",
@@ -387,17 +477,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-fir-mid.webp",
+            "type": "visual",
             "width": 2.32,
             "height": 3.34,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-fir-mid.webp"
           },
           {
             "id": "spread-1-tree-5",
@@ -438,17 +543,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-fir-dark.webp",
+            "type": "visual",
             "width": 2.03,
             "height": 2.76,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-fir-dark.webp"
           },
           {
             "id": "spread-1-owl",
@@ -482,17 +602,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "owl.webp",
+            "type": "visual",
             "width": 0.35,
             "height": 0.417,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "owl.webp"
           },
           {
             "id": "spread-1-rabbit",
@@ -526,17 +661,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "rabbit.webp",
+            "type": "visual",
             "width": 0.27,
             "height": 0.333,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "rabbit.webp"
           },
           {
             "id": "spread-1-mushroom",
@@ -570,17 +720,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "mushroom-cluster.webp",
+            "type": "visual",
             "width": 0.28,
             "height": 0.333,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "mushroom-cluster.webp"
           },
           {
             "id": "spread-1-fern",
@@ -614,17 +779,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fern-cluster.webp",
+            "type": "visual",
             "width": 0.5,
             "height": 0.5,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fern-cluster.webp"
           },
           {
             "id": "spread-1-fox",
@@ -638,7 +818,7 @@
               "position": [
                 3.36,
                 0.01,
-                2.816
+                1.5359999999999996
               ],
               "rotation": [
                 0,
@@ -658,17 +838,32 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fox.webp",
+            "type": "visual",
             "width": 0.89,
             "height": 0.833,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fox.webp"
           },
           {
             "id": "spread-1-text",
@@ -682,7 +877,7 @@
               "position": [
                 0,
                 0.077,
-                2.3680000000000003
+                2.6240000000000006
               ],
               "rotation": [
                 -90,
@@ -702,19 +897,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 6.783000000000004,
+            "height": 1.05,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#efe3c4",
             "text": "The lamp that lit the village\nblinked out one night",
-            "width": 5.426400000000003,
-            "height": 0.84,
             "fontSize": 0.42,
-            "color": "#efe3c4",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "spread-1-ember",
@@ -722,11 +929,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0.25,
+                -3.75,
                 2.4,
                 2
               ],
@@ -748,16 +955,31 @@
             "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "light-particles",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "effect",
-            "effect": "sparkles",
-            "color": "#ffcf6d",
-            "size": 2
+            "type": "visual",
+            "width": 2,
+            "height": 2,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": true,
+              "color": "#ffcf6d",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -767,21 +989,21 @@
         "timeline": {
           "tracks": [
             {
-              "id": "spread-1-ember-effect-size",
+              "id": "spread-1-ember-visual-width",
               "target": {
                 "type": "element",
                 "elementId": "spread-1-ember"
               },
-              "property": "effect.size",
+              "property": "visual.width",
               "keys": [
                 {
-                  "id": "spread-1-ember-effect-size-0",
+                  "id": "spread-1-ember-visual-width-0",
                   "time": 0,
                   "value": 2.4,
                   "ease": "easeInOut"
                 },
                 {
-                  "id": "spread-1-ember-effect-size-1",
+                  "id": "spread-1-ember-visual-width-1",
                   "time": 6.5,
                   "value": 0.5,
                   "ease": "easeInOut"
@@ -789,21 +1011,43 @@
               ]
             },
             {
-              "id": "spread-1-ember-effect-color",
+              "id": "spread-1-ember-visual-height",
               "target": {
                 "type": "element",
                 "elementId": "spread-1-ember"
               },
-              "property": "effect.color",
+              "property": "visual.height",
               "keys": [
                 {
-                  "id": "spread-1-ember-effect-color-0",
+                  "id": "spread-1-ember-visual-height-0",
+                  "time": 0,
+                  "value": 2.4,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-1-ember-visual-height-1",
+                  "time": 6.5,
+                  "value": 0.5,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-1-ember-visual-particles-color",
+              "target": {
+                "type": "element",
+                "elementId": "spread-1-ember"
+              },
+              "property": "visual.particles.color",
+              "keys": [
+                {
+                  "id": "spread-1-ember-visual-particles-color-0",
                   "time": 0,
                   "value": "#ffcf6d",
                   "ease": "easeInOut"
                 },
                 {
-                  "id": "spread-1-ember-effect-color-1",
+                  "id": "spread-1-ember-visual-particles-color-1",
                   "time": 6.5,
                   "value": "#4a5a78",
                   "ease": "easeInOut"
@@ -1013,17 +1257,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-fir-dark.webp",
+            "type": "visual",
             "width": 7.9,
             "height": 2.3,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-fir-dark.webp"
           },
           {
             "id": "spread-2-bank-r",
@@ -1057,17 +1316,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-fir-dark.webp",
+            "type": "visual",
             "width": 7.9,
             "height": 2.3,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-fir-dark.webp"
           },
           {
             "id": "spread-2-canopy",
@@ -1101,17 +1375,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "canopy-arch.webp",
+            "type": "visual",
             "width": 8.6,
             "height": 2.4,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "canopy-arch.webp"
           },
           {
             "id": "spread-2-reed-1",
@@ -1145,17 +1434,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "reeds.webp",
+            "type": "visual",
             "width": 2.2,
             "height": 1.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "reeds.webp"
           },
           {
             "id": "spread-2-reed-2",
@@ -1189,17 +1493,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "reeds.webp",
+            "type": "visual",
             "width": 2.4,
             "height": 1.3,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "reeds.webp"
           },
           {
             "id": "spread-2-reed-3",
@@ -1233,17 +1552,32 @@
             "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "reeds.webp",
+            "type": "visual",
             "width": 1.8,
             "height": 1.1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "reeds.webp"
           },
           {
             "id": "spread-2-fox",
@@ -1257,7 +1591,7 @@
               "position": [
                 -2.7199999999999998,
                 0.01,
-                2.7520000000000007
+                1.4079999999999995
               ],
               "rotation": [
                 0,
@@ -1277,17 +1611,32 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fox.webp",
+            "type": "visual",
             "width": 0.89,
             "height": 0.833,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fox.webp"
           },
           {
             "id": "spread-2-tree",
@@ -1321,17 +1670,32 @@
             "layer": 5,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-round.webp",
+            "type": "visual",
             "width": 2.47,
             "height": 3.48,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-round.webp"
           },
           {
             "id": "spread-2-bridge",
@@ -1365,17 +1729,32 @@
             "layer": 6,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "wooden-bridge.webp",
+            "type": "visual",
             "width": 2.86,
             "height": 1.333,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "wooden-bridge.webp"
           },
           {
             "id": "spread-2-deer",
@@ -1409,17 +1788,32 @@
             "layer": 7,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "deer.webp",
+            "type": "visual",
             "width": 0.54,
             "height": 0.889,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "deer.webp"
           },
           {
             "id": "spread-2-log",
@@ -1453,17 +1847,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fallen-log.webp",
+            "type": "visual",
             "width": 1,
             "height": 0.389,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fallen-log.webp"
           },
           {
             "id": "spread-2-fern",
@@ -1477,7 +1886,7 @@
               "position": [
                 2.88,
                 0.01,
-                2.4320000000000004
+                1.2799999999999994
               ],
               "rotation": [
                 0,
@@ -1497,17 +1906,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fern-cluster.webp",
+            "type": "visual",
             "width": 0.5,
             "height": 0.5,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fern-cluster.webp"
           },
           {
             "id": "spread-2-mote",
@@ -1515,11 +1939,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "left-page"
             },
             "baseTransform": {
               "position": [
-                -6.9,
+                -2.9000000000000004,
                 1.1,
                 1.1
               ],
@@ -1548,17 +1972,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "light-mote.webp",
+            "type": "visual",
             "width": 0.8,
             "height": 0.8,
-            "billboard": true
+            "billboard": true,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "light-mote.webp"
           },
           {
             "id": "spread-2-text",
@@ -1572,7 +2011,7 @@
               "position": [
                 0,
                 0.077,
-                2.4320000000000004
+                2.6240000000000006
               ],
               "rotation": [
                 -90,
@@ -1592,19 +2031,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 6.460000000000004,
+            "height": 1,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#e6eef0",
             "text": "A shard of light on the water\nwas pointing upstream",
-            "width": 5.168000000000003,
-            "height": 0.8,
             "fontSize": 0.4,
-            "color": "#e6eef0",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "spread-2-spray",
@@ -1612,11 +2063,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "left-page"
             },
             "baseTransform": {
               "position": [
-                -1.4,
+                2.6,
                 1,
                 1.6
               ],
@@ -1638,16 +2089,31 @@
             "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "light-particles",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "effect",
-            "effect": "sparkles",
-            "color": "#9fd7e8",
-            "size": 1.8
+            "type": "visual",
+            "width": 1.8,
+            "height": 1.8,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": true,
+              "color": "#9fd7e8",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -1667,13 +2133,13 @@
                 {
                   "id": "spread-2-mote-position-x-0",
                   "time": 0,
-                  "value": -6.9,
+                  "value": -2.9,
                   "ease": "linear"
                 },
                 {
                   "id": "spread-2-mote-position-x-1",
                   "time": 6.5,
-                  "value": -0.8,
+                  "value": 3.2,
                   "ease": "linear"
                 }
               ]
@@ -1900,17 +2366,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "hill-far.webp",
+            "type": "visual",
             "width": 7.9,
             "height": 1.8,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "hill-far.webp"
           },
           {
             "id": "spread-3-far-hill-r",
@@ -1944,17 +2425,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "hill-far.webp",
+            "type": "visual",
             "width": 7.9,
             "height": 1.8,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "hill-far.webp"
           },
           {
             "id": "spread-3-ridge",
@@ -1988,17 +2484,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "canopy-arch.webp",
+            "type": "visual",
             "width": 9,
             "height": 2.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "canopy-arch.webp"
           },
           {
             "id": "spread-3-hill-mid",
@@ -2032,17 +2543,32 @@
             "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "hill-near.webp",
+            "type": "visual",
             "width": 5.8,
             "height": 1.7,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "hill-near.webp"
           },
           {
             "id": "spread-3-hill-mid-r",
@@ -2076,17 +2602,32 @@
             "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "hill-near.webp",
+            "type": "visual",
             "width": 5.8,
             "height": 1.8,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "hill-near.webp"
           },
           {
             "id": "spread-3-windmill",
@@ -2120,17 +2661,32 @@
             "layer": 6,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "windmill-tower.webp",
+            "type": "visual",
             "width": 1.77,
             "height": 4.556,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "windmill-tower.webp"
           },
           {
             "id": "spread-3-windmill-rotor",
@@ -2171,17 +2727,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "windmill-rotor.webp",
+            "type": "visual",
             "width": 3,
             "height": 3,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "windmill-rotor.webp"
           },
           {
             "id": "spread-3-tree",
@@ -2215,17 +2786,32 @@
             "layer": 5,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-round-dark.webp",
+            "type": "visual",
             "width": 2.32,
             "height": 3.19,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-round-dark.webp"
           },
           {
             "id": "spread-3-deer",
@@ -2259,17 +2845,32 @@
             "layer": 7,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "deer.webp",
+            "type": "visual",
             "width": 0.54,
             "height": 0.889,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "deer.webp"
           },
           {
             "id": "spread-3-log",
@@ -2303,17 +2904,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fallen-log.webp",
+            "type": "visual",
             "width": 1,
             "height": 0.389,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fallen-log.webp"
           },
           {
             "id": "spread-3-rabbit",
@@ -2327,7 +2943,7 @@
               "position": [
                 3,
                 0.01,
-                2.25
+                1.4
               ],
               "rotation": [
                 0,
@@ -2347,17 +2963,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "rabbit.webp",
+            "type": "visual",
             "width": 0.27,
             "height": 0.333,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "rabbit.webp"
           },
           {
             "id": "spread-3-fern",
@@ -2371,7 +3002,7 @@
               "position": [
                 -2.4000000000000004,
                 0.01,
-                2.176
+                1.2799999999999994
               ],
               "rotation": [
                 0,
@@ -2391,17 +3022,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fern-cluster.webp",
+            "type": "visual",
             "width": 0.5,
             "height": 0.5,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fern-cluster.webp"
           },
           {
             "id": "spread-3-mushroom",
@@ -2435,17 +3081,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "mushroom-cluster.webp",
+            "type": "visual",
             "width": 0.28,
             "height": 0.333,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "mushroom-cluster.webp"
           },
           {
             "id": "spread-3-fox",
@@ -2479,17 +3140,32 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fox.webp",
+            "type": "visual",
             "width": 0.89,
             "height": 0.833,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fox.webp"
           },
           {
             "id": "spread-3-mote",
@@ -2497,11 +3173,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "left-page"
             },
             "baseTransform": {
               "position": [
-                -6.4,
+                -2.4,
                 2.4,
                 1.8
               ],
@@ -2530,17 +3206,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "light-mote.webp",
+            "type": "visual",
             "width": 0.9,
             "height": 0.9,
-            "billboard": true
+            "billboard": true,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "light-mote.webp"
           },
           {
             "id": "spread-3-text",
@@ -2554,7 +3245,7 @@
               "position": [
                 0,
                 0.077,
-                2.4320000000000004
+                2.6240000000000006
               ],
               "rotation": [
                 -90,
@@ -2574,19 +3265,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 5.8000000000000025,
+            "height": 1,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#e9f0f2",
             "text": "The wind caught the shard\nand carried it up the hill",
-            "width": 4.640000000000002,
-            "height": 0.8,
             "fontSize": 0.4,
-            "color": "#e9f0f2",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -2606,13 +3309,13 @@
                 {
                   "id": "spread-3-mote-position-x-0",
                   "time": 0,
-                  "value": -6.4,
+                  "value": -2.4,
                   "ease": "linear"
                 },
                 {
                   "id": "spread-3-mote-position-x-1",
                   "time": 6.5,
-                  "value": -0.9,
+                  "value": 3.1,
                   "ease": "linear"
                 }
               ]
@@ -2827,17 +3530,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-fir-dark.webp",
+            "type": "visual",
             "width": 7.9,
             "height": 2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-fir-dark.webp"
           },
           {
             "id": "spread-4-far-line-r",
@@ -2871,17 +3589,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-fir-dark.webp",
+            "type": "visual",
             "width": 7.9,
             "height": 2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-fir-dark.webp"
           },
           {
             "id": "spread-4-great-tree",
@@ -2915,17 +3648,32 @@
             "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "great-tree.webp",
+            "type": "visual",
             "width": 8.6,
-            "height": 3.4,
-            "billboard": false
+            "height": 6.8,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "great-tree.webp"
           },
           {
             "id": "spread-4-root-l",
@@ -2959,17 +3707,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fallen-log.webp",
+            "type": "visual",
             "width": 1,
             "height": 0.389,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fallen-log.webp"
           },
           {
             "id": "spread-4-root-r",
@@ -3003,17 +3766,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fallen-log.webp",
+            "type": "visual",
             "width": 1,
             "height": 0.389,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fallen-log.webp"
           },
           {
             "id": "spread-4-tree-a",
@@ -3047,17 +3825,32 @@
             "layer": 5,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-fir-mid.webp",
+            "type": "visual",
             "width": 2.18,
             "height": 3.19,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-fir-mid.webp"
           },
           {
             "id": "spread-4-tree-b",
@@ -3091,17 +3884,32 @@
             "layer": 5,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-round-dark.webp",
+            "type": "visual",
             "width": 2.32,
             "height": 3.19,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-round-dark.webp"
           },
           {
             "id": "spread-4-owl",
@@ -3135,17 +3943,32 @@
             "layer": 7,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "owl.webp",
+            "type": "visual",
             "width": 0.35,
             "height": 0.417,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "owl.webp"
           },
           {
             "id": "spread-4-badger",
@@ -3179,17 +4002,32 @@
             "layer": 7,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "badger.webp",
+            "type": "visual",
             "width": 0.78,
             "height": 0.944,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "badger.webp"
           },
           {
             "id": "spread-4-mushroom",
@@ -3203,7 +4041,7 @@
               "position": [
                 -2.7199999999999998,
                 0.01,
-                2.5600000000000005
+                1.2799999999999994
               ],
               "rotation": [
                 0,
@@ -3223,17 +4061,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "mushroom-cluster.webp",
+            "type": "visual",
             "width": 0.28,
             "height": 0.333,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "mushroom-cluster.webp"
           },
           {
             "id": "spread-4-fern",
@@ -3267,17 +4120,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fern-cluster.webp",
+            "type": "visual",
             "width": 0.5,
             "height": 0.5,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fern-cluster.webp"
           },
           {
             "id": "spread-4-fox",
@@ -3311,17 +4179,32 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fox.webp",
+            "type": "visual",
             "width": 0.89,
             "height": 0.833,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fox.webp"
           },
           {
             "id": "spread-4-lantern",
@@ -3329,11 +4212,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 2.4,
                 1.2
               ],
@@ -3355,17 +4238,32 @@
             "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "lantern.webp",
+            "type": "visual",
             "width": 0.27,
             "height": 0.556,
-            "billboard": true
+            "billboard": true,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "lantern.webp"
           },
           {
             "id": "spread-4-text",
@@ -3379,7 +4277,7 @@
               "position": [
                 0,
                 0.077,
-                2.4320000000000004
+                2.6240000000000006
               ],
               "rotation": [
                 -90,
@@ -3399,19 +4297,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 6.460000000000004,
+            "height": 1,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#ecf1de",
             "text": "Among the sleeping great tree\nthe lantern lay hidden",
-            "width": 5.168000000000003,
-            "height": 0.8,
             "fontSize": 0.4,
-            "color": "#ecf1de",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "spread-4-halo",
@@ -3419,11 +4329,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 2.5,
                 0.4
               ],
@@ -3445,16 +4355,31 @@
             "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "light-particles",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "effect",
-            "effect": "sparkles",
-            "color": "#ffe9a8",
-            "size": 0.6
+            "type": "visual",
+            "width": 0.6,
+            "height": 0.6,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": true,
+              "color": "#ffe9a8",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -3463,28 +4388,6 @@
         },
         "timeline": {
           "tracks": [
-            {
-              "id": "spread-4-great-tree-scale",
-              "target": {
-                "type": "element",
-                "elementId": "spread-4-great-tree"
-              },
-              "property": "scale",
-              "keys": [
-                {
-                  "id": "spread-4-great-tree-scale-0",
-                  "time": 0,
-                  "value": 0.72,
-                  "ease": "easeInOut"
-                },
-                {
-                  "id": "spread-4-great-tree-scale-1",
-                  "time": 7,
-                  "value": 1,
-                  "ease": "easeInOut"
-                }
-              ]
-            },
             {
               "id": "spread-4-lantern-opacity",
               "target": {
@@ -3536,21 +4439,43 @@
               ]
             },
             {
-              "id": "spread-4-halo-effect-size",
+              "id": "spread-4-halo-visual-width",
               "target": {
                 "type": "element",
                 "elementId": "spread-4-halo"
               },
-              "property": "effect.size",
+              "property": "visual.width",
               "keys": [
                 {
-                  "id": "spread-4-halo-effect-size-0",
+                  "id": "spread-4-halo-visual-width-0",
                   "time": 0,
                   "value": 0.5,
                   "ease": "easeInOut"
                 },
                 {
-                  "id": "spread-4-halo-effect-size-1",
+                  "id": "spread-4-halo-visual-width-1",
+                  "time": 7,
+                  "value": 2.6,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-4-halo-visual-height",
+              "target": {
+                "type": "element",
+                "elementId": "spread-4-halo"
+              },
+              "property": "visual.height",
+              "keys": [
+                {
+                  "id": "spread-4-halo-visual-height-0",
+                  "time": 0,
+                  "value": 0.5,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-4-halo-visual-height-1",
                   "time": 7,
                   "value": 2.6,
                   "ease": "easeInOut"
@@ -3754,17 +4679,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-fir-dark.webp",
+            "type": "visual",
             "width": 7.9,
             "height": 2.1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-fir-dark.webp"
           },
           {
             "id": "spread-5-far-line-r",
@@ -3798,17 +4738,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "tree-fir-dark.webp",
+            "type": "visual",
             "width": 7.9,
             "height": 2.1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "tree-fir-dark.webp"
           },
           {
             "id": "spread-5-canopy",
@@ -3842,17 +4797,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "canopy-arch.webp",
+            "type": "visual",
             "width": 9.4,
             "height": 2.6,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "canopy-arch.webp"
           },
           {
             "id": "spread-5-house-dark-1",
@@ -3886,17 +4856,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cottage-dark.webp",
+            "type": "visual",
             "width": 3,
             "height": 2.778,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cottage-dark.webp"
           },
           {
             "id": "spread-5-house-lit-1",
@@ -3930,17 +4915,32 @@
             "layer": 5,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cottage-lit.webp",
+            "type": "visual",
             "width": 3,
             "height": 2.778,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cottage-lit.webp"
           },
           {
             "id": "spread-5-house-dark-2",
@@ -3974,17 +4974,32 @@
             "layer": 6,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cottage-dark.webp",
+            "type": "visual",
             "width": 2.778,
             "height": 2.556,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cottage-dark.webp"
           },
           {
             "id": "spread-5-house-lit-2",
@@ -4018,17 +5033,32 @@
             "layer": 7,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cottage-lit.webp",
+            "type": "visual",
             "width": 2.778,
             "height": 2.556,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cottage-lit.webp"
           },
           {
             "id": "spread-5-house-dark-3",
@@ -4062,17 +5092,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cottage-dark.webp",
+            "type": "visual",
             "width": 3.222,
             "height": 3,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cottage-dark.webp"
           },
           {
             "id": "spread-5-house-lit-3",
@@ -4106,17 +5151,32 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cottage-lit.webp",
+            "type": "visual",
             "width": 3.222,
             "height": 3,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cottage-lit.webp"
           },
           {
             "id": "spread-5-house-dark-4",
@@ -4150,17 +5210,32 @@
             "layer": 10,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cottage-dark.webp",
+            "type": "visual",
             "width": 2.778,
             "height": 2.556,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cottage-dark.webp"
           },
           {
             "id": "spread-5-house-lit-4",
@@ -4194,17 +5269,32 @@
             "layer": 11,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cottage-lit.webp",
+            "type": "visual",
             "width": 2.778,
             "height": 2.556,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cottage-lit.webp"
           },
           {
             "id": "spread-5-flower-1",
@@ -4218,7 +5308,7 @@
               "position": [
                 2,
                 0.01,
-                1.75
+                1.25
               ],
               "rotation": [
                 0,
@@ -4238,17 +5328,32 @@
             "layer": 14,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "flower.webp",
+            "type": "visual",
             "width": 0.306,
             "height": 0.333,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "flower.webp"
           },
           {
             "id": "spread-5-flower-2",
@@ -4282,17 +5387,32 @@
             "layer": 15,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "flower.webp",
+            "type": "visual",
             "width": 0.306,
             "height": 0.333,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "flower.webp"
           },
           {
             "id": "spread-5-flower-3",
@@ -4326,17 +5446,32 @@
             "layer": 16,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "flower.webp",
+            "type": "visual",
             "width": 0.278,
             "height": 0.306,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "flower.webp"
           },
           {
             "id": "spread-5-deer",
@@ -4370,17 +5505,32 @@
             "layer": 17,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "deer.webp",
+            "type": "visual",
             "width": 0.54,
             "height": 0.889,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "deer.webp"
           },
           {
             "id": "spread-5-badger",
@@ -4394,7 +5544,7 @@
               "position": [
                 3.2,
                 0.01,
-                2.176
+                1.2799999999999994
               ],
               "rotation": [
                 0,
@@ -4414,17 +5564,32 @@
             "layer": 17,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "badger.webp",
+            "type": "visual",
             "width": 0.78,
             "height": 0.944,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "badger.webp"
           },
           {
             "id": "spread-5-mushroom",
@@ -4458,17 +5623,32 @@
             "layer": 17,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "mushroom-cluster.webp",
+            "type": "visual",
             "width": 0.28,
             "height": 0.333,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "mushroom-cluster.webp"
           },
           {
             "id": "spread-5-fox",
@@ -4482,7 +5662,7 @@
               "position": [
                 -3,
                 0.01,
-                2.75
+                2
               ],
               "rotation": [
                 0,
@@ -4502,17 +5682,32 @@
             "layer": 18,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "fox.webp",
+            "type": "visual",
             "width": 0.89,
             "height": 0.833,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "fox.webp"
           },
           {
             "id": "spread-5-lantern",
@@ -4520,11 +5715,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 1.6,
                 0.9
               ],
@@ -4546,17 +5741,32 @@
             "layer": 20,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "lantern.webp",
+            "type": "visual",
             "width": 0.29,
             "height": 0.611,
-            "billboard": true
+            "billboard": true,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "lantern.webp"
           },
           {
             "id": "spread-5-halo",
@@ -4564,11 +5774,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 3,
                 0.3
               ],
@@ -4590,16 +5800,31 @@
             "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "light-particles",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "effect",
-            "effect": "sparkles",
-            "color": "#ffe9a8",
-            "size": 1.2
+            "type": "visual",
+            "width": 1.2,
+            "height": 1.2,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": true,
+              "color": "#ffe9a8",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "spread-5-text",
@@ -4613,7 +5838,7 @@
               "position": [
                 0,
                 0.077,
-                2.4320000000000004
+                2.6240000000000006
               ],
               "rotation": [
                 -90,
@@ -4633,19 +5858,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 6.555000000000002,
+            "height": 0.95,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#f5ecd6",
             "text": "The lantern rose to the sky\nand the forest was bright again",
-            "width": 5.244000000000003,
-            "height": 0.76,
             "fontSize": 0.38,
-            "color": "#f5ecd6",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -5073,21 +6310,43 @@
               ]
             },
             {
-              "id": "spread-5-halo-effect-size",
+              "id": "spread-5-halo-visual-width",
               "target": {
                 "type": "element",
                 "elementId": "spread-5-halo"
               },
-              "property": "effect.size",
+              "property": "visual.width",
               "keys": [
                 {
-                  "id": "spread-5-halo-effect-size-0",
+                  "id": "spread-5-halo-visual-width-0",
                   "time": 0,
                   "value": 0.8,
                   "ease": "easeInOut"
                 },
                 {
-                  "id": "spread-5-halo-effect-size-1",
+                  "id": "spread-5-halo-visual-width-1",
+                  "time": 7.5,
+                  "value": 3.4,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-halo-visual-height",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-halo"
+              },
+              "property": "visual.height",
+              "keys": [
+                {
+                  "id": "spread-5-halo-visual-height-0",
+                  "time": 0,
+                  "value": 0.8,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-halo-visual-height-1",
                   "time": 7.5,
                   "value": 3.4,
                   "ease": "easeInOut"

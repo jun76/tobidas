@@ -2,8 +2,8 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import type { Asset } from '../../schema/assets'
-import type { StageElement } from '../../schema/stageElement'
-import { useImageTexture, useSvgTexture, useTextTexture } from '../assets'
+import type { StageElement, VisualElement } from '../../schema/stageElement'
+import { useImageTexture, useSvgTexture, useVisualTexture } from '../assets'
 import type { StowItem } from '../stow/model'
 import { SPARKLE, buildSparkleField } from './sparkleField'
 import { buildSparkleSpriteGeometry } from './sparkleGeometry'
@@ -43,9 +43,7 @@ export function layerDepthBias(layer: number) {
 
 export function visualPivotOffset(element: StageElement): [number, number] {
   if (element.type === 'group') return [0, 0]
-  const width = element.type === 'effect' ? element.size : element.width
-  const height = element.type === 'effect' ? element.size : element.height
-  return [(0.5 - element.pivot[0]) * width, (0.5 - element.pivot[1]) * height]
+  return [(0.5 - element.pivot[0]) * element.width, (0.5 - element.pivot[1]) * element.height]
 }
 
 export function ElementVisual({ element, assets, opacityMul, openFactor = 1 }: {
@@ -56,24 +54,15 @@ export function ElementVisual({ element, assets, opacityMul, openFactor = 1 }: {
   openFactor?: number
 }) {
   if (element.type === 'group') return null
-  if (element.type === 'effect') {
-    /**
-     * 雲の広がりは収納に従わせる。
-     *
-     * 収納が動かすのは要素の原点だけなので、広がりを持たせたままだと、
-     * 紙面へ寝かせても粒は原点のまわり ±size/2 に散ったままになる。
-     * 見開きが閉じてページが傾くと、その散らばりが紙の輪郭から外へ出て、
-     * 本の外や隣の面の上に粒が浮いて見える。畳まれたら粒も畳む。
-     */
-    return <SparkleCloud seed={element.id} spread={element.size * openFactor} color={element.color}
-      opacity={element.opacity * opacityMul * openFactor} renderOrder={100 + element.layer} />
-  }
-  if (element.type === 'text') {
-    return <TextPlane element={element} layer={element.layer} opacityMul={element.opacity * opacityMul} />
-  }
-  return <AssetPlane asset={assetFor(assets, element.asset)} back={assetFor(assets, element.backAsset)}
-    width={element.width} height={element.height} opacity={element.opacity * opacityMul}
-    layer={element.layer} />
+  return <>
+    <VisualPlane element={element} asset={assetFor(assets, element.image)} back={assetFor(assets, element.backImage)}
+      opacity={element.opacity * opacityMul} />
+    {element.particles.enabled && <SparkleCloud seed={element.id}
+      width={element.width * openFactor} height={element.height * openFactor} count={element.particles.count}
+      color={element.particles.color} drift={element.particles.drift} period={element.particles.period}
+      size={element.particles.size} opacity={element.opacity * opacityMul * openFactor}
+      renderOrder={101 + element.layer} />}
+  </>
 }
 
 // ---------------------------------------------------------------------------
@@ -90,20 +79,20 @@ export function ElementVisual({ element, assets, opacityMul, openFactor = 1 }: {
  * speed だけ = 同じ 0.2 の箱をゆっくり歩くようになるだけで、粒を大きくすると
  * 「ゆっくり飛び回る小バエ」にしかならなかった。振れ幅を持つために自前で描く。
  */
-function buildSparkleGeometry(seed: string, spread: number): THREE.BufferGeometry {
-  return buildSparkleSpriteGeometry(buildSparkleField(seed, spread))
+function buildSparkleGeometry(seed: string, width: number, height: number, count: number): THREE.BufferGeometry {
+  return buildSparkleSpriteGeometry(buildSparkleField(seed, { width, height, count }))
 }
 
 /** 平面粒子のうち指定した横区間だけを、区間中心原点の実寸座標へ切り出す。 */
-function buildSparkleSliceGeometry(seed: string, spread: number, u0: number, u1: number): THREE.BufferGeometry {
-  const field = buildSparkleField(seed, spread)
+function buildSparkleSliceGeometry(seed: string, width: number, height: number, count: number, u0: number, u1: number): THREE.BufferGeometry {
+  const field = buildSparkleField(seed, { width, height, count })
   const positions: number[] = []
   const phases: number[] = []
   const rates: number[] = []
-  const centerX = ((u0 + u1) / 2 - 0.5) * spread
+  const centerX = ((u0 + u1) / 2 - 0.5) * width
   for (let index = 0; index < field.rates.length; index++) {
     const x = field.positions[index * 3]
-    const u = x / Math.max(1e-6, spread) + 0.5
+    const u = x / Math.max(1e-6, width) + 0.5
     if (u < u0 || u > u1) continue
     positions.push(x - centerX, field.positions[index * 3 + 1], 0)
     phases.push(field.phases[index * 3], field.phases[index * 3 + 1], field.phases[index * 3 + 2])
@@ -129,7 +118,7 @@ function buildSparkleSliceGeometry(seed: string, spread: number, u0: number, u1:
  * 差し込み位置は決まっていて、頂点側は gl_Position を決めた後、断片側は main の頭。
  */
 export class SparkleMaterial extends THREE.ShaderMaterial {
-  constructor(drift = SPARKLE.drift) {
+  constructor(drift = SPARKLE.drift, period = SPARKLE.period, particleSize = SPARKLE.size) {
     super({
       transparent: true,
       depthWrite: false,
@@ -137,8 +126,8 @@ export class SparkleMaterial extends THREE.ShaderMaterial {
       uniforms: {
         time: { value: 0 },
         drift: { value: drift },
-        omega: { value: (Math.PI * 2) / SPARKLE.period },
-        particleSize: { value: SPARKLE.size },
+        omega: { value: (Math.PI * 2) / period },
+        particleSize: { value: particleSize },
         color: { value: new THREE.Color('#ffffff') },
         opacity: { value: 1 },
       },
@@ -196,10 +185,15 @@ export class SparkleMaterial extends THREE.ShaderMaterial {
   }
 }
 
-function SparkleCloud({ seed, spread, color, opacity, renderOrder }: {
+function SparkleCloud({ seed, width, height, count, color, drift, period, size, opacity, renderOrder }: {
   seed: string
-  spread: number
+  width: number
+  height: number
+  count: number
   color: string
+  drift: number
+  period: number
+  size: number
   opacity: number
   /**
    * 板と同じ帯 (100 + layer) へ並べる。
@@ -210,17 +204,21 @@ function SparkleCloud({ seed, spread, color, opacity, renderOrder }: {
    */
   renderOrder: number
 }) {
-  const geometry = useMemo(() => buildSparkleGeometry(seed, spread), [seed, spread])
-  return <SparklePoints geometry={geometry} color={color} opacity={opacity} renderOrder={renderOrder} />
+  const geometry = useMemo(() => buildSparkleGeometry(seed, width, height, count), [seed, width, height, count])
+  return <SparklePoints geometry={geometry} color={color} opacity={opacity} renderOrder={renderOrder}
+    drift={drift} period={period} size={size} />
 }
 
-function SparklePoints({ geometry, color, opacity, renderOrder }: {
+function SparklePoints({ geometry, color, opacity, renderOrder, drift = SPARKLE.drift, period = SPARKLE.period, size = SPARKLE.size }: {
   geometry: THREE.BufferGeometry
   color: string
   opacity: number
   renderOrder: number
+  drift?: number
+  period?: number
+  size?: number
 }) {
-  const material = useMemo(() => new SparkleMaterial(), [])
+  const material = useMemo(() => new SparkleMaterial(drift, period, size), [drift, period, size])
   useEffect(() => () => { geometry.dispose(); material.dispose() }, [geometry, material])
   material.uniforms.color.value.set(color)
   material.uniforms.opacity.value = opacity
@@ -236,47 +234,28 @@ export function WingVisual({ element, half, assets, opacityMul }: {
   opacityMul: number
 }) {
   if (element.type === 'group') return null
-  if (element.type === 'effect') return <EffectWing element={element} half={half} opacityMul={opacityMul} />
-  if (element.type === 'text') return <TextWing element={element} half={half} opacityMul={opacityMul} />
-  const asset = assetFor(assets, element.asset)
-  const image = useImageTexture(asset?.type === 'image' ? asset : undefined)
-  const svg = useSvgTexture(asset?.type === 'svg' ? asset : undefined)
-  const texture = (image ?? svg)?.texture
+  const composite = useVisualTexture(element, assetFor(assets, element.image))
   const offsetY = (0.5 - element.pivot[1]) * element.height
   return <group position={[0, offsetY, 0]}>
-    <HalfPlane width={half.width} height={element.height} u0={half.u0} u1={half.u1} texture={texture}
-      opacity={element.opacity * opacityMul} layer={element.layer} />
+    {composite && <HalfPlane width={half.width} height={element.height} u0={half.u0} u1={half.u1}
+      texture={composite.texture} opacity={element.opacity * opacityMul} layer={element.layer} />}
+    {element.particles.enabled && <ParticleWing element={element} half={half} opacityMul={opacityMul} />}
   </group>
 }
 
-function TextWing({ element, half, opacityMul }: {
-  element: Extract<StageElement, { type: 'text' }>
+function ParticleWing({ element, half, opacityMul }: {
+  element: VisualElement
   half: NonNullable<StowItem['half']>
   opacityMul: number
 }) {
-  const texture = useTextTexture({
-    text: element.text, color: element.color, align: element.align,
-    font: element.font, bold: element.bold, italic: element.italic, underline: element.underline,
-  })
-  const offsetY = (0.5 - element.pivot[1]) * element.height
-  return <group position={[0, offsetY, 0]}>
-    <HalfPlane width={half.width} height={element.height} u0={half.u0} u1={half.u1}
-      texture={texture?.texture} opacity={element.opacity * opacityMul} layer={element.layer} />
-  </group>
-}
-
-function EffectWing({ element, half, opacityMul }: {
-  element: Extract<StageElement, { type: 'effect' }>
-  half: NonNullable<StowItem['half']>
-  opacityMul: number
-}) {
-  const geometry = useMemo(() => buildSparkleSliceGeometry(element.id, element.size, half.u0, half.u1),
-    [element.id, element.size, half.u0, half.u1])
-  const offsetY = (0.5 - element.pivot[1]) * element.size
-  return <group position={[0, offsetY, 0]}>
-    <SparklePoints geometry={geometry} color={element.color} opacity={element.opacity * opacityMul}
-      renderOrder={100 + element.layer} />
-  </group>
+  const geometry = useMemo(() => buildSparkleSliceGeometry(
+    element.id, element.width, element.height, element.particles.count, half.u0, half.u1,
+  ), [element.id, element.width, element.height, element.particles.count, half.u0, half.u1])
+  return <>
+    <SparklePoints geometry={geometry} color={element.particles.color} opacity={element.opacity * opacityMul}
+      renderOrder={101 + element.layer} drift={element.particles.drift}
+      period={element.particles.period} size={element.particles.size} />
+  </>
 }
 
 function HalfPlane({ width, height, u0, u1, texture, opacity, layer }: {
@@ -334,18 +313,28 @@ export function AssetPlane({ asset, back, width, height, opacity = 1, layer = 0 
   </mesh>
 }
 
-function TextPlane({ element, layer, opacityMul }: {
-  element: Extract<StageElement, { type: 'text' }>
-  layer: number
-  opacityMul: number
+function VisualPlane({ element, asset, back, opacity }: {
+  element: VisualElement
+  asset?: Asset
+  back?: Asset
+  opacity: number
 }) {
-  const texture = useTextTexture({
-    text: element.text, color: element.color, align: element.align,
-    font: element.font, bold: element.bold, italic: element.italic, underline: element.underline,
-  })
-  return <mesh renderOrder={100 + layer}><planeGeometry args={[element.width, element.height]} />
-    <meshBasicMaterial map={texture?.texture} transparent opacity={opacityMul} side={THREE.DoubleSide}
-      {...layerDepthBias(layer)} /></mesh>
+  const front = useVisualTexture(element, asset)
+  const backImage = useImageTexture(back?.type === 'image' ? back : undefined)
+  const backSvg = useSvgTexture(back?.type === 'svg' ? back : undefined)
+  const reverse = backImage ?? backSvg
+  const bias = layerDepthBias(element.layer)
+  if (!front && !reverse) return null
+  return <mesh castShadow={castsShadow(opacity)} renderOrder={100 + element.layer}>
+    <planeGeometry args={[element.width, element.height]} />
+    <meshBasicMaterial color="#ffffff" map={front?.texture} transparent opacity={opacity}
+      alphaTest={.02} side={reverse ? THREE.FrontSide : THREE.DoubleSide} toneMapped={false} {...bias} />
+    {reverse && <mesh position-z={-.002} rotation-y={Math.PI}>
+      <planeGeometry args={[element.width, element.height]} />
+      <meshBasicMaterial color="#ffffff" map={reverse.texture} transparent opacity={opacity}
+        alphaTest={.02} toneMapped={false} {...bias} />
+    </mesh>}
+  </mesh>
 }
 
 export function PaperSlab({ position, size, color, edge, asset, back, backColor }: {

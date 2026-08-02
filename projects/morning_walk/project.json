@@ -95,17 +95,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "townscape.webp",
+            "type": "visual",
             "width": 9.2,
             "height": 1.7,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "townscape.webp"
           },
           {
             "id": "spread-1-house-1",
@@ -139,17 +154,32 @@
             "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "house-a.webp",
+            "type": "visual",
             "width": 3.182,
             "height": 3.182,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "house-a.webp"
           },
           {
             "id": "spread-1-house-2",
@@ -183,17 +213,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "house-c.webp",
+            "type": "visual",
             "width": 2.727,
             "height": 2.727,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "house-c.webp"
           },
           {
             "id": "spread-1-house-3",
@@ -227,17 +272,32 @@
             "layer": 5,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "apartment.webp",
+            "type": "visual",
             "width": 2.92,
             "height": 3.7,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "apartment.webp"
           },
           {
             "id": "spread-1-house-5",
@@ -271,17 +331,32 @@
             "layer": 7,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "house-e.webp",
+            "type": "visual",
             "width": 2.727,
             "height": 2.727,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "house-e.webp"
           },
           {
             "id": "spread-1-pole-1",
@@ -315,17 +390,32 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "utility-pole.webp",
+            "type": "visual",
             "width": 0.96,
             "height": 4.545,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "utility-pole.webp"
           },
           {
             "id": "spread-1-pole-2",
@@ -359,17 +449,32 @@
             "layer": 10,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "utility-pole.webp",
+            "type": "visual",
             "width": 0.96,
             "height": 4.545,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "utility-pole.webp"
           },
           {
             "id": "spread-1-pole-3",
@@ -403,17 +508,32 @@
             "layer": 11,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "utility-pole.webp",
+            "type": "visual",
             "width": 0.96,
             "height": 4.545,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "utility-pole.webp"
           },
           {
             "id": "spread-1-cherry",
@@ -447,17 +567,32 @@
             "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cherry-tree.webp",
+            "type": "visual",
             "width": 2.67,
             "height": 2.727,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cherry-tree.webp"
           },
           {
             "id": "spread-1-postbox",
@@ -491,17 +626,32 @@
             "layer": 14,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "postbox.webp",
+            "type": "visual",
             "width": 0.57,
             "height": 1.08,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "postbox.webp"
           },
           {
             "id": "spread-1-dog",
@@ -535,17 +685,32 @@
             "layer": 16,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "walking-dog.webp",
+            "type": "visual",
             "width": 0.45,
             "height": 0.44,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "walking-dog.webp"
           },
           {
             "id": "spread-1-text",
@@ -579,19 +744,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 6.680000000000003,
+            "height": 1,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#4a3a26",
             "text": "I left the house\nwhile the town was still quiet",
-            "width": 5.344000000000003,
-            "height": 0.8,
             "fontSize": 0.4,
-            "color": "#4a3a26",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -936,17 +1113,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "backdrop-row.webp",
+            "type": "visual",
             "width": 11,
             "height": 5,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "backdrop-row.webp"
           },
           {
             "id": "spread-2-arcade",
@@ -980,17 +1172,32 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "arcade.webp",
+            "type": "visual",
             "width": 9,
             "height": 2.4,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "arcade.webp"
           },
           {
             "id": "spread-2-shop-1",
@@ -1024,17 +1231,32 @@
             "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "shop-front.webp",
+            "type": "visual",
             "width": 2.85,
             "height": 2.545,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "shop-front.webp"
           },
           {
             "id": "spread-2-shutter-1",
@@ -1068,17 +1290,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "shutter.webp",
+            "type": "visual",
             "width": 2.39,
             "height": 1.28,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "shutter.webp"
           },
           {
             "id": "spread-2-shop-2",
@@ -1112,17 +1349,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "shop-front-b.webp",
+            "type": "visual",
             "width": 2.47,
             "height": 2.545,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "shop-front-b.webp"
           },
           {
             "id": "spread-2-shutter-2",
@@ -1156,17 +1408,32 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "shutter.webp",
+            "type": "visual",
             "width": 2.07,
             "height": 1.1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "shutter.webp"
           },
           {
             "id": "spread-2-shop-3",
@@ -1200,17 +1467,32 @@
             "layer": 5,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "shop-front-c.webp",
+            "type": "visual",
             "width": 2.91,
             "height": 2.545,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "shop-front-c.webp"
           },
           {
             "id": "spread-2-shutter-3",
@@ -1244,17 +1526,32 @@
             "layer": 10,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "shutter.webp",
+            "type": "visual",
             "width": 2.44,
             "height": 1.3,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "shutter.webp"
           },
           {
             "id": "spread-2-shop-4",
@@ -1288,17 +1585,32 @@
             "layer": 6,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "shop-front-d.webp",
+            "type": "visual",
             "width": 2.31,
             "height": 2.545,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "shop-front-d.webp"
           },
           {
             "id": "spread-2-shutter-4",
@@ -1332,17 +1644,32 @@
             "layer": 11,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "shutter.webp",
+            "type": "visual",
             "width": 1.94,
             "height": 1.04,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "shutter.webp"
           },
           {
             "id": "spread-2-bicycle",
@@ -1376,17 +1703,32 @@
             "layer": 14,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "bicycle.webp",
+            "type": "visual",
             "width": 1.43,
             "height": 0.84,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "bicycle.webp"
           },
           {
             "id": "spread-2-planter-1",
@@ -1420,17 +1762,32 @@
             "layer": 15,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "hydrangea-planter.webp",
+            "type": "visual",
             "width": 0.66,
             "height": 0.72,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "hydrangea-planter.webp"
           },
           {
             "id": "spread-2-planter-2",
@@ -1464,17 +1821,32 @@
             "layer": 16,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "hydrangea-planter.webp",
+            "type": "visual",
             "width": 0.66,
             "height": 0.72,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "hydrangea-planter.webp"
           },
           {
             "id": "spread-2-planter-3",
@@ -1508,17 +1880,32 @@
             "layer": 17,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "hydrangea-planter.webp",
+            "type": "visual",
             "width": 0.66,
             "height": 0.72,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "hydrangea-planter.webp"
           },
           {
             "id": "spread-2-vending",
@@ -1552,17 +1939,32 @@
             "layer": 19,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "vending-machine.webp",
+            "type": "visual",
             "width": 0.99,
             "height": 1.52,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "vending-machine.webp"
           },
           {
             "id": "spread-2-postbox",
@@ -1596,17 +1998,32 @@
             "layer": 20,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "postbox.webp",
+            "type": "visual",
             "width": 0.57,
             "height": 1.08,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "postbox.webp"
           },
           {
             "id": "spread-2-scooter",
@@ -1640,17 +2057,32 @@
             "layer": 21,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "scooter.webp",
+            "type": "visual",
             "width": 0.93,
             "height": 0.88,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "scooter.webp"
           },
           {
             "id": "spread-2-walker",
@@ -1684,17 +2116,32 @@
             "layer": 18,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "child-blue.webp",
+            "type": "visual",
             "width": 0.54,
             "height": 1.04,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "child-blue.webp"
           },
           {
             "id": "spread-2-text",
@@ -1728,19 +2175,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 6.555000000000002,
+            "height": 0.95,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#463726",
             "text": "The shutters roll up one by one\nand the town starts moving",
-            "width": 5.244000000000003,
-            "height": 0.76,
             "fontSize": 0.38,
-            "color": "#463726",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -2177,17 +2636,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "backdrop-town.webp",
+            "type": "visual",
             "width": 11,
             "height": 5,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "backdrop-town.webp"
           },
           {
             "id": "spread-3-rails",
@@ -2221,17 +2695,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "paper-stack",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "rails.webp",
+            "type": "visual",
             "width": 7.9,
             "height": 1.39,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "rails.webp"
           },
           {
             "id": "spread-3-rails-r",
@@ -2265,17 +2754,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "paper-stack",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "rails.webp",
+            "type": "visual",
             "width": 7.9,
             "height": 1.39,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "rails.webp"
           },
           {
             "id": "spread-3-post-l",
@@ -2309,17 +2813,32 @@
             "layer": 6,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "crossing-post.webp",
+            "type": "visual",
             "width": 0.5,
             "height": 2.25,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "crossing-post.webp"
           },
           {
             "id": "spread-3-arm-l",
@@ -2354,17 +2873,32 @@
             "layer": 7,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "crossing-arm.webp",
+            "type": "visual",
             "width": 2.875,
             "height": 0.27,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "crossing-arm.webp"
           },
           {
             "id": "spread-3-post-r",
@@ -2398,17 +2932,32 @@
             "layer": 6,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "crossing-post.webp",
+            "type": "visual",
             "width": 0.5,
             "height": 2.25,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "crossing-post.webp"
           },
           {
             "id": "spread-3-arm-r",
@@ -2443,17 +2992,32 @@
             "layer": 7,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "crossing-arm.webp",
+            "type": "visual",
             "width": 2.875,
             "height": 0.27,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "crossing-arm.webp"
           },
           {
             "id": "spread-3-train",
@@ -2461,11 +3025,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "left-page"
             },
             "baseTransform": {
               "position": [
-                -4.12,
+                -0.1200000000000001,
                 1.419,
                 -0.5
               ],
@@ -2487,17 +3051,32 @@
             "layer": 10,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "train.webp",
+            "type": "visual",
             "width": 6.53,
             "height": 1.938,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "train.webp"
           },
           {
             "id": "spread-3-kid-1",
@@ -2531,17 +3110,32 @@
             "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "child-red.webp",
+            "type": "visual",
             "width": 0.54,
             "height": 1.04,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "child-red.webp"
           },
           {
             "id": "spread-3-kid-2",
@@ -2575,17 +3169,32 @@
             "layer": 13,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "child-blue.webp",
+            "type": "visual",
             "width": 0.54,
             "height": 1.04,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "child-blue.webp"
           },
           {
             "id": "spread-3-pole",
@@ -2619,17 +3228,32 @@
             "layer": 11,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "utility-pole.webp",
+            "type": "visual",
             "width": 1.12,
             "height": 5.313,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "utility-pole.webp"
           },
           {
             "id": "spread-3-ped-signal",
@@ -2663,17 +3287,32 @@
             "layer": 14,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "pedestrian-signal.webp",
+            "type": "visual",
             "width": 0.38,
             "height": 2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "pedestrian-signal.webp"
           },
           {
             "id": "spread-3-signal",
@@ -2707,17 +3346,32 @@
             "layer": 15,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "traffic-signal.webp",
+            "type": "visual",
             "width": 0.82,
             "height": 3.125,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "traffic-signal.webp"
           },
           {
             "id": "spread-3-truck",
@@ -2751,17 +3405,32 @@
             "layer": 16,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "kei-truck.webp",
+            "type": "visual",
             "width": 2.28,
             "height": 1.52,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "kei-truck.webp"
           },
           {
             "id": "spread-3-shiba",
@@ -2795,17 +3464,32 @@
             "layer": 17,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "walking-dog-2.webp",
+            "type": "visual",
             "width": 0.59,
             "height": 0.44,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "walking-dog-2.webp"
           },
           {
             "id": "spread-3-text",
@@ -2839,19 +3523,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 5.301000000000002,
+            "height": 0.95,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#463726",
             "text": "The bell goes ding-ding\nand the train slides past",
-            "width": 4.240800000000002,
-            "height": 0.76,
             "fontSize": 0.38,
-            "color": "#463726",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -2927,25 +3623,25 @@
                 {
                   "id": "spread-3-train-position-x-0",
                   "time": 0,
-                  "value": -4.12,
+                  "value": -0.12,
                   "ease": "linear"
                 },
                 {
                   "id": "spread-3-train-position-x-1",
                   "time": 2.2,
-                  "value": -4.12,
+                  "value": -0.12,
                   "ease": "linear"
                 },
                 {
                   "id": "spread-3-train-position-x-2",
                   "time": 5,
-                  "value": 4.12,
+                  "value": 8.12,
                   "ease": "linear"
                 },
                 {
                   "id": "spread-3-train-position-x-3",
                   "time": 7,
-                  "value": 4.12,
+                  "value": 8.12,
                   "ease": "linear"
                 }
               ]
@@ -3186,17 +3882,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "backdrop-mountain.webp",
+            "type": "visual",
             "width": 11,
             "height": 5,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "backdrop-mountain.webp"
           },
           {
             "id": "spread-4-school",
@@ -3230,17 +3941,32 @@
             "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "school.webp",
+            "type": "visual",
             "width": 10.25,
             "height": 4.2,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "school.webp"
           },
           {
             "id": "spread-4-house-1",
@@ -3274,17 +4000,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "house-a.webp",
+            "type": "visual",
             "width": 3.182,
             "height": 3.182,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "house-a.webp"
           },
           {
             "id": "spread-4-house-2",
@@ -3318,17 +4059,32 @@
             "layer": 5,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "house-b.webp",
+            "type": "visual",
             "width": 2.727,
             "height": 2.727,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "house-b.webp"
           },
           {
             "id": "spread-4-house-3",
@@ -3362,17 +4118,32 @@
             "layer": 6,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "house-c.webp",
+            "type": "visual",
             "width": 3.182,
             "height": 3.182,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "house-c.webp"
           },
           {
             "id": "spread-4-house-4",
@@ -3406,17 +4177,32 @@
             "layer": 7,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "house-d.webp",
+            "type": "visual",
             "width": 2.727,
             "height": 2.727,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "house-d.webp"
           },
           {
             "id": "spread-4-pole-1",
@@ -3450,17 +4236,32 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "utility-pole.webp",
+            "type": "visual",
             "width": 0.96,
             "height": 4.545,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "utility-pole.webp"
           },
           {
             "id": "spread-4-pole-2",
@@ -3494,17 +4295,32 @@
             "layer": 10,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "utility-pole.webp",
+            "type": "visual",
             "width": 0.96,
             "height": 4.545,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "utility-pole.webp"
           },
           {
             "id": "spread-4-cherry-1",
@@ -3538,17 +4354,32 @@
             "layer": 11,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cherry-tree.webp",
+            "type": "visual",
             "width": 2.67,
             "height": 2.727,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cherry-tree.webp"
           },
           {
             "id": "spread-4-cherry-2",
@@ -3582,17 +4413,32 @@
             "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cherry-tree.webp",
+            "type": "visual",
             "width": 2.67,
             "height": 2.727,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cherry-tree.webp"
           },
           {
             "id": "spread-4-postbox",
@@ -3626,17 +4472,32 @@
             "layer": 16,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "postbox.webp",
+            "type": "visual",
             "width": 0.57,
             "height": 1.08,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "postbox.webp"
           },
           {
             "id": "spread-4-climber",
@@ -3670,17 +4531,32 @@
             "layer": 14,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "child-red.webp",
+            "type": "visual",
             "width": 0.54,
             "height": 1.04,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "child-red.webp"
           },
           {
             "id": "spread-4-friend",
@@ -3714,17 +4590,32 @@
             "layer": 14,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "child-blue.webp",
+            "type": "visual",
             "width": 0.54,
             "height": 1.04,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "child-blue.webp"
           },
           {
             "id": "spread-4-text",
@@ -3758,19 +4649,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 6.210000000000003,
+            "height": 0.8999999999999999,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#463726",
             "text": "Up the hill\nthe school roof comes into view",
-            "width": 4.968000000000003,
-            "height": 0.72,
             "fontSize": 0.36,
-            "color": "#463726",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -4020,17 +4923,32 @@
             "layer": 0,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "mountain-far.webp",
+            "type": "visual",
             "width": 6,
             "height": 2.86,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "mountain-far.webp"
           },
           {
             "id": "spread-5-town-left",
@@ -4064,17 +4982,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "town-row.webp",
+            "type": "visual",
             "width": 6,
             "height": 2.32,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "town-row.webp"
           },
           {
             "id": "spread-5-cherry-left",
@@ -4108,17 +5041,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cherry-tree-small.webp",
+            "type": "visual",
             "width": 2.06,
             "height": 2.1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cherry-tree-small.webp"
           },
           {
             "id": "spread-5-mountain-right",
@@ -4152,17 +5100,32 @@
             "layer": 0,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "mountain-near.webp",
+            "type": "visual",
             "width": 6,
             "height": 2.86,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "mountain-near.webp"
           },
           {
             "id": "spread-5-town-right",
@@ -4196,17 +5159,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "depth-layer",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "town-row.webp",
+            "type": "visual",
             "width": 6,
             "height": 2.32,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "town-row.webp"
           },
           {
             "id": "spread-5-cherry-right",
@@ -4240,17 +5218,32 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "cherry-tree-small.webp",
+            "type": "visual",
             "width": 2.06,
             "height": 2.1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "cherry-tree-small.webp"
           },
           {
             "id": "spread-5-window",
@@ -4284,17 +5277,32 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "front",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "window-frame.webp",
+            "type": "visual",
             "width": 12,
             "height": 4,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "window-frame.webp"
           },
           {
             "id": "spread-5-curtain-l",
@@ -4302,11 +5310,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "left-page"
             },
             "baseTransform": {
               "position": [
-                -5.75,
+                -1.75,
                 2.24,
                 -1.02
               ],
@@ -4335,17 +5343,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "curtain.webp",
+            "type": "visual",
             "width": 0.77,
             "height": 2.4,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "curtain.webp"
           },
           {
             "id": "spread-5-curtain-r",
@@ -4353,11 +5376,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                5.5,
+                1.5,
                 2.24,
                 -1.02
               ],
@@ -4386,17 +5409,32 @@
               }
             ],
             "clock": "visible-elapsed",
-            "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "curtain.webp",
+            "type": "visual",
             "width": 0.77,
             "height": 2.4,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "curtain.webp"
           },
           {
             "id": "spread-5-chair-1",
@@ -4430,17 +5468,32 @@
             "layer": 8,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-1",
@@ -4474,17 +5527,32 @@
             "layer": 20,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-2",
@@ -4518,17 +5586,32 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-2",
@@ -4562,17 +5645,32 @@
             "layer": 21,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-3",
@@ -4606,17 +5704,32 @@
             "layer": 10,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-3",
@@ -4650,17 +5763,32 @@
             "layer": 22,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-4",
@@ -4694,17 +5822,32 @@
             "layer": 11,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-4",
@@ -4738,17 +5881,32 @@
             "layer": 23,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-5",
@@ -4782,17 +5940,32 @@
             "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-5",
@@ -4826,17 +5999,32 @@
             "layer": 24,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-6",
@@ -4870,17 +6058,32 @@
             "layer": 13,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-6",
@@ -4914,17 +6117,32 @@
             "layer": 25,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-7",
@@ -4958,17 +6176,32 @@
             "layer": 14,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-7",
@@ -5002,17 +6235,32 @@
             "layer": 26,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-8",
@@ -5046,17 +6294,32 @@
             "layer": 15,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-8",
@@ -5090,17 +6353,32 @@
             "layer": 27,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-9",
@@ -5134,17 +6412,32 @@
             "layer": 16,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-9",
@@ -5178,17 +6471,32 @@
             "layer": 28,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-10",
@@ -5222,17 +6530,32 @@
             "layer": 17,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-10",
@@ -5266,17 +6589,32 @@
             "layer": 29,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-11",
@@ -5310,17 +6648,32 @@
             "layer": 18,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-11",
@@ -5354,17 +6707,32 @@
             "layer": 30,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-12",
@@ -5398,17 +6766,32 @@
             "layer": 19,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-12",
@@ -5442,17 +6825,32 @@
             "layer": 31,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-13",
@@ -5486,17 +6884,32 @@
             "layer": 20,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-13",
@@ -5530,17 +6943,32 @@
             "layer": 32,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-14",
@@ -5574,17 +7002,32 @@
             "layer": 21,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-14",
@@ -5618,17 +7061,32 @@
             "layer": 33,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-15",
@@ -5662,17 +7120,32 @@
             "layer": 22,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-15",
@@ -5706,17 +7179,32 @@
             "layer": 34,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-16",
@@ -5750,17 +7238,32 @@
             "layer": 23,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-16",
@@ -5794,17 +7297,32 @@
             "layer": 35,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-17",
@@ -5838,17 +7356,32 @@
             "layer": 24,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-17",
@@ -5882,17 +7415,32 @@
             "layer": 36,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-chair-18",
@@ -5926,17 +7474,32 @@
             "layer": 25,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "chair.webp",
+            "type": "visual",
             "width": 0.61,
             "height": 1,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "chair.webp"
           },
           {
             "id": "spread-5-desk-18",
@@ -5970,17 +7533,32 @@
             "layer": 37,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "desk.webp",
+            "type": "visual",
             "width": 0.86,
             "height": 0.9,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "desk.webp"
           },
           {
             "id": "spread-5-satchel",
@@ -6014,17 +7592,32 @@
             "layer": 34,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "satchel.webp",
+            "type": "visual",
             "width": 0.4,
             "height": 0.45,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "satchel.webp"
           },
           {
             "id": "spread-5-pupil",
@@ -6058,17 +7651,32 @@
             "layer": 35,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "flap",
               "fallDirection": "back",
               "stagger": 0
             },
-            "type": "image",
-            "asset": "child-red.webp",
+            "type": "visual",
             "width": 0.84,
             "height": 1.625,
-            "billboard": false
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            },
+            "image": "child-red.webp"
           },
           {
             "id": "spread-5-sunbeam",
@@ -6076,11 +7684,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 2,
                 0.2
               ],
@@ -6102,16 +7710,31 @@
             "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "light-particles",
             "stow": {
-              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "effect",
-            "effect": "sparkles",
-            "color": "#ffe6b0",
-            "size": 1.2
+            "type": "visual",
+            "width": 1.2,
+            "height": 1.2,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#2e241b",
+            "text": "",
+            "fontSize": 0.35,
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": true,
+              "color": "#ffe6b0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           },
           {
             "id": "spread-5-text",
@@ -6125,7 +7748,7 @@
               "position": [
                 0,
                 0.077,
-                2.816
+                2.6880000000000006
               ],
               "rotation": [
                 -90,
@@ -6145,19 +7768,31 @@
             "layer": 9,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "page-text",
             "stow": {
-              "mechanism": "page-glue",
               "fallDirection": "auto",
               "stagger": 0
             },
-            "type": "text",
+            "type": "visual",
+            "width": 5.491000000000003,
+            "height": 0.8500000000000001,
+            "billboard": false,
+            "backgroundColor": "#00000000",
+            "foregroundColor": "#463726",
             "text": "Beyond the window\nthe same old town spreads out",
-            "width": 4.392800000000003,
-            "height": 0.68,
             "fontSize": 0.34,
-            "color": "#463726",
-            "align": "center"
+            "align": "center",
+            "font": "rounded",
+            "bold": true,
+            "italic": false,
+            "underline": false,
+            "particles": {
+              "enabled": false,
+              "color": "#fff3a0",
+              "count": 6,
+              "size": 0.45,
+              "drift": 0.05,
+              "period": 11
+            }
           }
         ],
         "sequence": {
@@ -6189,21 +7824,43 @@
               ]
             },
             {
-              "id": "spread-5-sunbeam-effect-size",
+              "id": "spread-5-sunbeam-visual-width",
               "target": {
                 "type": "element",
                 "elementId": "spread-5-sunbeam"
               },
-              "property": "effect.size",
+              "property": "visual.width",
               "keys": [
                 {
-                  "id": "spread-5-sunbeam-effect-size-0",
+                  "id": "spread-5-sunbeam-visual-width-0",
                   "time": 0,
                   "value": 1,
                   "ease": "easeInOut"
                 },
                 {
-                  "id": "spread-5-sunbeam-effect-size-1",
+                  "id": "spread-5-sunbeam-visual-width-1",
+                  "time": 7,
+                  "value": 3.2,
+                  "ease": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "spread-5-sunbeam-visual-height",
+              "target": {
+                "type": "element",
+                "elementId": "spread-5-sunbeam"
+              },
+              "property": "visual.height",
+              "keys": [
+                {
+                  "id": "spread-5-sunbeam-visual-height-0",
+                  "time": 0,
+                  "value": 1,
+                  "ease": "easeInOut"
+                },
+                {
+                  "id": "spread-5-sunbeam-visual-height-1",
                   "time": 7,
                   "value": 3.2,
                   "ease": "easeInOut"

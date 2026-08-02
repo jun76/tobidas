@@ -57,6 +57,7 @@ export function evaluateElementTimeline(element: StageElement, spread: Spread, t
       rotation: [...element.baseTransform.rotation] as [number, number, number],
       scale: [...element.baseTransform.scale] as [number, number, number],
     },
+    ...(element.type === 'visual' ? { particles: { ...element.particles } } : {}),
   } as StageElement
 
   for (const track of tracks) {
@@ -156,14 +157,26 @@ function applyElementProperty(element: StageElement, property: TimelineProperty,
     case 'visible':
       if (typeof value === 'boolean') element.visible = value
       break
-    case 'asset':
-      if (typeof value === 'string' && element.type === 'image') element.asset = value
+    case 'visual.image':
+      if (typeof value === 'string' && element.type === 'visual') element.image = value
       break
-    case 'effect.color':
-      if (typeof value === 'string' && element.type === 'effect') element.color = value
+    case 'visual.foregroundColor':
+      if (typeof value === 'string' && element.type === 'visual') element.foregroundColor = value
       break
-    case 'effect.size':
-      if (numberValue !== undefined && element.type === 'effect') element.size = Math.max(0.001, numberValue)
+    case 'visual.backgroundColor':
+      if (typeof value === 'string' && element.type === 'visual') element.backgroundColor = value
+      break
+    case 'visual.width':
+      if (numberValue !== undefined && element.type === 'visual') element.width = Math.max(0.001, numberValue)
+      break
+    case 'visual.height':
+      if (numberValue !== undefined && element.type === 'visual') element.height = Math.max(0.001, numberValue)
+      break
+    case 'visual.particles.color':
+      if (typeof value === 'string' && element.type === 'visual') element.particles.color = value
+      break
+    case 'visual.particles.size':
+      if (numberValue !== undefined && element.type === 'visual') element.particles.size = Math.max(0.001, numberValue)
       break
     default: break
   }

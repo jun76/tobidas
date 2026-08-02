@@ -44,15 +44,20 @@ export interface SparkleField {
  * ローカルZは常に0なので、ほかの平面部品と同じ包含判定と谷折りを使える。
  * spread=0 なら全粒が原点へ重なる = 収納し切った状態になる。
  */
-export function buildSparkleField(seed: string, spread: number): SparkleField {
+export function buildSparkleField(
+  seed: string,
+  spread: number | { width: number; height: number; count?: number },
+): SparkleField {
   const random = seededRandom(seed)
-  const extent = Math.max(0, spread)
-  const positions = new Float32Array(SPARKLE.count * 3)
-  const phases = new Float32Array(SPARKLE.count * 3)
-  const rates = new Float32Array(SPARKLE.count)
-  for (let i = 0; i < SPARKLE.count; i++) {
+  const width = Math.max(0, typeof spread === 'number' ? spread : spread.width)
+  const height = Math.max(0, typeof spread === 'number' ? spread : spread.height)
+  const count = typeof spread === 'number' ? SPARKLE.count : Math.max(1, Math.round(spread.count ?? SPARKLE.count))
+  const positions = new Float32Array(count * 3)
+  const phases = new Float32Array(count * 3)
+  const rates = new Float32Array(count)
+  for (let i = 0; i < count; i++) {
     for (let axis = 0; axis < 2; axis++) {
-      positions[i * 3 + axis] = (random() - 0.5) * extent
+      positions[i * 3 + axis] = (random() - 0.5) * (axis === 0 ? width : height)
       phases[i * 3 + axis] = random() * Math.PI * 2
     }
     positions[i * 3 + 2] = 0

@@ -36,14 +36,13 @@ export function SelectionGizmo() {
       const width = store.project.book.format.pageWidth
       if (element.parent.type === 'left-page') anchor = [-width / 2, 0, 0]
       else if (element.parent.type === 'right-page') anchor = [width / 2, 0, 0]
-      if (element.type === 'image' || element.type === 'text') {
+      if (element.type === 'visual') {
         size = [element.width, element.height]
       }
-      if (element.type === 'effect') size = [element.size, element.size]
       if (element.type !== 'group') {
         visualOffset = [(0.5 - element.pivot[0]) * size[0], (0.5 - element.pivot[1]) * size[1]]
       }
-      billboard = element.type === 'image' && element.billboard
+      billboard = element.type === 'visual' && element.billboard
     }
   }
 
@@ -84,6 +83,16 @@ export function SelectionGizmo() {
     const scale: [number, number, number] = [object.scale.x, object.scale.y, object.scale.z]
     store.applyGizmoTransform(selection.spreadId, selection.elementId, spreadTime, { position, rotation, scale })
   }
+  const blockPaperPenetration = () => {
+    object.updateMatrixWorld(true)
+    let minY = Infinity
+    for (const x of [-size[0] / 2 + visualOffset[0], size[0] / 2 + visualOffset[0]]) {
+      for (const y of [-size[1] / 2 + visualOffset[1], size[1] / 2 + visualOffset[1]]) {
+        minY = Math.min(minY, new THREE.Vector3(x, y, 0).applyMatrix4(object.matrixWorld).y)
+      }
+    }
+    if (minY < 0) object.position.y -= minY
+  }
   const outline = <mesh position={[visualOffset[0], visualOffset[1], 0]}>
     <boxGeometry args={[size[0], size[1], 0.03]} />
     <meshBasicMaterial color="#6d7cff" wireframe transparent opacity={0.5} />
@@ -106,6 +115,7 @@ export function SelectionGizmo() {
       rotationSnap={altHeld ? null : THREE.MathUtils.degToRad(5)}
       scaleSnap={altHeld ? null : 0.05}
       onMouseDown={markGizmoPress}
+      onObjectChange={blockPaperPenetration}
       onMouseUp={save}
     />
   </>

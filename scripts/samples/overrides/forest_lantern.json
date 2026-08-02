@@ -132,7 +132,7 @@
     "position": [
       3,
       0.01,
-      2.25
+      1.4
     ],
     "scale": [
       2.75,
@@ -232,7 +232,7 @@
     "position": [
       2,
       0.01,
-      1.75
+      1.25
     ]
   },
   "spread-5/spread-5-flower-2": {
@@ -272,7 +272,7 @@
     "position": [
       -3,
       0.01,
-      2.75
+      2
     ]
   },
   "spread-3/spread-3-tree": {
@@ -284,7 +284,7 @@
   },
   "spread-1/spread-1-ember": {
     "position": [
-      0.25,
+      -3.75,
       2.4,
       2
     ]
@@ -305,14 +305,14 @@
   },
   "spread-4/spread-4-halo": {
     "position": [
-      0,
+      -4,
       2.5,
       0.4
     ]
   },
   "spread-3/spread-3-mote": {
     "position": [
-      -6.4,
+      -2.4,
       2.4,
       1.8
     ]

@@ -13,7 +13,6 @@ function transformMatrix(transform: Transform) {
 }
 
 function parentFrame(spread: Spread, parent: ParentSpace, pageWidth: number, seen = new Set<string>()): THREE.Matrix4 | null {
-  if (parent.type === 'spread') return new THREE.Matrix4()
   if (parent.type === 'left-page') return new THREE.Matrix4().makeTranslation(-pageWidth / 2, 0, 0)
   if (parent.type === 'right-page') return new THREE.Matrix4().makeTranslation(pageWidth / 2, 0, 0)
   if (seen.has(parent.elementId)) return null
@@ -37,7 +36,7 @@ export function elementDescendantIds(spread: Spread, id: string): Set<string> {
   return found
 }
 
-export type RootParentType = 'left-page' | 'right-page' | 'spread'
+export type RootParentType = 'left-page' | 'right-page'
 
 export function containerElementIds(spread: Spread, parentType: RootParentType): Set<string> {
   const found = new Set<string>()

@@ -4,7 +4,7 @@ import { Icon } from '../../ui/Icon'
 import { assetAccept } from '../../package/model'
 import type { ParentSpace } from '../../schema/stageElement'
 import { useT } from '../i18n'
-import { parentForPreset, PART_PRESETS, type PlacementMode } from '../presets'
+import { PART_PRESETS, type PlacementMode, type VisualPresetId } from '../presets'
 import { fileToAsset } from '../assets/ingest'
 import { requestContainerElementsDelete, requestElementDelete, requestSpreadDelete } from '../elementDelete'
 import { ELEMENT_DND_MIME, hiddenKey, useBuilderStore } from '../store'
@@ -94,31 +94,46 @@ export function PartPresets() {
     return <button key={mode} className={active ? st.presetButtonActive : ''} aria-pressed={active}
       title={hint} onClick={() => store.setPlacement(active ? null : mode)}>{label}</button>
   }
-  const imagePresets = PART_PRESETS.filter((preset) => preset.group === 'image')
-  const otherPresets = PART_PRESETS.filter((preset) => preset.group === 'other')
+  const assetPresets = PART_PRESETS.filter((preset) => preset.requiresAsset)
+  const immediatePresets = PART_PRESETS.filter((preset) => !preset.requiresAsset)
+  const createImmediate = (id: VisualPresetId) => {
+    store.addElement(store.activeSpreadId, 'visual', { type: `${selectedPage ?? 'right'}-page` })
+    const selection = useBuilderStore.getState().selection
+    if (selection.type !== 'element') return
+    store.updateElement(selection.spreadId, selection.elementId, (element) => {
+      if (element.type !== 'visual') return
+      if (id === 'light-particles') {
+        element.name = t.presets[id]
+        element.particles.enabled = true
+        element.width = 2
+        element.height = 2
+        element.pivot = [.5, 0]
+        element.baseTransform.rotation = [0, 0, 0]
+      } else {
+        element.name = t.defaults.text
+        element.text = t.defaults.text
+        element.pivot = [.5, .5]
+        element.baseTransform.rotation = [-90, 0, 0]
+      }
+    })
+  }
 
   return <section className={st.panel}>
       <div className={st.panelTitle}>{t.app.panelPresets}</div>
 
-      <div className={st.presetGroupTitle}>{t.presets.groupImage}</div>
+      <div className={st.presetGroupTitle}>{t.presets.groupVisual}</div>
       <div className={st.presetGrid}>
-        {imagePresets.map((preset) => modeButton(preset.id, t.presets[preset.id], t.presets.dragHint(t.presets[preset.id])))}
+        {assetPresets.map((preset) => modeButton(preset.id, t.presets[preset.id], t.presets.dragHint(t.presets[preset.id])))}
+        {immediatePresets.map((preset) => <button key={preset.id}
+          title={t.presets.create(t.presets[preset.id])} onClick={() => createImmediate(preset.id)}>
+          {t.presets[preset.id]}
+        </button>)}
       </div>
 
       <div className={st.presetGroupTitle}>{t.presets.groupSound}</div>
       <div className={st.presetGrid}>
         {modeButton('sound-cue', t.presets.soundCue, t.presets.soundCueHint)}
         <button title={t.presets.bgmHint} onClick={() => bgmRef.current?.click()}>{t.presets.bgm}</button>
-      </div>
-
-      <div className={st.presetGroupTitle}>{t.presets.groupOther}</div>
-      <div className={st.presetGrid}>
-        {otherPresets.map((preset) => <button key={preset.id}
-          title={t.presets.create(t.presets[preset.id])}
-          onClick={() => store.addElement(store.activeSpreadId, preset.type, parentForPreset(preset, selectedPage),
-            preset.mechanism, undefined, preset.id)}>
-          {t.presets[preset.id]}
-        </button>)}
       </div>
 
       <div className={st.hintSmall}>
@@ -185,28 +200,6 @@ function Tree({ spreadId }: { spreadId: string }) {
       </Row>
       {expanded && children.map((element) => <ElementRow key={element.id} id={element.id} spreadId={spreadId} collapsed={collapsed} toggle={toggle} />)}
     </div>})}
-    {(() => {
-      const children = roots('spread')
-      const key = 'spread'
-      const expanded = !collapsed.has(key)
-      return <>
-    <Row label={t.properties.spreadSpace} tag={t.navigator.tagSpace} active={store.selection.type === 'spread' && store.selection.spreadId === spreadId}
-      onClick={() => store.select({ type: 'spread', spreadId })}
-      spreadId={spreadId} dropParent={{ type: 'spread' }}
-      expanded={children.length ? expanded : undefined} onToggle={children.length ? () => toggle(key) : undefined}>
-      <EyeButton hiddenId={hiddenKey.space(spreadId)} label={t.properties.spreadSpace} />
-      <button className={`${st.ghostBtn} ${st.ghostDanger}`}
-        disabled={!children.length}
-        aria-label={t.navigator.clearParts(t.properties.spreadSpace)}
-        title={children.length ? t.navigator.clearPartsHint : t.navigator.clearPartsNone}
-        onClick={(event) => {
-          event.stopPropagation()
-          requestContainerElementsDelete({ spreadId, parentType: 'spread' })
-        }}><Icon as={Trash2} /></button>
-    </Row>
-    {expanded && children.map((element) => <ElementRow key={element.id} id={element.id} spreadId={spreadId} collapsed={collapsed} toggle={toggle} />)}
-      </>
-    })()}
   </div>
 }
 
@@ -219,7 +212,7 @@ function ElementRow({ id, spreadId, collapsed, toggle }: { id: string; spreadId:
   const key = `element:${id}`
   const expanded = !collapsed.has(key)
   return <div style={{ paddingLeft: 12 }}>
-    <Row label={element.name} tag={element.stow.mechanism}
+    <Row label={element.name} tag={element.type === 'visual' ? t.presets.groupVisual : 'group'}
       active={store.selection.type === 'element' && store.selection.elementId === id}
       onClick={() => store.select({ type: 'element', spreadId, elementId: id })}
       spreadId={spreadId} draggableId={id} dropParent={{ type: 'element', elementId: id }}

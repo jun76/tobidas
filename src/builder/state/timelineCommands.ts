@@ -3,7 +3,7 @@ import type { BookProject } from '../../schema/bookPackage'
 import type { TimelineProperty } from '../../schema/timeline'
 import { compileBookBeats, playbackDurationSeconds } from '../../runtime/signals'
 import type { EditorState } from './editorState'
-import { constrainSinglePageBackground } from './elementConstraints'
+import { normalizeElementLayout } from './elementConstraints'
 import { upsertProjectTimelineKey } from './timelineProject'
 
 type TimelineCommands = Pick<EditorState,
@@ -79,8 +79,11 @@ export function createTimelineCommands({ commit, get, set }: TimelineCommandCont
       if (!spread || !element) return
       const bounded = structuredClone(element)
       bounded.baseTransform = structuredClone(transform)
-      constrainSinglePageBackground(bounded, project.book.format.pageWidth)
+      const index = spread.elements.indexOf(element)
+      spread.elements[index] = bounded
+      normalizeElementLayout(spread, elementId, project.book.format.pageWidth)
       const next = bounded.baseTransform
+      element.parent = structuredClone(bounded.parent)
       const target = { type: 'element' as const, elementId }
       const governed = (property: TimelineProperty) => spread.timeline.tracks.some((track) =>
         track.target.type === 'element' && track.target.elementId === elementId
@@ -96,6 +99,8 @@ export function createTimelineCommands({ commit, get, set }: TimelineCommandCont
           else element.baseTransform[group][index] = next[group][index]
         })
       }
+      spread.elements[index] = element
+      normalizeElementLayout(spread, elementId, project.book.format.pageWidth)
     }),
   }
 }

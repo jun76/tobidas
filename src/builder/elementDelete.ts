@@ -17,7 +17,7 @@ export function requestSpreadDelete(spreadId: string) {
 
 export interface ContainerElementsDeleteRequest {
   spreadId: string
-  parentType: 'left-page' | 'right-page' | 'spread'
+  parentType: 'left-page' | 'right-page'
 }
 
 export function requestContainerElementsDelete(detail: ContainerElementsDeleteRequest) {

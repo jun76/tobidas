@@ -8,7 +8,6 @@ export const transformSchema = z.object({
 })
 
 export const parentSpaceSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('spread') }),
   z.object({ type: z.literal('left-page') }),
   z.object({ type: z.literal('right-page') }),
   z.object({ type: z.literal('element'), elementId: z.string().min(1) }),
@@ -22,36 +21,7 @@ export const contentMotionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('pulse'), amplitude: z.number(), period: z.number().positive(), phase: z.number().default(0) }),
 ])
 
-/**
- * 収納ヒント。
- * 制作者の意図だけを表す。支持機構の内部構造(接着線、折り目、支持片、
- * 縮小カーブ)は保存せず、収納コンパイラが決定的に再導出する。
- */
-const currentStowMechanismSchema = z.enum(['auto', 'page-glue', 'flap', 'v-fold'])
-/** v0.1.0のstrutは物理機構ではなく空中収納経路だった。開姿勢から再導出する。 */
-export const stowMechanismSchema = z.preprocess(
-  (value) => value === 'strut' ? 'auto' : value,
-  currentStowMechanismSchema,
-)
-const currentSourcePresetSchema = z.enum([
-  'paper-stack',
-  'bottom-upright',
-  'depth-layer',
-  'floating-character',
-  'light-particles',
-  'page-text',
-  'custom',
-])
-/** v0.1.0のアーチは縦置きへ統合し、中央線交差から自動判定する。 */
-export const sourcePresetSchema = z.preprocess(
-  (value) => value === 'spine-arch' ? 'bottom-upright' : value,
-  currentSourcePresetSchema,
-)
-
 export const stowHintSchema = z.object({
-  mechanism: stowMechanismSchema.default('auto'),
-  /** v-foldの折り目位置 (0..1)。既定はPivot X */
-  crease: z.number().min(0.05).max(0.95).optional(),
   /** 倒す方向。autoはコンパイラが包含検証で決める */
   fallDirection: z.enum(['auto', 'back', 'front', 'spine', 'outward']).default('auto'),
   /** 開き始めの位相 (0..1)。包含検証による自動位相へ加算される */
@@ -92,8 +62,6 @@ const common = {
   stow: stowHintSchema,
   stowFlourish: z.array(motionTrackSchema).optional(),
   clock: z.enum(['inherit', 'visible-elapsed', 'story-time']),
-  /** ビルダーで投入したプリセット。後から姿勢や機構を変更しても投入元を保持する。 */
-  sourcePreset: sourcePresetSchema,
 }
 
 /**
@@ -115,21 +83,115 @@ const textStyleFields = {
   underline: z.boolean().default(false),
 }
 
-export const stageElementSchema = z.discriminatedUnion('type', [
-  // assetの空文字は「未割り当て」。スキーマでは許し、bookValidateが警告する
-  z.object({ ...common, type: z.literal('image'), asset: z.string(), backAsset: z.string().min(1).optional(), width: z.number().positive(), height: z.number().positive(), billboard: z.boolean().default(false) }),
-  z.object({ ...common, type: z.literal('text'), text: z.string(), width: z.number().positive(), height: z.number().positive(), fontSize: z.number().positive(), color: z.string(), align: z.enum(['left', 'center', 'right']), ...textStyleFields }),
+export const particleLayerSchema = z.object({
+  enabled: z.boolean().default(false),
+  color: z.string().default('#fff3a0'),
+  count: z.number().int().min(1).max(200).default(6),
+  size: z.number().positive().default(.45),
+  drift: z.number().nonnegative().default(.05),
+  period: z.number().positive().default(11),
+})
+
+const currentStageElementSchema = z.discriminatedUnion('type', [
+  z.object({
+    ...common,
+    type: z.literal('visual'),
+    width: z.number().positive(),
+    height: z.number().positive(),
+    billboard: z.boolean().default(false),
+    backgroundColor: z.string().default('#00000000'),
+    foregroundColor: z.string().default('#2e241b'),
+    image: z.string().min(1).optional(),
+    backImage: z.string().min(1).optional(),
+    text: z.string().default(''),
+    fontSize: z.number().positive().default(.35),
+    align: z.enum(['left', 'center', 'right']).default('center'),
+    ...textStyleFields,
+    particles: particleLayerSchema.default(() => ({
+      enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11,
+    })),
+  }),
   z.object({ ...common, type: z.literal('group') }),
-  z.object({ ...common, type: z.literal('effect'), effect: z.literal('sparkles'), color: z.string(), size: z.number().positive() }),
 ])
+
+/**
+ * v0.1.0と初期v0.1.1の排他的な描画型を、単一の矩形ビジュアルへ移す。
+ * pageWidthを受け取る版はbookSchemaの前処理が使い、単体parseは既定幅8で移行する。
+ */
+export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown {
+  if (!value || typeof value !== 'object') return value
+  const input = structuredClone(value) as Record<string, unknown>
+  const transform = input.baseTransform as { position?: unknown } | undefined
+  const position = Array.isArray(transform?.position) ? [...transform.position] : undefined
+  const parent = input.parent as { type?: string; elementId?: string } | undefined
+  if (parent?.type === 'spread') {
+    const x = typeof position?.[0] === 'number' ? position[0] : 0
+    const side = x < 0 ? 'left-page' : 'right-page'
+    input.parent = { type: side }
+    if (position && transform) {
+      position[0] = x + (side === 'left-page' ? pageWidth / 2 : -pageWidth / 2)
+      transform.position = position
+    }
+  }
+
+  const stow = input.stow && typeof input.stow === 'object'
+    ? input.stow as Record<string, unknown>
+    : {}
+  input.stow = {
+    fallDirection: stow.fallDirection ?? 'auto',
+    stagger: stow.stagger ?? 0,
+  }
+  delete input.sourcePreset
+
+  if (input.type === 'visual' || input.type === 'group') return input
+  const base: Record<string, unknown> = { ...input, type: 'visual' }
+  if (input.type === 'image') {
+    delete base.asset
+    delete base.backAsset
+    return {
+      ...base,
+      image: typeof input.asset === 'string' && input.asset ? input.asset : undefined,
+      backImage: input.backAsset,
+      backgroundColor: '#00000000', foregroundColor: '#2e241b', text: '',
+      fontSize: .35, align: 'center', font: 'rounded', bold: true, italic: false, underline: false,
+      particles: { enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
+    }
+  }
+  if (input.type === 'text') {
+    delete base.color
+    return {
+      ...base,
+      billboard: false,
+      backgroundColor: '#00000000', foregroundColor: input.color ?? '#2e241b',
+      particles: { enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
+    }
+  }
+  if (input.type === 'effect') {
+    const extent = typeof input.size === 'number' ? input.size : 1
+    delete base.effect
+    delete base.color
+    delete base.size
+    return {
+      ...base,
+      width: extent, height: extent, billboard: false,
+      backgroundColor: '#00000000', foregroundColor: '#2e241b', text: '',
+      fontSize: .35, align: 'center', font: 'rounded', bold: true, italic: false, underline: false,
+      particles: { enabled: true, color: input.color ?? '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
+    }
+  }
+  return input
+}
+
+export const stageElementSchema = z.preprocess(
+  (value) => migrateStageElementInput(value),
+  currentStageElementSchema,
+)
 
 export type Transform = z.infer<typeof transformSchema>
 export type ParentSpace = z.infer<typeof parentSpaceSchema>
 export type ContentMotion = z.infer<typeof contentMotionSchema>
-export type StowMechanism = z.infer<typeof stowMechanismSchema>
-export type SourcePreset = z.infer<typeof sourcePresetSchema>
 export type MotionTrack = z.infer<typeof motionTrackSchema>
 export type StageElement = z.infer<typeof stageElementSchema>
 export type StageElementType = StageElement['type']
-export type TextElement = Extract<StageElement, { type: 'text' }>
+export type VisualElement = Extract<StageElement, { type: 'visual' }>
 export type TextFont = z.infer<typeof textFontSchema>

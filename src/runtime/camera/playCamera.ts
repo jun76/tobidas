@@ -9,13 +9,27 @@ export interface PlayCameraPose {
   fov: number
 }
 
-export function evaluatePlayCameraPose(book: Book, progress: number, aspect: number): PlayCameraPose {
-  // カメラキーのある見開きは制作者が焼いた姿勢をそのまま使う。自動フィットを重ねると
-  // 画面の縦横比しだいで注視点から引き伸ばされ、カメラを打った意味が消える。
-  // ビルダーの赤いマーカー (保存値) と青い枠 (再生位置) が一致するのもこの約束による
-  if (activeSpreadHasCameraTracks(book, progress)) return evaluateTimelineCamera(book, progress)
+/** 制作時の1.6画面に小口側の安全余白を加えた、横幅contain用の基準比率。 */
+export const CAMERA_REFERENCE_ASPECT = 1.7
 
-  const aspectFit = Math.max(1, 1.45 / Math.max(0.01, aspect))
+function fitTrackedPoseToAspect(pose: PlayCameraPose, aspect: number): PlayCameraPose {
+  const fit = Math.max(1, CAMERA_REFERENCE_ASPECT / Math.max(.01, aspect))
+  if (fit === 1) return pose
+  return {
+    ...pose,
+    position: pose.position.map((value, axis) =>
+      pose.target[axis] + (value - pose.target[axis]) * fit) as [number, number, number],
+  }
+}
+
+export function evaluatePlayCameraPose(book: Book, progress: number, aspect: number): PlayCameraPose {
+  // 保存した姿勢は基準比率以上なら厳密に維持する。狭い画面では水平視野だけが縮んで
+  // 見開きの小口側が切れるため、注視点からの方向を保ったまま距離だけを増やす。
+  if (activeSpreadHasCameraTracks(book, progress)) {
+    return fitTrackedPoseToAspect(evaluateTimelineCamera(book, progress), aspect)
+  }
+
+  const aspectFit = Math.max(1, CAMERA_REFERENCE_ASPECT / Math.max(0.01, aspect))
   const signals = evaluateBookSignals(book, progress)
   const w = book.format.pageWidth
   const upright = Math.max(...signals.sheetAngles.map((angle) => Math.sin(Math.PI * angle)))

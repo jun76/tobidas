@@ -133,9 +133,8 @@ export default function App() {
       onClose={() => setPendingSpreadDelete(null)}
     />}
     {pendingContainerDelete && <ConfirmDialog
-      title={t.app.deleteContainerTitle(pendingContainerDelete.parentType === 'spread' ? t.properties.spreadSpace
-        : pendingContainerDelete.parentType === 'left-page' ? t.properties.leftPage : t.properties.rightPage)}
-      body={t.app.deleteContainerBody(pendingContainerDelete.elementCount, pendingContainerDelete.parentType !== 'spread')}
+      title={t.app.deleteContainerTitle(pendingContainerDelete.parentType === 'left-page' ? t.properties.leftPage : t.properties.rightPage)}
+      body={t.app.deleteContainerBody(pendingContainerDelete.elementCount, true)}
       okLabel={t.app.deleteAllOk}
       onOk={() => useBuilderStore.getState().clearContainerElements(pendingContainerDelete.spreadId, pendingContainerDelete.parentType)}
       onClose={() => setPendingContainerDelete(null)}

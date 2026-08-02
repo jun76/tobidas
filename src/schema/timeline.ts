@@ -10,18 +10,27 @@ export const timelineTargetSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('sound'), assetId: z.string().min(1) }),
 ])
 
-export const timelinePropertySchema = z.enum([
+const currentTimelinePropertySchema = z.enum([
   'position.x', 'position.y', 'position.z',
   'rotation.x', 'rotation.y', 'rotation.z',
   'scale.x', 'scale.y', 'scale.z', 'scale',
-  'opacity', 'visible', 'asset',
-  'effect.color', 'effect.size',
+  'opacity', 'visible',
+  'visual.image', 'visual.foregroundColor', 'visual.backgroundColor',
+  'visual.width', 'visual.height',
+  'visual.particles.color', 'visual.particles.size',
   'background',
   'ambient.color', 'ambient.intensity',
   'directional.color', 'directional.intensity',
   'position', 'target', 'fov',
   'cue',
 ])
+
+export const timelinePropertySchema = z.preprocess((value) => {
+  if (value === 'asset') return 'visual.image'
+  if (value === 'effect.color') return 'visual.particles.color'
+  if (value === 'effect.size') return 'visual.width'
+  return value
+}, currentTimelinePropertySchema)
 
 export const timelineValueSchema = z.union([
   z.number(),
@@ -58,14 +67,16 @@ export const NUMBER_PROPERTIES = new Set<TimelineProperty>([
   'position.x', 'position.y', 'position.z',
   'rotation.x', 'rotation.y', 'rotation.z',
   'scale.x', 'scale.y', 'scale.z', 'scale',
-  'opacity', 'effect.size', 'ambient.intensity', 'directional.intensity', 'fov',
+  'opacity', 'visual.width', 'visual.height', 'visual.particles.size',
+  'ambient.intensity', 'directional.intensity', 'fov',
 ])
 
 export const COLOR_PROPERTIES = new Set<TimelineProperty>([
-  'effect.color', 'background', 'ambient.color', 'directional.color',
+  'visual.foregroundColor', 'visual.backgroundColor', 'visual.particles.color',
+  'background', 'ambient.color', 'directional.color',
 ])
 
-export const DISCRETE_PROPERTIES = new Set<TimelineProperty>(['visible', 'asset', 'cue'])
+export const DISCRETE_PROPERTIES = new Set<TimelineProperty>(['visible', 'visual.image', 'cue'])
 export const VEC3_PROPERTIES = new Set<TimelineProperty>(['position', 'target'])
 
 export function timelineTargetKey(target: TimelineTarget): string {
