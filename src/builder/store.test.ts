@@ -147,15 +147,14 @@ describe('preset placement', () => {
     expect(element.parent).toEqual({ type: 'left-page' })
   })
 
-  /** 背をまたぐアーチは面ではなく見開き空間へ属する。落ちた面ぶんの寄せが要る */
-  it('puts the arch preset in the spread space', () => {
+  it('空中プリセットは見開き空間へ自動機構で置く', () => {
     const spreadId = setup()
-    useBuilderStore.getState().setPlacement('spine-arch')
+    useBuilderStore.getState().setPlacement('floating-character')
     useBuilderStore.getState().placeAsset(spreadId, 'left', 'tree.png', { x: .5, y: .4 })
     const element = elements()[0]
     expect(element.parent).toEqual({ type: 'spread' })
-    expect(element.stow.mechanism).toBe('v-fold')
-    expect(element.baseTransform.position[0]).toBeLessThan(0)
+    expect(element.stow.mechanism).toBe('auto')
+    expect(element.baseTransform.position[1]).toBeGreaterThan(0)
   })
 
   it('ignores an audio preset on the page', () => {

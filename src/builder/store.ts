@@ -260,7 +260,7 @@ export const useBuilderStore = create<EditorState>((set, get) => {
           element.height = 3
           element.baseTransform.position = [0, .05, 0]
         }
-        if (mechanism === 'strut') {
+        if (element.sourcePreset === 'floating-character') {
           element.pivot = [.5, .5]
           element.baseTransform.position = [0, 2, 0]
         }

@@ -22,9 +22,8 @@ export interface PartPreset {
 export const PART_PRESETS: PartPreset[] = [
   { id: 'paper-stack', group: 'image', mechanism: 'page-glue', parent: { type: 'right-page' }, type: 'image' },
   { id: 'bottom-upright', group: 'image', mechanism: 'flap', parent: { type: 'right-page' }, type: 'image' },
-  { id: 'spine-arch', group: 'image', mechanism: 'v-fold', parent: { type: 'spread' }, type: 'image' },
   { id: 'depth-layer', group: 'image', mechanism: 'flap', parent: { type: 'right-page' }, type: 'image', singlePage: true },
-  { id: 'floating-character', group: 'image', mechanism: 'strut', parent: { type: 'spread' }, type: 'image' },
+  { id: 'floating-character', group: 'image', mechanism: 'auto', parent: { type: 'spread' }, type: 'image' },
   { id: 'light-particles', group: 'other', mechanism: 'auto', parent: { type: 'spread' }, type: 'effect' },
   { id: 'page-text', group: 'other', mechanism: 'page-glue', parent: { type: 'right-page' }, type: 'text', singlePage: true },
 ]

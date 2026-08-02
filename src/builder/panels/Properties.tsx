@@ -190,7 +190,7 @@ function Element({ element }: { element: StageElement }) {
       <div className={st.subsectionTitle}>{t.properties.stow}</div>
       <Select label={t.properties.mechanism} value={element.stow.mechanism} options={[
         ['auto', t.properties.mechanismAuto], ['page-glue', t.properties.mechanismPageGlue],
-        ['flap', t.properties.mechanismFlap], ['v-fold', t.properties.mechanismVFold], ['strut', t.properties.mechanismStrut],
+        ['flap', t.properties.mechanismFlap], ['v-fold', t.properties.mechanismVFold],
       ]} onChange={(value) => update((item) => {
         item.stow.mechanism = value as typeof item.stow.mechanism
         if (item.stow.mechanism === 'page-glue') item.stow.fallDirection = 'auto'

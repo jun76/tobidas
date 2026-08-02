@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img alt="Release: 0.1.0" src="https://img.shields.io/badge/Release-0.1.0-5a68d8">
+  <img alt="Release: 0.1.1" src="https://img.shields.io/badge/Release-0.1.1-5a68d8">
   <img alt="License: Apache-2.0" src="https://img.shields.io/badge/License-Apache--2.0-blue">
   <img alt="Local-first" src="https://img.shields.io/badge/Data-local--first-brightgreen">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-61dafb">
@@ -30,7 +30,8 @@ You can also clone this repository and run it locally or deploy it to your own s
 
 ## Features
 
-- Four pop-up mechanisms: page glue, flap, V-fold, and transparent strut
+- Page glue, standing parts, and automatic V-folds for artwork crossing the spine
+- Automatic outside routing for airborne parts inferred from their open pose
 - Images, SVG, audio, web fonts, text, and particle effects
 - Timeline control for transforms, opacity, visibility, assets, backgrounds, lights, and cameras
 - Spread editing with 3D gizmos and property panels

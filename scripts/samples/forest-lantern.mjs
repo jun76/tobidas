@@ -2,7 +2,7 @@
  * 森の灯りを探して (クレヨン・絵本風)。
  *
  * 王道の飛び出す絵本として組む。各見開きは
- *   遠景の立ち板 → 背をまたぐアーチ → 中景の立ち板 → 前景の平置き
+ *   遠景の立ち板 → 中央線をまたぐ樹冠 → 中景の立ち板 → 前景の平置き
  * という紙の層で構成し、空中に浮くのは光の欠片だけとする。
  */
 import { BACKDROP_WIDTH, PAGE_ART, REAL, artSize, circle, defineWork, ellipse, group, path, poly, rect, scaleOf, svg } from './shared.mjs'
@@ -270,10 +270,10 @@ export function build(updatedAt) {
     })
     s.stand('left', { id: 'far-line-l', name: '遠くの木立 (左)', asset: firDark, u: .5, v: .11, width: BACKDROP_WIDTH, height: 2.2, backdrop: true, layer: 0 })
     s.stand('right', { id: 'far-line-r', name: '遠くの木立 (右)', asset: firDark, u: .5, v: .11, width: BACKDROP_WIDTH, height: 2.2, backdrop: true, layer: 0 })
-    s.arch({ id: 'canopy', name: '森のアーチ', asset: canopyArt, width: 9.4, height: 2.8, v: .22, layer: 2 })
+    s.stand('right', { id: 'canopy', name: '森の樹冠', asset: canopyArt, u: 0, width: 9.4, height: 2.8, v: .22, layer: 2 })
 
-    // 背の高い立ち板はアーチが前へ倒れる帯 (v = .22 から高さ 2.8 ぶん = v .66 まで) の
-    // 外に置く。中にいると、降りてくるアーチの翼を突き抜けないよう収納コンパイラが
+    // 背の高い立ち板は樹冠の二翼が前へ倒れる帯 (v = .22 から高さ 2.8 ぶん = v .66 まで) の
+    // 外に置く。中にいると、降りてくる樹冠の翼を突き抜けないよう収納コンパイラが
     // 開き位相を 0.7 台まで遅らせ、その木だけ 140° まで寝たままになる。
     // 紙のほうが正しいので、木を前へ出して帯から抜く
     const trees = [
@@ -328,7 +328,7 @@ export function build(updatedAt) {
     })
     s.stand('left', { id: 'bank-l', name: '対岸の木立', asset: firDark, u: .5, v: .12, width: BACKDROP_WIDTH, height: 2.3, backdrop: true })
     s.stand('right', { id: 'bank-r', name: '対岸の木立 (右)', asset: firDark, u: .5, v: .12, width: BACKDROP_WIDTH, height: 2.3, backdrop: true })
-    s.arch({ id: 'canopy', name: '川面へ差し出す枝', asset: canopyArt, width: 8.6, height: 2.4, v: .24, layer: 2 })
+    s.stand('right', { id: 'canopy', name: '川面へ差し出す枝', asset: canopyArt, u: 0, width: 8.6, height: 2.4, v: .24, layer: 2 })
     // 水面に流れの筋を敷く平らな部品がここにあったが、渡せる絵が岸の草しかなく、
     // 川の真ん中に草が寝そべって見えていた。水面は紙面背景が持っているので置かない
     s.stand('left', { id: 'reed-1', name: '岸の草 (左)', asset: reedArt, u: .30, v: .74, width: 2.2, height: 1.2, fall: 'back', layer: 4 })
@@ -377,7 +377,7 @@ export function build(updatedAt) {
     })
     s.stand('left', { id: 'far-hill-l', name: '遠い稜線 (左)', asset: hillFar, u: .5, v: .10, width: BACKDROP_WIDTH, height: 1.8, backdrop: true })
     s.stand('right', { id: 'far-hill-r', name: '遠い稜線 (右)', asset: hillFar, u: .5, v: .10, width: BACKDROP_WIDTH, height: 1.8, backdrop: true })
-    s.arch({ id: 'ridge', name: '丘の稜線', asset: canopyArt, width: 9.0, height: 2.2, v: .26, layer: 2 })
+    s.stand('right', { id: 'ridge', name: '丘の稜線', asset: canopyArt, u: 0, width: 9.0, height: 2.2, v: .26, layer: 2 })
     s.stand('left', { id: 'hill-mid', name: '中景の丘 (左)', asset: hillNear, u: .5, v: .56, width: 5.8, height: 1.7, fall: 'back', layer: 3 })
     s.stand('right', { id: 'hill-mid-r', name: '中景の丘 (右)', asset: hillNear, u: .5, v: .60, width: 5.8, height: 1.8, fall: 'back', layer: 3 })
     const mill = s.stand('right', { id: 'windmill', name: '風車の塔', asset: millTowerArt, u: .40, v: .80, width: wide(forest(8.2), millTowerArt), height: forest(8.2), fall: 'back', layer: 6 })
@@ -420,7 +420,7 @@ export function build(updatedAt) {
     })
     s.stand('left', { id: 'far-line-l', name: '奥の木立 (左)', asset: firDark, u: .5, v: .11, width: BACKDROP_WIDTH, height: 2.0, backdrop: true })
     s.stand('right', { id: 'far-line-r', name: '奥の木立 (右)', asset: firDark, u: .5, v: .11, width: BACKDROP_WIDTH, height: 2.0, backdrop: true })
-    const tree = s.arch({ id: 'great-tree', name: '眠る大樹', asset: bigTreeArt, width: 8.6, height: 3.4, v: .30, layer: 3 })
+    const tree = s.stand('right', { id: 'great-tree', name: '眠る大樹', asset: bigTreeArt, u: 0, width: 8.6, height: 3.4, v: .30, layer: 3 })
     s.stand('left', { id: 'root-l', name: '根もとの倒木 (左)', asset: logArt, u: .40, v: .62, width: wide(forest(.7), logArt), height: forest(.7), fall: 'back', layer: 4 })
     s.stand('right', { id: 'root-r', name: '根もとの倒木 (右)', asset: logArt, u: .40, v: .62, width: wide(forest(.7), logArt), height: forest(.7), fall: 'back', layer: 4 })
     s.stand('left', { id: 'tree-a', name: '脇の木', asset: firMid, u: .80, v: .74, width: 2.18, height: 3.19, fall: 'back', layer: 5 })
@@ -459,10 +459,10 @@ export function build(updatedAt) {
     })
     s.stand('left', { id: 'far-line-l', name: '奥の木立 (左)', asset: firDark, u: .5, v: .11, width: BACKDROP_WIDTH, height: 2.1, backdrop: true })
     s.stand('right', { id: 'far-line-r', name: '奥の木立 (右)', asset: firDark, u: .5, v: .11, width: BACKDROP_WIDTH, height: 2.1, backdrop: true })
-    s.arch({ id: 'canopy', name: '森のアーチ', asset: canopyArt, width: 9.4, height: 2.6, v: .24, layer: 2 })
+    s.stand('right', { id: 'canopy', name: '森の樹冠', asset: canopyArt, u: 0, width: 9.4, height: 2.6, v: .24, layer: 2 })
 
     // 家と花が順番に点灯する
-    // 見開き1の木と同じ理由で、アーチの倒れる帯 (v .24 から高さ 2.6 ぶん = v .65 まで)
+    // 見開き1の木と同じ理由で、樹冠の倒れる帯 (v .24 から高さ 2.6 ぶん = v .65 まで)
     // の外へ出す。家 1 だけ帯の中にいて、開き位相が 0.65 まで遅れていた
     const houses = [
       { page: 'left', u: .30, v: .68, w: forest(5.4), h: forest(5.0) },
@@ -510,7 +510,7 @@ export function build(updatedAt) {
     const light = s.hover({ id: 'lantern', name: '空へ昇る灯り', asset: lanternArt, x: 0, y: 1.6, z: .9, width: wide(forest(1.1), lanternArt), height: forest(1.1), billboard: true, layer: 20 })
     s.track(light, 'position.y', [[0, 1.4], [7.5, 3.4]])
     s.track(light, 'scale', [[0, 1], [7.5, 1.25]])
-    // 同上。雪明かりの紙面ではなくアーチと空を背にする
+    // 同上。雪明かりの紙面ではなく樹冠と空を背にする
     const halo = s.sparkle({ id: 'halo', name: '森へ戻る光', x: 0, y: 3.0, z: .3, color: C.glow, size: 1.2 })
     s.track(halo, 'effect.size', [[0, .8], [7.5, 3.4]])
     s.caption('left', { id: 'text', text: 'The lantern rose to the sky\nand the forest was bright again', u: .5, v: .88, size: .38, color: '#f5ecd6' })

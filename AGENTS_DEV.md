@@ -106,8 +106,8 @@ React部品からは `useT()`、部品の外からは `t()` を使います。
 `STOW_HIDDEN_DEG` と `stowIsDrawn` を使い、`STOW_HIDDEN_DEG < STOW_SETTLED_DEG` を保ちます。
 綴じ目では向かい合う二面の隙間が0へ収束するため、完全に閉じた状態まで部品を描くと隣の面へ抜けます。
 
-空中の部品である `strut` は60°から30°までの間に不透明度を0へ落とします。
-`STRUT_FADE_DEG` と `strutFade` で角度だけから決め、露出やカメラを入力にしません。
+開姿勢から `airborne-route` へ分類された空中部品は60°から30°までの間に不透明度を0へ落とします。
+`AIRBORNE_FADE_DEG` と `airborneFade` で角度だけから決め、露出やカメラを入力にしません。
 子部品は親から係数を継ぎます。
 
 寝かせた部品のリフトは、次の範囲に収めます。
@@ -130,9 +130,11 @@ pageThickness / 4 <= SURFACE_Y + layer × LAYER_LIFT < pageThickness / 2
 積算角へ `f` を掛けると表示速度に `θ·f′` が加わり、ページ送り中だけ急速に逆回転します。
 上位部品で自転を畳む場合は、`evaluateStow` で一回転へ折り返してから畳みます。
 
-支持機構は `page-glue`、`flap`、`v-fold`、`strut` の4種類です。
+保存する支持機構は `page-glue`、`flap`、`v-fold` の3種類です。
 `stow.mechanism: 'auto'` は開姿勢から機構を判定します。
 `parent: 'spread'` のv-foldだけは面フレームではなく左右の面が作る楔で評価し、`SpanningVFoldNode` が描画します。
+紙面へ接していない要素はコンパイル結果の `airborne-route` となり、外側迂回とフェードを使います。
+起立画像が見開き中央線をまたぐ場合は、作者ヒントが `flap` でも二翼へ自動昇格します。
 
 ## 時間と音
 

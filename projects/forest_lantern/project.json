@@ -153,16 +153,16 @@
           },
           {
             "id": "spread-1-canopy",
-            "name": "森のアーチ",
+            "name": "森の樹冠",
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
-                0,
+                -4,
+                0.01,
                 -1.792
               ],
               "rotation": [
@@ -183,10 +183,10 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
-              "fallDirection": "auto",
+              "mechanism": "flap",
+              "fallDirection": "front",
               "stagger": 0
             },
             "type": "image",
@@ -750,7 +750,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "light-particles",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -1075,12 +1075,12 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
-                0,
+                -4,
+                0.01,
                 -1.6640000000000001
               ],
               "rotation": [
@@ -1101,10 +1101,10 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
-              "fallDirection": "auto",
+              "mechanism": "flap",
+              "fallDirection": "front",
               "stagger": 0
             },
             "type": "image",
@@ -1550,7 +1550,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -1640,7 +1640,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "light-particles",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -1962,12 +1962,12 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
-                0,
+                -4,
+                0.01,
                 -1.536
               ],
               "rotation": [
@@ -1988,10 +1988,10 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
-              "fallDirection": "auto",
+              "mechanism": "flap",
+              "fallDirection": "front",
               "stagger": 0
             },
             "type": "image",
@@ -2173,7 +2173,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -2532,7 +2532,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -2889,12 +2889,12 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
-                0,
+                -4,
+                0.01,
                 -1.2800000000000002
               ],
               "rotation": [
@@ -2915,10 +2915,10 @@
             "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
-              "fallDirection": "auto",
+              "mechanism": "flap",
+              "fallDirection": "front",
               "stagger": 0
             },
             "type": "image",
@@ -3357,7 +3357,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -3447,7 +3447,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "light-particles",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -3812,16 +3812,16 @@
           },
           {
             "id": "spread-5-canopy",
-            "name": "森のアーチ",
+            "name": "森の樹冠",
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
-                0,
+                -4,
+                0.01,
                 -1.6640000000000001
               ],
               "rotation": [
@@ -3842,10 +3842,10 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
-              "fallDirection": "auto",
+              "mechanism": "flap",
+              "fallDirection": "front",
               "stagger": 0
             },
             "type": "image",
@@ -4548,7 +4548,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -4592,7 +4592,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "light-particles",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },

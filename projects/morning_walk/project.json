@@ -69,11 +69,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 0,
                 -1.83
               ],
@@ -95,10 +95,10 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
-              "fallDirection": "auto",
+              "mechanism": "flap",
+              "fallDirection": "front",
               "stagger": 0
             },
             "type": "image",
@@ -910,11 +910,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 0,
                 -1.8
               ],
@@ -936,10 +936,10 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
-              "fallDirection": "auto",
+              "mechanism": "flap",
+              "fallDirection": "front",
               "stagger": 0
             },
             "type": "image",
@@ -954,11 +954,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 0,
                 -1
               ],
@@ -980,10 +980,10 @@
             "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
-              "fallDirection": "auto",
+              "mechanism": "flap",
+              "fallDirection": "front",
               "stagger": 0
             },
             "type": "image",
@@ -2151,11 +2151,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 0,
                 -1.85
               ],
@@ -2177,10 +2177,10 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
-              "fallDirection": "auto",
+              "mechanism": "flap",
+              "fallDirection": "front",
               "stagger": 0
             },
             "type": "image",
@@ -2356,7 +2356,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -2445,7 +2445,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -2489,7 +2489,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -3160,11 +3160,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 0,
                 -1.8
               ],
@@ -3186,10 +3186,10 @@
             "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
-              "fallDirection": "auto",
+              "mechanism": "flap",
+              "fallDirection": "front",
               "stagger": 0
             },
             "type": "image",
@@ -3204,11 +3204,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 0,
                 -1.25
               ],
@@ -3230,10 +3230,10 @@
             "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
-              "fallDirection": "auto",
+              "mechanism": "flap",
+              "fallDirection": "front",
               "stagger": 0
             },
             "type": "image",
@@ -4258,11 +4258,11 @@
             "visible": true,
             "opacity": 1,
             "parent": {
-              "type": "spread"
+              "type": "right-page"
             },
             "baseTransform": {
               "position": [
-                0,
+                -4,
                 0,
                 -1
               ],
@@ -4284,10 +4284,10 @@
             "layer": 4,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
-              "mechanism": "v-fold",
-              "fallDirection": "auto",
+              "mechanism": "flap",
+              "fallDirection": "front",
               "stagger": 0
             },
             "type": "image",
@@ -4337,7 +4337,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -4388,7 +4388,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },
@@ -6104,7 +6104,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "light-particles",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0
             },

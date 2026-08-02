@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img alt="Release: 0.1.0" src="https://img.shields.io/badge/Release-0.1.0-5a68d8">
+  <img alt="Release: 0.1.1" src="https://img.shields.io/badge/Release-0.1.1-5a68d8">
   <img alt="License: Apache-2.0" src="https://img.shields.io/badge/License-Apache--2.0-blue">
   <img alt="Local-first" src="https://img.shields.io/badge/Data-local--first-brightgreen">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-61dafb">
@@ -30,7 +30,8 @@ tobidasは、横開きの「飛び出す絵本風」Web作品を制作・再生�
 
 ## 主な機能
 
-- 紙面接着、起立、二つ折り、透明支持片による4種類の飛び出し機構
+- 紙面接着、起立、中央線をまたぐ部品の自動二つ折り
+- 空中部品を開姿勢から判定し、小口の外側へ自動収納
 - 画像、SVG、音声、Webフォント、テキスト、パーティクルの配置
 - 位置、回転、拡大率、不透明度、表示、素材、背景、照明、カメラのタイムライン制御
 - 3Dギズモとプロパティパネルによる見開き編集

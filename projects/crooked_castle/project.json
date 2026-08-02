@@ -2924,7 +2924,7 @@
             "layer": 60,
             "motion": [],
             "clock": "visible-elapsed",
-            "sourcePreset": "spine-arch",
+            "sourcePreset": "bottom-upright",
             "stow": {
               "mechanism": "v-fold",
               "fallDirection": "front",
@@ -4225,7 +4225,7 @@
             "clock": "visible-elapsed",
             "sourcePreset": "floating-character",
             "stow": {
-              "mechanism": "strut",
+              "mechanism": "auto",
               "fallDirection": "auto",
               "stagger": 0.62
             },

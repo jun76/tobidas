@@ -79,7 +79,7 @@ export function stowIsDrawn(tRaw: number): boolean {
 }
 
 /**
- * 空中の部品 (strut) が薄れ始める二面角 (度)。ここから収納の完了
+ * 空中経路の部品が薄れ始める二面角 (度)。ここから収納の完了
  * (STOW_SETTLED_DEG) までで不透明度を 0 まで落とす。
  *
  * 紙に貼った部品・立てた板は、閉じてくる紙そのものが隠してくれる。透明支持片で
@@ -93,16 +93,16 @@ export function stowIsDrawn(tRaw: number): boolean {
  * 収納が終わる 30° で 0 に達するので、そこから先の「紙だけが閉じる」区間では
  * 空中の部品はもう一つも描かれていない。開くときは同じ式を逆にたどる。
  */
-export const STRUT_FADE_DEG = 60
+export const AIRBORNE_FADE_DEG = 60
 
 /**
- * 空中の部品の不透明度係数。t=STRUT_FADE_DEG/180 以上で 1、
- * 収納完了 (SETTLED_T) 以下で 0。機構が strut 以外なら常に 1。
+ * 空中の部品の不透明度係数。t=AIRBORNE_FADE_DEG/180 以上で 1、
+ * 収納完了 (SETTLED_T) 以下で 0。空中経路以外なら常に 1。
  */
-export function strutFade(mechanism: StowItem['mechanism'], tRaw: number): number {
-  if (mechanism !== 'strut') return 1
+export function airborneFade(mechanism: StowItem['mechanism'], tRaw: number): number {
+  if (mechanism !== 'airborne-route') return 1
   const deg = clamp01(tRaw) * 180
-  return smooth((deg - STOW_SETTLED_DEG) / (STRUT_FADE_DEG - STOW_SETTLED_DEG))
+  return smooth((deg - STOW_SETTLED_DEG) / (AIRBORNE_FADE_DEG - STOW_SETTLED_DEG))
 }
 
 /**
@@ -123,7 +123,10 @@ function openFactor(item: StowItem, t: number): number {
 
 /** 0=紙面へ収納済み、1=制作者の開姿勢。正対を含む表示効果もこの係数へ従属させる。 */
 export function stowOpenFactor(item: StowItem, tRaw: number): number {
-  return openFactor(item, settledT(tRaw))
+  const authored = openFactor(item, settledT(tRaw))
+  return item.mechanism === 'flap' || item.mechanism === 'v-fold'
+    ? Math.min(authored, safeFlapFactor(item, tRaw))
+    : authored
 }
 
 export function evaluateStow(item: StowItem, tRaw: number, motion: MotionDelta): StowPose {
@@ -131,7 +134,12 @@ export function evaluateStow(item: StowItem, tRaw: number, motion: MotionDelta):
   const { element, mechanism, fall, offset } = item
   const base = element.baseTransform
   // 開き位相: f(1)=1、f(phase以下)=0。包含検証で決めた位相より早く起きない
-  const f = openFactor(item, t)
+  const authoredFactor = openFactor(item, t)
+  // 単面起立板は対向ページの下に収まる最大角を二面角から直接逆算する。
+  // 背表紙側の辺が近いほど閉じ始めから速く寝る。履歴や再生方向には依存しない。
+  const f = mechanism === 'flap' || mechanism === 'v-fold'
+    ? Math.min(authoredFactor, safeFlapFactor(item, tRaw))
+    : authoredFactor
   // 住人の変位は機構の先端ローカルで加算し、空間の畳みに応じて圧縮する
   const openPos: [number, number, number] = [
     base.position[0] + offset[0] + (item.half?.centerShiftX ?? 0) + motion.position[0] * f,
@@ -156,7 +164,7 @@ export function evaluateStow(item: StowItem, tRaw: number, motion: MotionDelta):
   if (mechanism === 'page-glue') {
     position = openPos
     rotationDeg = openRot
-  } else if (mechanism === 'strut') {
+  } else if (mechanism === 'airborne-route') {
     // 透明支持片のファンタジー迂回: 部品を一旦小口の外へ大きく運び出し、
     // 本の輪郭の外側を弧で回ってから定位置へ運ぶ。ページの外周より外は
     // 紙が存在しないため、楔の掃引や見開きまたぎパネルの蓋と干渉しない。
@@ -201,10 +209,21 @@ export function evaluateStow(item: StowItem, tRaw: number, motion: MotionDelta):
   }
   // 装飾は機構が開いてから効く。収納中の部品を動かさない
   applyFlourish(pose, element.stowFlourish, t, f)
-  // 空中の部品は隠してくれる紙が無いので、閉じ際は角度で薄れさせる (STRUT_FADE_DEG)。
+  // 空中の部品は隠してくれる紙が無いので、閉じ際は角度で薄れさせる (AIRBORNE_FADE_DEG)。
   // 装飾の不透明度より後に掛け、30°で必ず 0 になるようにする
-  pose.opacityMul *= strutFade(mechanism, tRaw)
+  pose.opacityMul *= airborneFade(mechanism, tRaw)
   return pose
+}
+
+/** 対向ページを越えない倒伏係数。0=寝姿、1=直立姿。 */
+export function safeFlapFactor(item: StowItem, tRaw: number): number {
+  if (item.mechanism !== 'flap' && item.mechanism !== 'v-fold') return 1
+  const delta = clamp01(tRaw) * Math.PI
+  if (delta >= Math.PI / 2 || item.reach <= 1e-6) return 1
+  if (item.spineClearance <= 1e-6) return 0
+  const ceiling = item.spineClearance * Math.tan(delta)
+  const maxAngle = Math.asin(clamp01(ceiling / item.reach))
+  return clamp01(maxAngle / (Math.PI / 2))
 }
 
 /**
@@ -349,12 +368,15 @@ export function evaluateVFoldSpan(span: SpanningVFold, leftAngle: number, rightA
     lerp(SURFACE_Y, span.baseY, t) + motion.position[1] * t,
     span.baseZ + motion.position[2] * t,
   ]
+  const fitScale = span.fitScale < 1 && t < FIT_SCALE_ONSET_F
+    ? lerp(span.fitScale, 1, smooth(t / FIT_SCALE_ONSET_F))
+    : 1
   const pose: VFoldSpanPose = {
     origin,
     creaseDir: crease,
     leftDir: glueLeft,
     rightDir: glueRight,
-    scaleMul: 1 + (motion.scaleMul - 1) * t,
+    scaleMul: (1 + (motion.scaleMul - 1) * t) * fitScale,
     opacityMul: 1,
   }
   applySpanFlourish(pose, span.element.stowFlourish, t)

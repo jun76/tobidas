@@ -7,7 +7,7 @@ import { IDENTITY_MOTION, evaluateContentMotion, type MotionDelta } from '../mot
 import { compileSpreadStow } from './assign'
 import type { StowItem } from './model'
 import { spreadDihedrals } from './dihedral'
-import { STOW_HIDDEN_DEG, STOW_SETTLED_DEG, STRUT_FADE_DEG, evaluateChildPose, evaluateStow, evaluateVFoldSpan, flourishWindow, settledT, stowIsDrawn, stowOpenFactor, strutFade } from './evaluate'
+import { AIRBORNE_FADE_DEG, STOW_HIDDEN_DEG, STOW_SETTLED_DEG, airborneFade, evaluateChildPose, evaluateStow, evaluateVFoldSpan, flourishWindow, safeFlapFactor, settledT, stowIsDrawn, stowOpenFactor } from './evaluate'
 
 /** 収納の変数 t から、それを与える生の二面角 δ/π へ戻す */
 const rawFromSettled = (settled: number): number => {
@@ -133,35 +133,35 @@ describe('支持機構の端点', () => {
     expect(stowIsDrawn(STOW_SETTLED_DEG / 180)).toBe(true)
   })
 
-  it(`空中の部品は${STRUT_FADE_DEG}°から薄れ、収納完了で消えている`, () => {
+  it(`空中の部品は${AIRBORNE_FADE_DEG}°から薄れ、収納完了で消えている`, () => {
     // 紙に貼った・立てた部品は閉じてくる紙が隠すが、宙に浮いた部品には
     // 隠してくれる紙が無い。とくに背表紙の上の部品は隙間に入らないので、
     // 描画を止める2°まで残すと次の見開きの上に丸ごと出る
-    expect(strutFade('strut', 1)).toBe(1)
-    expect(strutFade('strut', STRUT_FADE_DEG / 180)).toBe(1)
-    expect(strutFade('strut', STOW_SETTLED_DEG / 180)).toBe(0)
-    expect(strutFade('strut', STOW_HIDDEN_DEG / 180)).toBe(0)
+    expect(airborneFade('airborne-route', 1)).toBe(1)
+    expect(airborneFade('airborne-route', AIRBORNE_FADE_DEG / 180)).toBe(1)
+    expect(airborneFade('airborne-route', STOW_SETTLED_DEG / 180)).toBe(0)
+    expect(airborneFade('airborne-route', STOW_HIDDEN_DEG / 180)).toBe(0)
     // あいだは単調に薄れる (突然消さない)
     let previous = 0
     for (let step = 0; step <= 20; step++) {
-      const t = (STOW_SETTLED_DEG + (STRUT_FADE_DEG - STOW_SETTLED_DEG) * (step / 20)) / 180
-      const value = strutFade('strut', t)
+      const t = (STOW_SETTLED_DEG + (AIRBORNE_FADE_DEG - STOW_SETTLED_DEG) * (step / 20)) / 180
+      const value = airborneFade('airborne-route', t)
       expect(value).toBeGreaterThanOrEqual(previous)
       previous = value
     }
     // 薄れるのは空中の部品だけ。紙が隠してくれる機構には掛けない
     for (const mechanism of ['page-glue', 'flap', 'v-fold'] as const) {
-      expect(strutFade(mechanism, STOW_SETTLED_DEG / 180)).toBe(1)
-      expect(strutFade(mechanism, 0)).toBe(1)
+      expect(airborneFade(mechanism, STOW_SETTLED_DEG / 180)).toBe(1)
+      expect(airborneFade(mechanism, 0)).toBe(1)
     }
     // 収納が終わる角度で 0 に達している = 動いている最中に消えることはない
-    expect(STRUT_FADE_DEG).toBeGreaterThan(STOW_SETTLED_DEG)
+    expect(AIRBORNE_FADE_DEG).toBeGreaterThan(STOW_SETTLED_DEG)
   })
 
   it('空中の部品の不透明度は姿勢の評価にも乗る', () => {
     const book = createBook()
     const spread = book.spreads[0]
-    const element = createStageElement('image', { type: 'spread' }, 'strut')
+    const element = createStageElement('image', { type: 'spread' }, 'auto')
     if (element.type !== 'image') throw new Error('unreachable')
     element.width = 1
     element.height = 1
@@ -316,6 +316,23 @@ describe('楔空間の包含', () => {
       }
     }
   })
+
+  it('背表紙に近い起立板ほど倒伏角を直接制限する', () => {
+    const book = createBook()
+    const spread = book.spreads[0]
+    const element = createStageElement('image', { type: 'right-page' }, 'flap')
+    if (element.type !== 'image') throw new Error('unreachable')
+    element.width = 1
+    element.height = 4
+    element.pivot = [0.5, 0]
+    element.baseTransform.rotation = [0, 0, 0]
+    element.baseTransform.position = [-3.2, 0.01, 0]
+    spread.elements.push(element)
+    const item = collectItems(book)[0]
+    expect(safeFlapFactor(item, 45 / 180)).toBeLessThan(1)
+    const pose = evaluateStow(item, 45 / 180, IDENTITY_MOTION)
+    expect(Math.abs(pose.rotationDeg[0])).toBeGreaterThan(0)
+  })
 })
 
 describe('連続性と可逆性', () => {
@@ -349,7 +366,7 @@ describe('連続性と可逆性', () => {
 })
 
 describe('コンパイラの割り当て', () => {
-  it('平置きはpage-glue、直立はflap、空中はstrut、背をまたぐ幅広はv-foldになる', () => {
+  it('平置き、直立、空中経路、中央線またぎを開姿勢から決める', () => {
     const book = createBook()
     const spread = book.spreads[0]
     const flat = createStageElement('image', { type: 'right-page' }, 'auto')
@@ -360,19 +377,33 @@ describe('コンパイラの割り当て', () => {
     const floating = createStageElement('image', { type: 'spread' }, 'auto')
     floating.baseTransform.rotation = [0, 0, 0]
     floating.baseTransform.position = [2, 3, 0]
-    const wide = createStageElement('image', { type: 'spread' }, 'auto')
+    const wide = createStageElement('image', { type: 'right-page' }, 'flap')
     wide.baseTransform.rotation = [0, 0, 0]
-    wide.baseTransform.position = [0, 0.05, 1]
+    // 右面ローカルx=-4は見開き中央。明示flapでも中央線交差を優先して二翼化する。
+    wide.baseTransform.position = [-4, 0.05, 1]
     if (wide.type === 'image') { wide.width = 10; wide.height = 3 }
     spread.elements.push(flat, upright, floating, wide)
     const compiled = compileSpreadStow(book, spread)
     const all = [...compiled.left, ...compiled.right]
     expect(all.find((i) => i.element.id === flat.id)?.mechanism).toBe('page-glue')
     expect(all.find((i) => i.element.id === upright.id)?.mechanism).toBe('flap')
-    expect(all.find((i) => i.element.id === floating.id)?.mechanism).toBe('strut')
+    expect(all.find((i) => i.element.id === floating.id)?.mechanism).toBe('airborne-route')
     // 背をまたぐv-foldは一枚パネルとして楔区分へ入り、面リストには入らない
     expect(all.some((i) => i.element.id === wide.id)).toBe(false)
     expect(compiled.spanning.map((s) => s.element.id)).toEqual([wide.id])
+  })
+
+  it('形を持たないグループは子孫の最下端から空中経路を決める', () => {
+    const book = createBook()
+    const spread = book.spreads[0]
+    const group = createStageElement('group', { type: 'spread' }, 'auto')
+    group.baseTransform.position = [0, 0, 0]
+    const child = createStageElement('image', { type: 'element', elementId: group.id }, 'auto')
+    child.baseTransform.position = [0, 2, 0]
+    child.pivot = [0.5, 0.5]
+    spread.elements.push(group, child)
+    const item = collectItems(book).find((candidate) => candidate.element.id === group.id)
+    expect(item?.mechanism).toBe('airborne-route')
   })
 
   it('隣接見開きの片面背景をページ送り中に同時起立させない', () => {
@@ -486,8 +517,8 @@ describe('背をまたぐ一枚パネル', () => {
   })
 })
 
-describe('strutのファンタジー迂回', () => {
-  function makeStrut() {
+describe('空中要素の外側迂回', () => {
+  function makeAirborne() {
     const book = createBook()
     const spread = book.spreads[0]
     const floating = createStageElement('image', { type: 'spread' }, 'auto')
@@ -496,12 +527,12 @@ describe('strutのファンタジー迂回', () => {
     spread.elements.push(floating)
     const compiled = compileSpreadStow(book, spread)
     const item = compiled.right.find((i) => i.element.id === floating.id)!
-    expect(item.mechanism).toBe('strut')
+    expect(item.mechanism).toBe('airborne-route')
     return item
   }
 
   it('端点では膨らみが厳密にゼロ (t=1で開姿勢、t=0で真下へ平坦)', () => {
-    const item = makeStrut()
+    const item = makeAirborne()
     // 見開き親は右面ローカルへ帰属補正される (x: 2.1 − w/2 = −1.9)
     const open = evaluateStow(item, 1, IDENTITY_MOTION)
     expect(open.position[0]).toBeCloseTo(-1.9)
@@ -512,42 +543,12 @@ describe('strutのファンタジー迂回', () => {
   })
 
   it('中間では小口の外まで張り出す', () => {
-    const item = makeStrut()
+    const item = makeAirborne()
     expect(item.eject).toBeGreaterThan(0)
     const tMid = item.phase + 0.5 * (1 - item.phase)
     const pose = evaluateStow(item, tMid, IDENTITY_MOTION)
     // 右面の小口 (面ローカル+w/2=4) より外へ出る
     expect(pose.position[0]).toBeGreaterThan(4)
-  })
-})
-
-describe('パネルの蓋による位相遅延', () => {
-  it('蓋の下のflapは、パネルが無い場合より遅く起きる', () => {
-    const make = (withPanel: boolean) => {
-      const book = createBook()
-      const spread = book.spreads[0]
-      const fox = createStageElement('image', { type: 'right-page' }, 'flap')
-      if (fox.type !== 'image') throw new Error('unreachable')
-      fox.baseTransform.rotation = [0, 0, 0]
-      fox.baseTransform.position = [1.5, 0.04, 1.45]
-      fox.width = 2
-      fox.height = 2.2
-      spread.elements.push(fox)
-      if (withPanel) {
-        const panel = createStageElement('image', { type: 'spread' }, 'v-fold')
-        if (panel.type !== 'image') throw new Error('unreachable')
-        panel.width = 10
-        panel.height = 6.5
-        panel.baseTransform.position = [0, 0.08, -2.7]
-        panel.pivot = [0.5, 0]
-        spread.elements.push(panel)
-      }
-      const compiled = compileSpreadStow(book, spread)
-      return compiled.right.find((i) => i.element.id === fox.id)!
-    }
-    const without = make(false)
-    const withLid = make(true)
-    expect(withLid.phase).toBeGreaterThan(without.phase)
   })
 })
 

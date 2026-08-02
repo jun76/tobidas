@@ -4,7 +4,7 @@
   },
   "spread-1/spread-1-skyline": {
     "position": [
-      0,
+      -4,
       0,
       -1.83
     ],
@@ -46,14 +46,14 @@
       1
     ],
     "position": [
-      0,
+      -4,
       0,
       -1.8
     ]
   },
   "spread-2/spread-2-arcade": {
     "position": [
-      0,
+      -4,
       0,
       -1
     ]
@@ -67,7 +67,7 @@
   },
   "spread-3/spread-3-far-row": {
     "position": [
-      0,
+      -4,
       0,
       -1.85
     ],
@@ -110,14 +110,14 @@
       1
     ],
     "position": [
-      0,
+      -4,
       0,
       -1.8
     ]
   },
   "spread-4/spread-4-school": {
     "position": [
-      0,
+      -4,
       0,
       -1.25
     ]
@@ -212,7 +212,7 @@
   },
   "spread-5/spread-5-window": {
     "position": [
-      0,
+      -4,
       0,
       -1
     ],

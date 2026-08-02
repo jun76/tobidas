@@ -369,7 +369,7 @@ export function build(updatedAt) {
         u: VIEW_U, v: .12, width: VIEW_WIDTH, height: VIEW_HEIGHT, backdrop: true,
       })
     }
-    s.arch({ id: 'window', name: '窓枠', asset: window, width: 7.03, height: 3.61, v: .28, layer: 4 })
+    s.stand('right', { id: 'window', name: '窓枠', asset: window, u: 0, width: 7.03, height: 3.61, v: .28, layer: 4 })
     // 部屋の道具は季節によらず同じ場所。カーテンは窓枠のすぐ外へ、壁ぎわに
     // 束ねた一枚として立てる。窓のV折りの真下は蓋になっていて背の高い立ち板を
     // 畳めないので、窓の見かけの幅の外側で、かつ紙面の内側に収まる u を使う。
@@ -467,7 +467,7 @@ export function build(updatedAt) {
         s.track(id, 'opacity', [...fadeIn, ...fadeOut])
       }
     })
-    const frameId = s.arch({ id: 'window', name: '窓枠', asset: window, width: 7.03, height: 3.61, v: .28, layer: 4 })
+    const frameId = s.stand('right', { id: 'window', name: '窓枠', asset: window, u: 0, width: 7.03, height: 3.61, v: .28, layer: 4 })
     s.track(frameId, 'scale', [[0, 1], [8, 1.02]])
     // 部屋の道具は見開き1〜4と同じ場所。四季が重なるこの見開きでも、
     // 動かないものが動かないままだから、移ろったのが窓の外だと分かる

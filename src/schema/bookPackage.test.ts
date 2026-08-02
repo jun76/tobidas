@@ -4,6 +4,7 @@ import { bookProjectSchema, type BookProjectFile } from './bookPackage'
 import { validateBookProject } from './bookValidate'
 import type { Spread } from './book'
 import type { TimelineProperty, TimelineTrack } from './timeline'
+import { compileSpreadStow } from '../runtime/stow/assign'
 
 interface Catalog {
   samples: Array<{ id: string; projectPath: string; thumbnail: string }>
@@ -21,6 +22,12 @@ const elementTracks = (spread: Spread, property: TimelineProperty): TimelineTrac
 const numbers = (track: TimelineTrack): number[] =>
   track.keys.map((key) => key.value).filter((value): value is number => typeof value === 'number')
 const elementOf = (spread: Spread, id: string) => spread.elements.find((element) => element.id === id)
+
+const centeredBackboards = {
+  forest_lantern: [['canopy'], ['canopy'], ['ridge'], ['great-tree'], ['canopy']],
+  morning_walk: [['skyline'], ['far-row', 'arcade'], ['far-row'], ['mountain', 'school'], ['window']],
+  four_seasons: [['window'], ['window'], ['window'], ['window'], ['window']],
+} as const
 
 describe('public samples', () => {
   it('catalogs each project under its own folder', () => {
@@ -47,15 +54,31 @@ describe('public samples', () => {
     const project = load(id)
     for (const spread of project.book.spreads) {
       const roots = spread.elements.filter((element) => element.parent.type !== 'element')
-      const supported = roots.filter((element) => element.stow.mechanism === 'page-glue'
-        || element.stow.mechanism === 'flap' || element.stow.mechanism === 'v-fold')
-      const floating = roots.filter((element) => element.stow.mechanism === 'strut'
-        && (element.type === 'image' || element.type === 'text'))
+      const compiled = compileSpreadStow(project.book, spread)
+      const items = [...compiled.left, ...compiled.right]
+      const supported = items.filter((item) => item.mechanism !== 'airborne-route')
+      const floating = items.filter((item) => item.mechanism === 'airborne-route'
+        && (item.element.type === 'image' || item.element.type === 'text'))
       expect(supported.length).toBeGreaterThanOrEqual(8)
       expect(floating.length).toBeLessThanOrEqual(supported.length / 4)
-      expect(roots.some((element) => element.stow.mechanism === 'v-fold')).toBe(true)
+      expect(compiled.spanning.length).toBeGreaterThan(0)
       expect(roots.some((element) => element.stow.mechanism === 'page-glue')).toBe(true)
+      expect(JSON.stringify(spread)).not.toContain('spine-arch')
+      expect(JSON.stringify(spread)).not.toContain('"strut"')
     }
+  })
+
+  /** 旧アーチ由来の背面板は、右ページローカルの背表紙位置を中心に置く。 */
+  it.each(Object.entries(centeredBackboards))('%s centers every rear board on the spine', (id, spreadNames) => {
+    const project = load(id)
+    expect(project.book.spreads).toHaveLength(spreadNames.length)
+    project.book.spreads.forEach((spread, index) => {
+      for (const name of spreadNames[index]) {
+        const board = elementOf(spread, `${spread.id}-${name}`)
+        expect(board?.parent).toEqual({ type: 'right-page' })
+        expect(board?.baseTransform.position[0]).toBe(-project.book.format.pageWidth / 2)
+      }
+    })
   })
 
   it.each(catalog.samples)('$id stays inside the asset budget', ({ id }) => {

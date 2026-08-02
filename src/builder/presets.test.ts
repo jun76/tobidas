@@ -32,16 +32,17 @@ describe('投入元プリセット', () => {
     expect(parentForPreset(text, 'left')).toEqual({ type: 'left-page' })
   })
 
-  it('見開き空間のプリセットは紙面の選択に影響されない', () => {
-    const arch = PART_PRESETS.find((preset) => preset.id === 'spine-arch')!
-    expect(parentForPreset(arch, 'left')).toEqual({ type: 'spread' })
+  it('空中プリセットは見開き空間へ自動機構で置く', () => {
+    const floating = PART_PRESETS.find((preset) => preset.id === 'floating-character')!
+    expect(parentForPreset(floating, 'left')).toEqual({ type: 'spread' })
+    expect(floating.mechanism).toBe('auto')
   })
 })
 
 describe('掴めるアセットの種類', () => {
   it('画像プリセットは画像だけ、効果音は音声だけを掴む', () => {
     expect(assetKindForMode('paper-stack')).toBe('image')
-    expect(assetKindForMode('spine-arch')).toBe('image')
+    expect(assetKindForMode('floating-character')).toBe('image')
     expect(assetKindForMode('sound-cue')).toBe('audio')
   })
 

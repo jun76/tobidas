@@ -15,15 +15,15 @@ import { PAGE_ART, REAL, artSize, circle, defineWork, group, path, poly, rect, s
  */
 const street = scaleOf(2.2)
 
-/** 遠景アーチの寸法。奥行きは手前のアーチより奥、翼が紙面の奥を越えない範囲 */
+/** 中央線をまたぐ遠景板の寸法。奥行きは手前の二翼板より奥、翼が紙面の奥を越えない範囲 */
 /**
- * 遠景アーチの寸法。幅と高さは奥行き v から二つの不等式で挟まれる:
+ * 遠景板の寸法。幅と高さは奥行き v から二つの不等式で挟まれる:
  *   翼が紙面の奥を越えない   z - 0.089×width  >= -PAGE_DEPTH/2 + EDGE_MARGIN
  *   閉じたとき手前へ出ない   z + 0.985×height <=  PAGE_DEPTH/2
  * 縦横比を固定すると幅の上限は v=.20 前後で頭打ちになり、約11が限界。
  * 見開き幅16を埋め切ることはできないので、左右の余白は設計上の帰結。
  */
-const BACKDROP_ARCH = { width: 11.0, height: 5.0, v: .19 }
+const BACKDROP_SPAN = { width: 11.0, height: 5.0, v: .19 }
 /**
  * 手前の小物と人の縮尺。街の実寸 (street) のまま置くと、自転車もポストも
  * 子どもも敷石の染みにしか見えない。手前に立てるものだけ一段大きく扱う。
@@ -243,7 +243,7 @@ export function build(updatedAt) {
     )))
   }
 
-  /** 遠くの家並みを一枚に切り抜いた帯。背をまたぐアーチに使う */
+  /** 遠くの家並みを一枚に切り抜いた、中央線をまたぐ帯 */
   const townscape = (id, worldWidth = 9.2, worldHeight = 2.2) => {
     const s = artSize(worldWidth, worldHeight)
     const block = (x, w, h, wall, roof) => group(
@@ -347,20 +347,20 @@ export function build(updatedAt) {
   const houseE = house('house-e.svg', WALL[3], ROOF[4])
   const apartmentArt = apartment('apartment.svg', WALL[4], ROOF[5])
   /**
-   * 遠景。背をまたぐ一枚のアーチとして立てる。
+   * 遠景。中央線をまたぐ一枚の立ち板として置き、自動的に二翼化する。
    *
    * 片面ごとの立ち板を2枚並べると、綴じ目で絵が切れて短冊が2本に見える。
    * また片面幅 (7.9) に絵の縦横比 (約4.2:1) を掛けると高さが1.9で頭打ちになり、
    * 家並みが低い帯にしかならない。背をまたげば絵は一続きになり、
    * 帯を切り詰めたぶん一軒ずつが大きく読める。
    *
-   * 素材は元のパノラマを BACKDROP_ARCH の縦横比へ切り出して作る:
+   * 素材は元のパノラマを BACKDROP_SPAN の縦横比へ切り出して作る:
    *   magick townscape.webp   -crop 704x245+160+0 +repage -resize 1024x356!    *     -quality 88 -define webp:method=6 backdrop-town.webp
    *   magick town-row.webp    -crop 1024x356+0+7  +repage -resize 1024x356! ... backdrop-row.webp
    *   magick mountain-far.webp -crop 713x248+155+0 +repage -resize 1024x356! ... backdrop-mountain.webp
    */
   const backdrop = (id) => {
-    const s = artSize(BACKDROP_ARCH.width, BACKDROP_ARCH.height)
+    const s = artSize(BACKDROP_SPAN.width, BACKDROP_SPAN.height)
     return art(id, svg(s.width, s.height, group(
       rect(0, s.height * .3, s.width, s.height * .7, C.slate, ' opacity=".35"'),
     )))
@@ -424,9 +424,9 @@ export function build(updatedAt) {
       leftPage: ground('page-1-left.svg', '#cdb086', '#b2966f'),
       rightPage: ground('page-1-right.svg', '#cdb086', '#b2966f'),
     })
-    s.arch({ id: 'mountain', name: '遠景の山', asset: backdropMountain, width: BACKDROP_ARCH.width, height: BACKDROP_ARCH.height, v: BACKDROP_ARCH.v, layer: 1 })
+    s.stand('right', { id: 'mountain', name: '遠景の山', asset: backdropMountain, u: 0, width: BACKDROP_SPAN.width, height: BACKDROP_SPAN.height, v: BACKDROP_SPAN.v, layer: 1 })
     // 遠景の稜線は前景の家より低く抑える。同じ高さだと奥行きが出ない
-    s.arch({ id: 'skyline', name: '街並みの稜線', asset: townscapeArt, width: 9.2, height: 1.7, v: .20, layer: 2 })
+    s.stand('right', { id: 'skyline', name: '街並みの稜線', asset: townscapeArt, u: 0, width: 9.2, height: 1.7, v: .20, layer: 2 })
 
     // 一戸建ての絵は正方形、集合住宅は縦長。どちらも絵の縦横比のまま拡げる。
     // 集合住宅は 4 単位ぶんしか紙に畳めないので、奥へ置いて手前へ倒す
@@ -476,8 +476,8 @@ export function build(updatedAt) {
       leftPage: ground('page-2-left.svg', '#d2b58b', '#bb9c70'),
       rightPage: ground('page-2-right.svg', '#d2b58b', '#bb9c70'),
     })
-    s.arch({ id: 'far-row', name: '奥の家並み', asset: backdropRow, width: BACKDROP_ARCH.width, height: BACKDROP_ARCH.height, v: BACKDROP_ARCH.v, layer: 1 })
-    s.arch({ id: 'arcade', name: '商店街のアーケード', asset: arcadeArt, width: 9.0, height: 2.4, v: .22, layer: 2 })
+    s.stand('right', { id: 'far-row', name: '奥の家並み', asset: backdropRow, u: 0, width: BACKDROP_SPAN.width, height: BACKDROP_SPAN.height, v: BACKDROP_SPAN.v, layer: 1 })
+    s.stand('right', { id: 'arcade', name: '商店街のアーケード', asset: arcadeArt, u: 0, width: 9.0, height: 2.4, v: .22, layer: 2 })
 
     const shops = [
       { page: 'left', u: .28, v: .58, asset: shopArt },
@@ -537,7 +537,7 @@ export function build(updatedAt) {
       leftPage: ground('page-3-left.svg', '#8d8b90', '#75737a'),
       rightPage: ground('page-3-right.svg', '#8d8b90', '#75737a'),
     })
-    s.arch({ id: 'far-row', name: '奥の家並み', asset: backdropTown, width: BACKDROP_ARCH.width, height: BACKDROP_ARCH.height, v: BACKDROP_ARCH.v, layer: 1 })
+    s.stand('right', { id: 'far-row', name: '奥の家並み', asset: backdropTown, u: 0, width: BACKDROP_SPAN.width, height: BACKDROP_SPAN.height, v: BACKDROP_SPAN.v, layer: 1 })
     s.flat('left', { id: 'rails', name: '線路 (左)', asset: railArt, u: .5, v: .40, width: 7.9, depth: 1.39, layer: 1 })
     s.flat('right', { id: 'rails-r', name: '線路 (右)', asset: railArt, u: .5, v: .40, width: 7.9, depth: 1.39, layer: 1 })
 
@@ -595,8 +595,8 @@ export function build(updatedAt) {
       leftPage: ground('page-4-left.svg', '#d5b98e', '#c0a476'),
       rightPage: ground('page-4-right.svg', '#d5b98e', '#c0a476'),
     })
-    s.arch({ id: 'mountain', name: '遠景の山', asset: backdropMountain, width: BACKDROP_ARCH.width, height: BACKDROP_ARCH.height, v: BACKDROP_ARCH.v, layer: 1 })
-    s.arch({ id: 'school', name: '校舎', asset: schoolArt, width: wide(4.2, schoolArt), height: 4.2, v: .24, layer: 3 })
+    s.stand('right', { id: 'mountain', name: '遠景の山', asset: backdropMountain, u: 0, width: BACKDROP_SPAN.width, height: BACKDROP_SPAN.height, v: BACKDROP_SPAN.v, layer: 1 })
+    s.stand('right', { id: 'school', name: '校舎', asset: schoolArt, u: 0, width: wide(4.2, schoolArt), height: 4.2, v: .24, layer: 3 })
     const slopeHouse = street(REAL.house2f)
     const slopeSmall = street(6)
     ;[['left', .26, .58, slopeHouse], ['left', .74, .72, slopeSmall], ['right', .28, .60, slopeHouse], ['right', .76, .74, slopeSmall]].forEach(([page, u, v, size], index) => {
@@ -658,7 +658,7 @@ export function build(updatedAt) {
         u: .62, v: .09, width: 2.06, height: 2.1, fall: 'front', layer: 1,
       })
     }
-    s.arch({ id: 'window', name: '教室の窓', asset: windowArt, width: 12.0, height: 4.0, v: .30, layer: 4 })
+    s.stand('right', { id: 'window', name: '教室の窓', asset: windowArt, u: 0, width: 12.0, height: 4.0, v: .30, layer: 4 })
     // カーテンは窓枠の内側に吊る。楔をまたぐ窓パネルの蓋の下には背の高い
     // 立て板を畳めないので、接地線ヒンジではなく透明支持片で浮かせる。
     // レールから下がって床には届かない高さが、そのまま吊り下がりに見える。

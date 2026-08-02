@@ -8,7 +8,7 @@ import { useImageTexture, useSvgTexture } from '../assets'
 import { ClockStore } from '../clock'
 import { evaluateContentMotion } from '../motion'
 import { clamp01 } from '../signals'
-import { evaluateChildPose, evaluateStow, evaluateVFoldSpan, stowIsDrawn, stowOpenFactor, strutFade, type StowPose, type VFoldSpanPose } from '../stow/evaluate'
+import { airborneFade, evaluateChildPose, evaluateStow, evaluateVFoldSpan, stowIsDrawn, stowOpenFactor, type StowPose, type VFoldSpanPose } from '../stow/evaluate'
 import type { SpanningVFold, StowItem } from '../stow/model'
 import { evaluateElementTimeline } from '../timeline/evaluate'
 import type { BookRuntimeProps, RenderSpreadFrame } from '../types'
@@ -78,8 +78,8 @@ function StowNode({ item, childrenMap, assets, clocks, t, spread, spreadTime, is
   if (!element.visible) return null
   const initial = poseFor(element.clock === 'story-time' ? clocks.storyTime : clocks.peek(clockKey))
   const facingStrength = stowOpenFactor(evaluatedItem, t)
-  // 空中の部品の薄れ (STRUT_FADE_DEG)。子は親と一緒に浮いているので同じ係数を継がせる
-  const fade = strutFade(item.mechanism, t)
+  // 空中の部品の薄れ (AIRBORNE_FADE_DEG)。子は親と一緒に浮いているので同じ係数を継がせる
+  const fade = airborneFade(item.mechanism, t)
   const [pivotX, pivotY] = visualPivotOffset(element)
   const visual = item.half
     ? <WingVisual element={element as Extract<StageElement, { type: 'image' }>} half={item.half}

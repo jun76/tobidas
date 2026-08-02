@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs'
  *   flat    紙へ糊付けした平置き (page-glue)
  *   stand   接地線で立てた立ち板 (flap)
  *   arch    背をまたぐ一枚パネル (v-fold)
- *   hover   透明支持片で浮かせた部品 (strut)
+ *   hover   紙面から離して空中経路へ送る部品
  *
  * 位置は片面内の正規化座標 (u, v) で受け取る。
  *   u = 0 背表紙 → 1 小口 (左右どちらの面でも同じ向き)
@@ -320,40 +320,19 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
    */
   const stand = (page, { id, name: label, asset, u, v, width, height, layer = 1, backdrop = false, fall, stagger = 0, motion }) => {
     const halfU = width / (2 * PAGE_WIDTH)
-    if (u - halfU < -0.001 || u + halfU > 1.001) fail(`${label} の幅が片面をはみ出します (u=${u}, width=${width})`)
+    // 背表紙側の越境は収納コンパイラが中央線で二翼化する。小口だけは越えられない。
+    if (u + halfU > 1.001) fail(`${label} の幅が本の小口を越えます (u=${u}, width=${width})`)
     const backRoom = v * PAGE_DEPTH
     const frontRoom = (1 - v) * PAGE_DEPTH
     const chosen = fall ?? (height + FOLD_MARGIN <= backRoom ? 'back' : 'front')
     const room = chosen === 'back' ? backRoom : frontRoom
-    if (height + FOLD_MARGIN > room) {
-      fail(`${label} は高さ ${height} が ${chosen} 側の紙面 ${room.toFixed(2)} に収まりません`)
-    }
+    // 寝姿が足りない場合はランタイムが閉じ際だけ自動縮小し、包含検査が警告する。
     return add({
       ...base(id, {
         name: label, parent: { type: `${page}-page` }, layer,
         position: [pageX(page, u), 0.01 + swingLift(motion, width), faceZ(v)],
         pivot: [0.5, 0], mechanism: 'flap', fall: chosen, stagger, motion,
         preset: backdrop ? 'depth-layer' : 'bottom-upright',
-      }),
-      type: 'image', asset, width, height, billboard: false,
-    })
-  }
-
-  /**
-   * 背をまたぐ一枚パネル。折り目は必ず背表紙に一致するため、
-   * 制作者は幅と高さと足元の奥行きだけを決める。
-   */
-  const arch = ({ id, name: label, asset, width, height, v, layer = 2, stagger = 0, motion }) => {
-    if (width / 2 > PAGE_WIDTH - EDGE_MARGIN) fail(`${label} の片翼が片面の幅を越えます (width=${width})`)
-    const z = faceZ(v)
-    // 翼は糊しろの傾きぶん背側へ寄り、閉じ際は折り目が手前へ倒れる
-    if (z - width * 0.089 < -PAGE_DEPTH / 2 + EDGE_MARGIN) fail(`${label} の翼が紙面の奥を越えます (v=${v}, width=${width})`)
-    if (z + height * 0.985 > PAGE_DEPTH / 2) fail(`${label} は閉じたとき手前へはみ出します (v=${v}, height=${height})`)
-    return add({
-      ...base(id, {
-        name: label, parent: { type: 'spread' }, layer,
-        position: [0, 0, z], pivot: [0.5, 0],
-        mechanism: 'v-fold', preset: 'spine-arch', stagger, motion,
       }),
       type: 'image', asset, width, height, billboard: false,
     })
@@ -376,7 +355,7 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
       ...base(id, {
         name: label, parent: parent ?? { type: 'spread' }, layer,
         position: [x, y, z], pivot: [0.5, 0.5],
-        mechanism: 'strut', preset: 'floating-character', motion, fall,
+        mechanism: 'auto', preset: 'floating-character', motion, fall,
       }),
       type: 'image', asset, width, height, billboard,
     })
@@ -436,13 +415,13 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
   const sparkle = ({ id, name: label, x, y, z, color, size = 1.4, layer = 12 }) => add({
     ...base(id, {
       name: label, parent: { type: 'spread' }, layer,
-      position: [x, y, z], mechanism: 'strut', preset: 'light-particles',
+      position: [x, y, z], mechanism: 'auto', preset: 'light-particles',
     }),
     type: 'effect', effect: 'sparkles', color, size,
   })
 
   /** 子部品をぶら下げるための無地の枠。回転させると子ごと回る */
-  const pivotGroup = ({ id, name: label, x, y, z, motion, rotation, mechanism = 'strut' }) => add({
+  const pivotGroup = ({ id, name: label, x, y, z, motion, rotation, mechanism = 'auto' }) => add({
     ...base(id, {
       name: label, parent: { type: 'spread' }, layer: 4,
       position: [x, y, z], rotation: rotation ?? [0, 0, 0], mechanism, preset: 'custom', motion,
@@ -522,7 +501,7 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
     timeline: { tracks },
   })
 
-  return { scene, hold, flat, stand, arch, hover, caption, signText, sparkle, pivotGroup, track, cue, camera, environment, serialize }
+  return { scene, hold, flat, stand, hover, caption, signText, sparkle, pivotGroup, track, cue, camera, environment, serialize }
 }
 
 // ---------------------------------------------------------------------------

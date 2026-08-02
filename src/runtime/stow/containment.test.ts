@@ -28,6 +28,7 @@ function place(source: Book, build: (element: ImageElement) => void): StageEleme
 }
 
 const codes = (source: Book) => analyzeSpreadContainment(source, spreadOf(source)).errors.map((issue) => issue.code)
+const warningCodes = (source: Book) => analyzeSpreadContainment(source, spreadOf(source)).warnings.map((issue) => issue.code)
 
 describe('開姿勢の包含検査', () => {
   it('紙面に収まる立ち板は問題を報告しない', () => {
@@ -84,10 +85,10 @@ describe('開姿勢の包含検査', () => {
     expect(codes(source)).toContain('crosses-spine')
   })
 
-  it('透明支持片でも本の輪郭の外へは出られない', () => {
+  it('空中要素でも本の輪郭の外へは出られない', () => {
     const source = book()
     const element = place(source, (item) => {
-      item.stow.mechanism = 'strut'
+      item.stow.mechanism = 'auto'
       item.baseTransform.position = [0, 1.5, 0]
       item.parent = { type: 'spread' }
     })
@@ -120,6 +121,7 @@ describe('開姿勢の包含検査', () => {
       element.height = 6
       element.baseTransform.position = [0, 0.01, 0]
     })
-    expect(codes(source)).toContain('shrunk-to-fit')
+    expect(codes(source)).not.toContain('shrunk-to-fit')
+    expect(warningCodes(source)).toContain('shrunk-to-fit')
   })
 })

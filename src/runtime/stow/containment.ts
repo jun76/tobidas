@@ -100,9 +100,9 @@ export function analyzeSpreadContainment(book: Book, spread: Spread): Containmen
     }
     const item = byId.get(root.id)
     if (!item) continue
-    if (item.mechanism === 'strut' && (element.type === 'image' || element.type === 'text')) airborne++
+    if (item.mechanism === 'airborne-route' && (element.type === 'image' || element.type === 'text')) airborne++
     if (root.id === element.id && item.fitScale < 1) {
-      errors.push(issue(element, 'shrunk-to-fit',
+      warnings.push(issue(element, 'shrunk-to-fit',
         `must shrink to ${(item.fitScale * 100).toFixed(0)}% while stowing to fit on the paper`
         + ` (${foldRoomHint(item, element, d)})`))
     }
@@ -127,7 +127,7 @@ export function analyzeSpreadContainment(book: Book, spread: Spread): Containmen
       errors.push(issue(element, 'below-paper', `sinks ${(-below).toFixed(2)} below the paper`))
     }
     if (outside) {
-      const code = item.mechanism === 'strut' ? 'off-page'
+      const code = item.mechanism === 'airborne-route' ? 'off-page'
         : crossesSpine(outside, item.face) ? 'crosses-spine' : 'off-page'
       errors.push(issue(element, code, `${describeRange(outside)} overflows ${describeRange(limit)}`))
     }
@@ -144,11 +144,11 @@ export function analyzeSpreadContainment(book: Book, spread: Spread): Containmen
 /**
  * 部品が留まるべき見開き座標の箱。
  * 紙へ糊付けされる機構は帰属した片面から出られない。
- * 透明支持片 (strut) だけは見開き全体を移動できる。
+ * 空中経路だけは見開き全体を移動できる。
  */
 function pageLimit(item: StowItem, w: number, d: number): THREE.Box3 {
-  const minX = item.mechanism === 'strut' ? -w : item.face === 'left' ? -w : 0
-  const maxX = item.mechanism === 'strut' ? w : item.face === 'left' ? 0 : w
+  const minX = item.mechanism === 'airborne-route' ? -w : item.face === 'left' ? -w : 0
+  const maxX = item.mechanism === 'airborne-route' ? w : item.face === 'left' ? 0 : w
   return new THREE.Box3(
     new THREE.Vector3(minX - EDGE_TOLERANCE, -Infinity, -d / 2 - EDGE_TOLERANCE),
     new THREE.Vector3(maxX + EDGE_TOLERANCE, Infinity, d / 2 + EDGE_TOLERANCE),
@@ -182,33 +182,49 @@ function spanIssues(span: SpanningVFold, w: number, d: number, spreadId: string)
     issues.push({ spreadId, elementId: span.element.id, elementName: span.element.name, code, message })
   if (span.baseY < -FLOOR_TOLERANCE) at('below-paper', `the crease foot is ${(-span.baseY).toFixed(2)} below the paper`)
   // 翼は糊しろ方向へ伸び、水平成分が制作幅、奥行き成分ぶんだけ背側へ寄る
-  const horizontalLeft = span.widthLeft * Math.sin(glueAngle())
-  const horizontalRight = span.widthRight * Math.sin(glueAngle())
+  const horizontalLeft = span.widthLeft * span.fitScale * Math.sin(glueAngle())
+  const horizontalRight = span.widthRight * span.fitScale * Math.sin(glueAngle())
   if (horizontalLeft > w + EDGE_TOLERANCE) at('off-page', `the left wing exceeds the left page width ${w}`)
   if (horizontalRight > w + EDGE_TOLERANCE) at('off-page', `the right wing exceeds the right page width ${w}`)
-  const wing = Math.max(span.widthLeft, span.widthRight)
-  const backReach = span.baseZ - wing * Math.cos(glueAngle())
-  if (backReach < -d / 2 - EDGE_TOLERANCE) {
+  const wing = Math.max(span.widthLeft, span.widthRight) * span.fitScale
+  const glueTip = span.baseZ + (span.fall === 'front' ? -1 : 1) * wing * Math.cos(glueAngle())
+  const glueOutside = span.fall === 'front'
+    ? glueTip < -d / 2 - EDGE_TOLERANCE
+    : glueTip > d / 2 + EDGE_TOLERANCE
+  if (glueOutside) {
     // 直せる値を添える。翼は幅に比例するので、収まる幅は相似で出る
-    const room = span.baseZ + d / 2 + EDGE_TOLERANCE
+    const room = span.fall === 'front'
+      ? span.baseZ + d / 2 + EDGE_TOLERANCE
+      : d / 2 - span.baseZ + EDGE_TOLERANCE
     const width = (span.widthLeft + span.widthRight) / GLUE_WIDTH_FACTOR
     const maxWidth = Math.max(0, width * (room / Math.cos(glueAngle())) / wing)
-    const minZ = wing * Math.cos(glueAngle()) - d / 2 - EDGE_TOLERANCE
-    at('off-page', `the wing tip passes the far edge ${(-d / 2).toFixed(2)}`
-      + ` (needs width <= ${maxWidth.toFixed(2)} or z >= ${minZ.toFixed(2)})`)
+    const edge = span.fall === 'front' ? -d / 2 : d / 2
+    const limitZ = span.fall === 'front'
+      ? wing * Math.cos(glueAngle()) - d / 2 - EDGE_TOLERANCE
+      : d / 2 + EDGE_TOLERANCE - wing * Math.cos(glueAngle())
+    at('off-page', `the wing tip passes the ${span.fall === 'front' ? 'far' : 'near'} edge ${edge.toFixed(2)}`
+      + ` (needs width <= ${maxWidth.toFixed(2)} or z ${span.fall === 'front' ? '>=' : '<='} ${limitZ.toFixed(2)})`)
   }
   if (span.baseZ > d / 2 + EDGE_TOLERANCE) at('off-page', `the crease passes the near edge ${(d / 2).toFixed(2)}`)
   return issues
 }
 
 function spanWarnings(span: SpanningVFold, d: number, spreadId: string): ContainmentIssue[] {
+  const warnings: ContainmentIssue[] = []
+  if (span.fitScale < 1) {
+    warnings.push({
+      spreadId, elementId: span.element.id, elementName: span.element.name, code: 'shrunk-to-fit',
+      message: `must shrink to ${(span.fitScale * 100).toFixed(0)}% while stowing to fit on the paper`,
+    })
+  }
   // 閉じ切りで折り目は手前へ倒れる。倒れた先が紙面から出るかを見る
-  const flat = span.baseZ + span.height * Math.sin(glueAngle())
-  if (flat <= d / 2) return []
-  return [{
+  const flat = span.baseZ + (span.fall === 'front' ? 1 : -1) * span.height * span.fitScale * Math.sin(glueAngle())
+  const overhang = span.fall === 'front' ? flat - d / 2 : -d / 2 - flat
+  if (overhang > 0) warnings.push({
     spreadId, elementId: span.element.id, elementName: span.element.name, code: 'span-overhang',
-    message: `overhangs ${(flat - d / 2).toFixed(2)} toward the viewer when closed`,
-  }]
+    message: `overhangs ${overhang.toFixed(2)} ${span.fall === 'front' ? 'toward' : 'away from'} the viewer when closed`,
+  })
+  return warnings
 }
 
 function glueAngle(): number {

@@ -1,7 +1,8 @@
 import type { StageElement } from '../../schema/stageElement'
 
 export type FaceSide = 'left' | 'right'
-export type MechanismKind = 'page-glue' | 'flap' | 'strut' | 'v-fold'
+/** 作品へ保存する支持ヒントではなく、コンパイラが開姿勢から決めた収納経路。 */
+export type MechanismKind = 'page-glue' | 'flap' | 'airborne-route' | 'v-fold'
 export type FallDirection = 'back' | 'front' | 'spine' | 'outward'
 
 export interface StowItem {
@@ -14,6 +15,10 @@ export interface StowItem {
   phase: number
   fitScale: number
   eject: number
+  /** 板の背表紙側の辺から背表紙までの最短距離。安全倒伏角の逆算に使う。 */
+  spineClearance: number
+  /** 接地線から最も遠い点までの距離。 */
+  reach: number
 }
 
 export interface SpanningVFold {
@@ -25,6 +30,7 @@ export interface SpanningVFold {
   height: number
   baseY: number
   baseZ: number
+  fitScale: number
 }
 
 export interface CompiledSpreadStow {

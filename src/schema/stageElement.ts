@@ -27,17 +27,26 @@ export const contentMotionSchema = z.discriminatedUnion('type', [
  * 制作者の意図だけを表す。支持機構の内部構造(接着線、折り目、支持片、
  * 縮小カーブ)は保存せず、収納コンパイラが決定的に再導出する。
  */
-export const stowMechanismSchema = z.enum(['auto', 'page-glue', 'flap', 'v-fold', 'strut'])
-export const sourcePresetSchema = z.enum([
+const currentStowMechanismSchema = z.enum(['auto', 'page-glue', 'flap', 'v-fold'])
+/** v0.1.0のstrutは物理機構ではなく空中収納経路だった。開姿勢から再導出する。 */
+export const stowMechanismSchema = z.preprocess(
+  (value) => value === 'strut' ? 'auto' : value,
+  currentStowMechanismSchema,
+)
+const currentSourcePresetSchema = z.enum([
   'paper-stack',
   'bottom-upright',
-  'spine-arch',
   'depth-layer',
   'floating-character',
   'light-particles',
   'page-text',
   'custom',
 ])
+/** v0.1.0のアーチは縦置きへ統合し、中央線交差から自動判定する。 */
+export const sourcePresetSchema = z.preprocess(
+  (value) => value === 'spine-arch' ? 'bottom-upright' : value,
+  currentSourcePresetSchema,
+)
 
 export const stowHintSchema = z.object({
   mechanism: stowMechanismSchema.default('auto'),
