@@ -416,7 +416,7 @@ describe('コンパイラの割り当て', () => {
     expect(right.fitScale).toBeLessThan(1)
   })
 
-  it('パーティクルは空中経路ではなく透明な起立平面として扱う', () => {
+  it('空中のパーティクル面はほかの空中平面と同じ外側迂回を使う', () => {
     const book = createBook()
     const spread = book.spreads[0]
     const centered = createStageElement('effect', { type: 'spread' }, 'auto')
@@ -432,8 +432,25 @@ describe('コンパイラの割り当て', () => {
     spread.elements.push(centered, oneSide)
 
     const compiled = compileSpreadStow(book, spread)
-    expect(compiled.spanning.map((span) => span.element.id)).toContain(centered.id)
-    expect([...compiled.left, ...compiled.right].find((item) => item.element.id === oneSide.id)?.mechanism).toBe('flap')
+    expect(compiled.spanning.map((span) => span.element.id)).not.toContain(centered.id)
+    expect([...compiled.left, ...compiled.right].find((item) => item.element.id === centered.id)?.mechanism).toBe('airborne-route')
+    expect([...compiled.left, ...compiled.right].find((item) => item.element.id === oneSide.id)?.mechanism).toBe('airborne-route')
+  })
+
+  it('接地したパーティクル面は中央線をまたぐと通常の谷折りになる', () => {
+    const book = createBook()
+    const spread = book.spreads[0]
+    const effect = createStageElement('effect', { type: 'spread' }, 'auto')
+    if (effect.type !== 'effect') throw new Error('unreachable')
+    effect.sourcePreset = 'light-particles'
+    effect.size = 2
+    effect.pivot = [0.5, 1]
+    effect.baseTransform.position = [0, 0.05, 0]
+    effect.baseTransform.rotation = [0, 0, 0]
+    spread.elements.push(effect)
+
+    const compiled = compileSpreadStow(book, spread)
+    expect(compiled.spanning.map((span) => span.element.id)).toContain(effect.id)
   })
 
   it('形を持たないグループは子孫の最下端から空中経路を決める', () => {

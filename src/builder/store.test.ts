@@ -428,7 +428,7 @@ describe('single-page background preset', () => {
 })
 
 describe('particle plane preset', () => {
-  it('creates and keeps particles on a vertical transparent plane', () => {
+  it('creates a vertical plane by default and allows ordinary rotation edits', () => {
     const project = createBookProject('particles')
     const spread = project.book.spreads[0]
     useBuilderStore.getState().setProject(project, 'import')
@@ -442,11 +442,11 @@ describe('particle plane preset', () => {
     useBuilderStore.getState().updateElement(spread.id, created.id, (element) => {
       element.baseTransform.rotation[0] = 45
     })
-    expect(useBuilderStore.getState().project.book.spreads[0].elements[0].baseTransform.rotation[0]).toBe(0)
+    expect(useBuilderStore.getState().project.book.spreads[0].elements[0].baseTransform.rotation[0]).toBe(45)
 
     useBuilderStore.getState().applyGizmoTransform(spread.id, created.id, 0, {
       position: [0, 2, 0], rotation: [35, 20, 10], scale: [1, 1, 1],
     })
-    expect(useBuilderStore.getState().project.book.spreads[0].elements[0].baseTransform.rotation[0]).toBe(0)
+    expect(useBuilderStore.getState().project.book.spreads[0].elements[0].baseTransform.rotation).toEqual([35, 20, 10])
   })
 })

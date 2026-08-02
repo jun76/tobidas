@@ -9,7 +9,7 @@ import { ProjectAutosave } from './persistence/autosave'
 import { saveProject } from './persistence/projectRepository'
 import { containerElementIds, elementDescendantIds, reparentElement } from './hierarchy'
 import type { EditorState } from './state/editorState'
-import { constrainParticlePlane, constrainSinglePageBackground } from './state/elementConstraints'
+import { constrainSinglePageBackground } from './state/elementConstraints'
 import { PART_PRESETS } from './presets'
 import { BGM_VOLUME } from '../audio/playback'
 import { createTimelineCommands } from './state/timelineCommands'
@@ -343,7 +343,6 @@ export const useBuilderStore = create<EditorState>((set, get) => {
       if (element) {
         change(element)
         constrainSinglePageBackground(element, project.book.format.pageWidth)
-        constrainParticlePlane(element)
       }
     }),
     removeElement: (spreadId, id) => {

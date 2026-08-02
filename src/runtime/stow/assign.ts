@@ -30,7 +30,6 @@ export function compileSpreadStow(book: Book, spread: Spread): CompiledSpreadSto
   const airborneRoots = new Set(spread.elements
     .filter((element) => element.parent.type !== 'element'
       && element.stow.mechanism === 'auto'
-      && element.sourcePreset !== 'light-particles'
       && treeLowerEdgeY(element, children) > 0.1)
     .map((element) => element.id))
   const flatSpanning = new Set<string>()
@@ -144,7 +143,6 @@ function makeSpanningVFold(element: StageElement, pageWidth: number, pageDepth: 
 
 function resolveMechanism(element: StageElement, isAirborne = false): MechanismKind {
   if (element.stow.mechanism !== 'auto') return element.stow.mechanism
-  if (element.sourcePreset === 'light-particles') return 'flap'
   const y = element.baseTransform.position[1]
   const rotX = element.baseTransform.rotation[0]
   // 紙面に平行な平置き。浮いている平置きは支持片で紙面まで降ろす

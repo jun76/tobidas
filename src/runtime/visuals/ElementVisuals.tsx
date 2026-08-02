@@ -6,6 +6,7 @@ import type { StageElement } from '../../schema/stageElement'
 import { useImageTexture, useSvgTexture, useTextTexture } from '../assets'
 import type { StowItem } from '../stow/model'
 import { SPARKLE, buildSparkleField } from './sparkleField'
+import { buildSparkleSpriteGeometry } from './sparkleGeometry'
 
 /**
  * 消えた部品は影も落とさない。
@@ -90,12 +91,7 @@ export function ElementVisual({ element, assets, opacityMul, openFactor = 1 }: {
  * 「ゆっくり飛び回る小バエ」にしかならなかった。振れ幅を持つために自前で描く。
  */
 function buildSparkleGeometry(seed: string, spread: number): THREE.BufferGeometry {
-  const field = buildSparkleField(seed, spread)
-  const geometry = new THREE.BufferGeometry()
-  geometry.setAttribute('position', new THREE.BufferAttribute(field.positions, 3))
-  geometry.setAttribute('phase', new THREE.BufferAttribute(field.phases, 3))
-  geometry.setAttribute('rate', new THREE.BufferAttribute(field.rates, 1))
-  return geometry
+  return buildSparkleSpriteGeometry(buildSparkleField(seed, spread))
 }
 
 /** 平面粒子のうち指定した横区間だけを、区間中心原点の実寸座標へ切り出す。 */
@@ -113,11 +109,11 @@ function buildSparkleSliceGeometry(seed: string, spread: number, u0: number, u1:
     phases.push(field.phases[index * 3], field.phases[index * 3 + 1], field.phases[index * 3 + 2])
     rates.push(field.rates[index])
   }
-  const geometry = new THREE.BufferGeometry()
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-  geometry.setAttribute('phase', new THREE.Float32BufferAttribute(phases, 3))
-  geometry.setAttribute('rate', new THREE.Float32BufferAttribute(rates, 1))
-  return geometry
+  return buildSparkleSpriteGeometry({
+    positions: new Float32Array(positions),
+    phases: new Float32Array(phases),
+    rates: new Float32Array(rates),
+  })
 }
 
 /**
@@ -137,23 +133,24 @@ export class SparkleMaterial extends THREE.ShaderMaterial {
     super({
       transparent: true,
       depthWrite: false,
+      side: THREE.DoubleSide,
       uniforms: {
         time: { value: 0 },
-        pixelRatio: { value: 1 },
         drift: { value: drift },
         omega: { value: (Math.PI * 2) / SPARKLE.period },
-        pointSize: { value: SPARKLE.size },
+        particleSize: { value: SPARKLE.size },
         color: { value: new THREE.Color('#ffffff') },
         opacity: { value: 1 },
       },
       vertexShader: /* glsl */`
         uniform float time;
-        uniform float pixelRatio;
         uniform float drift;
         uniform float omega;
-        uniform float pointSize;
+        uniform float particleSize;
         attribute vec3 phase;
         attribute float rate;
+        attribute vec2 corner;
+        varying vec2 circleUv;
         // logdepthbuf_vertex が呼ぶ isPerspectiveMatrix は common チャンクが持つ。
         // 落とすとリンクで転けて材質ごと描かれなくなる (粒が全部消える)
         #include <common>
@@ -164,9 +161,11 @@ export class SparkleMaterial extends THREE.ShaderMaterial {
           local.x += sin(t + phase.x) * drift;
           local.y += sin(t + phase.y) * drift;
           vec4 world = modelMatrix * vec4(local, 1.0);
+          world.xyz += normalize(modelMatrix[0].xyz) * corner.x * particleSize;
+          world.xyz += normalize(modelMatrix[1].xyz) * corner.y * particleSize;
           vec4 view = viewMatrix * world;
           gl_Position = projectionMatrix * view;
-          gl_PointSize = pointSize * 25.0 * pixelRatio / max(0.001, -view.z);
+          circleUv = corner + 0.5;
           #include <logdepthbuf_vertex>
         }
       `,
@@ -180,9 +179,10 @@ export class SparkleMaterial extends THREE.ShaderMaterial {
       fragmentShader: /* glsl */`
         uniform vec3 color;
         uniform float opacity;
+        varying vec2 circleUv;
         #include <logdepthbuf_pars_fragment>
         void main() {
-          float d = distance(gl_PointCoord, vec2(0.5)) * 2.0;
+          float d = distance(circleUv, vec2(0.5)) * 2.0;
           if (d > 1.0) discard;
           #include <logdepthbuf_fragment>
           float core = smoothstep(0.36, 0.20, d);
@@ -222,13 +222,11 @@ function SparklePoints({ geometry, color, opacity, renderOrder }: {
 }) {
   const material = useMemo(() => new SparkleMaterial(), [])
   useEffect(() => () => { geometry.dispose(); material.dispose() }, [geometry, material])
-  const dpr = useThree((state) => state.viewport.dpr)
-  material.uniforms.pixelRatio.value = dpr
   material.uniforms.color.value.set(color)
   material.uniforms.opacity.value = opacity
   useFrame((state) => { material.uniforms.time.value = state.clock.elapsedTime })
   if (opacity <= 0.01) return null
-  return <points geometry={geometry} material={material} renderOrder={renderOrder} />
+  return <mesh geometry={geometry} material={material} renderOrder={renderOrder} />
 }
 
 export function WingVisual({ element, half, assets, opacityMul }: {

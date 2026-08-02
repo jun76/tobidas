@@ -14,6 +14,7 @@ import { evaluateElementTimeline } from '../timeline/evaluate'
 import type { BookRuntimeProps, RenderSpreadFrame } from '../types'
 import { ElementVisual, SparkleMaterial, WingVisual, assetFor, layerDepthBias, visualPivotOffset } from '../visuals/ElementVisuals'
 import { SPARKLE, buildSparkleField } from '../visuals/sparkleField'
+import { buildSparkleSpriteGeometry } from '../visuals/sparkleGeometry'
 
 interface StowElementsProps {
   frame: RenderSpreadFrame
@@ -300,8 +301,8 @@ function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, e
   spreadId: string
   onSelect?: BookRuntimeProps['onSelect']
 }) {
-  const left = useRef<THREE.Points>(null)
-  const right = useRef<THREE.Points>(null)
+  const left = useRef<THREE.Mesh>(null)
+  const right = useRef<THREE.Mesh>(null)
   const geometries = useMemo(() => ({
     left: spanParticleGeometry(element, span.creaseU, 'left'),
     right: spanParticleGeometry(element, span.creaseU, 'right'),
@@ -314,10 +315,9 @@ function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, e
     geometries.left.dispose(); geometries.right.dispose()
     materials.left.dispose(); materials.right.dispose()
   }, [geometries, materials])
-  const dpr = useThree((state) => state.viewport.dpr)
   const basis = useMemo(() => ({ x: new THREE.Vector3(), y: new THREE.Vector3(), z: new THREE.Vector3() }), [])
   const apply = (pose: VFoldSpanPose) => {
-    const wings: Array<[THREE.Points | null, [number, number, number], number, SparkleMaterial]> = [
+    const wings: Array<[THREE.Mesh | null, [number, number, number], number, SparkleMaterial]> = [
       [left.current, pose.leftDir, span.widthLeft, materials.left],
       [right.current, pose.rightDir, span.widthRight, materials.right],
     ]
@@ -329,7 +329,6 @@ function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, e
       points.matrix.makeBasis(basis.x, basis.y, basis.z)
       points.matrix.setPosition(...pose.origin)
       points.matrixWorldNeedsUpdate = true
-      material.uniforms.pixelRatio.value = dpr
       material.uniforms.color.value.set(element.color)
       material.uniforms.opacity.value = element.opacity * pose.opacityMul
     }
@@ -345,15 +344,15 @@ function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, e
   useEffect(() => {
     apply(poseFor(element.clock === 'story-time' ? clocks.storyTime : clocks.peek(clockKey)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leftAngle, rightAngle, span, dpr])
+  }, [leftAngle, rightAngle, span])
   const select = (event: { stopPropagation: () => void }) => {
     event.stopPropagation()
     onSelect?.({ type: 'element', spreadId, elementId: element.id })
   }
   return <>
-    <points ref={left} geometry={geometries.left} material={materials.left} matrixAutoUpdate={false}
+    <mesh ref={left} geometry={geometries.left} material={materials.left} matrixAutoUpdate={false}
       renderOrder={100 + element.layer} onClick={select} />
-    <points ref={right} geometry={geometries.right} material={materials.right} matrixAutoUpdate={false}
+    <mesh ref={right} geometry={geometries.right} material={materials.right} matrixAutoUpdate={false}
       renderOrder={100 + element.layer} onClick={select} />
   </>
 }
@@ -374,11 +373,11 @@ function spanParticleGeometry(element: Extract<StageElement, { type: 'effect' }>
     phases.push(field.phases[index * 3], field.phases[index * 3 + 1], field.phases[index * 3 + 2])
     rates.push(field.rates[index])
   }
-  const geometry = new THREE.BufferGeometry()
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-  geometry.setAttribute('phase', new THREE.Float32BufferAttribute(phases, 3))
-  geometry.setAttribute('rate', new THREE.Float32BufferAttribute(rates, 1))
-  return geometry
+  return buildSparkleSpriteGeometry({
+    positions: new Float32Array(positions),
+    phases: new Float32Array(phases),
+    rates: new Float32Array(rates),
+  })
 }
 
 function spanWingGeometry(creaseU: number, side: 'left' | 'right'): THREE.BufferGeometry {

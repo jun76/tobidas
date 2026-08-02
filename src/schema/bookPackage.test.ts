@@ -199,12 +199,12 @@ describe('public samples', () => {
     expect(validateBookProject(project).errors).toContain('stage background: unregistered asset missing.webp')
   })
 
-  it('requires particle presets to stay on a vertical effect plane', () => {
+  it('allows a particle plane to rotate like other planar parts', () => {
     const project = load('forest_lantern')
     const particle = project.book.spreads.flatMap((spread) => spread.elements)
       .find((element) => element.sourcePreset === 'light-particles')!
     particle.baseTransform.rotation[0] = 20
-    expect(validateBookProject(project).errors.some((error) => error.includes('particle plane must stay vertical'))).toBe(true)
+    expect(validateBookProject(project).errors).toEqual([])
   })
 
   it('accepts project-specific cover and spine colors', () => {

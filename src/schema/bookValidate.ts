@@ -94,11 +94,6 @@ export function validateBookProject(data: unknown): BookValidationResult {
       )
       if (element.sourcePreset === 'light-particles') {
         if (element.type !== 'effect') errors.push(`${element.name}: particle preset must be an effect`)
-        if (Math.abs(element.baseTransform.rotation[0]) > 0.001
-          || elementTracks.some((track) => track.property === 'rotation.x'
-            && track.keys.some((key) => typeof key.value === 'number' && Math.abs(key.value) > 0.001))) {
-          errors.push(`${element.name}: particle plane must stay vertical`)
-        }
       }
       const everVisible = element.visible || elementTracks.some(
         (track) => track.property === 'visible' && track.keys.some((key) => key.value === true),
