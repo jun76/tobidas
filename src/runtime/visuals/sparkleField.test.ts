@@ -8,6 +8,13 @@ describe('光の欠片の粒', () => {
     for (const value of field.positions) expect(Math.abs(value)).toBeLessThanOrEqual(1.1)
   })
 
+  it('全粒子を透明な縦置き平面上へ置く', () => {
+    const field = buildSparkleField('spread-1-ember', 2.2)
+    for (let index = 0; index < SPARKLE.count; index++) {
+      expect(field.positions[index * 3 + 2]).toBe(0)
+    }
+  })
+
   it('畳まれた要素の雲は広がりを持たない', () => {
     // 収納コンパイラが動かすのは要素の原点だけなので、広がりを収納へ従わせるのは
     // ここの役目。広がったままだと、閉じてページが傾いたときに粒が紙の輪郭の

@@ -306,17 +306,22 @@ function Transform({ value, update, onKey }: {
   return <>{(['position', 'rotation', 'scale'] as const).map((group) =>
     <div className={st.row} key={group}>
       <span className={st.rowLabel}>{group}</span>
-      <div className={st.vec3}>{value.baseTransform[group].map((part, index) =>
-        <input key={index} type="number" step={group === 'rotation' ? 1 : .1} value={part}
+      <div className={st.vec3}>{value.baseTransform[group].map((part, index) => {
+        const locked = value.sourcePreset === 'light-particles' && group === 'rotation' && index === 0
+        return <input key={index} type="number" step={group === 'rotation' ? 1 : .1} value={part} disabled={locked}
           onChange={(event) => update((element) => {
+            if (locked) return
             element.baseTransform[group][index as 0 | 1 | 2] = Number(event.target.value)
-          })} />)}
+          })} />
+      })}
       </div>
       <button className={st.keyButton}
         aria-label={t.properties.addKey(group)} title={t.properties.addKeyVec3Hint(group)}
         onClick={() => {
-          value.baseTransform[group].forEach((part, index) =>
-            onKey(`${group}.${['x', 'y', 'z'][index]}` as TimelineProperty, part))
+          value.baseTransform[group].forEach((part, index) => {
+            if (value.sourcePreset === 'light-particles' && group === 'rotation' && index === 0) return
+            onKey(`${group}.${['x', 'y', 'z'][index]}` as TimelineProperty, part)
+          })
         }}><Icon as={Diamond} size={13} fill="currentColor" /></button>
     </div>)}</>
 }

@@ -39,7 +39,8 @@ export function SelectionGizmo() {
       if (element.type === 'image' || element.type === 'text') {
         size = [element.width, element.height]
       }
-      if (element.type !== 'group' && element.type !== 'effect') {
+      if (element.type === 'effect') size = [element.size, element.size]
+      if (element.type !== 'group') {
         visualOffset = [(0.5 - element.pivot[0]) * size[0], (0.5 - element.pivot[1]) * size[1]]
       }
       billboard = element.type === 'image' && element.billboard
@@ -109,4 +110,3 @@ export function SelectionGizmo() {
     />
   </>
 }
-

@@ -14,3 +14,9 @@ export function constrainSinglePageBackground(element: StageElement, pageWidth: 
   const maximum = pageWidth / 2 - (1 - element.pivot[0]) * width
   element.baseTransform.position[0] = Math.min(maximum, Math.max(minimum, element.baseTransform.position[0]))
 }
+
+/** パーティクルは奥行きを持たない透明な縦置き平面から傾けない。 */
+export function constrainParticlePlane(element: StageElement): void {
+  if (element.type !== 'effect' || element.sourcePreset !== 'light-particles') return
+  element.baseTransform.rotation[0] = 0
+}

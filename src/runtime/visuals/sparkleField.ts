@@ -1,5 +1,5 @@
 /**
- * 光の欠片の粒の配置 (描画から切り離した純関数)。
+ * 光の欠片の粒を透明な縦置き平面へ配置する純関数。
  *
  * 収納コンパイラが動かすのは要素の原点だけなので、広がりのほうを収納へ
  * 従わせるのはここの仕事になる。畳まれた要素の雲が広がりを持ったままだと、
@@ -40,7 +40,8 @@ export interface SparkleField {
 /**
  * 粒の配置と位相を組む。
  *
- * spread は雲の差し渡し (世界単位)。粒は原点のまわり ±spread/2 に収まり、
+ * spread は平面の差し渡し (世界単位)。粒はローカルXYの ±spread/2 に収まり、
+ * ローカルZは常に0なので、ほかの平面部品と同じ包含判定と谷折りを使える。
  * spread=0 なら全粒が原点へ重なる = 収納し切った状態になる。
  */
 export function buildSparkleField(seed: string, spread: number): SparkleField {
@@ -50,10 +51,12 @@ export function buildSparkleField(seed: string, spread: number): SparkleField {
   const phases = new Float32Array(SPARKLE.count * 3)
   const rates = new Float32Array(SPARKLE.count)
   for (let i = 0; i < SPARKLE.count; i++) {
-    for (let axis = 0; axis < 3; axis++) {
+    for (let axis = 0; axis < 2; axis++) {
       positions[i * 3 + axis] = (random() - 0.5) * extent
       phases[i * 3 + axis] = random() * Math.PI * 2
     }
+    positions[i * 3 + 2] = 0
+    phases[i * 3 + 2] = random() * Math.PI * 2
     // 一斉に同じ向きへ動くと群れの体操に見えるので、速さを粒ごとに散らす
     rates[i] = 0.75 + random() * 0.5
   }

@@ -41,8 +41,10 @@ export function layerDepthBias(layer: number) {
 }
 
 export function visualPivotOffset(element: StageElement): [number, number] {
-  if (element.type === 'group' || element.type === 'effect') return [0, 0]
-  return [(0.5 - element.pivot[0]) * element.width, (0.5 - element.pivot[1]) * element.height]
+  if (element.type === 'group') return [0, 0]
+  const width = element.type === 'effect' ? element.size : element.width
+  const height = element.type === 'effect' ? element.size : element.height
+  return [(0.5 - element.pivot[0]) * width, (0.5 - element.pivot[1]) * height]
 }
 
 export function ElementVisual({ element, assets, opacityMul, openFactor = 1 }: {
@@ -96,6 +98,28 @@ function buildSparkleGeometry(seed: string, spread: number): THREE.BufferGeometr
   return geometry
 }
 
+/** 平面粒子のうち指定した横区間だけを、区間中心原点の実寸座標へ切り出す。 */
+function buildSparkleSliceGeometry(seed: string, spread: number, u0: number, u1: number): THREE.BufferGeometry {
+  const field = buildSparkleField(seed, spread)
+  const positions: number[] = []
+  const phases: number[] = []
+  const rates: number[] = []
+  const centerX = ((u0 + u1) / 2 - 0.5) * spread
+  for (let index = 0; index < field.rates.length; index++) {
+    const x = field.positions[index * 3]
+    const u = x / Math.max(1e-6, spread) + 0.5
+    if (u < u0 || u > u1) continue
+    positions.push(x - centerX, field.positions[index * 3 + 1], 0)
+    phases.push(field.phases[index * 3], field.phases[index * 3 + 1], field.phases[index * 3 + 2])
+    rates.push(field.rates[index])
+  }
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  geometry.setAttribute('phase', new THREE.Float32BufferAttribute(phases, 3))
+  geometry.setAttribute('rate', new THREE.Float32BufferAttribute(rates, 1))
+  return geometry
+}
+
 /**
  * 自前のシェーダなので、深度の書き方も自分で three に合わせる責任がある。
  *
@@ -108,15 +132,15 @@ function buildSparkleGeometry(seed: string, spread: number): THREE.BufferGeometr
  * `depthWrite: false` でも検査そのものは gl_FragDepth を見るので逃げられない。
  * 差し込み位置は決まっていて、頂点側は gl_Position を決めた後、断片側は main の頭。
  */
-class SparkleMaterial extends THREE.ShaderMaterial {
-  constructor() {
+export class SparkleMaterial extends THREE.ShaderMaterial {
+  constructor(drift = SPARKLE.drift) {
     super({
       transparent: true,
       depthWrite: false,
       uniforms: {
         time: { value: 0 },
         pixelRatio: { value: 1 },
-        drift: { value: SPARKLE.drift },
+        drift: { value: drift },
         omega: { value: (Math.PI * 2) / SPARKLE.period },
         pointSize: { value: SPARKLE.size },
         color: { value: new THREE.Color('#ffffff') },
@@ -135,11 +159,11 @@ class SparkleMaterial extends THREE.ShaderMaterial {
         #include <common>
         #include <logdepthbuf_pars_vertex>
         void main() {
-          vec4 world = modelMatrix * vec4(position, 1.0);
+          vec3 local = position;
           float t = time * omega * rate;
-          world.x += sin(t + phase.x) * drift;
-          world.y += sin(t + phase.y) * drift;
-          world.z += cos(t + phase.z) * drift;
+          local.x += sin(t + phase.x) * drift;
+          local.y += sin(t + phase.y) * drift;
+          vec4 world = modelMatrix * vec4(local, 1.0);
           vec4 view = viewMatrix * world;
           gl_Position = projectionMatrix * view;
           gl_PointSize = pointSize * 25.0 * pixelRatio / max(0.001, -view.z);
@@ -187,6 +211,15 @@ function SparkleCloud({ seed, spread, color, opacity, renderOrder }: {
   renderOrder: number
 }) {
   const geometry = useMemo(() => buildSparkleGeometry(seed, spread), [seed, spread])
+  return <SparklePoints geometry={geometry} color={color} opacity={opacity} renderOrder={renderOrder} />
+}
+
+function SparklePoints({ geometry, color, opacity, renderOrder }: {
+  geometry: THREE.BufferGeometry
+  color: string
+  opacity: number
+  renderOrder: number
+}) {
   const material = useMemo(() => new SparkleMaterial(), [])
   useEffect(() => () => { geometry.dispose(); material.dispose() }, [geometry, material])
   const dpr = useThree((state) => state.viewport.dpr)
@@ -199,11 +232,14 @@ function SparkleCloud({ seed, spread, color, opacity, renderOrder }: {
 }
 
 export function WingVisual({ element, half, assets, opacityMul }: {
-  element: Extract<StageElement, { type: 'image' }>
+  element: StageElement
   half: NonNullable<StowItem['half']>
   assets: Map<string, Asset>
   opacityMul: number
 }) {
+  if (element.type === 'group') return null
+  if (element.type === 'effect') return <EffectWing element={element} half={half} opacityMul={opacityMul} />
+  if (element.type === 'text') return <TextWing element={element} half={half} opacityMul={opacityMul} />
   const asset = assetFor(assets, element.asset)
   const image = useImageTexture(asset?.type === 'image' ? asset : undefined)
   const svg = useSvgTexture(asset?.type === 'svg' ? asset : undefined)
@@ -212,6 +248,36 @@ export function WingVisual({ element, half, assets, opacityMul }: {
   return <group position={[0, offsetY, 0]}>
     <HalfPlane width={half.width} height={element.height} u0={half.u0} u1={half.u1} texture={texture}
       opacity={element.opacity * opacityMul} layer={element.layer} />
+  </group>
+}
+
+function TextWing({ element, half, opacityMul }: {
+  element: Extract<StageElement, { type: 'text' }>
+  half: NonNullable<StowItem['half']>
+  opacityMul: number
+}) {
+  const texture = useTextTexture({
+    text: element.text, color: element.color, align: element.align,
+    font: element.font, bold: element.bold, italic: element.italic, underline: element.underline,
+  })
+  const offsetY = (0.5 - element.pivot[1]) * element.height
+  return <group position={[0, offsetY, 0]}>
+    <HalfPlane width={half.width} height={element.height} u0={half.u0} u1={half.u1}
+      texture={texture?.texture} opacity={element.opacity * opacityMul} layer={element.layer} />
+  </group>
+}
+
+function EffectWing({ element, half, opacityMul }: {
+  element: Extract<StageElement, { type: 'effect' }>
+  half: NonNullable<StowItem['half']>
+  opacityMul: number
+}) {
+  const geometry = useMemo(() => buildSparkleSliceGeometry(element.id, element.size, half.u0, half.u1),
+    [element.id, element.size, half.u0, half.u1])
+  const offsetY = (0.5 - element.pivot[1]) * element.size
+  return <group position={[0, offsetY, 0]}>
+    <SparklePoints geometry={geometry} color={element.color} opacity={element.opacity * opacityMul}
+      renderOrder={100 + element.layer} />
   </group>
 }
 

@@ -9,7 +9,7 @@ import { ProjectAutosave } from './persistence/autosave'
 import { saveProject } from './persistence/projectRepository'
 import { containerElementIds, elementDescendantIds, reparentElement } from './hierarchy'
 import type { EditorState } from './state/editorState'
-import { constrainSinglePageBackground } from './state/elementConstraints'
+import { constrainParticlePlane, constrainSinglePageBackground } from './state/elementConstraints'
 import { PART_PRESETS } from './presets'
 import { BGM_VOLUME } from '../audio/playback'
 import { createTimelineCommands } from './state/timelineCommands'
@@ -285,6 +285,14 @@ export const useBuilderStore = create<EditorState>((set, get) => {
         element.baseTransform.rotation = [-90, 0, 0]
         Object.assign(element, measureTextBox(element, element.fontSize))
       }
+      if (element.type === 'effect' && element.sourcePreset === 'light-particles') {
+        // 粒は透明な起立平面に載せ、画像板と同じ中央線判定・谷折りへ渡す。
+        element.name = t().presets['light-particles']
+        element.size = 2
+        element.pivot = [.5, 0]
+        element.baseTransform.position = [0, .03, 0]
+        element.baseTransform.rotation = [0, 0, 0]
+      }
       commit((project) => project.book.spreads.find((spread) => spread.id === spreadId)?.elements.push(element))
       set({ selection: { type: 'element', spreadId, elementId: element.id } })
     },
@@ -335,6 +343,7 @@ export const useBuilderStore = create<EditorState>((set, get) => {
       if (element) {
         change(element)
         constrainSinglePageBackground(element, project.book.format.pageWidth)
+        constrainParticlePlane(element)
       }
     }),
     removeElement: (spreadId, id) => {

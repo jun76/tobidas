@@ -32,7 +32,7 @@ You can also clone this repository and run it locally or deploy it to your own s
 
 - Page glue, standing parts, and automatic V-folds for artwork crossing the spine
 - Automatic outside routing for airborne parts inferred from their open pose
-- Images, SVG, audio, web fonts, text, and particle effects
+- Images, SVG, audio, web fonts, text, and particles placed on transparent upright planes
 - Timeline control for transforms, opacity, visibility, assets, backgrounds, lights, and cameras
 - Spread editing with 3D gizmos and property panels
 - Background music and sound effects such as page turns

@@ -411,7 +411,7 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
     })
   }
 
-  /** 発光粒子。部品ではないので空中予算には数えない */
+  /** 発光粒子。奥行きを持たない透明な縦置き平面として収納する */
   const sparkle = ({ id, name: label, x, y, z, color, size = 1.4, layer = 12 }) => add({
     ...base(id, {
       name: label, parent: { type: 'spread' }, layer,

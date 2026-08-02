@@ -4,6 +4,7 @@ export type FaceSide = 'left' | 'right'
 /** 作品へ保存する支持ヒントではなく、コンパイラが開姿勢から決めた収納経路。 */
 export type MechanismKind = 'page-glue' | 'flap' | 'airborne-route' | 'v-fold'
 export type FallDirection = 'back' | 'front' | 'spine' | 'outward'
+export type PlanarElement = Exclude<StageElement, { type: 'group' }>
 
 export interface StowItem {
   element: StageElement
@@ -22,7 +23,7 @@ export interface StowItem {
 }
 
 export interface SpanningVFold {
-  element: Extract<StageElement, { type: 'image' }>
+  element: PlanarElement
   fall: 'back' | 'front'
   creaseU: number
   widthLeft: number

@@ -1,18 +1,19 @@
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import type { Asset } from '../../schema/assets'
 import type { Spread } from '../../schema/book'
 import type { StageElement } from '../../schema/stageElement'
-import { useImageTexture, useSvgTexture } from '../assets'
+import { useImageTexture, useSvgTexture, useTextTexture } from '../assets'
 import { ClockStore } from '../clock'
 import { evaluateContentMotion } from '../motion'
 import { clamp01 } from '../signals'
 import { airborneFade, evaluateChildPose, evaluateStow, evaluateVFoldSpan, stowIsDrawn, stowOpenFactor, type StowPose, type VFoldSpanPose } from '../stow/evaluate'
-import type { SpanningVFold, StowItem } from '../stow/model'
+import type { PlanarElement, SpanningVFold, StowItem } from '../stow/model'
 import { evaluateElementTimeline } from '../timeline/evaluate'
 import type { BookRuntimeProps, RenderSpreadFrame } from '../types'
-import { ElementVisual, WingVisual, assetFor, layerDepthBias, visualPivotOffset } from '../visuals/ElementVisuals'
+import { ElementVisual, SparkleMaterial, WingVisual, assetFor, layerDepthBias, visualPivotOffset } from '../visuals/ElementVisuals'
+import { SPARKLE, buildSparkleField } from '../visuals/sparkleField'
 
 interface StowElementsProps {
   frame: RenderSpreadFrame
@@ -82,7 +83,7 @@ function StowNode({ item, childrenMap, assets, clocks, t, spread, spreadTime, is
   const fade = airborneFade(item.mechanism, t)
   const [pivotX, pivotY] = visualPivotOffset(element)
   const visual = item.half
-    ? <WingVisual element={element as Extract<StageElement, { type: 'image' }>} half={item.half}
+    ? <WingVisual element={element} half={item.half}
       assets={assets} opacityMul={initial.opacityMul} />
     : <group position={[pivotX, pivotY, 0]}>
       <ElementVisual element={element} assets={assets} opacityMul={initial.opacityMul}
@@ -189,13 +190,26 @@ interface SpanningVFoldNodeProps {
 }
 
 export function SpanningVFoldNode({ span, leftAngle, rightAngle, assets, clocks, spread, spreadTime, onSelect }: SpanningVFoldNodeProps) {
-  const element = evaluateElementTimeline(span.element, spread, spreadTime) as Extract<StageElement, { type: 'image' }>
-  const evaluatedSpan = element === span.element ? span : { ...span, element }
+  const element = evaluateElementTimeline(span.element, spread, spreadTime) as PlanarElement
+  const sizeRatio = element.type === 'effect' && span.element.type === 'effect'
+    ? element.size / Math.max(0.01, span.element.size)
+    : 1
+  const evaluatedSpan = element === span.element ? span : {
+    ...span,
+    element,
+    widthLeft: span.widthLeft * sizeRatio,
+    widthRight: span.widthRight * sizeRatio,
+    height: span.height * sizeRatio,
+    baseY: element.baseTransform.position[1] - element.pivot[1] * span.height * sizeRatio,
+    baseZ: element.baseTransform.position[2],
+    // effect.sizeが開姿勢で拡大しても、閉じ際はコンパイル時の包含寸法まで戻す。
+    fitScale: Math.min(span.fitScale, span.fitScale / Math.max(1, sizeRatio)),
+  }
   const spreadId = spread.id
   const clockKey = `${spreadId}:${element.id}`
   const leftMesh = useRef<THREE.Mesh>(null)
   const rightMesh = useRef<THREE.Mesh>(null)
-  const asset = assetFor(assets, element.asset)
+  const asset = element.type === 'image' ? assetFor(assets, element.asset) : undefined
   const image = useImageTexture(asset?.type === 'image' ? asset : undefined)
   const svg = useSvgTexture(asset?.type === 'svg' ? asset : undefined)
   const texture = (image ?? svg)?.texture
@@ -230,21 +244,29 @@ export function SpanningVFoldNode({ span, leftAngle, rightAngle, assets, clocks,
   }
 
   useFrame((_, dt) => {
+    if (element.type === 'effect') return
     const time = element.clock === 'story-time' ? clocks.storyTime : clocks.advance(clockKey, dt)
     apply(poseFor(time))
   })
   useEffect(() => {
+    if (element.type === 'effect') return
     apply(poseFor(element.clock === 'story-time' ? clocks.storyTime : clocks.peek(clockKey)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leftAngle, rightAngle, span])
 
   if (!element.visible) return null
+  if (element.type === 'effect') {
+    return <SpanningParticleNode span={evaluatedSpan} leftAngle={leftAngle} rightAngle={rightAngle}
+      clocks={clocks} clockKey={clockKey} element={element} spreadId={spreadId} onSelect={onSelect} />
+  }
   const select = (event: { stopPropagation: () => void }) => {
     event.stopPropagation()
     onSelect?.({ type: 'element', spreadId, elementId: element.id })
   }
   const bias = layerDepthBias(element.layer)
-  const material = texture
+  const material = element.type === 'text'
+    ? <SpanningTextMaterial element={element} opacity={element.opacity * poseFor(clocks.peek(clockKey)).opacityMul} />
+    : texture
     ? <meshBasicMaterial color="#ffffff" map={texture} transparent opacity={element.opacity}
       alphaTest={.02} side={THREE.DoubleSide} toneMapped={false} {...bias} />
     : <meshBasicMaterial color="#ff79a8" transparent opacity={element.opacity} side={THREE.DoubleSide} {...bias} />
@@ -254,6 +276,109 @@ export function SpanningVFoldNode({ span, leftAngle, rightAngle, assets, clocks,
     <mesh ref={rightMesh} geometry={geometryRight} matrixAutoUpdate={false} castShadow
       renderOrder={100 + element.layer} onClick={select}>{material}</mesh>
   </>
+}
+
+function SpanningTextMaterial({ element, opacity }: {
+  element: Extract<StageElement, { type: 'text' }>
+  opacity: number
+}) {
+  const texture = useTextTexture({
+    text: element.text, color: element.color, align: element.align,
+    font: element.font, bold: element.bold, italic: element.italic, underline: element.underline,
+  })
+  return <meshBasicMaterial map={texture?.texture} transparent opacity={opacity}
+    side={THREE.DoubleSide} {...layerDepthBias(element.layer)} />
+}
+
+function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, element, spreadId, onSelect }: {
+  span: SpanningVFold
+  leftAngle: number
+  rightAngle: number
+  clocks: ClockStore
+  clockKey: string
+  element: Extract<StageElement, { type: 'effect' }>
+  spreadId: string
+  onSelect?: BookRuntimeProps['onSelect']
+}) {
+  const left = useRef<THREE.Points>(null)
+  const right = useRef<THREE.Points>(null)
+  const geometries = useMemo(() => ({
+    left: spanParticleGeometry(element, span.creaseU, 'left'),
+    right: spanParticleGeometry(element, span.creaseU, 'right'),
+  }), [element.id, element.size, span.creaseU])
+  const driftScale = SPARKLE.drift / Math.max(1, span.widthLeft, span.widthRight, span.height)
+  const materials = useMemo(() => ({
+    left: new SparkleMaterial(driftScale), right: new SparkleMaterial(driftScale),
+  }), [driftScale])
+  useEffect(() => () => {
+    geometries.left.dispose(); geometries.right.dispose()
+    materials.left.dispose(); materials.right.dispose()
+  }, [geometries, materials])
+  const dpr = useThree((state) => state.viewport.dpr)
+  const basis = useMemo(() => ({ x: new THREE.Vector3(), y: new THREE.Vector3(), z: new THREE.Vector3() }), [])
+  const apply = (pose: VFoldSpanPose) => {
+    const wings: Array<[THREE.Points | null, [number, number, number], number, SparkleMaterial]> = [
+      [left.current, pose.leftDir, span.widthLeft, materials.left],
+      [right.current, pose.rightDir, span.widthRight, materials.right],
+    ]
+    for (const [points, direction, width, material] of wings) {
+      if (!points) continue
+      basis.x.set(...direction).multiplyScalar(width * pose.scaleMul)
+      basis.y.set(...pose.creaseDir).multiplyScalar(span.height * pose.scaleMul)
+      basis.z.copy(basis.x).cross(basis.y).normalize()
+      points.matrix.makeBasis(basis.x, basis.y, basis.z)
+      points.matrix.setPosition(...pose.origin)
+      points.matrixWorldNeedsUpdate = true
+      material.uniforms.pixelRatio.value = dpr
+      material.uniforms.color.value.set(element.color)
+      material.uniforms.opacity.value = element.opacity * pose.opacityMul
+    }
+  }
+  const poseFor = (time: number) =>
+    evaluateVFoldSpan(span, leftAngle, rightAngle, evaluateContentMotion(element.motion, time))
+  useFrame((state, dt) => {
+    const time = element.clock === 'story-time' ? clocks.storyTime : clocks.advance(clockKey, dt)
+    materials.left.uniforms.time.value = state.clock.elapsedTime
+    materials.right.uniforms.time.value = state.clock.elapsedTime
+    apply(poseFor(time))
+  })
+  useEffect(() => {
+    apply(poseFor(element.clock === 'story-time' ? clocks.storyTime : clocks.peek(clockKey)))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leftAngle, rightAngle, span, dpr])
+  const select = (event: { stopPropagation: () => void }) => {
+    event.stopPropagation()
+    onSelect?.({ type: 'element', spreadId, elementId: element.id })
+  }
+  return <>
+    <points ref={left} geometry={geometries.left} material={materials.left} matrixAutoUpdate={false}
+      renderOrder={100 + element.layer} onClick={select} />
+    <points ref={right} geometry={geometries.right} material={materials.right} matrixAutoUpdate={false}
+      renderOrder={100 + element.layer} onClick={select} />
+  </>
+}
+
+function spanParticleGeometry(element: Extract<StageElement, { type: 'effect' }>, creaseU: number, side: 'left' | 'right') {
+  const field = buildSparkleField(element.id, element.size)
+  const positions: number[] = []
+  const phases: number[] = []
+  const rates: number[] = []
+  for (let index = 0; index < field.rates.length; index++) {
+    const u = field.positions[index * 3] / Math.max(1e-6, element.size) + 0.5
+    if (side === 'left' ? u > creaseU : u < creaseU) continue
+    positions.push(
+      side === 'left' ? (creaseU - u) / Math.max(1e-6, creaseU) : (u - creaseU) / Math.max(1e-6, 1 - creaseU),
+      field.positions[index * 3 + 1] / Math.max(1e-6, element.size) + 0.5,
+      0,
+    )
+    phases.push(field.phases[index * 3], field.phases[index * 3 + 1], field.phases[index * 3 + 2])
+    rates.push(field.rates[index])
+  }
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  geometry.setAttribute('phase', new THREE.Float32BufferAttribute(phases, 3))
+  geometry.setAttribute('rate', new THREE.Float32BufferAttribute(rates, 1))
+  return geometry
 }
 
 function spanWingGeometry(creaseU: number, side: 'left' | 'right'): THREE.BufferGeometry {

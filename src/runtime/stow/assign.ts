@@ -1,7 +1,7 @@
 import type { Book, Spread } from '../../schema/book'
 import type { StageElement } from '../../schema/stageElement'
 import { FIT_SCALE_ONSET_F, GLUE_WIDTH_FACTOR, settledT, vfoldLidAngle } from './evaluate'
-import type { CompiledSpreadStow, FaceSide, FallDirection, MechanismKind, SpanningVFold, StowItem } from './model'
+import type { CompiledSpreadStow, FaceSide, FallDirection, MechanismKind, PlanarElement, SpanningVFold, StowItem } from './model'
 
 export type { CompiledSpreadStow, FaceSide, FallDirection, MechanismKind, SpanningVFold, StowItem } from './model'
 
@@ -30,15 +30,27 @@ export function compileSpreadStow(book: Book, spread: Spread): CompiledSpreadSto
   const airborneRoots = new Set(spread.elements
     .filter((element) => element.parent.type !== 'element'
       && element.stow.mechanism === 'auto'
+      && element.sourcePreset !== 'light-particles'
       && treeLowerEdgeY(element, children) > 0.1)
     .map((element) => element.id))
+  const flatSpanning = new Set<string>()
 
   // 先に見開きまたぎパネルを集める。作者のプリセットではなく、開姿勢で
   // 画像板が中央線をまたぐかを決め手にする。面上の部品はパネルの蓋 (降りてくる翼)
   // を第二の天井として包含検証するため、蓋の被覆範囲を先へ確定させる
   for (const element of spread.elements) {
     if (element.parent.type === 'element') continue
-    if (!crossesSpreadSpine(element, w, rootsWithChildren.has(element.id), airborneRoots.has(element.id))) continue
+    const crossing = spineCrossingKind(element, w, rootsWithChildren.has(element.id), airborneRoots.has(element.id))
+    if (crossing === 'flat') {
+      const wings = makeFlatSpineWings(element, w)
+      if (wings) {
+        left.push(wings.left)
+        right.push(wings.right)
+        flatSpanning.add(element.id)
+      }
+      continue
+    }
+    if (crossing !== 'upright') continue
     const span = makeSpanningVFold(element, w, d, warnings)
     if (span) spanning.push(span)
   }
@@ -58,6 +70,7 @@ export function compileSpreadStow(book: Book, spread: Spread): CompiledSpreadSto
       : element.parent.type === 'right-page' ? 'right'
       : element.baseTransform.position[0] < 0 ? 'left' : 'right'
 
+    if (flatSpanning.has(element.id)) continue // 左右ページへ分割済み
     if (spanning.some((span) => span.element.id === element.id)) continue // 収集済み
     if (mechanism === 'v-fold') {
       // ページ親のv-fold: 折り目でアートワークを分割し、両翼とも
@@ -89,12 +102,13 @@ export function compileSpreadStow(book: Book, spread: Spread): CompiledSpreadSto
  * crease値ではなく開姿勢の配置から導出する。
  */
 function makeSpanningVFold(element: StageElement, pageWidth: number, pageDepth: number, warnings: string[]): SpanningVFold | null {
-  if (element.type !== 'image') {
-    warnings.push(`${element.name}: v-fold supports image parts only`)
+  const dimensions = planarDimensions(element)
+  if (!dimensions) {
+    warnings.push(`${element.name}: v-fold supports planar parts only`)
     return null
   }
-  const width = element.width * Math.abs(element.baseTransform.scale[0])
-  const height = element.height * Math.abs(element.baseTransform.scale[1])
+  const width = dimensions.width * Math.abs(element.baseTransform.scale[0])
+  const height = dimensions.height * Math.abs(element.baseTransform.scale[1])
   const centerX = spreadX(element, pageWidth)
   const xLeft = centerX - element.pivot[0] * width
   const xRight = xLeft + width
@@ -114,7 +128,7 @@ function makeSpanningVFold(element: StageElement, pageWidth: number, pageDepth: 
     * Math.cos(Math.asin(1 / GLUE_WIDTH_FACTOR))
   const glueFit = glueRoom / Math.max(glueRoom, glueDepth)
   return {
-    element,
+    element: element as PlanarElement,
     fall,
     creaseU,
     // 糊しろは背側へ角度を持つため、開き切りの水平スパンが制作値と
@@ -130,6 +144,7 @@ function makeSpanningVFold(element: StageElement, pageWidth: number, pageDepth: 
 
 function resolveMechanism(element: StageElement, isAirborne = false): MechanismKind {
   if (element.stow.mechanism !== 'auto') return element.stow.mechanism
+  if (element.sourcePreset === 'light-particles') return 'flap'
   const y = element.baseTransform.position[1]
   const rotX = element.baseTransform.rotation[0]
   // 紙面に平行な平置き。浮いている平置きは支持片で紙面まで降ろす
@@ -161,17 +176,52 @@ function treeLowerEdgeY(element: StageElement, children: Map<string, StageElemen
     element.baseTransform.position[1] + treeLowerEdgeY(child, children)))
 }
 
-/** 起立画像が開姿勢で中央線の左右へ有意な幅を持つか。 */
-function crossesSpreadSpine(element: StageElement, pageWidth: number, hasChildren: boolean, isAirborne: boolean): boolean {
-  if (element.type !== 'image' || element.billboard || hasChildren) return false
-  if (element.stow.mechanism === 'page-glue') return false
-  if (resolveMechanism(element, isAirborne) === 'airborne-route') return false
-  if (Math.abs(element.baseTransform.rotation[0]) > 35) return false
-  const width = element.width * Math.abs(element.baseTransform.scale[0])
+/** 平面部品が中央線をまたぐとき、開姿勢に応じて谷折りの種類を返す。 */
+function spineCrossingKind(element: StageElement, pageWidth: number, hasChildren: boolean, isAirborne: boolean): 'flat' | 'upright' | null {
+  const dimensions = planarDimensions(element)
+  if (!dimensions || element.type === 'image' && element.billboard || hasChildren) return null
+  if (resolveMechanism(element, isAirborne) === 'airborne-route') return null
+  const width = dimensions.width * Math.abs(element.baseTransform.scale[0])
   const x0 = spreadX(element, pageWidth) - element.pivot[0] * width
   const x1 = x0 + width
   const epsilon = pageWidth * 1e-4
-  return x0 < -epsilon && x1 > epsilon
+  if (!(x0 < -epsilon && x1 > epsilon)) return null
+  const rotationX = Math.abs(element.baseTransform.rotation[0])
+  if (Math.abs(rotationX - 90) < 35 || element.stow.mechanism === 'page-glue') return 'flat'
+  return rotationX <= 35 ? 'upright' : null
+}
+
+function planarDimensions(element: StageElement): { width: number; height: number } | null {
+  if (element.type === 'group') return null
+  if (element.type === 'effect') return { width: element.size, height: element.size }
+  return { width: element.width, height: element.height }
+}
+
+/** 紙面へ寝ている中央線またぎ部品を、左右ページへ追従する二片へ分ける。 */
+function makeFlatSpineWings(element: StageElement, pageWidth: number): { left: StowItem; right: StowItem } | null {
+  const dimensions = planarDimensions(element)
+  if (!dimensions) return null
+  const scaledWidth = dimensions.width * Math.abs(element.baseTransform.scale[0])
+  const centerX = spreadX(element, pageWidth)
+  const xLeft = centerX - element.pivot[0] * scaledWidth
+  const creaseU = Math.min(0.999, Math.max(0.001, -xLeft / Math.max(1e-6, scaledWidth)))
+  const baseOffset = (face: FaceSide): [number, number, number] => {
+    const targetLocal = centerX + (face === 'left' ? pageWidth / 2 : -pageWidth / 2)
+    return [targetLocal - element.baseTransform.position[0], 0, 0]
+  }
+  const wing = (face: FaceSide, u0: number, u1: number): StowItem => {
+    const width = dimensions.width * (u1 - u0)
+    const scaledWidth = width * Math.abs(element.baseTransform.scale[0])
+    const fitScale = Math.min(1, pageWidth / Math.max(0.01, scaledWidth))
+    const artLeft = -element.pivot[0] * dimensions.width
+    const centerShiftX = artLeft + (u0 + (u1 - u0) / 2) * dimensions.width
+    return {
+      element, face, offset: baseOffset(face), mechanism: 'page-glue', fall: 'front',
+      half: { u0, u1, width, centerShiftX }, phase: 0, fitScale,
+      eject: 0, spineClearance: Infinity, reach: 0,
+    }
+  }
+  return { left: wing('left', 0, creaseU), right: wing('right', creaseU, 1) }
 }
 
 /**

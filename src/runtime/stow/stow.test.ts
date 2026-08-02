@@ -393,6 +393,49 @@ describe('コンパイラの割り当て', () => {
     expect(compiled.spanning.map((s) => s.element.id)).toEqual([wide.id])
   })
 
+  it('中央線をまたぐ平置き部品は左右ページへ分割して谷折りする', () => {
+    const book = createBook()
+    const spread = book.spreads[0]
+    const flat = createStageElement('image', { type: 'right-page' }, 'page-glue')
+    if (flat.type !== 'image') throw new Error('unreachable')
+    flat.width = 8.6
+    flat.height = 4.2
+    flat.pivot = [.5, .5]
+    flat.baseTransform.position = [0, .02, 0]
+    flat.baseTransform.rotation = [-90, 0, 0]
+    spread.elements.push(flat)
+
+    const compiled = compileSpreadStow(book, spread)
+    const left = compiled.left.find((item) => item.element.id === flat.id)!
+    const right = compiled.right.find((item) => item.element.id === flat.id)!
+    expect(compiled.spanning).toHaveLength(0)
+    expect(left.mechanism).toBe('page-glue')
+    expect(right.mechanism).toBe('page-glue')
+    expect(left.half?.u1).toBeCloseTo(0.3 / 8.6)
+    expect(right.half?.u0).toBeCloseTo(0.3 / 8.6)
+    expect(right.fitScale).toBeLessThan(1)
+  })
+
+  it('パーティクルは空中経路ではなく透明な起立平面として扱う', () => {
+    const book = createBook()
+    const spread = book.spreads[0]
+    const centered = createStageElement('effect', { type: 'spread' }, 'auto')
+    const oneSide = createStageElement('effect', { type: 'right-page' }, 'auto')
+    if (centered.type !== 'effect' || oneSide.type !== 'effect') throw new Error('unreachable')
+    for (const effect of [centered, oneSide]) {
+      effect.sourcePreset = 'light-particles'
+      effect.size = 2
+      effect.baseTransform.rotation = [0, 0, 0]
+      effect.baseTransform.position[1] = 2.5
+    }
+    oneSide.baseTransform.position[0] = 1
+    spread.elements.push(centered, oneSide)
+
+    const compiled = compileSpreadStow(book, spread)
+    expect(compiled.spanning.map((span) => span.element.id)).toContain(centered.id)
+    expect([...compiled.left, ...compiled.right].find((item) => item.element.id === oneSide.id)?.mechanism).toBe('flap')
+  })
+
   it('形を持たないグループは子孫の最下端から空中経路を決める', () => {
     const book = createBook()
     const spread = book.spreads[0]
