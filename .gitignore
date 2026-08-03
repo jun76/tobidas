@@ -35,6 +35,7 @@ docs/
 ref/
 qa/
 shots/
+output/
 tmp/
 
 # Locally exported works

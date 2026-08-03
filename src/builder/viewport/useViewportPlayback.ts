@@ -103,8 +103,9 @@ export function useViewportPlayback() {
   useEffect(() => {
     const active = mode === 'play'
     const gate = audioGate({ active, playing: active && isAutoPlaying, atEnd, muted: audioMuted })
+    // 終端シークで再開する場合も、先に完全消音してから時計を動かす。
+    builderBgm.setMuted(gate.bgmMuted, gate.bgmMuted ? 0 : .25)
     builderBgm.setPaused(gate.bgmPaused)
-    builderBgm.setMuted(gate.bgmMuted)
     builderBank.setCuesMuted(gate.cuesMuted)
   }, [mode, isAutoPlaying, atEnd, audioMuted])
 
@@ -128,7 +129,7 @@ export function useViewportPlayback() {
     // 鳴らすのは自動再生で進んでいる間だけ。つまみやホイールで動かしたぶんでは鳴らさない
     // (上の useEffect も消音を掛けるが、あちらは再描画ぶん遅れるので位置を先に見る)
     const fireCues = (from: number, to: number) => {
-      if (!autoPlayingRef.current) return
+      if (!autoPlayingRef.current || audioMutedRef.current) return
       for (const hit of crossedSoundCues(book, from, to)) builderBank.fire(hit.assetId)
     }
     const tick = (time: number) => {
@@ -188,6 +189,22 @@ export function useViewportPlayback() {
   }
 
   /**
+   * 再生バーで指定された位置へ即座に移動する。
+   *
+   * ホイールや画面ドラッグは紙を送る操作なので target まで補間するが、再生バーは
+   * 時刻を直接指定する操作である。target だけを変えるとクリック位置へ少しずつしか
+   * 近づかないため、表示値と編集へ戻る位置も同じフレームで確定させる。
+   */
+  const seek = (value: number) => {
+    pause()
+    const next = THREE.MathUtils.clamp(value, 0, 1)
+    target.current = next
+    playProgressRef.current = next
+    setPlayProgress(next)
+    sync(next)
+  }
+
+  /**
    * 音声ボタンは消音の切り替え (再生画面と同じ)。BGMも効果音もまとめて消す。
    * 実際の適用は上の useEffect が状態から引き直すので、ここは意思を記録して、
    * まだ鳴っていなければ鳴らし始めるだけ。
@@ -195,6 +212,9 @@ export function useViewportPlayback() {
   const toggleAudio = () => {
     const muted = !audioMutedRef.current
     audioMutedRef.current = muted
+    // Reactのeffectを待たず、このクリック内で音源と効果音を閉じる。
+    builderBgm.setMuted(muted, 0)
+    builderBank.setCuesMuted(mode === 'play' && (muted || !autoPlayingRef.current))
     setAudioMuted(muted)
     if (!muted && bookAudio && !builderBgm.playing) {
       void builderBgm.play(bookAudio.volume, bookAudio.loop)
@@ -211,6 +231,7 @@ export function useViewportPlayback() {
     hasAudio: Boolean(bookAudio) || soundCueAssetIds(book).length > 0,
     audioMuted,
     toggleAudio,
+    seek,
     adjust: (pixels: number) => {
       target.current = THREE.MathUtils.clamp(target.current + pixels / 4200, 0, 1)
       // 送っている途中で編集へ戻しても、送り先の見開きへ戻れるようにする

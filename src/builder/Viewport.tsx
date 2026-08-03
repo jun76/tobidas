@@ -162,7 +162,7 @@ export function Viewport() {
               background: `linear-gradient(to right, #168af0 0%, #168af0 ${playback.progress * 100}%, #d6d6dd ${playback.progress * 100}%, #d6d6dd 100%)`,
             }}
             onPointerDown={playback.pause}
-            onChange={(event) => store.setPreviewProgress(Number(event.target.value))}
+            onChange={(event) => playback.seek(Number(event.target.value))}
           />
         </div>
         {playback.hasAudio && <button

@@ -53,9 +53,45 @@ function installFakeAudio() {
   return { gains, sources, calls, releaseResume: () => releaseResume() }
 }
 
+function installFakeHtmlAudio(abortPlayOnPause = false) {
+  const calls: string[] = []
+  const elements: Array<{ volume: number; paused: boolean }> = []
+  class FakeAudio {
+    preload = ''
+    src = ''
+    loop = false
+    currentTime = 0
+    volume = 1
+    paused = true
+    private listeners = new Map<string, () => void>()
+    private rejectPlay: ((reason: Error) => void) | null = null
+    constructor() { elements.push(this) }
+    addEventListener(type: string, listener: () => void) { this.listeners.set(type, listener) }
+    load() { queueMicrotask(() => this.listeners.get('loadeddata')?.()) }
+    play() {
+      calls.push('play')
+      this.paused = false
+      if (!abortPlayOnPause) return Promise.resolve()
+      return new Promise<void>((_resolve, reject) => { this.rejectPlay = reject })
+    }
+    pause() {
+      calls.push('pause')
+      this.paused = true
+      this.rejectPlay?.(new Error('AbortError'))
+      this.rejectPlay = null
+    }
+  }
+  vi.stubGlobal('Audio', FakeAudio)
+  return { calls, elements }
+}
+
 const bgm: Asset = {
   id: 'bgm', name: 'bgm.mp3', type: 'audio', mime: 'audio/mpeg', bytes: 4,
   data: 'data:audio/mpeg;base64,AAAA',
+} as Asset
+
+const externalBgm: Asset = {
+  ...bgm, data: './assets/bgm.mp3',
 } as Asset
 
 afterEach(() => { vi.unstubAllGlobals() })
@@ -97,6 +133,69 @@ describe('AudioPlayback', () => {
     expect(playback.muted).toBe(true)
     expect(fake.gains).toHaveLength(1)
     expect(fake.gains[0].value).toBe(0)
+  })
+
+  /** ロード直後の消音は、まだ音源が無くても最初のゲインへ引き継ぐ */
+  it('remembers mute before playback starts', async () => {
+    const fake = installFakeAudio()
+    const playback = new AudioPlayback()
+    await playback.load(bgm)
+
+    playback.setMuted(true)
+    const starting = playback.play(0.7, true)
+    fake.releaseResume()
+    await starting
+
+    expect(playback.muted).toBe(true)
+    expect(fake.gains[0].value).toBe(0)
+  })
+
+  /** 書き出しHTMLの外部音源も、ロード直後から終端で再開するまで無音を保つ */
+  it('keeps an external audio element silent when muted before start and resumed at the end', async () => {
+    const fake = installFakeHtmlAudio()
+    const playback = new AudioPlayback()
+    await playback.load(externalBgm)
+
+    playback.setMuted(true)
+    await playback.play(0.7, true, 0)
+    playback.setPaused(true)
+    playback.setPaused(false)
+
+    expect(playback.muted).toBe(true)
+    expect(fake.elements[0].volume).toBe(0)
+    expect(fake.calls).toEqual(['play', 'pause', 'play'])
+  })
+
+  /** 外部音源のplay待ちをpauseが中断しても、次の再開用音量を失わない */
+  it('keeps an aborted external start as a paused resumable session', async () => {
+    const fake = installFakeHtmlAudio(true)
+    const playback = new AudioPlayback()
+    await playback.load(externalBgm)
+
+    const starting = playback.play(0.7, true, 0)
+    playback.setPaused(true)
+    await starting
+
+    expect(playback.playing).toBe(true)
+    expect(playback.paused).toBe(true)
+    expect(fake.elements[0].volume).toBe(0.7)
+    expect(fake.calls).toEqual(['play', 'pause'])
+  })
+
+  /** resume待ち中に終端シークや停止が来ても、runningのまま音源を開始しない */
+  it('re-suspends when paused while the context is resuming', async () => {
+    const fake = installFakeAudio()
+    const playback = new AudioPlayback()
+    await playback.load(bgm)
+
+    const starting = playback.play(0.7, true)
+    playback.setPaused(true)
+    fake.releaseResume()
+    await starting
+
+    expect(playback.paused).toBe(true)
+    expect(fake.calls.at(-1)).toBe('suspend')
+    expect(fake.gains[0].value).toBe(0.7)
   })
 
   /** 消音は音源を作り直さない。作り直すと曲が頭から鳴ってしまう */

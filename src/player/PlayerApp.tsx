@@ -73,7 +73,7 @@ export function PlayerApp() {
         // 進んだぶんで跨いだ効果音を鳴らす。逆行と飛ばしは crossedSoundCues が弾き、
         // 止まっている間 (つまみ・ホイール・drag での移動) はここで弾く。
         // 消音は上の useEffect も掛けるが、あちらは再描画ぶん遅れるので位置を先に見る
-        if (project && playingRef.current) {
+        if (project && playingRef.current && !audioMutedRef.current) {
           for (const hit of crossedSoundCues(project.book, value, next)) bank.fire(hit.assetId)
         }
         return next
@@ -107,8 +107,9 @@ export function PlayerApp() {
    */
   useEffect(() => {
     const gate = audioGate({ active: true, playing, atEnd, muted: audioMuted })
+    // 終端シークで再開する場合も、先に完全消音してから時計を動かす。
+    bgm.setMuted(gate.bgmMuted, gate.bgmMuted ? 0 : .25)
     bgm.setPaused(gate.bgmPaused)
-    bgm.setMuted(gate.bgmMuted)
     bank.setCuesMuted(gate.cuesMuted)
   }, [playing, atEnd, audioMuted, bgm, bank])
 
@@ -144,6 +145,12 @@ export function PlayerApp() {
     startBgm()
     target.current = THREE.MathUtils.clamp(target.current + pixels / 4200, 0, 1)
   }
+  const seek = (value: number) => {
+    pause()
+    startBgm()
+    target.current = THREE.MathUtils.clamp(value, 0, 1)
+    setProgress(target.current)
+  }
   const togglePlayback = () => {
     startBgm()
     if (playingRef.current) {
@@ -167,6 +174,9 @@ export function PlayerApp() {
   const toggleAudio = () => {
     const muted = !audioMutedRef.current
     audioMutedRef.current = muted
+    // Reactのeffectを待たず、このクリック内で音源と効果音を閉じる。
+    bgm.setMuted(muted, 0)
+    bank.setCuesMuted(muted || !playingRef.current)
     setAudioMuted(muted)
     // 消音を解いた時点でまだ鳴っていなければ、ここが最初のユーザー操作になる
     if (!muted) startBgm()
@@ -196,8 +206,8 @@ export function PlayerApp() {
       <div className="tobiTrack">
         <input aria-label="Book progress" type="range" min={0} max={1} step={0.001} value={progress}
           style={{ background: `linear-gradient(to right, #168af0 0%, #168af0 ${progress * 100}%, #d6d6dd ${progress * 100}%, #d6d6dd 100%)` }}
-          onPointerDown={() => { pause(); startBgm() }}
-          onChange={(event) => { target.current = Number(event.target.value); setProgress(target.current) }} />
+          onPointerDown={pause}
+          onChange={(event) => seek(Number(event.target.value))} />
       </div>
       {hasAudio && <button className="tobiKey" aria-label={audioMuted ? 'Unmute audio' : 'Mute audio'}
         onClick={toggleAudio}>

@@ -150,8 +150,6 @@ export class AudioPlayback {
     if (this.playing) return
     this.playing = true
     this.volume = volume
-    this.muted = false
-    this.paused = false
     const element = this.element
     if (element) {
       element.loop = loop
@@ -160,10 +158,18 @@ export class AudioPlayback {
       try {
         await element.play()
       } catch (reason) {
+        // play() 待ち中の pause() は AbortError になり得る。これは開始失敗ではなく、
+        // 意図どおり一時停止されたセッションなので、再開可能なまま残す。
+        if (this.playing && this.paused) {
+          this.cancelRamp?.()
+          this.cancelRamp = rampVolume(element, this.muted ? 0 : volume, fadeSeconds)
+          return
+        }
         this.playing = false
         console.warn('failed to start audio:', reason)
         return
       }
+      if (this.paused) element.pause()
       this.cancelRamp?.()
       this.cancelRamp = rampVolume(element, this.muted ? 0 : volume, fadeSeconds)
       return
@@ -175,6 +181,9 @@ export class AudioPlayback {
     await this.context.resume()
     // 待っている間に stop されていたら、もう音源を作らない
     if (!this.playing) return
+    // resume() 待ちのあいだに停止・スクラブされた場合、音源を作る前に再び止める。
+    // ここが無いと suspended → running の競合で数フレームだけ音が漏れる。
+    if (this.paused) await this.context.suspend()
     this.gain = this.context.createGain()
     this.gain.gain.setValueAtTime(0, this.context.currentTime)
     this.gain.gain.linearRampToValueAtTime(this.muted ? 0 : volume, this.context.currentTime + fadeSeconds)
@@ -191,11 +200,13 @@ export class AudioPlayback {
    *
    * `stop` と `play` で往復させると音源を作り直すことになり、曲は必ず頭から鳴る。
    * ここでは音源をそのまま走らせて音量だけ動かすので、戻したときはその間に進んだ
-   * 続きから聞こえる。まだ鳴り始めていないときは何もしない (最初の再生は play の仕事)。
+   * 続きから聞こえる。まだ鳴り始めていないときは音源には触れず、意思だけを記録して
+   * play が作る最初のゲインへ引き継ぐ。
    */
   setMuted(muted: boolean, fadeSeconds = 0.25): void {
-    if (!this.playing) return
     this.muted = muted
+    // ロード直後や resume() 前にも意思を記録する。play() はこの値を初期ゲインへ使う。
+    if (!this.playing) return
     const target = muted ? 0 : this.volume
     const element = this.element
     if (element) {
@@ -227,8 +238,10 @@ export class AudioPlayback {
    * 消音との併用は素直で、両方が独立に効く。
    */
   setPaused(paused: boolean): void {
-    if (!this.playing || this.paused === paused) return
+    if (this.paused === paused) return
     this.paused = paused
+    // 音源作成前にも停止意思を保持し、play() の非同期初期化後に再確認する。
+    if (!this.playing) return
     const element = this.element
     if (element) {
       if (paused) element.pause()
