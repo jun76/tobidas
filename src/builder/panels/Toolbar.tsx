@@ -6,16 +6,16 @@ import { createLocalizedBookProject, useBuilderStore } from '../store'
 import { supportsDirectoryPicker } from '../io/browserFiles'
 import type { ImportResult } from '../io/packageImport'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
-import { MessageDialog } from '../ui/MessageDialog'
+import { useDialogs } from '../ui/DialogProvider'
 import { requestElementDelete } from '../elementDelete'
 import st from '../builder.module.css'
 
 export function Toolbar({ onScreenshot }: { onScreenshot: () => Promise<void> }) {
   const t = useT()
   const store = useBuilderStore()
+  const dialogs = useDialogs()
   const [confirmNew, setConfirmNew] = useState(false)
   const [screenshotState, setScreenshotState] = useState<'idle' | 'saving' | 'saved'>('idle')
-  const [screenshotError, setScreenshotError] = useState<string | null>(null)
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -56,13 +56,6 @@ export function Toolbar({ onScreenshot }: { onScreenshot: () => Promise<void> })
           onClose={() => setConfirmNew(false)}
         />
       )}
-      {screenshotError && (
-        <MessageDialog
-          title={t.toolbar.screenshotFailed}
-          body={screenshotError}
-          onClose={() => setScreenshotError(null)}
-        />
-      )}
       <OpenButton />
       <SaveButton />
       <ExportMenu />
@@ -85,7 +78,7 @@ export function Toolbar({ onScreenshot }: { onScreenshot: () => Promise<void> })
             })
             .catch((error) => {
               setScreenshotState('idle')
-              setScreenshotError(String(error))
+              dialogs.showMessage(t.toolbar.screenshotFailed, String(error))
             })
         }}
       >
@@ -133,18 +126,19 @@ function Dropdown({ label, children }: { label: string; children: (close: () => 
  */
 function OpenButton() {
   const t = useT()
+  const dialogs = useDialogs()
   const setProject = useBuilderStore((state) => state.setProject)
   const dirRef = useRef<HTMLInputElement>(null)
   const apply = (result: ImportResult) => {
     setProject(result.project, 'import')
-    if (result.notices.length) alert(result.notices.join('\n'))
+    if (result.notices.length) dialogs.showMessage(t.dialog.importNoticeTitle, result.notices.join('\n'))
   }
   const run = async (work: () => Promise<ImportResult | 'aborted' | null>) => {
     try {
       const result = await work()
       if (result === null) dirRef.current?.click()
       else if (result !== 'aborted') apply(result)
-    } catch (error) { alert(String(error)) }
+    } catch (error) { dialogs.showMessage(t.dialog.errorTitle, String(error)) }
   }
   return <>
     <button title={t.toolbar.openHint} onClick={() =>
@@ -164,22 +158,27 @@ function OpenButton() {
 /** 保存先フォルダへ `project.json` + `assets/` を書く。書ける口を持たないブラウザでは断る */
 function SaveButton() {
   const t = useT()
+  const dialogs = useDialogs()
   const project = useBuilderStore((state) => state.project)
   return <button title={t.toolbar.saveHint} onClick={() => {
     if (!supportsDirectoryPicker()) {
-      alert(t.io.folderSaveUnsupported)
+      dialogs.showMessage(t.dialog.unsupportedTitle, t.io.folderSaveUnsupported)
       return
     }
     void (async () => (await import('../io/packageExport')).exportPackageToDirectory(project))()
-      .catch((error) => alert(String(error)))
+      .catch((error) => dialogs.showMessage(t.dialog.errorTitle, String(error)))
   }}>{t.toolbar.save}</button>
 }
 
 function ExportMenu() {
   const t = useT()
+  const dialogs = useDialogs()
   const project = useBuilderStore((state) => state.project)
   return <Dropdown label={t.toolbar.export}>{(close) => {
-    const run = (work: () => Promise<unknown>) => { close(); void work().catch((error) => alert(String(error))) }
+    const run = (work: () => Promise<unknown>) => {
+      close()
+      void work().catch((error) => dialogs.showMessage(t.dialog.errorTitle, String(error)))
+    }
     return <>
       <button onClick={() => run(async () => (await import('../io/siteExport')).exportSiteHtml(project))}>
         {t.toolbar.exportSiteHtml}

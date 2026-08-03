@@ -6,6 +6,7 @@ import type { ParentSpace } from '../../schema/stageElement'
 import { useT } from '../i18n'
 import { PART_PRESETS, type PlacementMode, type VisualPresetId } from '../presets'
 import { fileToAsset } from '../assets/ingest'
+import { useDialogs } from '../ui/DialogProvider'
 import { requestContainerElementsDelete, requestElementDelete, requestSpreadDelete } from '../elementDelete'
 import { ELEMENT_DND_MIME, hiddenKey, useBuilderStore } from '../store'
 import type { BookSelection } from '../state/editorState'
@@ -84,6 +85,7 @@ export function BookNavigator() {
 export function PartPresets() {
   const t = useT()
   const store = useBuilderStore()
+  const dialogs = useDialogs()
   const selectedPage = store.selection.type === 'page' && store.selection.spreadId === store.activeSpreadId
     ? store.selection.side
     : undefined
@@ -146,7 +148,7 @@ export function PartPresets() {
           if (!file) return
           void fileToAsset(file, new Set(store.project.assets.map((asset) => asset.id)))
             .then((asset) => store.assignBgm(asset))
-            .catch((error) => alert(String(error)))
+            .catch((error) => dialogs.showMessage(t.dialog.errorTitle, String(error)))
         }} />
     </section>
 }

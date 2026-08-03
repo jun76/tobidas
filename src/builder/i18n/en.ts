@@ -49,6 +49,13 @@ export const en: Dict = {
     exportSiteHtml: 'Single HTML',
     exportSiteZip: 'Static host',
   },
+  dialog: {
+    ok: 'OK',
+    cancel: 'Cancel',
+    errorTitle: 'The operation failed',
+    importNoticeTitle: 'Book loaded',
+    unsupportedTitle: 'This operation is unavailable',
+  },
   navigator: {
     addSpread: 'Spread',
     frontCover: 'Front cover',

@@ -52,6 +52,13 @@ export const ja = {
     exportSiteHtml: '単一HTML',
     exportSiteZip: '静的ホスト',
   },
+  dialog: {
+    ok: 'OK',
+    cancel: 'キャンセル',
+    errorTitle: '処理に失敗しました',
+    importNoticeTitle: '作品を読み込みました',
+    unsupportedTitle: 'この操作は利用できません',
+  },
   navigator: {
     addSpread: '見開き',
     frontCover: '表表紙',

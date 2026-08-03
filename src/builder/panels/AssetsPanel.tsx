@@ -10,11 +10,13 @@ import { assetAccept } from '../../package/model'
 import { assetKindForMode } from '../presets'
 import { useBuilderStore } from '../store'
 import { fileToAsset } from '../assets/ingest'
+import { useDialogs } from '../ui/DialogProvider'
 import st from '../builder.module.css'
 
 export function AssetsPanel() {
   const t = useT()
   const store = useBuilderStore()
+  const dialogs = useDialogs()
   const addRef = useRef<HTMLInputElement>(null)
   const [replacing, setReplacing] = useState<Asset | null>(null)
   const [dragging, setDragging] = useState(false)
@@ -26,7 +28,7 @@ export function AssetsPanel() {
     if (!files) return
     for (const file of files) {
       try { store.addAsset(await fileToAsset(file, existing())) }
-      catch (error) { alert(String(error)) }
+      catch (error) { dialogs.showMessage(t.dialog.errorTitle, String(error)) }
     }
   }
   const replace = async (file: File | undefined) => {
@@ -34,7 +36,7 @@ export function AssetsPanel() {
     try {
       const asset = await fileToAsset(file, new Set())
       store.replaceAsset(replacing.id, { ...asset, id: replacing.id, name: replacing.name })
-    } catch (error) { alert(String(error)) }
+    } catch (error) { dialogs.showMessage(t.dialog.errorTitle, String(error)) }
     setReplacing(null)
   }
   /**
