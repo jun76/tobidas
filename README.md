@@ -9,6 +9,8 @@
 <p align="center">
   <a href="https://tobidas.9rsgy78c9c.workers.dev/">オンライン版を使う</a>
   ·
+  <a href="https://tobidas-demo.9rsgy78c9c.workers.dev/">公開作例を見る</a>
+  ·
   <a href="./README.en.md">English</a>
 </p>
 
@@ -71,6 +73,10 @@ my-book/
 - **静的ホスト** — `index.html`と`assets/`をZIPにまとめます。Cloudflare Pagesなどの静的ホスティング向けです。
 
 ## サンプル作品
+
+[Chasing the Forest Lanternをブラウザで見る](https://tobidas-demo.9rsgy78c9c.workers.dev/)
+— `forest_lantern`をtobidasから単一HTMLとして書き出して公開した作例です。
+インストールせず、そのままページの開閉、立体表現、アニメーション、サウンドを体験できます。
 
 `projects/`には、すぐに読み込める4つのサンプル作品があります。
 
