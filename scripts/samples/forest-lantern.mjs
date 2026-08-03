@@ -51,7 +51,7 @@ export function build(updatedAt) {
       ambient: { color: '#cfd8ef', intensity: 1.0 },
       directional: { color: '#ffd9a8', intensity: 1.5, position: [-5, 9, 6] },
     },
-    cover: { front: 'cover-front.svg', inside: 'cover-inside.svg' },
+    cover: { front: 'cover-front.svg', inside: 'cover-inside.svg', back: 'cover-back.svg' },
   })
   // wide(高さ, 素材) は縦横比を実WebPから引く。余白を切っても定義は追従する
   const { art, wide } = work
@@ -232,6 +232,8 @@ export function build(updatedAt) {
     rect(0, 0, 1250, 1000, '#25384c'),
     ...Array.from({ length: 26 }, (_, i) => circle(70 + (i % 7) * 185, 120 + Math.floor(i / 7) * 250, 26, C.moss, ' opacity=".55"')),
   )), { opaque: true })
+  art('cover-back.svg', svg(PAGE_ART.width, PAGE_ART.height,
+    rect(0, 0, 1250, 1000, C.night)), { opaque: true })
 
   const firDark = fir('tree-fir-dark.svg', '#24463a', '#2e5745')
   const firMid = fir('tree-fir-mid.svg', C.moss, C.mossLight)

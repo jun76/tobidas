@@ -6587,7 +6587,7 @@
     ],
     "backCover": {
       "frontAsset": "sky.webp",
-      "backAsset": "cover.webp"
+      "backAsset": "cover-back.webp"
     }
   },
   "assets": [
@@ -6671,6 +6671,15 @@
       "width": 900,
       "height": 720,
       "bytes": 248872
+    },
+    {
+      "id": "cover-back.webp",
+      "name": "cover-back",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 900,
+      "height": 720,
+      "bytes": 241876
     },
     {
       "id": "tree.webp",

@@ -76,7 +76,7 @@ export function build(updatedAt) {
       ambient: { color: '#dcd4e6', intensity: 1.0 },
       directional: { color: '#ffd7b0', intensity: 1.4, position: [-6, 9, 5] },
     },
-    cover: { front: 'cover-front.svg', inside: 'cover-inside.svg' },
+    cover: { front: 'cover-front.svg', inside: 'cover-inside.svg', back: 'cover-back.svg' },
   })
   // wide(高さ, 素材) は縦横比を実WebPから引く。余白を切っても定義は追従する
   const { art, aspect, wide } = work
@@ -339,6 +339,8 @@ export function build(updatedAt) {
     rect(0, 0, 1250, 1000, '#d8b98d'),
     ...Array.from({ length: 40 }, (_, i) => rect((i % 8) * 156 + 20, Math.floor(i / 8) * 200 + 30, 110, 8, C.kraftDark, ' opacity=".4"')),
   )), { opaque: true })
+  art('cover-back.svg', svg(PAGE_ART.width, PAGE_ART.height,
+    rect(0, 0, 1250, 1000, C.kraft)), { opaque: true })
 
   const houseA = house('house-a.svg', WALL[0], ROOF[0])
   const houseB = house('house-b.svg', WALL[1], ROOF[2])

@@ -114,7 +114,7 @@ export function build(updatedAt) {
       ambient: { color: '#ffffff', intensity: 1.25 },
       directional: { color: '#fff3e2', intensity: 1.4, position: [-4, 10, 6] },
     },
-    cover: { front: 'cover-front.svg', inside: 'cover-inside.svg' },
+    cover: { front: 'cover-front.svg', inside: 'cover-inside.svg', back: 'cover-back.svg' },
   })
   const { art } = work
 
@@ -233,6 +233,8 @@ export function build(updatedAt) {
     ...Array.from({ length: 24 }, (_, i) => wash(120 + (i % 6) * 210, 150 + Math.floor(i / 6) * 240, 84, 84,
       [C.spring, C.summer, C.autumn, C.winter][i % 4], .3)),
   )), { opaque: true })
+  art('cover-back.svg', svg(PAGE_ART.width, PAGE_ART.height,
+    rect(0, 0, 1250, 1000, '#f2ece0')), { opaque: true })
 
   const window = frameArt('window-frame.svg')
   const viewSpring = view('view-spring.svg', '#dff0f6', '#c6dfa8', C.spring, (s) => group(

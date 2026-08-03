@@ -8009,7 +8009,7 @@
     ],
     "backCover": {
       "frontAsset": "cover-inside.webp",
-      "backAsset": "cover-front.webp"
+      "backAsset": "cover-back.webp"
     }
   },
   "assets": [
@@ -8030,6 +8030,15 @@
       "width": 1250,
       "height": 1000,
       "bytes": 308622
+    },
+    {
+      "id": "cover-back.webp",
+      "name": "cover-back",
+      "type": "image",
+      "mime": "image/webp",
+      "width": 1250,
+      "height": 1000,
+      "bytes": 295042
     },
     {
       "id": "house-a.webp",
