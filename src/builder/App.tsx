@@ -16,6 +16,8 @@ import { BookProperties, SelectionDetails } from './panels/Properties'
 import { Viewport, viewportGlRef } from './Viewport'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 import { SplitStack } from './ui/SplitStack'
+import { AiWorkspace } from './ai/AiWorkspace'
+import { readAiMode, writeAiMode } from './ai/session'
 import st from './builder.module.css'
 
 function Splitter({ onDelta }: { onDelta: (delta: number) => void }) {
@@ -53,6 +55,12 @@ export default function App() {
   } | null>(null)
   const [leftWidth, setLeftWidth] = useState(() => loadPanelWidth('left', 280))
   const [rightWidth, setRightWidth] = useState(() => loadPanelWidth('right', 320))
+  const [aiMode, setAiModeState] = useState(readAiMode)
+
+  const setAiMode = (enabled: boolean) => {
+    setAiModeState(enabled)
+    writeAiMode(enabled)
+  }
 
   useEffect(() => { savePanelWidth('left', leftWidth) }, [leftWidth])
   useEffect(() => { savePanelWidth('right', rightWidth) }, [rightWidth])
@@ -139,8 +147,8 @@ export default function App() {
       onOk={() => useBuilderStore.getState().clearContainerElements(pendingContainerDelete.spreadId, pendingContainerDelete.parentType)}
       onClose={() => setPendingContainerDelete(null)}
     />}
-    <Toolbar key={`toolbar-${projectSession}`} onScreenshot={screenshot} />
-    <div className={st.main} key={`workspace-${projectSession}`}>
+    <Toolbar key={`toolbar-${projectSession}`} onScreenshot={screenshot} aiMode={aiMode} onAiModeChange={setAiMode} />
+    {aiMode ? <AiWorkspace key={`ai-workspace-${projectSession}`} /> : <div className={st.main} key={`workspace-${projectSession}`}>
       <aside className={st.left} style={{ width: leftWidth, minWidth: leftWidth }}>
         <SplitStack storageKey="left" initial={[280, 210]} panes={[
           { key: 'navigator', label: t.app.panelNavigator, node: <BookNavigator /> },
@@ -157,7 +165,7 @@ export default function App() {
           { key: 'detail', label: t.app.panelDetail, node: <SelectionDetails /> },
         ]} />
       </aside>
-    </div>
+    </div>}
     <StatusBar key={`status-${projectSession}`} />
   </div>
 }

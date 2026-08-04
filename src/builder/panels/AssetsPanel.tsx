@@ -24,8 +24,7 @@ export function AssetsPanel() {
   const replaceRef = useRef<HTMLInputElement>(null)
   const existing = () => new Set(store.project.assets.map((asset) => asset.id))
 
-  const addFiles = async (files: FileList | null) => {
-    if (!files) return
+  const addFiles = async (files: readonly File[]) => {
     for (const file of files) {
       try { store.addAsset(await fileToAsset(file, existing())) }
       catch (error) { dialogs.showMessage(t.dialog.errorTitle, String(error)) }
@@ -61,6 +60,7 @@ export function AssetsPanel() {
     // 掴めるのは、いま選んでいるプリセットが受け取れる種類だけ
     const draggable = asset.type === 'audio' ? kind === 'audio' : kind === 'image'
     return <div key={asset.id} className={`${st.assetRow} ${draggable ? st.assetDraggable : ''} ${dragging && draggable ? st.assetDragging : ''}`}
+      data-tobidas-kind="asset" data-tobidas-id={asset.id}
       onPointerDown={(event) => {
         if (!draggable || event.button !== 0 || (event.target as Element).closest('button')) return
         event.preventDefault()
@@ -78,7 +78,7 @@ export function AssetsPanel() {
       }}
       onPointerCancel={(event) => cancelAsset(asset.id, event.clientX, event.clientY)}>
       {asset.type !== 'audio'
-        ? <img className={st.assetThumb} draggable={false} src={asset.type === 'svg' ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(asset.data)}` : asset.data} />
+        ? <img className={st.assetThumb} draggable={false} alt={asset.name} src={asset.type === 'svg' ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(asset.data)}` : asset.data} />
         : <button className={`${st.assetThumb} ${st.assetThumbButton}`}
           aria-label={previewing === asset.id ? t.assets.stopPreview(asset.name) : t.assets.preview(asset.name)}
           title={t.assets.previewHint}
@@ -116,9 +116,13 @@ export function AssetsPanel() {
       {!audioAssets.length && <div className={st.assetEmpty}>{t.assets.noAudio}</div>}
     </>}
     {!store.project.assets.length && <div className={st.hintSmall}>{t.assets.formats}</div>}
-    <input ref={addRef} hidden multiple type="file" accept={assetAccept('svg', 'image', 'audio')}
-      onChange={(event) => { void addFiles(event.target.files); event.target.value = '' }} />
-    <input ref={replaceRef} hidden type="file"
+    <input ref={addRef} hidden multiple type="file" aria-label={t.assets.load} accept={assetAccept('svg', 'image', 'audio')}
+      onChange={(event) => {
+        const files = Array.from(event.currentTarget.files ?? [])
+        event.currentTarget.value = ''
+        void addFiles(files)
+      }} />
+    <input ref={replaceRef} hidden type="file" aria-label={replacing ? t.assets.replace(replacing.name) : t.assets.replaceHint}
       accept={replacing?.type === 'audio' ? assetAccept('audio') : assetAccept('svg', 'image')}
       onChange={(event) => { void replace(event.target.files?.[0]); event.target.value = '' }} />
     </section>

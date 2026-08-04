@@ -40,12 +40,15 @@ export function BookNavigator() {
 
   return <section className={`${st.panel} ${st.navigatorPanel}`} onClick={clearSelection}>
       <div className={st.panelTitle}>{t.app.panelNavigator} <button onClick={store.addSpread}><Icon as={Plus} />{t.navigator.addSpread}</button></div>
-      <Row label={t.navigator.frontCover} tag={t.navigator.tagCover} active={selected({ type: 'cover', side: 'front' })} onClick={() => store.select({ type: 'cover', side: 'front' })} />
+      <div role="tree" aria-label={t.app.panelNavigator}>
+      <Row label={t.navigator.frontCover} tag={t.navigator.tagCover} active={selected({ type: 'cover', side: 'front' })}
+        dataKind="cover" dataId="front" onClick={() => store.select({ type: 'cover', side: 'front' })} />
       {store.project.book.spreads.map((spread, index) => {
         const expanded = isSpreadExpanded(spread.id)
         return <div key={spread.id}>
         <Row label={`${index + 1}. ${spread.name}`} tag={t.navigator.tagSpread}
           active={spread.id === store.activeSpreadId && !coverSelected}
+          dataKind="spread" dataId={spread.id}
           onClick={() => store.setActiveSpread(spread.id)}
           expanded={expanded} onToggle={() => toggleSpread(spread.id)}>
           <button className={st.ghostBtn}
@@ -66,7 +69,9 @@ export function BookNavigator() {
         {expanded && <Tree spreadId={spread.id} />}
       </div>
       })}
-      <Row label={t.navigator.backCover} tag={t.navigator.tagCover} active={selected({ type: 'cover', side: 'back' })} onClick={() => store.select({ type: 'cover', side: 'back' })} />
+      <Row label={t.navigator.backCover} tag={t.navigator.tagCover} active={selected({ type: 'cover', side: 'back' })}
+        dataKind="cover" dataId="back" onClick={() => store.select({ type: 'cover', side: 'back' })} />
+      </div>
     </section>
 }
 
@@ -99,25 +104,8 @@ export function PartPresets() {
   const assetPresets = PART_PRESETS.filter((preset) => preset.requiresAsset)
   const immediatePresets = PART_PRESETS.filter((preset) => !preset.requiresAsset)
   const createImmediate = (id: VisualPresetId) => {
-    store.addElement(store.activeSpreadId, 'visual', { type: `${selectedPage ?? 'right'}-page` })
-    const selection = useBuilderStore.getState().selection
-    if (selection.type !== 'element') return
-    store.updateElement(selection.spreadId, selection.elementId, (element) => {
-      if (element.type !== 'visual') return
-      if (id === 'light-particles') {
-        element.name = t.presets[id]
-        element.particles.enabled = true
-        element.width = 2
-        element.height = 2
-        element.pivot = [.5, 0]
-        element.baseTransform.rotation = [0, 0, 0]
-      } else {
-        element.name = t.defaults.text
-        element.text = t.defaults.text
-        element.pivot = [.5, .5]
-        element.baseTransform.rotation = [-90, 0, 0]
-      }
-    })
+    if (id !== 'light-particles' && id !== 'page-text') return
+    store.addPresetVisual(store.activeSpreadId, selectedPage ?? 'right', id)
   }
 
   return <section className={st.panel}>
@@ -141,7 +129,7 @@ export function PartPresets() {
       <div className={st.hintSmall}>
         {store.placement ? t.presets.dropHint : t.presets.pickHint}
       </div>
-      <input ref={bgmRef} hidden type="file" accept={assetAccept('audio')}
+      <input ref={bgmRef} hidden type="file" aria-label={t.presets.bgm} accept={assetAccept('audio')}
         onChange={(event) => {
           const file = event.target.files?.[0]
           event.target.value = ''
@@ -187,6 +175,7 @@ function Tree({ spreadId }: { spreadId: string }) {
       return <div key={side}>
       <Row label={side === 'left' ? t.properties.leftPage : t.properties.rightPage} tag={t.navigator.tagPage}
         active={store.selection.type === 'page' && store.selection.spreadId === spreadId && store.selection.side === side}
+        dataKind="page" dataId={`${spreadId}:${side}`}
         onClick={() => store.select({ type: 'page', spreadId, side })}
         spreadId={spreadId} dropParent={{ type: `${side}-page` }}
         expanded={children.length ? expanded : undefined} onToggle={children.length ? () => toggle(key) : undefined}>
@@ -216,6 +205,7 @@ function ElementRow({ id, spreadId, collapsed, toggle }: { id: string; spreadId:
   return <div style={{ paddingLeft: 12 }}>
     <Row label={element.name} tag={element.type === 'visual' ? t.presets.groupVisual : 'group'}
       active={store.selection.type === 'element' && store.selection.elementId === id}
+      dataKind="element" dataId={id}
       onClick={() => store.select({ type: 'element', spreadId, elementId: id })}
       spreadId={spreadId} draggableId={id} dropParent={{ type: 'element', elementId: id }}
       expanded={children.length ? expanded : undefined} onToggle={children.length ? () => toggle(key) : undefined}>
@@ -242,17 +232,31 @@ interface RowProps {
   dropParent?: ParentSpace
   expanded?: boolean
   onToggle?: () => void
+  dataKind?: string
+  dataId?: string
 }
 
-function Row({ label, tag, active, onClick, children, spreadId, draggableId, dropParent, expanded, onToggle }: RowProps) {
+function Row({ label, tag, active, onClick, children, spreadId, draggableId, dropParent, expanded, onToggle, dataKind, dataId }: RowProps) {
   const t = useT()
   const store = useBuilderStore()
   const [dropOver, setDropOver] = useState(false)
   const acceptsElement = (event: DragEvent) => Boolean(spreadId && dropParent && event.dataTransfer.types.includes(ELEMENT_DND_MIME))
 
   return <div className={`${st.treeRow} ${active ? st.selected : ''} ${dropOver ? st.treeDropTarget : ''}`}
+    role="treeitem"
+    tabIndex={0}
+    aria-label={`${tag} ${label}`}
+    aria-selected={active}
+    aria-expanded={expanded}
+    data-tobidas-kind={dataKind}
+    data-tobidas-id={dataId}
     draggable={Boolean(draggableId)}
     onClick={onClick}
+    onKeyDown={(event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return
+      event.preventDefault()
+      onClick()
+    }}
     onDragStart={(event) => {
       if (!draggableId) return
       event.stopPropagation()
