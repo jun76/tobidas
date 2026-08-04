@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Camera, Check, ChevronDown, LoaderCircle, Pencil, Play, Redo2, Undo2 } from 'lucide-react'
+import { Bot, Camera, Check, ChevronDown, LoaderCircle, Pencil, Play, Redo2, Undo2 } from 'lucide-react'
 import { LOCALES, useLocaleStore, useT, type Locale } from '../i18n'
 import { Icon, ICON } from '../../ui/Icon'
 import { createLocalizedBookProject, useBuilderStore } from '../store'
@@ -10,7 +10,11 @@ import { useDialogs } from '../ui/DialogProvider'
 import { requestElementDelete } from '../elementDelete'
 import st from '../builder.module.css'
 
-export function Toolbar({ onScreenshot }: { onScreenshot: () => Promise<void> }) {
+export function Toolbar({ onScreenshot, aiMode, onAiModeChange }: {
+  onScreenshot: () => Promise<void>
+  aiMode: boolean
+  onAiModeChange: (enabled: boolean) => void
+}) {
   const t = useT()
   const store = useBuilderStore()
   const dialogs = useDialogs()
@@ -64,6 +68,11 @@ export function Toolbar({ onScreenshot }: { onScreenshot: () => Promise<void> })
       <button aria-label={t.toolbar.redo} title={t.toolbar.redoHint}
         onClick={store.redo} disabled={!store.redoStack.length}><Icon as={Redo2} size={ICON.bar} /></button>
       <span className={st.spacer} />
+      <button type="button" className={aiMode ? st.active : ''} aria-pressed={aiMode}
+        aria-label={aiMode ? t.toolbar.aiModeExit : t.toolbar.aiMode}
+        title={aiMode ? t.toolbar.aiModeExit : t.toolbar.aiModeHint} onClick={() => onAiModeChange(!aiMode)}>
+        <Icon as={Bot} size={ICON.bar} />{aiMode ? t.toolbar.aiModeExit : t.toolbar.aiMode}
+      </button>
       <LocalePicker />
       <button
         aria-label={t.toolbar.screenshot}
@@ -145,7 +154,7 @@ function OpenButton() {
       void run(async () => (await import('../io/packageImport')).importPackageViaDirectoryPicker())}>
       {t.toolbar.open}
     </button>
-    <input ref={dirRef} hidden type="file" {...({ webkitdirectory: '' } as object)} onChange={(event) => {
+    <input ref={dirRef} hidden type="file" aria-label={t.toolbar.open} {...({ webkitdirectory: '' } as object)} onChange={(event) => {
       const files = event.target.files
       if (files?.length) {
         void run(async () => (await import('../io/packageImport')).importPackageFileList(files))

@@ -37,6 +37,7 @@ You can also clone this repository and run it locally or deploy it to your own s
 - Spread editing with 3D gizmos and property panels
 - Background music and sound effects such as page turns
 - Japanese and English UI
+- State and direct controls for user-side browser-use AI
 - Automatic browser-local saves
 - Export as a single HTML file or a ZIP for static hosting
 
@@ -49,6 +50,17 @@ You can also clone this repository and run it locally or deploy it to your own s
 5. Use **Save** for an editable project folder and **Export** for publishable files.
 
 Desktop Chrome or Edge is recommended because folder access uses the File System Access API.
+
+## Use with browser-use AI
+
+Enable **AI mode** in the toolbar to expose the current project, spread, selected part, asset IDs, and validation results as semantic DOM.
+AI mode switches to a dedicated workspace with a control pane on the left and a viewport on the right at roughly a 1:2 ratio.
+The standard editing panes and timeline are not duplicated, so browser-use AI can select targets, load assets, place and update parts, undo, and inspect playback from the left pane.
+AI mode can place an image by page and normalized coordinates without dragging on the Canvas.
+
+Append `?ai=1` to the URL when a browser-use AI should start with the mode enabled.
+The mode does not add an AI service or external communication, so projects and assets remain in the browser.
+Its enabled state and operation results are not stored in project data.
 
 ## Project folders
 

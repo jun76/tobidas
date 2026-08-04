@@ -1,4 +1,5 @@
 import { Diamond, Eye, EyeOff, Trash2 } from 'lucide-react'
+import { useId } from 'react'
 import { Icon } from '../../ui/Icon'
 import type { StageElement, TextFont, VisualElement } from '../../schema/stageElement'
 import type { TimelineProperty, TimelineValue } from '../../schema/timeline'
@@ -181,7 +182,7 @@ function Element({ element }: { element: StageElement }) {
     <Num label={t.properties.pivotY} value={element.pivot[1]} onChange={(value) => update((item) => { item.pivot = [item.pivot[0], value] })} />
     <Num label={t.properties.layer} value={element.layer} onChange={(value) => update((item) => { item.layer = Math.round(value) })} />
     <div className={st.row}><span className={st.rowLabel}>{t.properties.visible}</span><label>
-      <input type="checkbox" checked={element.visible} onChange={(event) => update((item) => { item.visible = event.target.checked })} />
+      <input type="checkbox" aria-label={t.properties.visible} checked={element.visible} onChange={(event) => update((item) => { item.visible = event.target.checked })} />
       {element.visible ? t.properties.visibleOn : t.properties.visibleOff}
     </label><KeyButton label={t.properties.visible} onKey={() => key('visible', element.visible)} /></div>
     <Num label={t.properties.opacity} value={element.opacity} onChange={(value) => update((item) => {
@@ -195,14 +196,14 @@ function Element({ element }: { element: StageElement }) {
       })} />
       <Num label={t.properties.width} value={element.width} onChange={(value) => update((item) => { if (item.type === 'visual') item.width = Math.max(.01, value) })} />
       <Num label={t.properties.height} value={element.height} onChange={(value) => update((item) => { if (item.type === 'visual') item.height = Math.max(.01, value) })} />
-      <label><input type="checkbox" checked={element.billboard} onChange={(event) => update((item) => {
+      <label><input type="checkbox" aria-label={t.properties.billboard} checked={element.billboard} onChange={(event) => update((item) => {
         if (item.type === 'visual') item.billboard = event.target.checked
       })} /> {t.properties.billboard}</label>
       <Text label={t.properties.backgroundColor} value={element.backgroundColor} onChange={(value) => update((item) => {
         if (item.type === 'visual') item.backgroundColor = value
       })} />
       <TextStyleFields element={element} update={update} />
-      <label><input type="checkbox" checked={element.particles.enabled} onChange={(event) => update((item) => {
+      <label><input type="checkbox" aria-label={t.presets['light-particles']} checked={element.particles.enabled} onChange={(event) => update((item) => {
         if (item.type === 'visual') item.particles.enabled = event.target.checked
       })} /> {t.presets['light-particles']}</label>
       {element.particles.enabled && <>
@@ -256,7 +257,7 @@ function TextStyleFields({ element, update }: {
   })
   const toggle = (label: string, key: 'bold' | 'italic' | 'underline') =>
     <div className={st.row} key={key}><span className={st.rowLabel}>{label}</span><label>
-      <input type="checkbox" checked={element[key]} onChange={(event) => edit((item) => {
+      <input type="checkbox" aria-label={label} checked={element[key]} onChange={(event) => edit((item) => {
         item[key] = event.target.checked
       })} />
     </label></div>
@@ -296,7 +297,8 @@ function Transform({ value, update, onKey }: {
     <div className={st.row} key={group}>
       <span className={st.rowLabel}>{group}</span>
       <div className={st.vec3}>{value.baseTransform[group].map((part, index) =>
-        <input key={index} type="number" step={group === 'rotation' ? 1 : .1} value={part}
+        <input key={index} type="number" aria-label={`${group} ${['X', 'Y', 'Z'][index]}`}
+          step={group === 'rotation' ? 1 : .1} value={part}
           onChange={(event) => update((element) => {
             element.baseTransform[group][index as 0 | 1 | 2] = Number(event.target.value)
           })} />)}
@@ -317,7 +319,8 @@ function Vec3({ label, value, onChange, step = .1 }: {
   step?: number
 }) {
   return <div className={st.row}><span className={st.rowLabel}>{label}</span><div className={st.vec3}>
-    {value.map((part, index) => <input key={index} type="number" step={step} value={part} onChange={(event) => {
+    {value.map((part, index) => <input key={index} type="number" aria-label={`${label} ${['X', 'Y', 'Z'][index]}`}
+      step={step} value={part} onChange={(event) => {
       const next = [...value] as [number, number, number]
       next[index] = Number(event.target.value)
       onChange(next)
@@ -333,11 +336,13 @@ function Asset({ label, value, onChange, onKey }: { label: string; value?: strin
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
-  return <section className={st.panel}><div className={st.panelTitle}>{title}</div>{children}</section>
+  return <section className={st.panel} aria-label={title}><div className={st.panelTitle}>{title}</div>{children}</section>
 }
 
 function Text({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  return <div className={st.row}><span className={st.rowLabel}>{label}</span><input value={value} onChange={(event) => onChange(event.target.value)} /></div>
+  const id = useId()
+  return <div className={st.row}><label className={st.rowLabel} htmlFor={id}>{label}</label>
+    <input id={id} value={value} onChange={(event) => onChange(event.target.value)} /></div>
 }
 
 /** 編集ビューの補助表示(カメラの錐台・光源のマーカー)の表示切り替え */
@@ -360,12 +365,14 @@ function KeyButton({ label, onKey }: { label: string; onKey: () => void }) {
 }
 
 function Num({ label, value, onChange, onKey }: { label: string; value: number; onChange: (value: number) => void; onKey?: () => void }) {
-  return <div className={st.row}><span className={st.rowLabel}>{label}</span><input type="number" step=".1" value={value}
+  const id = useId()
+  return <div className={st.row}><label className={st.rowLabel} htmlFor={id}>{label}</label><input id={id} type="number" step=".1" value={value}
     onChange={(event) => onChange(Number(event.target.value))} />{onKey && <KeyButton label={label} onKey={onKey} />}</div>
 }
 
 function Color({ label, value, onChange, onKey }: { label: string; value: string; onChange: (value: string) => void; onKey?: () => void }) {
-  return <div className={st.row}><span className={st.rowLabel}>{label}</span><input type="color" value={value}
+  const id = useId()
+  return <div className={st.row}><label className={st.rowLabel} htmlFor={id}>{label}</label><input id={id} type="color" value={value}
     onChange={(event) => onChange(event.target.value)} />{onKey && <KeyButton label={label} onKey={onKey} />}</div>
 }
 
@@ -376,7 +383,8 @@ function Select({ label, value, options, onChange, onKey }: {
   onChange: (value: string) => void
   onKey?: () => void
 }) {
-  return <div className={st.row}><span className={st.rowLabel}>{label}</span><select value={value}
+  const id = useId()
+  return <div className={st.row}><label className={st.rowLabel} htmlFor={id}>{label}</label><select id={id} value={value}
     onChange={(event) => onChange(event.target.value)}>{options.map(([option, text]) =>
       <option key={option} value={option}>{text}</option>)}</select>
     {onKey && <KeyButton label={label} onKey={onKey} />}

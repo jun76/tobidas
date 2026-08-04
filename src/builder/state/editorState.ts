@@ -4,7 +4,7 @@ import type { BookValidationResult } from '../../schema/bookValidate'
 import type { ParentSpace, StageElement, StageElementType } from '../../schema/stageElement'
 import type { TimelineKey, TimelineProperty, TimelineTarget, TimelineValue } from '../../schema/timeline'
 import type { RootParentType } from '../hierarchy'
-import type { PlacementMode } from '../presets'
+import type { PlacementMode, VisualPresetId } from '../presets'
 
 export type EditorMode = 'edit' | 'play'
 export type GizmoMode = 'translate' | 'rotate' | 'scale'
@@ -85,6 +85,18 @@ export interface EditorState {
     assetId: string,
     point?: { x: number; y: number },
   ): void
+  placeAssetWithPreset(
+    spreadId: string,
+    side: 'left' | 'right',
+    assetId: string,
+    presetId: Extract<VisualPresetId, 'paper-stack' | 'bottom-upright' | 'depth-layer'>,
+    point?: { x: number; y: number },
+  ): string | null
+  addPresetVisual(
+    spreadId: string,
+    side: 'left' | 'right',
+    presetId: Extract<VisualPresetId, 'light-particles' | 'page-text'>,
+  ): string | null
   updateElement(spreadId: string, id: string, change: (element: StageElement) => void): void
   removeElement(spreadId: string, id: string): void
   clearContainerElements(spreadId: string, parentType: RootParentType): void

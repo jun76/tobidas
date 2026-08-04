@@ -10,7 +10,7 @@ import { saveProject } from './persistence/projectRepository'
 import { containerElementIds, elementDescendantIds, reparentElement } from './hierarchy'
 import type { EditorState } from './state/editorState'
 import { normalizeElementLayout } from './state/elementConstraints'
-import { PART_PRESETS } from './presets'
+import { PART_PRESETS, type VisualPresetId } from './presets'
 import { BGM_VOLUME } from '../audio/playback'
 import { createTimelineCommands } from './state/timelineCommands'
 
@@ -76,6 +76,83 @@ export const useBuilderStore = create<EditorState>((set, get) => {
       issues: validateBookProject(next),
     })
     autosave.schedule(next)
+  }
+
+  const placeAssetWithPreset = (
+    spreadId: string,
+    side: 'left' | 'right',
+    assetId: string,
+    presetId: Extract<VisualPresetId, 'paper-stack' | 'bottom-upright' | 'depth-layer'>,
+    point?: { x: number; y: number },
+  ): string | null => {
+    const preset = PART_PRESETS.find((item) => item.id === presetId)
+    const state = get()
+    const spread = state.project.book.spreads.find((item) => item.id === spreadId)
+    const asset = state.project.assets.find((item) => item.id === assetId)
+    if (!spread || !asset || (asset.type !== 'image' && asset.type !== 'svg') || !preset?.requiresAsset) return null
+
+    const parent = { type: `${side}-page` as const }
+    const created = createStageElement('visual', parent)
+    if (created.type !== 'visual') return null
+    const flat = preset.id === 'paper-stack'
+    created.image = assetId
+    created.name = asset.name
+    if (asset.width && asset.height) created.height = created.width * asset.height / asset.width
+    created.pivot = flat ? [.5, .5] : [.5, 0]
+    const width = state.project.book.format.pageWidth
+    const depth = width / state.project.book.format.pageAspect
+    const x = ((point?.x ?? .5) - .5) * width
+    created.baseTransform.position = [x, flat ? .005 : 0, ((point?.y ?? .5) - .5) * depth]
+    created.baseTransform.rotation = flat ? [-90, 0, 0] : [0, 0, 0]
+    if (preset.id === 'depth-layer') {
+      created.width = width * 2
+      created.height = asset.width && asset.height ? created.width * asset.height / asset.width : depth
+      created.pivot = [.5, 0]
+      created.baseTransform.position = [side === 'left' ? width / 2 : -width / 2, 0, -depth / 2]
+    }
+    commit((project) => {
+      const target = project.book.spreads.find((item) => item.id === spreadId)
+      if (!target) return
+      target.elements.push(created)
+      normalizeElementLayout(target, created.id, width)
+    })
+    set({ selection: { type: 'element', spreadId, elementId: created.id } })
+    return created.id
+  }
+
+  const addPresetVisual = (
+    spreadId: string,
+    side: 'left' | 'right',
+    presetId: Extract<VisualPresetId, 'light-particles' | 'page-text'>,
+  ): string | null => {
+    const state = get()
+    if (!state.project.book.spreads.some((item) => item.id === spreadId)) return null
+    const created = createStageElement('visual', { type: `${side}-page` })
+    if (created.type !== 'visual') return null
+    if (presetId === 'light-particles') {
+      created.name = t().presets[presetId]
+      created.particles.enabled = true
+      created.width = 2
+      created.height = 2
+      created.pivot = [.5, 0]
+      created.baseTransform.rotation = [0, 0, 0]
+    } else {
+      created.name = t().defaults.text
+      created.text = t().defaults.text
+      created.pivot = [.5, .5]
+      created.baseTransform.rotation = [-90, 0, 0]
+      const measured = measureTextBox(created, created.fontSize)
+      created.width = measured.width
+      created.height = measured.height
+    }
+    commit((project) => {
+      const target = project.book.spreads.find((item) => item.id === spreadId)
+      if (!target) return
+      target.elements.push(created)
+      normalizeElementLayout(target, created.id, project.book.format.pageWidth)
+    })
+    set({ selection: { type: 'element', spreadId, elementId: created.id } })
+    return created.id
   }
 
   return {
@@ -276,38 +353,10 @@ export const useBuilderStore = create<EditorState>((set, get) => {
       const placement = get().placement
       const preset = PART_PRESETS.find((item) => item.id === placement)
       if (!preset || !preset.requiresAsset) return
-      const parent = { type: `${side}-page` as const }
-      const created = createStageElement('visual', parent)
-      if (created.type !== 'visual') return
-      const asset = get().project.assets.find((item) => item.id === assetId)
-      const flat = preset.id === 'paper-stack'
-      created.image = assetId
-      created.name = asset?.name ?? t().defaults.image
-      if (asset?.width && asset.height) created.height = created.width * asset.height / asset.width
-      created.pivot = flat ? [.5, .5] : [.5, 0]
-      const width = get().project.book.format.pageWidth
-      const depth = width / get().project.book.format.pageAspect
-      const x = ((point?.x ?? .5) - .5) * width
-      created.baseTransform.position = [
-        x,
-        flat ? .005 : 0,
-        ((point?.y ?? .5) - .5) * depth,
-      ]
-      created.baseTransform.rotation = flat ? [-90, 0, 0] : [0, 0, 0]
-      if (preset.id === 'depth-layer') {
-        created.width = width * 2
-        created.height = asset?.width && asset.height ? created.width * asset.height / asset.width : depth
-        created.pivot = [.5, 0]
-        created.baseTransform.position = [side === 'left' ? width / 2 : -width / 2, 0, -depth / 2]
-      }
-      commit((project) => {
-        const spread = project.book.spreads.find((item) => item.id === spreadId)
-        if (!spread) return
-        spread.elements.push(created)
-        normalizeElementLayout(spread, created.id, width)
-      })
-      set({ selection: { type: 'element', spreadId, elementId: created.id } })
+      placeAssetWithPreset(spreadId, side, assetId, preset.id as Extract<VisualPresetId, 'paper-stack' | 'bottom-upright' | 'depth-layer'>, point)
     },
+    placeAssetWithPreset,
+    addPresetVisual,
     updateElement: (spreadId, id, change) => commit((project) => {
       const element = project.book.spreads.find((spread) => spread.id === spreadId)?.elements.find((item) => item.id === id)
       if (element) {

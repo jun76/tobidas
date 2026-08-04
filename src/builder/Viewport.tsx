@@ -23,7 +23,7 @@ import { selectActiveSpread } from './state/selectors'
 
 export const viewportGlRef: { current: THREE.WebGLRenderer | null } = { current: null }
 
-export function Viewport() {
+export function Viewport({ showEditTimeline = true }: { showEditTimeline?: boolean } = {}) {
   const t = useT()
   const store = useBuilderStore()
   const editCameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -40,6 +40,17 @@ export function Viewport() {
   const viewTitle = coverSide
     ? (coverSide === 'front' ? t.navigator.frontCover : t.navigator.backCover)
     : activeSpreadName
+  const selectionLabel = (() => {
+    const selection = store.selection
+    if (selection.type === 'book') return `${store.project.name} (${store.project.id})`
+    if (selection.type === 'light') return t.properties.directionalLight
+    if (selection.type === 'cover') return selection.side
+    const spread = store.project.book.spreads.find((item) => item.id === selection.spreadId)
+    if (selection.type === 'spread') return `${spread?.name ?? selection.spreadId} (${selection.spreadId})`
+    if (selection.type === 'page') return `${spread?.name ?? selection.spreadId} ${selection.side} (${selection.spreadId}:${selection.side})`
+    const element = spread?.elements.find((item) => item.id === selection.elementId)
+    return `${element?.name ?? selection.elementId} (${selection.elementId})`
+  })()
   // 再生ボタンは3態。終端では「最初から」になる (書き出した再生画面と同じ)
   const playbackLabel = playback.isAutoPlaying ? t.viewport.pause : playback.atEnd ? t.viewport.replay : t.viewport.play
   const hidden = store.hidden
@@ -71,6 +82,8 @@ export function Viewport() {
     ref={rootRef}
     className={`${st.viewport} ${soundDropOver ? st.viewportSoundDrop : ''}`}
     data-viewport-root
+    role="region"
+    aria-label={t.viewport.scene(viewTitle ?? '', store.mode === 'edit' ? t.toolbar.edit : t.toolbar.play, selectionLabel)}
     onWheel={(event) => {
       if (store.mode === 'play') {
         event.preventDefault()
@@ -139,7 +152,7 @@ export function Viewport() {
     </div>}
 
     {store.mode === 'edit'
-      ? (coverSide ? null : <TimelinePanel />)
+      ? (showEditTimeline && !coverSide ? <TimelinePanel /> : null)
       : <div className={`${st.timeline} ${st.timelinePlayback}`} onPointerDown={(event) => event.stopPropagation()}>
         <button
           type="button"
