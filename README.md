@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img alt="Release: 0.1.1" src="https://img.shields.io/badge/Release-0.1.1-5a68d8">
+  <img alt="Release: 0.1.2" src="https://img.shields.io/badge/Release-0.1.2-5a68d8">
   <img alt="License: Apache-2.0" src="https://img.shields.io/badge/License-Apache--2.0-blue">
   <img alt="Local-first" src="https://img.shields.io/badge/Data-local--first-brightgreen">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-61dafb">
@@ -57,8 +57,12 @@ tobidasは、横開きの「飛び出す絵本風」Web作品を制作・再生�
 
 ツールバーの「AIモード」を有効にすると、現在の作品、見開き、選択部品、アセットID、検証結果を意味付きDOMから確認できます。
 AIモードは、左側の操作ペインと右側のビューポートを約1対2で表示する専用ワークスペースへ切り替わります。
-通常の編集ペインとタイムラインは重複表示されず、ブラウザ操作AIは左側だけで対象選択、素材読込、配置、部品更新、undo、再生確認を進められます。
-AIモードでは、Canvas上のドラッグを使わず、左右ページと正規化座標を指定して画像を配置できます。
+通常の編集ペインとタイムラインは重複表示されず、利用者はビューポートを見ながらブラウザ操作AIの選択と編集結果を確認できます。
+
+操作ペインには、安定したIDを持つ対象ツリー、素材読込、画像の直接配置、テキストとパーティクルの作成、選択部品の更新、undoとredo、再生、検証結果をまとめています。
+画像はCanvas上でドラッグせず、左右ページと正規化座標を指定して配置できます。
+位置や所属ページが紙面の制約によって補正された場合は、要求値と採用値を操作結果から取得できます。
+各入力には名前と役割が付いているため、ブラウザ操作AIは画面上の並び順やCSSクラスに依存せず操作できます。
 
 ブラウザ操作AIから最初から有効にする場合は、URLへ `?ai=1` を付けます。
 AIモードは外部AIとの通信を追加せず、作品と素材は通常モードと同じくブラウザ内に残ります。

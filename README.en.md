@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img alt="Release: 0.1.1" src="https://img.shields.io/badge/Release-0.1.1-5a68d8">
+  <img alt="Release: 0.1.2" src="https://img.shields.io/badge/Release-0.1.2-5a68d8">
   <img alt="License: Apache-2.0" src="https://img.shields.io/badge/License-Apache--2.0-blue">
   <img alt="Local-first" src="https://img.shields.io/badge/Data-local--first-brightgreen">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-61dafb">
@@ -55,8 +55,12 @@ Desktop Chrome or Edge is recommended because folder access uses the File System
 
 Enable **AI mode** in the toolbar to expose the current project, spread, selected part, asset IDs, and validation results as semantic DOM.
 AI mode switches to a dedicated workspace with a control pane on the left and a viewport on the right at roughly a 1:2 ratio.
-The standard editing panes and timeline are not duplicated, so browser-use AI can select targets, load assets, place and update parts, undo, and inspect playback from the left pane.
-AI mode can place an image by page and normalized coordinates without dragging on the Canvas.
+The standard editing panes and timeline are not duplicated, so you can keep watching the viewport while browser-use AI selects and edits the project.
+
+The control pane brings together a target tree with stable IDs, asset loading, direct image placement, text and particle creation, selected-part editing, undo and redo, playback, and validation results.
+Images can be placed by page and normalized coordinates without dragging on the Canvas.
+When page constraints correct a requested position or page assignment, the operation result exposes both the requested and accepted values.
+Every control has a semantic name and role, so browser-use AI does not need to depend on visual order or CSS classes.
 
 Append `?ai=1` to the URL when a browser-use AI should start with the mode enabled.
 The mode does not add an AI service or external communication, so projects and assets remain in the browser.
