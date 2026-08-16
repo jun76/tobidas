@@ -323,7 +323,9 @@ function VisualPlane({ element, asset, back, opacity }: {
   const backImage = useImageTexture(back?.type === 'image' ? back : undefined)
   const backSvg = useSvgTexture(back?.type === 'svg' ? back : undefined)
   const reverse = backImage ?? backSvg
-  const bias = layerDepthBias(element.layer)
+  // 文字はページ面の遮蔽を深度バイアスで追い越さない。ページ送り中に
+  // 綴じ目近くの文字だけが次の紙の上へ一瞬見えるため、紙との前後は実深度に任せる。
+  const bias = element.text ? {} : layerDepthBias(element.layer)
   if (!front && !reverse) return null
   return <mesh castShadow={castsShadow(opacity)} renderOrder={100 + element.layer}>
     <planeGeometry args={[element.width, element.height]} />

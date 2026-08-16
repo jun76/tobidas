@@ -379,8 +379,11 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
   const caption = (page, { id, text, u, v, size = 0.42, color = '#3a3128', align = 'center', layer = 9 }) => {
     const lines = text.split('\n')
     const em = Math.max(...lines.map((line) => [...line].reduce((sum, ch) => sum + (/[ -~]/.test(ch) ? 0.55 : 1), 0)))
-    const height = size * TEXT_LINE_HEIGHT * lines.length
-    const width = size * (em + TEXT_SIDE_PAD)
+    // v0.1.0 の本文と同じ実寸を保つ。ビジュアル統合後も本文だけを
+    // 1.25倍へ拡大すると、綴じ目へ近づきページ送り中に紙を追い越す。
+    const textSize = size * 0.8
+    const height = textSize * TEXT_LINE_HEIGHT * lines.length
+    const width = textSize * (em + TEXT_SIDE_PAD)
     const halfU = width / (2 * PAGE_WIDTH)
     const halfV = height / (2 * PAGE_DEPTH)
     if (u - halfU < -0.001 || u + halfU > 1.001) fail(`本文「${lines[0]}」が片面の幅をはみ出します`)
@@ -392,7 +395,7 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
         rotation: [-90, 0, 0], pivot: [0.5, 0.5],
         mechanism: 'page-glue', preset: 'page-text',
       }),
-      ...visual({ text, width, height, fontSize: size, foregroundColor: color, align }),
+      ...visual({ text, width, height, fontSize: textSize, foregroundColor: color, align }),
     })
   }
 

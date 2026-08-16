@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img alt="Release: 0.1.2" src="https://img.shields.io/badge/Release-0.1.2-5a68d8">
+  <img alt="Release: 0.1.3" src="https://img.shields.io/badge/Release-0.1.3-5a68d8">
   <img alt="License: Apache-2.0" src="https://img.shields.io/badge/License-Apache--2.0-blue">
   <img alt="Local-first" src="https://img.shields.io/badge/Data-local--first-brightgreen">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-61dafb">

@@ -79,6 +79,14 @@ describe('public samples', () => {
     }
   })
 
+  it('keeps forest captions at the pre-visual-integration footprint', () => {
+    const project = load('forest_lantern')
+    const caption = project.book.spreads[1].elements.find((element) => element.id === 'spread-2-text')
+    expect(caption?.type === 'visual' && caption.width).toBeCloseTo(5.168)
+    expect(caption?.type === 'visual' && caption.height).toBeCloseTo(0.8)
+    expect(caption?.type === 'visual' && caption.fontSize).toBeCloseTo(0.32)
+  })
+
   it('forest_lantern first-spread trees are grounded with production lift to spare', () => {
     const project = load('forest_lantern')
     const spread = project.book.spreads[0]
