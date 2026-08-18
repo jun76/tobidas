@@ -1,9 +1,11 @@
 import { stripAssetData } from '../../package/serialize'
+import type { AssetData } from '../../schema/assets'
 import { bookProjectSchema, type BookProject } from '../../schema/bookPackage'
 
 export interface StoredProjectRecord {
   json: string
-  files: Record<string, string>
+  /** IndexedDB v1との互換用。v2では素材ストアへ分離する。 */
+  files?: Record<string, AssetData>
 }
 
 export function encodeProject(project: BookProject): StoredProjectRecord {
@@ -13,7 +15,10 @@ export function encodeProject(project: BookProject): StoredProjectRecord {
   }
 }
 
-export function decodeProject(record: StoredProjectRecord): BookProject | null {
+export function decodeProject(
+  record: StoredProjectRecord,
+  separatedFiles: Record<string, AssetData> = record.files ?? {},
+): BookProject | null {
   let raw: unknown
   try {
     raw = JSON.parse(record.json)
@@ -24,8 +29,7 @@ export function decodeProject(record: StoredProjectRecord): BookProject | null {
   if (!parsed.success) return null
   const file = parsed.data
   const assets = file.assets
-    .filter((asset) => record.files[asset.id] !== undefined)
-    .map((asset) => ({ ...asset, data: record.files[asset.id] }))
+    .filter((asset) => separatedFiles[asset.id] !== undefined)
+    .map((asset) => ({ ...asset, data: separatedFiles[asset.id] }))
   return { ...file, assets }
 }
-

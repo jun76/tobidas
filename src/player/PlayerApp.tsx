@@ -6,6 +6,7 @@ import { Icon } from '../ui/Icon'
 import type { BookProject } from '../schema/bookPackage'
 import { validateBookProject } from '../schema/bookValidate'
 import { BookRuntime } from '../runtime/BookRuntime'
+import { hasEmbeddedVideoAudio, unlockVideoAudio } from '../runtime/videoAudio'
 import { VIEW_CLIP, VIEW_GL } from '../runtime/camera/view'
 import { AudioBank, AudioPlayback, audioGate } from '../audio/playback'
 import { playbackDurationSeconds } from '../runtime/signals'
@@ -139,19 +140,23 @@ export function PlayerApp() {
   if (!project) return <div style={{ padding: 20, fontFamily: 'sans-serif' }}>Loading…</div>
   // 音声ボタンはBGMと効果音の両方を消すので、どちらかを持つ作品なら出す
   const hasAudio = Boolean(project.audio) || soundCueAssetIds(project.book).length > 0
+    || hasEmbeddedVideoAudio(project.book)
   const pause = () => { playingRef.current = false; setPlaying(false) }
   const add = (pixels: number) => {
+    unlockVideoAudio()
     pause()
     startBgm()
     target.current = THREE.MathUtils.clamp(target.current + pixels / 4200, 0, 1)
   }
   const seek = (value: number) => {
+    unlockVideoAudio()
     pause()
     startBgm()
     target.current = THREE.MathUtils.clamp(value, 0, 1)
     setProgress(target.current)
   }
   const togglePlayback = () => {
+    unlockVideoAudio()
     startBgm()
     if (playingRef.current) {
       pause()
@@ -173,6 +178,7 @@ export function PlayerApp() {
    */
   const toggleAudio = () => {
     const muted = !audioMutedRef.current
+    if (!muted) unlockVideoAudio()
     audioMutedRef.current = muted
     // Reactのeffectを待たず、このクリック内で音源と効果音を閉じる。
     bgm.setMuted(muted, 0)
@@ -195,7 +201,7 @@ export function PlayerApp() {
     <Canvas dpr={[1, 2]} shadows gl={VIEW_GL}
       camera={{ position: project.book.camera.position, fov: project.book.camera.fov, ...VIEW_CLIP }}
       onCreated={({ camera }) => camera.lookAt(...project.book.camera.target)}>
-      <BookRuntime project={project} progress={progress} />
+      <BookRuntime project={project} progress={progress} audioActive audioMuted={audioMuted} />
     </Canvas>
     <style>{BAR_CSS}</style>
     <div className="tobiBar" data-audio={hasAudio ? '' : 'none'}>

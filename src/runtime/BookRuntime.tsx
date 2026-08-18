@@ -12,7 +12,8 @@ import { stowIsDrawn } from './stow/evaluate'
 import { SpanningVFoldNode, StowElements } from './stow-renderer/StowRenderer'
 import type { BookRuntimeProps, RenderSpreadFrame } from './types'
 import { PaperSlab, assetFor } from './visuals/ElementVisuals'
-import { useImageTexture, useSvgTexture } from './assets'
+import { useImageTexture, useSvgTexture, useVideoTexture } from './assets'
+import { VideoAudioProvider, VideoAudioSource } from './videoAudio'
 
 export type { BookRuntimeProps, RuntimeSelection } from './types'
 
@@ -24,7 +25,16 @@ export type { BookRuntimeProps, RuntimeSelection } from './types'
  */
 const GATE_THRESHOLDS = { openAt: 0.015, closeAt: 0.006 }
 
-export function BookRuntime({ project, progress, foldOverride, showGuides = false, isHidden, onSelect }: BookRuntimeProps) {
+export function BookRuntime({
+  project,
+  progress,
+  foldOverride,
+  showGuides = false,
+  isHidden,
+  onSelect,
+  audioActive = false,
+  audioMuted = true,
+}: BookRuntimeProps) {
   const { book } = project
   const signals = useMemo(() => evaluateBookSignals(book, progress), [book, progress])
   const gates = useMemo(() => new GateSet(GATE_THRESHOLDS), [project.id]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -33,7 +43,11 @@ export function BookRuntime({ project, progress, foldOverride, showGuides = fals
   const stageBackgroundAsset = assetFor(assets, book.appearance.backgroundAsset)
   const stageBackgroundImage = useImageTexture(stageBackgroundAsset?.type === 'image' ? stageBackgroundAsset : undefined)
   const stageBackgroundSvg = useSvgTexture(stageBackgroundAsset?.type === 'svg' ? stageBackgroundAsset : undefined)
-  const stageBackgroundTexture = stageBackgroundImage?.texture ?? stageBackgroundSvg?.texture
+  const stageBackgroundVideo = useVideoTexture(
+    stageBackgroundAsset?.type === 'video' ? stageBackgroundAsset : undefined,
+    `${project.id}:stage-background`,
+  )
+  const stageBackgroundTexture = stageBackgroundImage?.texture ?? stageBackgroundSvg?.texture ?? stageBackgroundVideo?.texture
   const compiled = useMemo(() => book.spreads.map((spread) => compileSpreadStow(book, spread)), [book])
   const scene = useThree((state) => state.scene)
   const camera = useThree((state) => state.camera)
@@ -95,7 +109,10 @@ export function BookRuntime({ project, progress, foldOverride, showGuides = fals
 
   const shared = { assets, clocks, isHidden, onSelect }
 
-  return <group>
+  return <VideoAudioProvider book={book} progress={progress} active={audioActive} muted={audioMuted}>
+    <VideoAudioSource video={stageBackgroundVideo?.video}
+      settings={book.appearance.backgroundVideoAudio} positional={false} />
+  <group>
     <ambientLight color={environment.lights.ambient.color} intensity={environment.lights.ambient.intensity} />
     {/* shadowOpacity が 0 の作品は影を落とさない指定として扱い、影のパスごと省く。
         影を受けるのは紙面と本の下の受け皿だけなので、落とす先が透明なら描く意味がない。
@@ -110,7 +127,15 @@ export function BookRuntime({ project, progress, foldOverride, showGuides = fals
           color={coverColor} edge={coverEdgeColor}
           asset={assetFor(assets, book.frontCover.frontAsset)}
           back={assetFor(assets, book.spreads[0].leftPage.backgroundAsset ?? book.frontCover.backAsset)}
-          backColor={book.appearance.paperColor} />
+          backColor={book.appearance.paperColor} instanceKey={`${project.id}:front-cover`}
+          videoActive={signals.beat.kind === 'cover-open'}
+          backVideoActive={frames[0].open}
+          audio={signals.beat.kind === 'cover-open' ? book.frontCover.frontVideoAudio : undefined}
+          backAudio={frames[0].open && signals.activeSpreadIndex === 0 && book.spreads[0].leftPage.backgroundAsset
+            ? book.spreads[0].leftPage.backgroundVideoAudio
+            : frames[0].open && signals.activeSpreadIndex === 0
+              ? book.frontCover.backVideoAudio
+              : undefined} />
         <BackFace width={width} lift={0}>
           <PageClickTarget width={width} depth={depth} spreadId={frames[0].spread.id}
             side="left" onSelect={onSelect} />
@@ -131,7 +156,13 @@ export function BookRuntime({ project, progress, foldOverride, showGuides = fals
           <PaperSlab position={[width / 2, 0, 0]} size={[width, pageThickness, depth]}
             color={book.appearance.paperColor} edge={book.appearance.edgeColor}
             asset={assetFor(assets, before.spread.rightPage.backgroundAsset)}
-            back={assetFor(assets, after.spread.leftPage.backgroundAsset)} />
+            back={assetFor(assets, after.spread.leftPage.backgroundAsset)}
+            audio={before.open && signals.activeSpreadIndex === before.index
+              ? before.spread.rightPage.backgroundVideoAudio : undefined}
+            backAudio={after.open && signals.activeSpreadIndex === after.index
+              ? after.spread.leftPage.backgroundVideoAudio : undefined}
+            videoActive={before.open} backVideoActive={after.open}
+            instanceKey={`${project.id}:sheet:${sheet}`} />
           <group position={[width / 2, pageThickness / 2, 0]}>
             <PageClickTarget width={width} depth={depth} spreadId={before.spread.id}
               side="right" onSelect={onSelect} />
@@ -148,11 +179,20 @@ export function BookRuntime({ project, progress, foldOverride, showGuides = fals
       <group rotation={[0, 0, Math.PI * sheetAngles[spreadCount]]}>
         <PaperSlab position={[width / 2, -stack / 2, 0]} size={[width, stack, depth]}
           color={book.appearance.paperColor} edge={book.appearance.edgeColor}
-          asset={assetFor(assets, book.spreads[spreadCount - 1].rightPage.backgroundAsset)} />
+          asset={assetFor(assets, book.spreads[spreadCount - 1].rightPage.backgroundAsset)}
+          audio={frames[spreadCount - 1].open && signals.activeSpreadIndex === spreadCount - 1
+            ? book.spreads[spreadCount - 1].rightPage.backgroundVideoAudio : undefined}
+          videoActive={frames[spreadCount - 1].open}
+          instanceKey={`${project.id}:last-page`} />
         <PaperSlab position={[width / 2, -stack - coverThickness / 2, 0]}
           size={[width, coverThickness, depth]} color={coverColor} edge={coverEdgeColor}
           asset={assetFor(assets, book.backCover.frontAsset)}
-          back={assetFor(assets, book.backCover.backAsset)} />
+          back={assetFor(assets, book.backCover.backAsset)}
+          audio={signals.activeSpreadIndex === spreadCount - 1 ? book.backCover.frontVideoAudio : undefined}
+          backAudio={signals.beat.kind === 'back-cover-close' ? book.backCover.backVideoAudio : undefined}
+          videoActive={frames[spreadCount - 1].open}
+          backVideoActive={signals.beat.kind === 'back-cover-close'}
+          instanceKey={`${project.id}:back-cover`} />
         <group position={[width / 2, 0.004, 0]}>
           <PageClickTarget width={width} depth={depth} spreadId={frames[spreadCount - 1].spread.id}
             side="right" onSelect={onSelect} />
@@ -180,6 +220,7 @@ export function BookRuntime({ project, progress, foldOverride, showGuides = fals
       </mesh>
     </group>
   </group>
+  </VideoAudioProvider>
 }
 
 function BackFace({ width, lift, children }: { width: number; lift: number; children: React.ReactNode }) {

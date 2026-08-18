@@ -1,4 +1,5 @@
 import type { ParentSpace } from '../../schema/stageElement'
+import type { EmbeddedVideoAudio } from '../../schema/audio'
 import type { BookSelection, EditorMode, ProjectSource } from '../state/editorState'
 
 export interface AiTargetSummary {
@@ -24,6 +25,8 @@ export interface AiElementSummary {
   height?: number
   image?: string
   backImage?: string
+  videoAudio?: EmbeddedVideoAudio
+  backVideoAudio?: EmbeddedVideoAudio
   text?: string
   particles?: boolean
   motion: string[]

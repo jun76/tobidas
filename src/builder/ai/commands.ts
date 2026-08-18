@@ -1,4 +1,5 @@
 import type { ParentSpace, StageElement } from '../../schema/stageElement'
+import { embeddedVideoAudioSchema, type EmbeddedVideoAudio } from '../../schema/audio'
 import { elementDescendantIds } from '../hierarchy'
 import { t } from '../i18n'
 import type { VisualPresetId } from '../presets'
@@ -40,7 +41,7 @@ export function placeAiAsset(input: {
   const errors: Record<string, string> = {}
   if (!state.project.book.spreads.some((spread) => spread.id === input.spreadId)) errors.spreadId = t().ai.notFound
   const asset = state.project.assets.find((item) => item.id === input.assetId)
-  if (!asset || (asset.type !== 'image' && asset.type !== 'svg')) errors.assetId = t().ai.notFound
+  if (!asset || !['image', 'svg', 'video'].includes(asset.type)) errors.assetId = t().ai.notFound
   if (!Number.isFinite(input.u) || input.u < 0 || input.u > 1) errors.u = t().ai.normalizedRange
   if (!Number.isFinite(input.v) || input.v < 0 || input.v > 1) errors.v = t().ai.normalizedRange
   if (Object.keys(errors).length) return failure(action, t().ai.invalidInput, errors)
@@ -84,6 +85,8 @@ export interface AiElementUpdate {
   width?: number
   height?: number
   text?: string
+  videoAudio?: EmbeddedVideoAudio | null
+  backVideoAudio?: EmbeddedVideoAudio | null
 }
 
 export function updateAiElement(spreadId: string, elementId: string, input: AiElementUpdate): AiCommandResult {
@@ -101,6 +104,9 @@ export function updateAiElement(spreadId: string, elementId: string, input: AiEl
   if (!Number.isFinite(input.opacity)) errors.opacity = t().ai.finiteNumber
   if (input.width !== undefined && (!Number.isFinite(input.width) || input.width <= 0)) errors.width = t().ai.positiveNumber
   if (input.height !== undefined && (!Number.isFinite(input.height) || input.height <= 0)) errors.height = t().ai.positiveNumber
+  for (const [field, value] of [['videoAudio', input.videoAudio], ['backVideoAudio', input.backVideoAudio]] as const) {
+    if (value && !embeddedVideoAudioSchema.safeParse(value).success) errors[field] = t().ai.invalidInput
+  }
   if (Object.keys(errors).length) return failure(action, t().ai.invalidInput, errors)
 
   state.updateElement(spreadId, elementId, (target) => {
@@ -115,6 +121,8 @@ export function updateAiElement(spreadId: string, elementId: string, input: AiEl
       if (input.width !== undefined) target.width = input.width
       if (input.height !== undefined) target.height = input.height
       if (input.text !== undefined) target.text = input.text
+      if (input.videoAudio !== undefined) target.videoAudio = input.videoAudio ?? undefined
+      if (input.backVideoAudio !== undefined) target.backVideoAudio = input.backVideoAudio ?? undefined
     }
   })
   const after = useBuilderStore.getState().project.book.spreads.find((spread) => spread.id === spreadId)

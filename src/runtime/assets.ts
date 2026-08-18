@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { isExternalAssetData, type Asset } from '../schema/assets'
 import type { VisualElement } from '../schema/stageElement'
@@ -23,6 +24,14 @@ export interface TextureResult {
 const MAX_TEX = 2048
 const imageTextureCache = new Map<string, Promise<TextureResult>>()
 const svgTextureCache = new Map<string, Promise<TextureResult>>()
+
+export interface VideoTextureResult extends TextureResult {
+  video: HTMLVideoElement
+}
+
+export interface MediaTextureResult extends TextureResult {
+  video?: HTMLVideoElement
+}
 
 // ---------------------------------------------------------------------------
 // SVG → ラスタテクスチャ
@@ -105,10 +114,15 @@ export function useSvgTexture(asset: Asset | undefined): TextureResult | null {
       return
     }
     let alive = true
-    let pending = svgTextureCache.get(asset.data)
+    if (typeof asset.data !== 'string') {
+      setResult(null)
+      return
+    }
+    const data = asset.data
+    let pending = svgTextureCache.get(data)
     if (!pending) {
-      pending = isExternalAssetData(asset.data) ? rasterizeSvgUrl(asset.data) : rasterizeSvg(asset.data)
-      svgTextureCache.set(asset.data, pending)
+      pending = isExternalAssetData(data) ? rasterizeSvgUrl(data) : rasterizeSvg(data)
+      svgTextureCache.set(data, pending)
     }
     pending
       .then((r) => {
@@ -134,14 +148,19 @@ export function useImageTexture(asset: Asset | undefined): TextureResult | null 
       return
     }
     let alive = true
-    let pending = imageTextureCache.get(asset.data)
+    if (typeof asset.data !== 'string') {
+      setResult(null)
+      return
+    }
+    const data = asset.data
+    let pending = imageTextureCache.get(data)
     if (!pending) {
-      pending = new THREE.TextureLoader().loadAsync(asset.data).then((texture) => {
+      pending = new THREE.TextureLoader().loadAsync(data).then((texture) => {
         texture.colorSpace = THREE.SRGBColorSpace
         texture.anisotropy = 4
         return { texture, aspect: texture.image.width / texture.image.height }
       })
-      imageTextureCache.set(asset.data, pending)
+      imageTextureCache.set(data, pending)
     }
     pending
       .then((t) => {
@@ -203,25 +222,237 @@ export function useTextTexture(opts: TextOptions): (TextureResult & { lines: num
   return result
 }
 
-/** 背景色・画像・文字を、ビジュアル矩形と同じUVを持つ1枚へ合成する。 */
-export function useVisualTexture(element: VisualElement, asset?: Asset): TextureResult | null {
+// ---------------------------------------------------------------------------
+// MP4/WebM → VideoTexture
+// ---------------------------------------------------------------------------
+
+interface VideoCacheEntry {
+  key: string
+  data: Asset['data']
+  element: HTMLVideoElement
+  refs: number
+  activeRefs: number
+  promise: Promise<VideoTextureResult>
+  result?: VideoTextureResult
+  blob?: Blob
+  embeddedData?: string
+  disposeTimer?: ReturnType<typeof setTimeout>
+  visibilityListener?: () => void
+}
+
+const videoTextureCache = new Map<string, VideoCacheEntry>()
+const residentVideoTimes = new Map<string, number>()
+const blobUrls = new WeakMap<Blob, { url: string; refs: number; revokeTimer?: ReturnType<typeof setTimeout> }>()
+const embeddedVideoBlobs = new Map<string, { blob: Blob; refs: number }>()
+
+/**
+ * 同じ配置を中央線で二翼へ分けても、動画デコーダーと再生時刻は1つだけ使う。
+ * instanceKeyを省いた紙面素材はasset ID単位で共有する。
+ */
+export function useVideoTexture(
+  asset: Asset | undefined,
+  instanceKey?: string,
+  active = true,
+): VideoTextureResult | null {
+  const [result, setResult] = useState<VideoTextureResult | null>(null)
+  useEffect(() => {
+    if (!asset || asset.type !== 'video') {
+      setResult(null)
+      return
+    }
+    const key = `${instanceKey ?? 'asset'}:${asset.id}`
+    let entry = videoTextureCache.get(key)
+    if (!entry || entry.data !== asset.data) {
+      if (entry) disposeVideoEntry(entry)
+      entry = createVideoEntry(asset, key)
+      videoTextureCache.set(key, entry)
+    }
+    if (entry.disposeTimer) clearTimeout(entry.disposeTimer)
+    entry.refs++
+    if (active) entry.activeRefs++
+    updateVideoPlayback(entry)
+    let alive = true
+    entry.promise
+      .then((loaded) => {
+        if (alive) setResult(loaded)
+      })
+      .catch((error) => console.warn('failed to load video:', asset.name, error))
+    return () => {
+      alive = false
+      setResult(null)
+      entry!.refs--
+      if (active) entry!.activeRefs--
+      updateVideoPlayback(entry!)
+      if (entry!.refs > 0) return
+      // React StrictModeの直後の再マウントなら同じデコーダーを引き継ぐ。
+      entry!.disposeTimer = setTimeout(() => {
+        if (entry!.refs > 0) return
+        disposeVideoEntry(entry!)
+        if (videoTextureCache.get(key) === entry) videoTextureCache.delete(key)
+      }, 0)
+    }
+  }, [asset?.id, asset?.data, asset?.type, instanceKey, active])
+  return result
+}
+
+function createVideoEntry(asset: Asset, key: string): VideoCacheEntry {
+  const video = document.createElement('video')
+  video.preload = 'auto'
+  video.loop = true
+  video.muted = true
+  video.playsInline = true
+  video.setAttribute('playsinline', '')
+  const embeddedData = typeof asset.data === 'string' && asset.data.startsWith('data:')
+    ? asset.data
+    : undefined
+  const blob = asset.data instanceof Blob
+    ? asset.data
+    : embeddedData
+      ? acquireEmbeddedVideoBlob(embeddedData, asset.mime)
+      : undefined
+  const src = blob ? acquireBlobUrl(blob) : asset.data
+  const entry: VideoCacheEntry = {
+    key,
+    data: asset.data,
+    element: video,
+    refs: 0,
+    activeRefs: 0,
+    blob,
+    embeddedData,
+    promise: new Promise<VideoTextureResult>((resolve, reject) => {
+      video.onloadedmetadata = () => {
+        const restored = residentVideoTimes.get(key)
+        if (restored !== undefined && Number.isFinite(video.duration) && video.duration > 0) {
+          video.currentTime = restored % video.duration
+        }
+        const texture = new THREE.VideoTexture(video)
+        texture.colorSpace = THREE.SRGBColorSpace
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
+        texture.generateMipmaps = false
+        const result = {
+          texture,
+          aspect: (video.videoWidth || asset.width || 1) / (video.videoHeight || asset.height || 1),
+          video,
+        }
+        entry.result = result
+        updateVideoPlayback(entry)
+        resolve(result)
+      }
+      video.onerror = () => reject(new Error(`failed to decode ${asset.id}`))
+    }),
+  }
+  entry.visibilityListener = () => {
+    updateVideoPlayback(entry)
+  }
+  document.addEventListener('visibilitychange', entry.visibilityListener)
+  video.src = String(src)
+  video.load()
+  return entry
+}
+
+function updateVideoPlayback(entry: VideoCacheEntry): void {
+  if (document.hidden || entry.activeRefs <= 0) {
+    entry.element.pause()
+    return
+  }
+  void entry.element.play().catch(() => { /* 自動再生解除前は消音のまま次の操作を待つ */ })
+}
+
+function disposeVideoEntry(entry: VideoCacheEntry): void {
+  if (entry.disposeTimer) clearTimeout(entry.disposeTimer)
+  if (entry.result) residentVideoTimes.set(entry.key, entry.result.video.currentTime)
+  if (entry.visibilityListener) document.removeEventListener('visibilitychange', entry.visibilityListener)
+  entry.result?.texture.dispose()
+  entry.element.pause()
+  entry.element.onloadedmetadata = null
+  entry.element.onerror = null
+  entry.element.removeAttribute('src')
+  entry.element.load()
+  if (entry.blob) releaseBlobUrl(entry.blob)
+  if (entry.embeddedData) releaseEmbeddedVideoBlob(entry.embeddedData)
+}
+
+function acquireBlobUrl(blob: Blob): string {
+  const existing = blobUrls.get(blob)
+  if (existing) {
+    if (existing.revokeTimer) clearTimeout(existing.revokeTimer)
+    existing.refs++
+    return existing.url
+  }
+  const created = { url: URL.createObjectURL(blob), refs: 1 }
+  blobUrls.set(blob, created)
+  return created.url
+}
+
+function releaseBlobUrl(blob: Blob): void {
+  const entry = blobUrls.get(blob)
+  if (!entry || --entry.refs > 0) return
+  // video.load()による後片付けがURLを読み直すブラウザがあるため、同じタスクでは破棄しない。
+  entry.revokeTimer = setTimeout(() => {
+    if (entry.refs > 0) return
+    URL.revokeObjectURL(entry.url)
+    blobUrls.delete(blob)
+  }, 1000)
+}
+
+function dataUrlToBlob(data: string, fallbackMime: string): Blob {
+  const comma = data.indexOf(',')
+  const header = data.slice(0, comma)
+  const mime = /^data:([^;,]+)/.exec(header)?.[1] ?? fallbackMime
+  const binary = atob(data.slice(comma + 1))
+  const bytes = new Uint8Array(binary.length)
+  for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index)
+  return new Blob([bytes], { type: mime })
+}
+
+function acquireEmbeddedVideoBlob(data: string, mime: string): Blob {
+  const existing = embeddedVideoBlobs.get(data)
+  if (existing) {
+    existing.refs++
+    return existing.blob
+  }
+  const created = { blob: dataUrlToBlob(data, mime), refs: 1 }
+  embeddedVideoBlobs.set(data, created)
+  return created.blob
+}
+
+function releaseEmbeddedVideoBlob(data: string): void {
+  const entry = embeddedVideoBlobs.get(data)
+  if (!entry || --entry.refs > 0) return
+  embeddedVideoBlobs.delete(data)
+}
+
+/** 背景色・画像・文字を、ビジュアル矩形と同じUVを持つ1枚へCPU合成する。 */
+export function useVisualTexture(
+  element: VisualElement,
+  asset?: Asset,
+  instanceKey?: string,
+): MediaTextureResult | null {
   const image = useImageTexture(asset?.type === 'image' ? asset : undefined)
   const svg = useSvgTexture(asset?.type === 'svg' ? asset : undefined)
-  const source = image ?? svg
+  const video = useVideoTexture(asset?.type === 'video' ? asset : undefined, instanceKey)
+  const source = image ?? svg ?? video
+  const hasBackground = element.backgroundColor !== '#00000000'
+  const needsComposite = hasBackground || Boolean(element.text)
   const result = useMemo(() => {
-    const hasBackground = element.backgroundColor !== '#00000000'
     if (!hasBackground && !source && !element.text) return null
+    if (video && !needsComposite) return video
     const aspect = element.width / element.height
     const canvas = document.createElement('canvas')
     canvas.width = aspect >= 1 ? 1024 : Math.max(2, Math.round(1024 * aspect))
     canvas.height = aspect >= 1 ? Math.max(2, Math.round(1024 / aspect)) : 1024
     const c2d = canvas.getContext('2d')!
-    if (hasBackground) {
-      c2d.fillStyle = element.backgroundColor
-      c2d.fillRect(0, 0, canvas.width, canvas.height)
-    }
-    if (source) c2d.drawImage(source.texture.image as CanvasImageSource, 0, 0, canvas.width, canvas.height)
-    if (element.text) {
+    const draw = () => {
+      c2d.clearRect(0, 0, canvas.width, canvas.height)
+      if (hasBackground) {
+        c2d.fillStyle = element.backgroundColor
+        c2d.fillRect(0, 0, canvas.width, canvas.height)
+      }
+      if (source && (!video || video.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA)) {
+        c2d.drawImage(source.texture.image as CanvasImageSource, 0, 0, canvas.width, canvas.height)
+      }
+      if (!element.text) return
       const px = Math.max(1, element.fontSize / element.height * canvas.height)
       c2d.font = canvasFont(element, px)
       c2d.fillStyle = element.foregroundColor
@@ -239,13 +470,24 @@ export function useVisualTexture(element: VisualElement, asset?: Asset): Texture
         c2d.fillRect(left, y + px * .42, run, Math.max(1, px * .055))
       })
     }
+    draw()
     const texture = new THREE.CanvasTexture(canvas)
     texture.colorSpace = THREE.SRGBColorSpace
     texture.anisotropy = 4
-    return { texture, aspect }
+    return { texture, aspect, draw, video: video?.video }
   }, [element.width, element.height, element.backgroundColor, element.foregroundColor, element.text,
-    element.fontSize, element.font, element.bold, element.italic, element.underline, element.align, source])
-  useEffect(() => () => result?.texture.dispose(), [result])
+    element.fontSize, element.font, element.bold, element.italic, element.underline, element.align,
+    source, video, needsComposite, hasBackground])
+  useFrame(() => {
+    if (!video || !needsComposite || !result || !('draw' in result)) return
+    if (video.video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return
+    result.draw()
+    result.texture.needsUpdate = true
+  })
+  useEffect(() => () => {
+    // 直返ししたVideoTextureの所有権は動画キャッシュ側にある。
+    if (result && result !== video) result.texture.dispose()
+  }, [result, video])
   return result
 }
 

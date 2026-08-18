@@ -17,6 +17,7 @@ export type BookSelection =
   | { type: 'page'; spreadId: string; side: 'left' | 'right' }
   | { type: 'element'; spreadId: string; elementId: string }
 export type ProjectSource = 'new' | 'idb' | 'import'
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'quota-error' | 'error'
 
 export interface EditorState {
   project: BookProject
@@ -37,6 +38,8 @@ export interface EditorState {
   redoStack: BookProject[]
   issues: BookValidationResult
   source: ProjectSource
+  saveStatus: SaveStatus
+  saveError?: string
   setProject(project: BookProject, source: ProjectSource): void
   commit(change: (project: BookProject) => void): void
   undo(): void

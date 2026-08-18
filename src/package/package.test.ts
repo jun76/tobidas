@@ -7,6 +7,7 @@ import { bookProjectSchema } from '../schema/bookPackage'
 import { assemblePackage } from './assemble'
 import { assetAccept, assetKindForFile, normalizeAssetPath } from './model'
 import { externalizeAssets, projectFileJson } from './serialize'
+import { VIDEO_BYTE_LIMIT } from '../schema/assets'
 
 describe('package ownership boundaries', () => {
   it('v0.1.0のアーチとstrutを単一ビジュアルへ正規化する', () => {
@@ -36,7 +37,11 @@ describe('package ownership boundaries', () => {
       data: '<svg/>',
     })
     const result = await assemblePackage(projectFileJson(project), new Map([
-      ['picture.svg', { text: async () => '<svg/>', dataUrl: async () => '' }],
+      ['picture.svg', {
+        text: async () => '<svg/>',
+        dataUrl: async () => '',
+        blob: async () => new Blob(),
+      }],
     ]))
     expect(result.project).toEqual(project)
   })
@@ -51,8 +56,8 @@ describe('package ownership boundaries', () => {
    * WebP限定なのは公開サンプルの作り方 (scripts/samples) だけで、制作者の作品ではない。
    * 読み込みも書き出しも mime を持ち回るだけなので、ここが受け付ける形式が全部通る。
    */
-  it('accepts every image and audio format an author can bring in', () => {
-    expect(Object.fromEntries(['svg', 'png', 'webp', 'jpg', 'jpeg', 'mp3', 'ogg', 'wav']
+  it('accepts every image, video and audio format an author can bring in', () => {
+    expect(Object.fromEntries(['svg', 'png', 'webp', 'jpg', 'jpeg', 'mp3', 'ogg', 'wav', 'mp4', 'webm']
       .map((ext) => [ext, assetKindForFile(`part.${ext}`)]))).toEqual({
       svg: { type: 'svg', mime: 'image/svg+xml' },
       png: { type: 'image', mime: 'image/png' },
@@ -62,6 +67,8 @@ describe('package ownership boundaries', () => {
       mp3: { type: 'audio', mime: 'audio/mpeg' },
       ogg: { type: 'audio', mime: 'audio/ogg' },
       wav: { type: 'audio', mime: 'audio/wav' },
+      mp4: { type: 'video', mime: 'video/mp4' },
+      webm: { type: 'video', mime: 'video/webm' },
     })
     expect(assetKindForFile('PART.PNG')).toEqual({ type: 'image', mime: 'image/png' })
     expect(assetKindForFile('animation.gif')).toBeNull()
@@ -72,9 +79,54 @@ describe('package ownership boundaries', () => {
   it('offers exactly the formats it can ingest', () => {
     expect(assetAccept('svg', 'image')).toBe('.svg,.png,.webp,.jpg,.jpeg')
     expect(assetAccept('audio')).toBe('.mp3,.ogg,.wav')
-    for (const extension of assetAccept('svg', 'image', 'audio').split(',')) {
+    expect(assetAccept('video')).toBe('.mp4,.webm')
+    for (const extension of assetAccept('svg', 'image', 'audio', 'video').split(',')) {
       expect(assetKindForFile(`part${extension}`)).not.toBeNull()
     }
+  })
+
+  it('keeps video bodies as Blob through package assembly, persistence and static export', async () => {
+    const body = new Blob(['movie'], { type: 'video/mp4' })
+    const project = createBookProject('video-package')
+    project.assets.push({
+      id: 'movie.mp4', name: 'movie', type: 'video', mime: 'video/mp4',
+      bytes: body.size, width: 16, height: 9, duration: 1, data: body,
+    })
+    const assembled = await assemblePackage(projectFileJson(project), new Map([[
+      'movie.mp4',
+      {
+        size: body.size,
+        text: async () => '',
+        dataUrl: async () => '',
+        blob: async () => body,
+      },
+    ]]))
+    expect(assembled.project.assets[0].data).toBe(body)
+
+    const restored = decodeProject(encodeProject(assembled.project))
+    expect(restored?.assets[0].data).toBe(body)
+
+    const published = externalizeAssets(assembled.project)
+    expect(published.project.assets[0].data).toBe('./assets/movie.mp4')
+    expect(published.files[0].bytes).toEqual({ blob: body })
+  })
+
+  it('rejects a video one byte over the 100 MiB limit without decoding its body', async () => {
+    const project = createBookProject('oversized-video')
+    project.assets.push({
+      id: 'movie.mp4', name: 'movie', type: 'video', mime: 'video/mp4',
+      bytes: VIDEO_BYTE_LIMIT + 1, width: 16, height: 9, duration: 1, data: new Blob(),
+    })
+    await expect(assemblePackage(projectFileJson(project), new Map([[
+      'movie.mp4',
+      {
+        size: VIDEO_BYTE_LIMIT + 1,
+        mime: 'video/mp4',
+        text: async () => '',
+        dataUrl: async () => '',
+        blob: async () => new Blob(['small'], { type: 'video/mp4' }),
+      },
+    ]]))).rejects.toThrow('video asset exceeds 100 MiB')
   })
 
   it('carries non-WebP bodies through the site export unchanged', () => {
@@ -106,7 +158,7 @@ describe('package ownership boundaries', () => {
     })
     expect(decodeProject(encodeProject(project))).toEqual(project)
     const record = encodeProject(project)
-    delete record.files['picture.svg']
+    delete record.files!['picture.svg']
     expect(decodeProject(record)?.assets).toEqual([])
   })
 

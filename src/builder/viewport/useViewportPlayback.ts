@@ -5,6 +5,7 @@ import { crossedSoundCues, soundCueAssetIds } from '../../runtime/soundCues'
 import { audioGate } from '../../audio/playback'
 import { useBuilderStore } from '../store'
 import { builderBank, builderBgm } from '../audio'
+import { hasEmbeddedVideoAudio, unlockVideoAudio } from '../../runtime/videoAudio'
 
 export function useViewportPlayback() {
   const mode = useBuilderStore((state) => state.mode)
@@ -174,6 +175,7 @@ export function useViewportPlayback() {
   }
 
   const toggle = () => {
+    unlockVideoAudio()
     if (autoPlayingRef.current) {
       pause()
       return
@@ -196,6 +198,7 @@ export function useViewportPlayback() {
    * 近づかないため、表示値と編集へ戻る位置も同じフレームで確定させる。
    */
   const seek = (value: number) => {
+    unlockVideoAudio()
     pause()
     const next = THREE.MathUtils.clamp(value, 0, 1)
     target.current = next
@@ -211,6 +214,7 @@ export function useViewportPlayback() {
    */
   const toggleAudio = () => {
     const muted = !audioMutedRef.current
+    if (!muted) unlockVideoAudio()
     audioMutedRef.current = muted
     // Reactのeffectを待たず、このクリック内で音源と効果音を閉じる。
     builderBgm.setMuted(muted, 0)
@@ -228,11 +232,12 @@ export function useViewportPlayback() {
     // 終端では再生ボタンが「最初から」の絵になる (書き出した再生画面と同じ)
     atEnd,
     // 音声ボタンはBGMと効果音の両方を消すので、どちらかを持つ作品なら出す
-    hasAudio: Boolean(bookAudio) || soundCueAssetIds(book).length > 0,
+    hasAudio: Boolean(bookAudio) || soundCueAssetIds(book).length > 0 || hasEmbeddedVideoAudio(book),
     audioMuted,
     toggleAudio,
     seek,
     adjust: (pixels: number) => {
+      unlockVideoAudio()
       target.current = THREE.MathUtils.clamp(target.current + pixels / 4200, 0, 1)
       // 送っている途中で編集へ戻しても、送り先の見開きへ戻れるようにする
       sync(target.current)

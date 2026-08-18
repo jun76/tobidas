@@ -85,6 +85,8 @@ export function buildAiStateSummary(state: EditorState): AiStateSummary {
         height: selected.height,
         image: selected.image,
         backImage: selected.backImage,
+        videoAudio: selected.videoAudio,
+        backVideoAudio: selected.backVideoAudio,
         text: selected.text,
         particles: selected.particles.enabled,
       } : {}),

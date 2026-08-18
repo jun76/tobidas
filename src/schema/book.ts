@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { spreadAudioFields } from './audio'
+import { embeddedVideoAudioSchema, spreadAudioFields } from './audio'
 import { migrateStageElementInput, stageElementSchema } from './stageElement'
 import { spreadSequenceSchema } from './sequence'
 import { vec3Schema } from './geometry'
@@ -7,6 +7,7 @@ import { spreadTimelineSchema } from './timeline'
 
 export const pageSchema = z.object({
   backgroundAsset: z.string().min(1).optional(),
+  backgroundVideoAudio: embeddedVideoAudioSchema.optional(),
   paperColor: z.string().optional(),
 })
 
@@ -49,6 +50,8 @@ export type Spread = z.infer<typeof spreadSchema>
 export const coverSchema = z.object({
   frontAsset: z.string().min(1).optional(),
   backAsset: z.string().min(1).optional(),
+  frontVideoAudio: embeddedVideoAudioSchema.optional(),
+  backVideoAudio: embeddedVideoAudioSchema.optional(),
 })
 
 export type Cover = z.infer<typeof coverSchema>
@@ -72,6 +75,8 @@ const currentBookSchema = z.object({
     background: z.string(),
     /** 単色背景の代わりに画面全体へ表示する舞台背景。未指定ならbackground色を使う。 */
     backgroundAsset: z.string().min(1).optional(),
+    /** 舞台背景動画の音はカメラ位置に依存しない全体音として鳴らす。 */
+    backgroundVideoAudio: embeddedVideoAudioSchema.optional(),
     /** 表紙面と背の地色。未指定の既存作品は従来の茶色を使う。 */
     coverColor: z.string().optional(),
     coverEdgeColor: z.string().optional(),

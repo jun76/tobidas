@@ -1,12 +1,13 @@
 import { useFrame, useThree } from '@react-three/fiber'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import type { Asset } from '../../schema/assets'
 import type { StageElement, VisualElement } from '../../schema/stageElement'
-import { useImageTexture, useSvgTexture, useVisualTexture } from '../assets'
+import { useImageTexture, useSvgTexture, useVideoTexture, useVisualTexture } from '../assets'
 import type { StowItem } from '../stow/model'
 import { SPARKLE, buildSparkleField } from './sparkleField'
 import { buildSparkleSpriteGeometry } from './sparkleGeometry'
+import { VideoAudioSource } from '../videoAudio'
 
 /**
  * 消えた部品は影も落とさない。
@@ -16,6 +17,14 @@ import { buildSparkleSpriteGeometry } from './sparkleGeometry'
  * 小口の外へ迂回して本の外に影だけを落とす、という形で表面化する。
  */
 const castsShadow = (opacity: number): boolean => opacity > 0.01
+
+interface VideoAudioWing {
+  group: THREE.Group
+  weight: number
+}
+
+/** 中央線で二分された同じ動画の左右片。音源を両片の面積中心へ置くため一時的に共有する。 */
+const videoAudioWings = new Map<string, Partial<Record<'left' | 'right', VideoAudioWing>>>()
 
 /**
  * layer ぶんの深度ずらし。同じ面に同じ位置で重ねた板の取り合いを断つ。
@@ -46,17 +55,18 @@ export function visualPivotOffset(element: StageElement): [number, number] {
   return [(0.5 - element.pivot[0]) * element.width, (0.5 - element.pivot[1]) * element.height]
 }
 
-export function ElementVisual({ element, assets, opacityMul, openFactor = 1 }: {
+export function ElementVisual({ element, assets, opacityMul, openFactor = 1, instanceKey }: {
   element: StageElement
   assets: Map<string, Asset>
   opacityMul: number
   /** 収納の展開係数。0=紙面へ収納済み、1=制作者の開姿勢 */
   openFactor?: number
+  instanceKey?: string
 }) {
   if (element.type === 'group') return null
   return <>
     <VisualPlane element={element} asset={assetFor(assets, element.image)} back={assetFor(assets, element.backImage)}
-      opacity={element.opacity * opacityMul} />
+      opacity={element.opacity * opacityMul} instanceKey={instanceKey ?? element.id} />
     {element.particles.enabled && <SparkleCloud seed={element.id}
       width={element.width * openFactor} height={element.height * openFactor} count={element.particles.count}
       color={element.particles.color} drift={element.particles.drift} period={element.particles.period}
@@ -227,16 +237,61 @@ function SparklePoints({ geometry, color, opacity, renderOrder, drift = SPARKLE.
   return <mesh geometry={geometry} material={material} renderOrder={renderOrder} />
 }
 
-export function WingVisual({ element, half, assets, opacityMul }: {
+export function WingVisual({ element, half, assets, opacityMul, instanceKey, face }: {
   element: StageElement
   half: NonNullable<StowItem['half']>
   assets: Map<string, Asset>
   opacityMul: number
+  instanceKey?: string
+  face: 'left' | 'right'
 }) {
   if (element.type === 'group') return null
-  const composite = useVisualTexture(element, assetFor(assets, element.image))
+  const audioKey = instanceKey ?? element.id
+  const composite = useVisualTexture(element, assetFor(assets, element.image), audioKey)
+  const group = useRef<THREE.Group>(null)
+  const audioAnchor = useRef<THREE.Group>(null)
+  const positions = useMemo(() => ({
+    left: new THREE.Vector3(),
+    right: new THREE.Vector3(),
+    target: new THREE.Vector3(),
+  }), [])
+
+  useEffect(() => {
+    const registeredGroup = group.current
+    if (!registeredGroup) return
+    const wings = videoAudioWings.get(audioKey) ?? {}
+    wings[face] = { group: registeredGroup, weight: half.width }
+    videoAudioWings.set(audioKey, wings)
+    return () => {
+      const registered = videoAudioWings.get(audioKey)
+      if (registered?.[face]?.group === registeredGroup) delete registered[face]
+      if (registered && !registered.left && !registered.right) videoAudioWings.delete(audioKey)
+    }
+  }, [audioKey, face, half.width])
+
+  useFrame(() => {
+    if (face !== 'left' || !audioAnchor.current) return
+    const wings = videoAudioWings.get(audioKey)
+    if (!wings?.left || !wings.right) {
+      audioAnchor.current.position.set(0, 0, 0)
+      return
+    }
+    wings.left.group.updateWorldMatrix(true, false)
+    wings.right.group.updateWorldMatrix(true, false)
+    wings.left.group.getWorldPosition(positions.left)
+    wings.right.group.getWorldPosition(positions.right)
+    const totalWeight = Math.max(1e-6, wings.left.weight + wings.right.weight)
+    positions.target.copy(positions.left).multiplyScalar(wings.left.weight / totalWeight)
+      .addScaledVector(positions.right, wings.right.weight / totalWeight)
+    wings.left.group.worldToLocal(positions.target)
+    audioAnchor.current.position.copy(positions.target)
+  })
+
   const offsetY = (0.5 - element.pivot[1]) * element.height
-  return <group position={[0, offsetY, 0]}>
+  return <group ref={group} position={[0, offsetY, 0]}>
+    {face === 'left' && <group ref={audioAnchor}>
+      <VideoAudioSource video={composite?.video} settings={element.videoAudio} />
+    </group>}
     {composite && <HalfPlane width={half.width} height={element.height} u0={half.u0} u1={half.u1}
       texture={composite.texture} opacity={element.opacity * opacityMul} layer={element.layer} />}
     {element.particles.enabled && <ParticleWing element={element} half={half} opacityMul={opacityMul} />}
@@ -284,22 +339,42 @@ function HalfPlane({ width, height, u0, u1, texture, opacity, layer }: {
   </mesh>
 }
 
-export function AssetPlane({ asset, back, width, height, opacity = 1, layer = 0 }: {
+export function AssetPlane({
+  asset, back, width, height, opacity = 1, layer = 0, instanceKey,
+  audio, backAudio, videoActive = true, backVideoActive = true,
+}: {
   asset?: Asset
   back?: Asset
   width: number
   height: number
   opacity?: number
   layer?: number
+  instanceKey?: string
+  audio?: import('../../schema/audio').EmbeddedVideoAudio
+  backAudio?: import('../../schema/audio').EmbeddedVideoAudio
+  videoActive?: boolean
+  backVideoActive?: boolean
 }) {
   const image = useImageTexture(asset?.type === 'image' ? asset : undefined)
   const svg = useSvgTexture(asset?.type === 'svg' ? asset : undefined)
+  const video = useVideoTexture(
+    asset?.type === 'video' ? asset : undefined,
+    `${instanceKey ?? 'surface'}:front`,
+    videoActive,
+  )
   const backImage = useImageTexture(back?.type === 'image' ? back : undefined)
   const backSvg = useSvgTexture(back?.type === 'svg' ? back : undefined)
-  const front = image ?? svg
-  const reverse = backImage ?? backSvg
+  const backVideo = useVideoTexture(
+    back?.type === 'video' ? back : undefined,
+    `${instanceKey ?? 'surface'}:back`,
+    backVideoActive,
+  )
+  const front = image ?? svg ?? video
+  const reverse = backImage ?? backSvg ?? backVideo
   const bias = layerDepthBias(layer)
   return <mesh castShadow={castsShadow(opacity)} renderOrder={100 + layer}>
+    <VideoAudioSource video={video?.video} settings={audio} />
+    <VideoAudioSource video={backVideo?.video} settings={backAudio} />
     <planeGeometry args={[width, height]} />
     {front
       ? <meshBasicMaterial color="#ffffff" map={front.texture} transparent opacity={opacity} alphaTest={.02}
@@ -313,21 +388,25 @@ export function AssetPlane({ asset, back, width, height, opacity = 1, layer = 0 
   </mesh>
 }
 
-function VisualPlane({ element, asset, back, opacity }: {
+function VisualPlane({ element, asset, back, opacity, instanceKey }: {
   element: VisualElement
   asset?: Asset
   back?: Asset
   opacity: number
+  instanceKey: string
 }) {
-  const front = useVisualTexture(element, asset)
+  const front = useVisualTexture(element, asset, `${instanceKey}:front`)
   const backImage = useImageTexture(back?.type === 'image' ? back : undefined)
   const backSvg = useSvgTexture(back?.type === 'svg' ? back : undefined)
-  const reverse = backImage ?? backSvg
+  const backVideo = useVideoTexture(back?.type === 'video' ? back : undefined, `${instanceKey}:back`)
+  const reverse = backImage ?? backSvg ?? backVideo
   // 文字はページ面の遮蔽を深度バイアスで追い越さない。ページ送り中に
   // 綴じ目近くの文字だけが次の紙の上へ一瞬見えるため、紙との前後は実深度に任せる。
   const bias = element.text ? {} : layerDepthBias(element.layer)
   if (!front && !reverse) return null
   return <mesh castShadow={castsShadow(opacity)} renderOrder={100 + element.layer}>
+    <VideoAudioSource video={front?.video} settings={element.videoAudio} />
+    <VideoAudioSource video={backVideo?.video} settings={element.backVideoAudio} />
     <planeGeometry args={[element.width, element.height]} />
     <meshBasicMaterial color="#ffffff" map={front?.texture} transparent opacity={opacity}
       alphaTest={.02} side={reverse ? THREE.FrontSide : THREE.DoubleSide} toneMapped={false} {...bias} />
@@ -339,7 +418,10 @@ function VisualPlane({ element, asset, back, opacity }: {
   </mesh>
 }
 
-export function PaperSlab({ position, size, color, edge, asset, back, backColor }: {
+export function PaperSlab({
+  position, size, color, edge, asset, back, backColor, instanceKey,
+  audio, backAudio, videoActive = true, backVideoActive = true,
+}: {
   position: [number, number, number]
   size: [number, number, number]
   color: string
@@ -347,18 +429,27 @@ export function PaperSlab({ position, size, color, edge, asset, back, backColor 
   asset?: Asset
   back?: Asset
   backColor?: string
+  instanceKey?: string
+  audio?: import('../../schema/audio').EmbeddedVideoAudio
+  backAudio?: import('../../schema/audio').EmbeddedVideoAudio
+  videoActive?: boolean
+  backVideoActive?: boolean
 }) {
   return <group position={position}>
     <mesh castShadow receiveShadow><boxGeometry args={size} />
       <meshStandardMaterial color={edge} roughness={.94} /></mesh>
     <group position={[0, size[1] / 2 + .003, 0]} rotation={[-Math.PI / 2, 0, 0]}>
       {asset
-        ? <AssetPlane asset={asset} width={size[0]} height={size[2]} />
+        ? <AssetPlane asset={asset} width={size[0]} height={size[2]} audio={audio}
+          videoActive={videoActive}
+          instanceKey={`${instanceKey ?? 'paper'}:front`} />
         : <mesh><planeGeometry args={[size[0], size[2]]} /><meshStandardMaterial color={color} /></mesh>}
     </group>
     {(back || backColor) && <group position={[0, -size[1] / 2 - .003, 0]} rotation={[Math.PI / 2, 0, Math.PI]}>
       {back
-        ? <AssetPlane asset={back} width={size[0]} height={size[2]} />
+        ? <AssetPlane asset={back} width={size[0]} height={size[2]} audio={backAudio}
+          videoActive={backVideoActive}
+          instanceKey={`${instanceKey ?? 'paper'}:back`} />
         : <mesh><planeGeometry args={[size[0], size[2]]} /><meshStandardMaterial color={backColor} /></mesh>}
     </group>}
   </group>

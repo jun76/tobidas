@@ -1,7 +1,7 @@
 import JSZip from 'jszip'
 import { t } from '../i18n'
 import { SITE_EXT } from '../../package/model'
-import { externalizeAssets } from '../../package/serialize'
+import { externalizeAssets, inlineAssetBodies } from '../../package/serialize'
 import type { BookProject } from '../../schema/bookPackage'
 import { safeFileName, saveBlobAs } from './browserFiles'
 
@@ -35,6 +35,7 @@ export async function exportSiteZip(project: BookProject): Promise<void> {
   const assets = zip.folder(ASSET_DIR)!
   for (const file of published.files) {
     if ('text' in file.bytes) assets.file(file.path, file.bytes.text)
+    else if ('blob' in file.bytes) assets.file(file.path, file.bytes.blob, { compression: 'STORE' })
     else assets.file(file.path, file.bytes.base64, { base64: true })
   }
   const blob = await zip.generateAsync({ type: 'blob' })
@@ -45,7 +46,7 @@ export async function exportSiteZip(project: BookProject): Promise<void> {
 export async function exportSiteHtml(project: BookProject): Promise<void> {
   const player = await fetchPlayer()
   if (player.extras.length) throw new Error(t().io.playerNotSingleFile(player.extras[0].path))
-  const html = injectProjectJson(player.html, project)
+  const html = injectProjectJson(player.html, await inlineAssetBodies(project))
   const blob = new Blob([html], { type: 'text/html' })
   await saveBlobAs(blob, `${safeFileName(project.name)}.html`, t().io.siteHtmlName)
 }

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const assetTypeSchema = z.enum(['svg', 'image', 'audio'])
+export const assetTypeSchema = z.enum(['svg', 'image', 'audio', 'video'])
 
 /**
  * 音声1本の上限。
@@ -9,6 +9,9 @@ export const assetTypeSchema = z.enum(['svg', 'image', 'audio'])
  * 制作中は data URL のまま IndexedDB と undo スタックへ乗る。上限は編集の重さで決める。
  */
 export const AUDIO_BYTE_LIMIT = 3 * 1024 * 1024
+
+/** 動画1本の上限。動画は data URL 化せず Blob のまま保持する。 */
+export const VIDEO_BYTE_LIMIT = 100 * 1024 * 1024
 
 /**
  * 書き出したサイトが素材の実体を置く場所。
@@ -24,8 +27,8 @@ export function externalAssetUrl(id: string): string {
 }
 
 /** `data` が実体そのものではなく外部ファイルへの参照か (制作中は常に false) */
-export function isExternalAssetData(data: string): boolean {
-  return data.startsWith(EXTERNAL_ASSET_PREFIX)
+export function isExternalAssetData(data: AssetData): data is string {
+  return typeof data === 'string' && data.startsWith(EXTERNAL_ASSET_PREFIX)
 }
 
 export const assetSchema = z.object({
@@ -43,7 +46,14 @@ export const assetSchema = z.object({
 
 export type AssetMeta = z.infer<typeof assetSchema>
 
-/** メモリ内表現。SVG は文字列、それ以外は data URL。 */
+/**
+ * メモリ内の素材実体。
+ *
+ * SVG は文字列、画像と音声は従来どおり data URL、動画は巨大な文字列への変換を
+ * 避けるため Blob のまま持つ。公開用の静的サイトだけ相対URLへ差し替わる。
+ */
+export type AssetData = string | Blob
+
 export interface Asset extends AssetMeta {
-  data: string
+  data: AssetData
 }

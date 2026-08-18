@@ -12,6 +12,8 @@ const EXT_TO_KIND: Record<string, { type: AssetMeta['type']; mime: string }> = {
   mp3: { type: 'audio', mime: 'audio/mpeg' },
   ogg: { type: 'audio', mime: 'audio/ogg' },
   wav: { type: 'audio', mime: 'audio/wav' },
+  mp4: { type: 'video', mime: 'video/mp4' },
+  webm: { type: 'video', mime: 'video/webm' },
 }
 
 export function assetKindForFile(name: string): { type: AssetMeta['type']; mime: string } | null {
@@ -36,6 +38,10 @@ export function assetAccept(...types: AssetMeta['type'][]): string {
 export interface AssetSource {
   text(): Promise<string>
   dataUrl(mime: string): Promise<string>
+  blob(mime: string): Promise<Blob>
+  readonly size?: number
+  readonly mime?: string
+  metadata?(type: AssetMeta['type'], data: import('../schema/assets').AssetData): Promise<Partial<AssetMeta>>
 }
 
 export interface AssembleResult {

@@ -109,6 +109,8 @@ export function Viewport({ showEditTimeline = true }: { showEditTimeline?: boole
         showGuides={store.mode === 'edit'}
         isHidden={store.mode === 'edit' ? hiddenPredicate : undefined}
         onSelect={store.mode === 'edit' ? select : undefined}
+        audioActive={store.mode === 'play'}
+        audioMuted={playback.audioMuted}
       />
       {store.mode === 'edit' && <>
         <PageDropController />

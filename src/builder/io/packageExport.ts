@@ -22,6 +22,8 @@ export async function exportPackageToDirectory(project: BookProject): Promise<bo
     const bytes = assetDataToBytes(asset)
     const blob = 'text' in bytes
       ? new Blob([bytes.text], { type: asset.mime })
+      : 'blob' in bytes
+        ? bytes.blob
       : base64ToBlob(bytes.base64, asset.mime)
     await writeFile(assetsDirectory, asset.id, blob)
   }

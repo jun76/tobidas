@@ -15,6 +15,9 @@ export interface BookRuntimeProps {
   showGuides?: boolean
   isHidden?: (spreadId: string, element: StageElement) => boolean
   onSelect?: (selection: RuntimeSelection) => void
+  /** ビルダーでは再生モードだけtrue。公開プレイヤーは常にtrue。 */
+  audioActive?: boolean
+  audioMuted?: boolean
 }
 
 export interface RenderSpreadFrame {

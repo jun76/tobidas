@@ -19,6 +19,7 @@ import {
 } from './commands'
 import { buildAiStateSummary } from './stateSummary'
 import type { AiCommandResult } from './types'
+import { DEFAULT_EMBEDDED_VIDEO_AUDIO, type EmbeddedVideoAudio } from '../../schema/audio'
 
 const ASSET_PRESETS = ['paper-stack', 'bottom-upright', 'depth-layer'] as const
 
@@ -32,7 +33,7 @@ export function AiModePanel() {
   const assetInputRef = useRef<HTMLInputElement>(null)
   const readOnly = store.mode !== 'edit'
   const activeSpreadId = summary.activeSpread?.id ?? ''
-  const imageAssets = summary.assets.filter((asset) => asset.type === 'image' || asset.type === 'svg')
+  const imageAssets = summary.assets.filter((asset) => ['image', 'svg', 'video'].includes(asset.type))
 
   useEffect(() => {
     const missing = store.project.assets.filter((asset) => asset.type === 'audio' && asset.duration === undefined)
@@ -47,7 +48,8 @@ export function AiModePanel() {
       audio.preload = 'metadata'
       audio.onloadedmetadata = () => done(Number.isFinite(audio.duration) ? audio.duration : null)
       audio.onerror = () => done(null)
-      audio.src = asset.data
+      if (typeof asset.data === 'string') audio.src = asset.data
+      else done(null)
     }))).then((entries) => {
       if (alive) setMeasuredDurations(new Map(entries))
     })
@@ -80,6 +82,10 @@ export function AiModePanel() {
     ? store.project.book.spreads.find((spread) => spread.id === elementSelection.spreadId)
       ?.elements.find((element) => element.id === elementSelection.elementId)
     : undefined
+  const selectedVideoFront = selectedElement?.type === 'visual'
+    && store.project.assets.some((asset) => asset.id === selectedElement.image && asset.type === 'video')
+  const selectedVideoBack = selectedElement?.type === 'visual'
+    && store.project.assets.some((asset) => asset.id === selectedElement.backImage && asset.type === 'video')
 
   const announceSelection = (label: string, select: () => void) => {
     select()
@@ -111,6 +117,14 @@ export function AiModePanel() {
     if (!elementSelection || !selectedElement) return
     const data = new FormData(event.currentTarget)
     const number = (name: string) => parseFinite(data.get(name))
+    const videoAudio = (prefix: string): EmbeddedVideoAudio | null => data.get(`${prefix}-enabled`) === 'on'
+      ? {
+        enabled: true,
+        volume: number(`${prefix}-volume`),
+        referenceDistance: number(`${prefix}-reference-distance`),
+        rolloffFactor: number(`${prefix}-rolloff`),
+      }
+      : null
     setResult(updateAiElement(elementSelection.spreadId, selectedElement.id, {
       name: String(data.get('name') ?? ''),
       position: [number('position-x'), number('position-y'), number('position-z')],
@@ -123,6 +137,8 @@ export function AiModePanel() {
         width: number('width'),
         height: number('height'),
         text: String(data.get('text') ?? ''),
+        ...(selectedVideoFront ? { videoAudio: videoAudio('video-audio') } : {}),
+        ...(selectedVideoBack ? { backVideoAudio: videoAudio('back-video-audio') } : {}),
       } : {}),
     }))
   }
@@ -227,7 +243,7 @@ export function AiModePanel() {
           <span>{t.assets.formats}</span>
         </div>
         <input ref={assetInputRef} hidden multiple type="file" aria-label={t.assets.load}
-          accept={assetAccept('svg', 'image', 'audio')}
+          accept={assetAccept('svg', 'image', 'audio', 'video')}
           onChange={(event) => {
             const files = Array.from(event.currentTarget.files ?? [])
             event.currentTarget.value = ''
@@ -281,6 +297,10 @@ export function AiModePanel() {
               <AiNumber name="height" label={t.ai.height} value={selectedElement.height} min={0.01} step="any" />
               <AiText name="text" label={t.ai.text} value={selectedElement.text} />
             </fieldset>}
+            {selectedElement.type === 'visual' && selectedVideoFront
+              && <AiVideoAudio prefix="video-audio" settings={selectedElement.videoAudio} label={t.properties.image} />}
+            {selectedElement.type === 'visual' && selectedVideoBack
+              && <AiVideoAudio prefix="back-video-audio" settings={selectedElement.backVideoAudio} label={t.properties.backImage} />}
             <button type="submit">{t.ai.apply}</button>
           </form>
           <form key={`parent:${selectedElement.id}:${store.project.updatedAt}`} onSubmit={move}>
@@ -322,6 +342,29 @@ export function AiModePanel() {
       {summary.validation.warnings.map((issue, index) => <div className={st.warn} key={`warning-${index}`}>{issue}</div>)}
     </details>
   </section>
+}
+
+function AiVideoAudio({ prefix, settings, label }: {
+  prefix: string
+  settings?: EmbeddedVideoAudio
+  label: string
+}) {
+  const t = useT()
+  const value = settings ?? { ...DEFAULT_EMBEDDED_VIDEO_AUDIO, enabled: false }
+  return <fieldset className={st.aiFieldGroup}>
+    <legend>{t.properties.videoAudio} · {label}</legend>
+    <div className={st.row}>
+      <label className={st.rowLabel} htmlFor={`ai-${prefix}-enabled`}>{t.properties.videoAudioEnabled}</label>
+      <input id={`ai-${prefix}-enabled`} name={`${prefix}-enabled`} type="checkbox"
+        defaultChecked={settings?.enabled ?? false} />
+    </div>
+    <AiNumber name={`${prefix}-volume`} label={t.properties.videoAudioVolume}
+      value={value.volume} min={0} max={1} step={.05} />
+    <AiNumber name={`${prefix}-reference-distance`} label={t.properties.videoAudioReferenceDistance}
+      value={value.referenceDistance} min={.05} max={8} step={.05} />
+    <AiNumber name={`${prefix}-rolloff`} label={t.properties.videoAudioRolloff}
+      value={value.rolloffFactor} min={0} max={4} step={.05} />
+  </fieldset>
 }
 
 function formatAssetExtent(

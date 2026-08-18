@@ -1,4 +1,4 @@
-import type { Asset, AssetMeta } from '../schema/assets'
+import { VIDEO_BYTE_LIMIT, type Asset, type AssetData, type AssetMeta } from '../schema/assets'
 import { bookProjectSchema } from '../schema/bookPackage'
 import { assetKindForFile, normalizeAssetPath, type AssembleResult, type AssetSource } from './model'
 
@@ -34,7 +34,11 @@ export async function assemblePackage(
       missing.push(meta.id)
       continue
     }
-    assets.push({ ...meta, data: await readAsset(source, meta.type, meta.mime) })
+    if (meta.type === 'video') assertVideoDeclaration(meta.id, meta.mime, source.mime)
+    const data = await readAsset(source, meta.type, meta.mime)
+    assertAssetSize(meta.id, meta.type, data, source.size)
+    const inferred = await source.metadata?.(meta.type, data)
+    assets.push({ ...inferred, ...meta, bytes: meta.bytes ?? source.size, data })
   }
   if (missing.length) {
     throw new Error('declared assets are missing from assets/:\n'
@@ -50,18 +54,43 @@ export async function assemblePackage(
       continue
     }
     const base = relativePath.split('/').pop() ?? relativePath
+    const data = await readAsset(source, kind.type, kind.mime)
+    assertAssetSize(relativePath, kind.type, data, source.size)
+    const inferred = await source.metadata?.(kind.type, data)
     assets.push({
+      ...inferred,
       id: relativePath,
       name: base.replace(/\.[^.]+$/, ''),
       type: kind.type,
       mime: kind.mime,
-      data: await readAsset(source, kind.type, kind.mime),
+      bytes: source.size,
+      data,
     })
   }
 
   return { project: { ...file, assets }, notices }
 }
 
-async function readAsset(source: AssetSource, type: AssetMeta['type'], mime: string): Promise<string> {
-  return type === 'svg' ? source.text() : source.dataUrl(mime)
+async function readAsset(source: AssetSource, type: AssetMeta['type'], mime: string): Promise<AssetData> {
+  if (type === 'svg') return source.text()
+  if (type === 'video') return source.blob(mime)
+  return source.dataUrl(mime)
+}
+
+function assertAssetSize(id: string, type: AssetMeta['type'], data: AssetData, sourceSize?: number): void {
+  if (type !== 'video') return
+  const bytes = sourceSize ?? (data instanceof Blob ? data.size : 0)
+  if (bytes > VIDEO_BYTE_LIMIT) {
+    throw new Error(`video asset exceeds 100 MiB: assets/${id}`)
+  }
+}
+
+function assertVideoDeclaration(id: string, declaredMime: string, actualMime?: string): void {
+  const kind = assetKindForFile(id)
+  if (kind?.type !== 'video' || kind.mime !== declaredMime) {
+    throw new Error(`video declaration does not match its file extension: assets/${id}`)
+  }
+  if (actualMime && actualMime !== 'application/octet-stream' && actualMime !== declaredMime) {
+    throw new Error(`video MIME does not match project.json: assets/${id}`)
+  }
 }

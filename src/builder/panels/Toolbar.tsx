@@ -9,6 +9,7 @@ import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { useDialogs } from '../ui/DialogProvider'
 import { requestElementDelete } from '../elementDelete'
 import st from '../builder.module.css'
+import { unlockVideoAudio } from '../../runtime/videoAudio'
 
 export function Toolbar({ onScreenshot, aiMode, onAiModeChange }: {
   onScreenshot: () => Promise<void>
@@ -68,6 +69,12 @@ export function Toolbar({ onScreenshot, aiMode, onAiModeChange }: {
       <button aria-label={t.toolbar.redo} title={t.toolbar.redoHint}
         onClick={store.redo} disabled={!store.redoStack.length}><Icon as={Redo2} size={ICON.bar} /></button>
       <span className={st.spacer} />
+      {store.saveStatus !== 'idle' && <span className={st.hintSmall} role="status" title={store.saveError}>
+        {store.saveStatus === 'saving' ? t.toolbar.autosaveSaving
+          : store.saveStatus === 'saved' ? t.toolbar.autosaveSaved
+            : store.saveStatus === 'quota-error' ? t.toolbar.autosaveQuota
+              : t.toolbar.autosaveFailed}
+      </span>}
       <button type="button" className={aiMode ? st.active : ''} aria-pressed={aiMode}
         aria-label={aiMode ? t.toolbar.aiModeExit : t.toolbar.aiMode}
         title={aiMode ? t.toolbar.aiModeExit : t.toolbar.aiModeHint} onClick={() => onAiModeChange(!aiMode)}>
@@ -95,7 +102,10 @@ export function Toolbar({ onScreenshot, aiMode, onAiModeChange }: {
           : screenshotState === 'saved' ? <Icon as={Check} size={ICON.bar} />
             : <Icon as={Camera} size={ICON.bar} />}
       </button>
-      <button className={store.mode === 'play' ? st.active : ''} onClick={() => store.setMode(store.mode === 'edit' ? 'play' : 'edit')}>
+      <button className={store.mode === 'play' ? st.active : ''} onClick={() => {
+        if (store.mode === 'edit') unlockVideoAudio()
+        store.setMode(store.mode === 'edit' ? 'play' : 'edit')
+      }}>
         {store.mode === 'edit'
           ? <><Icon as={Play} size={ICON.bar} />{t.toolbar.play}</>
           : <><Icon as={Pencil} size={ICON.bar} />{t.toolbar.edit}</>}
@@ -183,18 +193,45 @@ function ExportMenu() {
   const t = useT()
   const dialogs = useDialogs()
   const project = useBuilderStore((state) => state.project)
-  return <Dropdown label={t.toolbar.export}>{(close) => {
-    const run = (work: () => Promise<unknown>) => {
-      close()
-      void work().catch((error) => dialogs.showMessage(t.dialog.errorTitle, String(error)))
-    }
-    return <>
-      <button onClick={() => run(async () => (await import('../io/siteExport')).exportSiteHtml(project))}>
-        {t.toolbar.exportSiteHtml}
-      </button>
-      <button onClick={() => run(async () => (await import('../io/siteExport')).exportSiteZip(project))}>
-        {t.toolbar.exportSiteZip}
-      </button>
-    </>
-  }}</Dropdown>
+  const [confirmVideoHtml, setConfirmVideoHtml] = useState(false)
+  const run = (work: () => Promise<unknown>) => {
+    void work().catch((error) => dialogs.showMessage(t.dialog.errorTitle, String(error)))
+  }
+  const videoBytes = project.assets
+    .filter((asset) => asset.type === 'video')
+    .reduce((total, asset) => total + (asset.bytes ?? (asset.data instanceof Blob ? asset.data.size : 0)), 0)
+  const estimatedMegabytes = Math.ceil((videoBytes * 4 / 3 + 1_500_000) / 1024 / 1024)
+  return <>
+    <Dropdown label={t.toolbar.export}>{(close) => {
+      const runAndClose = (work: () => Promise<unknown>) => {
+        close()
+        run(work)
+      }
+      return <>
+        <button onClick={() => {
+          if (videoBytes) {
+            close()
+            setConfirmVideoHtml(true)
+          } else {
+            runAndClose(async () => (await import('../io/siteExport')).exportSiteHtml(project))
+          }
+        }}>
+          {t.toolbar.exportSiteHtml}
+        </button>
+        <button onClick={() => runAndClose(async () => (await import('../io/siteExport')).exportSiteZip(project))}>
+          {t.toolbar.exportSiteZip}
+        </button>
+      </>
+    }}</Dropdown>
+    {confirmVideoHtml && <ConfirmDialog
+      title={t.toolbar.videoHtmlTitle}
+      body={t.toolbar.videoHtmlBody(estimatedMegabytes)}
+      okLabel={t.toolbar.videoHtmlOk}
+      onOk={() => {
+        setConfirmVideoHtml(false)
+        run(async () => (await import('../io/siteExport')).exportSiteHtml(project))
+      }}
+      onClose={() => setConfirmVideoHtml(false)}
+    />}
+  </>
 }

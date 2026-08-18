@@ -4,8 +4,9 @@ import { normalizeAssetPath, type AssembleResult, type AssetSource } from '../..
 import { bytesToDataUrl } from '../../package/serialize'
 import { validateBookProject } from '../../schema/bookValidate'
 import type { PickerWindow } from './browserFiles'
+import { readMediaMetadata } from '../assets/ingest'
 
-const MAX_IMPORT_BYTES = 100 * 1024 * 1024
+const MAX_IMPORT_BYTES = 512 * 1024 * 1024
 const MAX_IMPORT_FILES = 2000
 
 export type ImportResult = AssembleResult
@@ -17,6 +18,7 @@ export async function importPackageFileList(list: FileList | File[]): Promise<Im
   if (selected.reduce((total, file) => total + file.size, 0) > MAX_IMPORT_BYTES) {
     throw new Error(t().io.packageTooLarge)
   }
+  await assertStorageCapacity(selected.reduce((total, file) => total + file.size, 0))
   const entries = selected.map((file) => ({
     relativePath: (file.webkitRelativePath || file.name).split('/').slice(1).join('/'),
     file,
@@ -66,6 +68,7 @@ async function importPackageDirectory(directory: FileSystemDirectoryHandle): Pro
   if (projectText === null) throw new Error(t().io.noProjectJsonFolder)
   if (files.size > MAX_IMPORT_FILES) throw new Error(t().io.tooManyFiles)
   if (totalBytes > MAX_IMPORT_BYTES) throw new Error(t().io.packageTooLarge)
+  await assertStorageCapacity(totalBytes)
   return finishImport(projectText, files)
 }
 
@@ -91,9 +94,26 @@ async function collectDirectory(
 
 function fileAssetSource(file: File): AssetSource {
   return {
+    size: file.size,
+    mime: file.type,
     text: () => file.text(),
     dataUrl: async (mime) => bytesToDataUrl(await file.arrayBuffer(), mime),
+    blob: async (mime) => new Blob([file], { type: mime }),
+    metadata: (type, data) => readMediaMetadata(file, type, data),
   }
+}
+
+async function assertStorageCapacity(bytes: number): Promise<void> {
+  let estimate: StorageEstimate | undefined
+  try {
+    estimate = await navigator.storage?.estimate?.()
+  } catch {
+    return
+  }
+  if (!estimate?.quota) return
+  const available = estimate.quota - (estimate.usage ?? 0)
+  // IndexedDBの管理領域とundo用の複製を見込み、素材実体の1.2倍を確保する。
+  if (available < bytes * 1.2) throw new Error(t().io.storageTooSmall)
 }
 
 async function finishImport(projectJsonText: string, files: Map<string, AssetSource>): Promise<ImportResult> {

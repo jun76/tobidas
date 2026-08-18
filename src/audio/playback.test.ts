@@ -266,9 +266,13 @@ describe('audioGate', () => {
     audioGate({ active: true, playing: false, atEnd: false, muted: false, ...over })
 
   it('rings while playing and falls silent while stopped', () => {
-    expect(gate({ playing: true })).toEqual({ bgmPaused: false, bgmMuted: false, cuesMuted: false })
+    expect(gate({ playing: true })).toEqual({
+      bgmPaused: false, bgmMuted: false, cuesMuted: false, videoMuted: false,
+    })
     // つまみ・ホイール・drag で動かしている間 (途中で止まっている)
-    expect(gate({ playing: false })).toEqual({ bgmPaused: true, bgmMuted: false, cuesMuted: true })
+    expect(gate({ playing: false })).toEqual({
+      bgmPaused: true, bgmMuted: false, cuesMuted: true, videoMuted: false,
+    })
   })
 
   /**
@@ -288,6 +292,7 @@ describe('audioGate', () => {
     const muted = gate({ playing: true, muted: true })
     expect(muted.bgmMuted).toBe(true)
     expect(muted.cuesMuted).toBe(true)
+    expect(muted.videoMuted).toBe(true)
     // 消音は一時停止ではない。曲は流れたまま音量だけ落とす
     expect(muted.bgmPaused).toBe(false)
   })
@@ -295,7 +300,7 @@ describe('audioGate', () => {
   /** 編集モードへ戻ったら音は止め、効果音の消音は中立へ戻す (試し聞きは別経路) */
   it('stops the BGM outside the play view and leaves cues neutral', () => {
     expect(gate({ active: false, playing: false, atEnd: true })).toEqual({
-      bgmPaused: true, bgmMuted: false, cuesMuted: false,
+      bgmPaused: true, bgmMuted: false, cuesMuted: false, videoMuted: true,
     })
   })
 })

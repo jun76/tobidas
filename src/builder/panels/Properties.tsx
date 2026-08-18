@@ -2,6 +2,7 @@ import { Diamond, Eye, EyeOff, Trash2 } from 'lucide-react'
 import { useId } from 'react'
 import { Icon } from '../../ui/Icon'
 import type { StageElement, TextFont, VisualElement } from '../../schema/stageElement'
+import { DEFAULT_EMBEDDED_VIDEO_AUDIO, type EmbeddedVideoAudio } from '../../schema/audio'
 import type { TimelineProperty, TimelineValue } from '../../schema/timeline'
 import { evaluateBookSignals } from '../../runtime/signals'
 import { useT } from '../i18n'
@@ -53,7 +54,13 @@ export function BookProperties() {
       onChange={(value) => store.commit((project) => { project.book.appearance.background = value })}
       onKey={() => environmentKey('background', book.appearance.background)} />
     <Asset label={t.properties.backgroundImage} value={book.appearance.backgroundAsset}
-      onChange={(value) => store.commit((project) => { project.book.appearance.backgroundAsset = value || undefined })} />
+      onChange={(value) => store.commit((project) => {
+        project.book.appearance.backgroundAsset = value || undefined
+      })} />
+    <VideoAudioFields assetId={book.appearance.backgroundAsset} settings={book.appearance.backgroundVideoAudio}
+      positional={false} onChange={(settings) => store.commit((project) => {
+        project.book.appearance.backgroundVideoAudio = settings
+      })} />
     <Color label={t.properties.coverColor} value={book.appearance.coverColor ?? '#4f392c'}
       onChange={(value) => store.commit((project) => { project.book.appearance.coverColor = value })} />
     <Color label={t.properties.coverEdgeColor} value={book.appearance.coverEdgeColor ?? '#2d2019'}
@@ -126,11 +133,21 @@ function Cover({ side }: { side: 'front' | 'back' }) {
   const cover = side === 'front' ? store.project.book.frontCover : store.project.book.backCover
   return <Panel title={side === 'front' ? t.properties.frontCover : t.properties.backCover}>
     <Asset label={t.properties.coverFront} value={cover.frontAsset} onChange={(value) => store.commit((project) => {
-      (side === 'front' ? project.book.frontCover : project.book.backCover).frontAsset = value || undefined
+      const target = side === 'front' ? project.book.frontCover : project.book.backCover
+      target.frontAsset = value || undefined
     })} />
+    <VideoAudioFields assetId={cover.frontAsset} settings={cover.frontVideoAudio}
+      onChange={(settings) => store.commit((project) => {
+        (side === 'front' ? project.book.frontCover : project.book.backCover).frontVideoAudio = settings
+      })} />
     <Asset label={t.properties.coverBack} value={cover.backAsset} onChange={(value) => store.commit((project) => {
-      (side === 'front' ? project.book.frontCover : project.book.backCover).backAsset = value || undefined
+      const target = side === 'front' ? project.book.frontCover : project.book.backCover
+      target.backAsset = value || undefined
     })} />
+    <VideoAudioFields assetId={cover.backAsset} settings={cover.backVideoAudio}
+      onChange={(settings) => store.commit((project) => {
+        (side === 'front' ? project.book.frontCover : project.book.backCover).backVideoAudio = settings
+      })} />
   </Panel>
 }
 
@@ -160,8 +177,14 @@ function Page({ side }: { side: 'left' | 'right' }) {
   const page = selectActiveSpread(store)![side === 'left' ? 'leftPage' : 'rightPage']
   return <Panel title={side === 'left' ? t.properties.leftPage : t.properties.rightPage}>
     <Asset label={t.properties.pageBackground} value={page.backgroundAsset} onChange={(value) => store.commit((project) => {
-      project.book.spreads.find((item) => item.id === id)![side === 'left' ? 'leftPage' : 'rightPage'].backgroundAsset = value || undefined
+      const target = project.book.spreads.find((item) => item.id === id)![side === 'left' ? 'leftPage' : 'rightPage']
+      target.backgroundAsset = value || undefined
     })} />
+    <VideoAudioFields assetId={page.backgroundAsset} settings={page.backgroundVideoAudio}
+      onChange={(settings) => store.commit((project) => {
+        project.book.spreads.find((item) => item.id === id)![side === 'left' ? 'leftPage' : 'rightPage']
+          .backgroundVideoAudio = settings
+      })} />
   </Panel>
 }
 
@@ -189,11 +212,19 @@ function Element({ element }: { element: StageElement }) {
       item.opacity = Math.min(1, Math.max(0, value))
     })} onKey={() => key('opacity', element.opacity)} />
     {element.type === 'visual' && <>
-      <Asset label={t.properties.image} value={element.image} onChange={(value) => update((item) => { if (item.type === 'visual') item.image = value || undefined })}
+      <Asset label={t.properties.image} value={element.image} onChange={(value) => update((item) => {
+        if (item.type !== 'visual') return
+        item.image = value || undefined
+      })}
         onKey={() => key('visual.image', element.image ?? '')} />
+      <VideoAudioFields assetId={element.image} settings={element.videoAudio}
+        onChange={(settings) => update((item) => { if (item.type === 'visual') item.videoAudio = settings })} />
       <Asset label={t.properties.backImage} value={element.backImage} onChange={(value) => update((item) => {
-        if (item.type === 'visual') item.backImage = value || undefined
+        if (item.type !== 'visual') return
+        item.backImage = value || undefined
       })} />
+      <VideoAudioFields assetId={element.backImage} settings={element.backVideoAudio}
+        onChange={(settings) => update((item) => { if (item.type === 'visual') item.backVideoAudio = settings })} />
       <Num label={t.properties.width} value={element.width} onChange={(value) => update((item) => { if (item.type === 'visual') item.width = Math.max(.01, value) })} />
       <Num label={t.properties.height} value={element.height} onChange={(value) => update((item) => { if (item.type === 'visual') item.height = Math.max(.01, value) })} />
       <label><input type="checkbox" aria-label={t.properties.billboard} checked={element.billboard} onChange={(event) => update((item) => {
@@ -330,9 +361,40 @@ function Vec3({ label, value, onChange, step = .1 }: {
 
 function Asset({ label, value, onChange, onKey }: { label: string; value?: string; onChange: (value: string) => void; onKey?: () => void }) {
   const t = useT()
-  const assets = useBuilderStore((state) => state.project.assets).filter((asset) => asset.type === 'image' || asset.type === 'svg')
+  const assets = useBuilderStore((state) => state.project.assets)
+    .filter((asset) => ['image', 'svg', 'video'].includes(asset.type))
   return <Select label={label} value={value ?? ''} options={[['', t.properties.unset], ...assets.map((asset) => [asset.id, asset.name] as [string, string])]}
     onChange={onChange} onKey={onKey} />
+}
+
+function VideoAudioFields({ assetId, settings, onChange, positional = true }: {
+  assetId?: string
+  settings?: EmbeddedVideoAudio
+  onChange: (settings: EmbeddedVideoAudio | undefined) => void
+  positional?: boolean
+}) {
+  const t = useT()
+  const isVideo = useBuilderStore((state) => state.project.assets
+    .some((asset) => asset.id === assetId && asset.type === 'video'))
+  if (!isVideo) return null
+  const current = settings ?? { ...DEFAULT_EMBEDDED_VIDEO_AUDIO, enabled: false }
+  return <>
+    <div className={st.subsectionTitle}>{t.properties.videoAudio}</div>
+    {!positional && <div className={st.hintSmall}>{t.properties.videoAudioGlobal}</div>}
+    <label><input type="checkbox" aria-label={t.properties.videoAudioEnabled} checked={settings?.enabled ?? false}
+      onChange={(event) => onChange(event.target.checked ? { ...DEFAULT_EMBEDDED_VIDEO_AUDIO } : undefined)} />
+      {' '}{t.properties.videoAudioEnabled}</label>
+    {settings?.enabled && <>
+      <Num label={t.properties.videoAudioVolume} value={current.volume}
+        onChange={(value) => onChange({ ...current, volume: Math.min(1, Math.max(0, value)), enabled: true })} />
+      {positional && <>
+        <Num label={t.properties.videoAudioReferenceDistance} value={current.referenceDistance}
+          onChange={(value) => onChange({ ...current, referenceDistance: Math.min(8, Math.max(.05, value)), enabled: true })} />
+        <Num label={t.properties.videoAudioRolloff} value={current.rolloffFactor}
+          onChange={(value) => onChange({ ...current, rolloffFactor: Math.min(4, Math.max(0, value)), enabled: true })} />
+      </>}
+    </>}
+  </>
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {

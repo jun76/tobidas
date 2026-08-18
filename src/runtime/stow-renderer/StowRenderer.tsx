@@ -15,6 +15,7 @@ import type { BookRuntimeProps, RenderSpreadFrame } from '../types'
 import { ElementVisual, SparkleMaterial, WingVisual, assetFor, layerDepthBias, visualPivotOffset } from '../visuals/ElementVisuals'
 import { SPARKLE, buildSparkleField } from '../visuals/sparkleField'
 import { buildSparkleSpriteGeometry } from '../visuals/sparkleGeometry'
+import { VideoAudioSource } from '../videoAudio'
 
 interface StowElementsProps {
   frame: RenderSpreadFrame
@@ -85,10 +86,11 @@ function StowNode({ item, childrenMap, assets, clocks, t, spread, spreadTime, is
   const [pivotX, pivotY] = visualPivotOffset(element)
   const visual = item.half
     ? <WingVisual element={element} half={item.half}
-      assets={assets} opacityMul={initial.opacityMul} />
+      assets={assets} opacityMul={initial.opacityMul} instanceKey={clockKey}
+      face={item.face} />
     : <group position={[pivotX, pivotY, 0]}>
       <ElementVisual element={element} assets={assets} opacityMul={initial.opacityMul}
-        openFactor={facingStrength} />
+        openFactor={facingStrength} instanceKey={clockKey} />
     </group>
   return <group ref={ref} position={initial.position}
     rotation={initial.rotationDeg.map(THREE.MathUtils.degToRad) as [number, number, number]}
@@ -144,7 +146,8 @@ function ChildNode({ element: sourceElement, childrenMap, assets, clocks, spread
   const initial = poseFor(element.clock === 'story-time' ? clocks.storyTime : clocks.peek(clockKey))
   const [pivotX, pivotY] = visualPivotOffset(element)
   const visual = <group position={[pivotX, pivotY, 0]}>
-    <ElementVisual element={element} assets={assets} opacityMul={fade} openFactor={facingStrength} />
+    <ElementVisual element={element} assets={assets} opacityMul={fade} openFactor={facingStrength}
+      instanceKey={clockKey} />
   </group>
   return <group ref={ref} position={initial.position}
     rotation={initial.rotationDeg.map(THREE.MathUtils.degToRad) as [number, number, number]} scale={initial.scale}
@@ -210,7 +213,9 @@ export function SpanningVFoldNode({ span, leftAngle, rightAngle, assets, clocks,
   const clockKey = `${spreadId}:${element.id}`
   const leftMesh = useRef<THREE.Mesh>(null)
   const rightMesh = useRef<THREE.Mesh>(null)
-  const texture = useVisualTexture(element, assetFor(assets, element.image))?.texture
+  const audioAnchor = useRef<THREE.Group>(null)
+  const composite = useVisualTexture(element, assetFor(assets, element.image), clockKey)
+  const texture = composite?.texture
   const geometryLeft = useMemo(() => spanWingGeometry(span.creaseU, 'left'), [span.creaseU])
   const geometryRight = useMemo(() => spanWingGeometry(span.creaseU, 'right'), [span.creaseU])
   useEffect(() => () => { geometryLeft.dispose(); geometryRight.dispose() }, [geometryLeft, geometryRight])
@@ -239,6 +244,25 @@ export function SpanningVFoldNode({ span, leftAngle, rightAngle, assets, clocks,
       mesh.matrixWorldNeedsUpdate = true
       ;(mesh.material as THREE.MeshBasicMaterial).opacity = element.opacity * pose.opacityMul
     }
+    if (audioAnchor.current) {
+      const totalWidth = Math.max(1e-6, evaluatedSpan.widthLeft + evaluatedSpan.widthRight)
+      audioAnchor.current.position.set(...pose.origin)
+      basis.y.set(...pose.creaseDir)
+      audioAnchor.current.position.addScaledVector(
+        basis.y,
+        evaluatedSpan.height * pose.scaleMul / 2,
+      )
+      basis.x.set(...pose.leftDir)
+      audioAnchor.current.position.addScaledVector(
+        basis.x,
+        evaluatedSpan.widthLeft * evaluatedSpan.widthLeft * pose.scaleMul / (2 * totalWidth),
+      )
+      basis.x.set(...pose.rightDir)
+      audioAnchor.current.position.addScaledVector(
+        basis.x,
+        evaluatedSpan.widthRight * evaluatedSpan.widthRight * pose.scaleMul / (2 * totalWidth),
+      )
+    }
   }
 
   useFrame((_, dt) => {
@@ -261,6 +285,9 @@ export function SpanningVFoldNode({ span, leftAngle, rightAngle, assets, clocks,
       alphaTest={.02} side={THREE.DoubleSide} toneMapped={false} {...bias} />
     : null
   return <>
+    <group ref={audioAnchor}>
+      <VideoAudioSource video={composite?.video} settings={element.videoAudio} />
+    </group>
     {material && <mesh ref={leftMesh} geometry={geometryLeft} matrixAutoUpdate={false} castShadow
       renderOrder={100 + element.layer} onClick={select}>{material}</mesh>
     }

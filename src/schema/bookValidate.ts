@@ -1,6 +1,7 @@
 import type { BookProject } from './bookPackage'
 import { bookProjectSchema } from './bookPackage'
-import { AUDIO_BYTE_LIMIT } from './assets'
+import { AUDIO_BYTE_LIMIT, VIDEO_BYTE_LIMIT } from './assets'
+import type { EmbeddedVideoAudio } from './audio'
 import {
   COLOR_PROPERTIES,
   DISCRETE_PROPERTIES,
@@ -30,6 +31,22 @@ export function validateBookProject(data: unknown): BookValidationResult {
     if (!asset) errors.push(`${label}: unregistered asset ${id}`)
     else if (!expected.includes(asset.type)) errors.push(`${label}: expected ${expected.join('/')}`)
   }
+  const validateVideoAudio = (
+    id: string | undefined,
+    settings: EmbeddedVideoAudio | undefined,
+    label: string,
+    timelineCanUseVideo = false,
+  ): number => {
+    if (!settings?.enabled) return 0
+    const asset = id ? assets.get(id) : undefined
+    if (asset?.type === 'video' || timelineCanUseVideo) return 1
+    if (!id) {
+      warnings.push(`${label}: enabled video audio has no video asset`)
+      return 0
+    }
+    if (asset) warnings.push(`${label}: enabled video audio is currently unused`)
+    return 0
+  }
   const ids = project.assets.map((a) => a.id)
   if (new Set(ids).size !== ids.length) errors.push('duplicate asset id')
   const totalBytes = project.assets.reduce((total, asset) => total + (asset.bytes ?? 0), 0)
@@ -37,31 +54,72 @@ export function validateBookProject(data: unknown): BookValidationResult {
   // 音声は data URL のまま単一HTMLへ入る。取り込みでは弾くが、外から来た
   // パッケージは読めなくする必要が無いので警告に留める
   for (const asset of project.assets) {
-    if (asset.type !== 'audio' || (asset.bytes ?? 0) <= AUDIO_BYTE_LIMIT) continue
-    warnings.push(`${asset.name}: audio exceeds 3MB (${((asset.bytes ?? 0) / 1024 / 1024).toFixed(1)}MB)`)
+    const bytes = asset.data instanceof Blob ? asset.data.size : (asset.bytes ?? 0)
+    if (asset.type === 'audio' && bytes > AUDIO_BYTE_LIMIT) {
+      warnings.push(`${asset.name}: audio exceeds 3MB (${(bytes / 1024 / 1024).toFixed(1)}MB)`)
+    }
+    if (asset.type === 'video') {
+      if (bytes > VIDEO_BYTE_LIMIT) errors.push(`${asset.name}: video exceeds 100MiB`)
+      if (!asset.width || !asset.height) errors.push(`${asset.name}: video dimensions are missing`)
+      if (!asset.duration) errors.push(`${asset.name}: video duration is missing`)
+      if ((asset.width ?? 0) > 3840 || (asset.height ?? 0) > 2160) {
+        warnings.push(`${asset.name}: video exceeds 3840x2160 and may be expensive to decode`)
+      }
+    }
   }
   useAsset(project.audio?.bgmAsset, ['audio'], 'BGM')
-  useAsset(project.book.frontCover.frontAsset, ['image', 'svg'], 'front cover')
-  useAsset(project.book.frontCover.backAsset, ['image', 'svg'], 'front cover reverse')
-  useAsset(project.book.backCover.frontAsset, ['image', 'svg'], 'back cover inside')
-  useAsset(project.book.backCover.backAsset, ['image', 'svg'], 'back cover')
-  useAsset(project.book.appearance.backgroundAsset, ['image', 'svg'], 'stage background')
+  const visualTypes = ['image', 'svg', 'video']
+  useAsset(project.book.frontCover.frontAsset, visualTypes, 'front cover')
+  useAsset(project.book.frontCover.backAsset, visualTypes, 'front cover reverse')
+  useAsset(project.book.backCover.frontAsset, visualTypes, 'back cover inside')
+  useAsset(project.book.backCover.backAsset, visualTypes, 'back cover')
+  useAsset(project.book.appearance.backgroundAsset, visualTypes, 'stage background')
+  validateVideoAudio(project.book.frontCover.frontAsset, project.book.frontCover.frontVideoAudio, 'front cover')
+  validateVideoAudio(project.book.frontCover.backAsset, project.book.frontCover.backVideoAudio, 'front cover reverse')
+  validateVideoAudio(project.book.backCover.frontAsset, project.book.backCover.frontVideoAudio, 'back cover inside')
+  validateVideoAudio(project.book.backCover.backAsset, project.book.backCover.backVideoAudio, 'back cover')
+  validateVideoAudio(
+    project.book.appearance.backgroundAsset,
+    project.book.appearance.backgroundVideoAudio,
+    'stage background',
+  )
   for (const spread of project.book.spreads) {
-    useAsset(spread.leftPage.backgroundAsset, ['image', 'svg'], `${spread.name} left page`)
-    useAsset(spread.rightPage.backgroundAsset, ['image', 'svg'], `${spread.name} right page`)
+    let activeVideoAudio = 0
+    const isVideo = (id: string | undefined) => id ? assets.get(id)?.type === 'video' : false
+    let visibleVideos = isVideo(project.book.appearance.backgroundAsset) ? 1 : 0
+    if (isVideo(spread.leftPage.backgroundAsset)) visibleVideos++
+    if (isVideo(spread.rightPage.backgroundAsset)) visibleVideos++
+    useAsset(spread.leftPage.backgroundAsset, visualTypes, `${spread.name} left page`)
+    useAsset(spread.rightPage.backgroundAsset, visualTypes, `${spread.name} right page`)
+    activeVideoAudio += validateVideoAudio(
+      spread.leftPage.backgroundAsset,
+      spread.leftPage.backgroundVideoAudio,
+      `${spread.name} left page`,
+    )
+    activeVideoAudio += validateVideoAudio(
+      spread.rightPage.backgroundAsset,
+      spread.rightPage.backgroundVideoAudio,
+      `${spread.name} right page`,
+    )
     useAsset(spread.enterSound, ['audio'], `${spread.name} enter sound`)
     useAsset(spread.pageTurnSound, ['audio'], `${spread.name} page turn sound`)
     const elementIds = spread.elements.map((e) => e.id)
     if (new Set(elementIds).size !== elementIds.length) errors.push(`${spread.name}: duplicate element id`)
     for (const element of spread.elements) {
       if (element.parent.type === 'element' && !elementIds.includes(element.parent.elementId)) errors.push(`${element.name}: parent element not found`)
-      if (element.type === 'visual') {
-        useAsset(element.image, ['image', 'svg'], element.name)
-        useAsset(element.backImage, ['image', 'svg'], `${element.name} reverse`)
-      }
       const elementTracks = spread.timeline.tracks.filter(
         (track) => track.target.type === 'element' && track.target.elementId === element.id,
       )
+      if (element.type === 'visual') {
+        useAsset(element.image, visualTypes, element.name)
+        useAsset(element.backImage, visualTypes, `${element.name} reverse`)
+        const timelineCanUseVideo = elementTracks.some((track) => track.property === 'visual.image'
+          && track.keys.some((key) => typeof key.value === 'string' && isVideo(key.value)))
+        activeVideoAudio += validateVideoAudio(element.image, element.videoAudio, element.name, timelineCanUseVideo)
+        activeVideoAudio += validateVideoAudio(element.backImage, element.backVideoAudio, `${element.name} reverse`)
+        if (isVideo(element.image) || timelineCanUseVideo) visibleVideos++
+        if (isVideo(element.backImage)) visibleVideos++
+      }
       const everVisible = element.visible || elementTracks.some(
         (track) => track.property === 'visible' && track.keys.some((key) => key.value === true),
       )
@@ -73,6 +131,8 @@ export function validateBookProject(data: unknown): BookValidationResult {
     }
     validateTimeline(spread.timeline.tracks, spread.sequence.holdSeconds, spread.elements, assets, used, errors, warnings)
     if (spread.elements.length > 80) warnings.push(`${spread.name}: many parts shown at once`)
+    if (visibleVideos >= 5) warnings.push(`${spread.name}: 5 or more videos may be visible at once`)
+    if (activeVideoAudio >= 5) warnings.push(`${spread.name}: 5 or more video audio sources may play at once`)
   }
   for (const asset of project.assets) if (!used.has(asset.id)) warnings.push(`unused asset: ${asset.name}`)
   return { ok: errors.length === 0, errors, warnings }
@@ -146,7 +206,7 @@ function validateTimeline(
         used.add(key.value)
         const asset = assets.get(key.value)
         if (!asset) errors.push(`${lane}: unregistered asset ${key.value}`)
-        else if (asset.type !== 'image' && asset.type !== 'svg') errors.push(`${lane}: expected image or svg`)
+        else if (!['image', 'svg', 'video'].includes(asset.type)) errors.push(`${lane}: expected image, svg or video`)
       }
     }
   }

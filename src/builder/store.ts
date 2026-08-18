@@ -28,8 +28,32 @@ export const hiddenKey = {
 
 const LIMIT = 60
 
-const clone = (project: BookProject) => structuredClone(project)
-const autosave = new ProjectAutosave(saveProject)
+/**
+ * Blobは不変なのでundo項目どうしで同じ実体を共有する。
+ * structuredCloneだけに任せると編集のたびに別Blobオブジェクトとなり、自動保存が
+ * 差し替えと誤認して100MB動画を再書き込みする。
+ */
+const clone = (project: BookProject) => {
+  const copied = structuredClone(project)
+  const bodies = new Map(project.assets.map((asset) => [asset.id, asset.data]))
+  for (const asset of copied.assets) {
+    const source = bodies.get(asset.id)
+    if (source instanceof Blob) asset.data = source
+  }
+  return copied
+}
+const autosave = new ProjectAutosave(saveProject, 500, {
+  scheduled: () => useBuilderStore.setState({ saveStatus: 'saving', saveError: undefined }),
+  saved: () => useBuilderStore.setState({ saveStatus: 'saved', saveError: undefined }),
+  failed: (error) => useBuilderStore.setState({
+    saveStatus: isQuotaError(error) ? 'quota-error' : 'error',
+    saveError: String(error),
+  }),
+})
+
+function isQuotaError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'QuotaExceededError'
+}
 
 /**
  * 表示言語に合わせた既定の名前を持つ新規作品。
@@ -89,7 +113,7 @@ export const useBuilderStore = create<EditorState>((set, get) => {
     const state = get()
     const spread = state.project.book.spreads.find((item) => item.id === spreadId)
     const asset = state.project.assets.find((item) => item.id === assetId)
-    if (!spread || !asset || (asset.type !== 'image' && asset.type !== 'svg') || !preset?.requiresAsset) return null
+    if (!spread || !asset || !['image', 'svg', 'video'].includes(asset.type) || !preset?.requiresAsset) return null
 
     const parent = { type: `${side}-page` as const }
     const created = createStageElement('visual', parent)
@@ -168,6 +192,8 @@ export const useBuilderStore = create<EditorState>((set, get) => {
     redoStack: [],
     issues: validateBookProject(initial),
     source: 'new',
+    saveStatus: 'idle',
+    saveError: undefined,
     commit,
 
     setProject: (incoming, source) => {
@@ -185,6 +211,8 @@ export const useBuilderStore = create<EditorState>((set, get) => {
         undoStack: [],
         redoStack: [],
         issues: validateBookProject(project),
+        saveStatus: source === 'idb' ? 'saved' : 'saving',
+        saveError: undefined,
       })
       if (source !== 'idb') autosave.schedule(project)
     },

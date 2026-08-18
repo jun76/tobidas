@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Plus, RefreshCw, Square, Trash2, Volume2 } from 'lucide-react'
 import { Icon } from '../../ui/Icon'
@@ -34,6 +34,12 @@ export function AssetsPanel() {
     if (!file || !replacing) return
     try {
       const asset = await fileToAsset(file, new Set())
+      const sameFamily = replacing.type === 'video'
+        ? asset.type === 'video'
+        : replacing.type === 'audio'
+          ? asset.type === 'audio'
+          : asset.type === 'image' || asset.type === 'svg'
+      if (!sameFamily) throw new Error(t.assets.unsupported(file.name))
       store.replaceAsset(replacing.id, { ...asset, id: replacing.id, name: replacing.name })
     } catch (error) { dialogs.showMessage(t.dialog.errorTitle, String(error)) }
     setReplacing(null)
@@ -43,7 +49,8 @@ export function AssetsPanel() {
    * 掴んでも落とせないものが並んでいると、置けない理由が操作から読めない。
    */
   const kind = assetKindForMode(store.placement)
-  const visualAssets = kind === 'audio' ? [] : store.project.assets.filter((asset) => asset.type === 'image' || asset.type === 'svg')
+  const visualAssets = kind === 'audio' ? [] : store.project.assets
+    .filter((asset) => asset.type === 'image' || asset.type === 'svg' || asset.type === 'video')
   const audioAssets = kind === 'image' ? [] : store.project.assets.filter((asset) => asset.type === 'audio')
   const moveAsset = (assetId: string, clientX: number, clientY: number) => {
     notifyAssetPointerDrag({ assetId, clientX, clientY, phase: 'move' })
@@ -62,7 +69,7 @@ export function AssetsPanel() {
     return <div key={asset.id} className={`${st.assetRow} ${draggable ? st.assetDraggable : ''} ${dragging && draggable ? st.assetDragging : ''}`}
       data-tobidas-kind="asset" data-tobidas-id={asset.id}
       onPointerDown={(event) => {
-        if (!draggable || event.button !== 0 || (event.target as Element).closest('button')) return
+        if (!draggable || event.button !== 0 || (event.target as Element).closest('button,video')) return
         event.preventDefault()
         event.currentTarget.setPointerCapture(event.pointerId)
         setDragging(true)
@@ -78,7 +85,7 @@ export function AssetsPanel() {
       }}
       onPointerCancel={(event) => cancelAsset(asset.id, event.clientX, event.clientY)}>
       {asset.type !== 'audio'
-        ? <img className={st.assetThumb} draggable={false} alt={asset.name} src={asset.type === 'svg' ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(asset.data)}` : asset.data} />
+        ? <AssetThumbnail asset={asset} />
         : <button className={`${st.assetThumb} ${st.assetThumbButton}`}
           aria-label={previewing === asset.id ? t.assets.stopPreview(asset.name) : t.assets.preview(asset.name)}
           title={t.assets.previewHint}
@@ -116,23 +123,44 @@ export function AssetsPanel() {
       {!audioAssets.length && <div className={st.assetEmpty}>{t.assets.noAudio}</div>}
     </>}
     {!store.project.assets.length && <div className={st.hintSmall}>{t.assets.formats}</div>}
-    <input ref={addRef} hidden multiple type="file" aria-label={t.assets.load} accept={assetAccept('svg', 'image', 'audio')}
+    <input ref={addRef} hidden multiple type="file" aria-label={t.assets.load} accept={assetAccept('svg', 'image', 'audio', 'video')}
       onChange={(event) => {
         const files = Array.from(event.currentTarget.files ?? [])
         event.currentTarget.value = ''
         void addFiles(files)
       }} />
     <input ref={replaceRef} hidden type="file" aria-label={replacing ? t.assets.replace(replacing.name) : t.assets.replaceHint}
-      accept={replacing?.type === 'audio' ? assetAccept('audio') : assetAccept('svg', 'image')}
+      accept={replacing?.type === 'audio'
+        ? assetAccept('audio')
+        : replacing?.type === 'video'
+          ? assetAccept('video')
+          : assetAccept('svg', 'image')}
       onChange={(event) => { void replace(event.target.files?.[0]); event.target.value = '' }} />
     </section>
     {dragging && createPortal(<div className={st.assetDragShield} aria-hidden="true" />, document.body)}
   </>
 }
 
+function AssetThumbnail({ asset }: { asset: Asset }) {
+  const src = useMemo(() => {
+    if (asset.data instanceof Blob) return URL.createObjectURL(asset.data)
+    if (asset.type === 'svg') return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(asset.data)}`
+    return asset.data
+  }, [asset.data, asset.type])
+  useEffect(() => () => {
+    if (asset.data instanceof Blob) window.setTimeout(() => URL.revokeObjectURL(src), 1000)
+  }, [asset.data, src])
+  if (asset.type === 'video') {
+    return <video className={st.assetThumb} aria-label={asset.name} src={src}
+      controls playsInline preload="metadata" />
+  }
+  return <img className={st.assetThumb} draggable={false} alt={asset.name} src={src} />
+}
+
 function metadata(asset: Asset) {
-  if (asset.width && asset.height) return `${asset.width}×${asset.height}px`
-  if (asset.duration !== undefined) return t().assets.seconds(asset.duration.toFixed(2))
-  if (asset.bytes !== undefined) return `${Math.round(asset.bytes / 1024)}KB`
-  return asset.mime
+  const values: string[] = []
+  if (asset.width && asset.height) values.push(`${asset.width}×${asset.height}px`)
+  if (asset.duration !== undefined) values.push(t().assets.seconds(asset.duration.toFixed(2)))
+  if (asset.bytes !== undefined) values.push(`${Math.round(asset.bytes / 1024)}KB`)
+  return values.length ? values.join(' · ') : asset.mime
 }

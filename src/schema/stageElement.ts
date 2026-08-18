@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { vec3Schema } from './geometry'
+import { embeddedVideoAudioSchema } from './audio'
 
 export const transformSchema = z.object({
   position: vec3Schema,
@@ -103,6 +104,8 @@ const currentStageElementSchema = z.discriminatedUnion('type', [
     foregroundColor: z.string().default('#2e241b'),
     image: z.string().min(1).optional(),
     backImage: z.string().min(1).optional(),
+    videoAudio: embeddedVideoAudioSchema.optional(),
+    backVideoAudio: embeddedVideoAudioSchema.optional(),
     text: z.string().default(''),
     fontSize: z.number().positive().default(.35),
     align: z.enum(['left', 'center', 'right']).default('center'),

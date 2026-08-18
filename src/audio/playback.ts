@@ -16,6 +16,8 @@ export interface AudioGate {
   bgmPaused: boolean
   bgmMuted: boolean
   cuesMuted: boolean
+  /** 動画は見えている間進み続けるため、自動ページ送りの停止では消さない。 */
+  videoMuted: boolean
 }
 
 /**
@@ -37,6 +39,7 @@ export function audioGate({ active, playing, atEnd, muted }: AudioGateInput): Au
     bgmPaused: !playing && !(active && atEnd),
     bgmMuted: muted,
     cuesMuted: active && (muted || !playing),
+    videoMuted: !active || muted,
   }
 }
 
@@ -127,6 +130,7 @@ export class AudioPlayback {
       this.element = await loadAudioElement(asset.data)
       return
     }
+    if (typeof asset.data !== 'string') throw new Error(`audio asset is not a data URL: ${asset.id}`)
     this.context ??= new AudioContext()
     this.buffer = await this.context.decodeAudioData(decodeDataUrl(asset.data))
   }
@@ -361,6 +365,7 @@ export class AudioBank {
     if (isExternalAssetData(asset.data)) {
       return { kind: 'element', url: asset.data, pool: [await loadAudioElement(asset.data)] }
     }
+    if (typeof asset.data !== 'string') throw new Error(`audio asset is not a data URL: ${asset.id}`)
     this.context ??= new AudioContext()
     return { kind: 'buffer', buffer: await this.context.decodeAudioData(decodeDataUrl(asset.data)) }
   }
