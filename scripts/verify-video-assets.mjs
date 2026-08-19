@@ -46,16 +46,22 @@ async function verifyPlayer(browser, port, projectDirectory, errors) {
   await page.evaluate(() => window.__tobiSetScroll?.(.28))
   await page.waitForTimeout(900)
 
+  const paused = await mediaState(page)
+  if (!paused.videos.length || paused.videos.some((video) => !video.paused)) {
+    throw new Error('プレイヤーの一時停止中に動画が停止していません')
+  }
+  if (paused.videos.some((video) => !video.muted)) throw new Error('利用者操作前に動画音声が解除されています')
   const before = await page.locator('canvas').screenshot()
   await page.waitForTimeout(550)
   const after = await page.locator('canvas').screenshot()
-  if (before.equals(after)) throw new Error('動画を表示しても連続フレームが変化しません')
+  if (!before.equals(after)) throw new Error('プレイヤーの一時停止中に動画フレームが変化しています')
 
+  await page.getByRole('button', { name: 'Play', exact: true }).click()
+  await page.waitForTimeout(900)
   const initial = await mediaState(page)
-  if (!initial.videos.length || !initial.videos.some((video) => video.currentTime > 0)) {
+  if (!initial.videos.some((video) => video.currentTime > 0)) {
     throw new Error('プレイヤーの動画要素が再生されていません')
   }
-  if (initial.videos.some((video) => !video.muted)) throw new Error('利用者操作前に動画音声が解除されています')
   if (initial.mediaSources !== 1 || initial.panners !== 1) {
     throw new Error(`動画音源の生成数が不正です: source=${initial.mediaSources}, panner=${initial.panners}`)
   }
@@ -68,6 +74,17 @@ async function verifyPlayer(browser, port, projectDirectory, errors) {
     throw new Error(`位置音源が世界座標へ追従していません: ${JSON.stringify(panner)}`)
   }
 
+  await page.getByRole('button', { name: 'Pause', exact: true }).click()
+  await page.waitForTimeout(100)
+  const pausedBeforeSeek = await mediaState(page)
+  await page.evaluate(() => window.__tobiSetScroll?.(.5))
+  await page.waitForTimeout(550)
+  const pausedAfterSeek = await mediaState(page)
+  if (pausedAfterSeek.videos.some((video) => !video.paused)
+    || pausedAfterSeek.videos.some((video, index) => Math.abs(video.currentTime
+      - (pausedBeforeSeek.videos[index]?.currentTime ?? video.currentTime)) > .02)) {
+    throw new Error('一時停止中の手動シークで動画が再生されています')
+  }
   await page.getByRole('button', { name: 'Play', exact: true }).click()
   await page.waitForTimeout(150)
   const audible = await mediaState(page)
@@ -154,12 +171,12 @@ async function verifyStaticPlayer(browser, port, inputMovie, bytes, errors) {
   await page.goto(`http://localhost:${port}/player.html?static-video=1`, { waitUntil: 'networkidle' })
   await page.evaluate(() => window.__tobiSetScroll?.(.28))
   await page.waitForTimeout(700)
+  await page.getByRole('button', { name: 'Play', exact: true }).click()
+  await page.waitForTimeout(150)
   const before = await page.locator('canvas').screenshot()
   await page.waitForTimeout(450)
   const after = await page.locator('canvas').screenshot()
   if (before.equals(after)) throw new Error('静的ホスト形式の相対URL動画が更新されません')
-  await page.getByRole('button', { name: 'Play', exact: true }).click()
-  await page.waitForTimeout(100)
   const state = await mediaState(page)
   if (state.mediaSources !== 1 || state.panners !== 1) {
     throw new Error('静的ホスト形式で動画内蔵音声が位置音源へ接続されません')

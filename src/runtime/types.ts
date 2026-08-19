@@ -18,6 +18,8 @@ export interface BookRuntimeProps {
   /** ビルダーでは再生モードだけtrue。公開プレイヤーは常にtrue。 */
   audioActive?: boolean
   audioMuted?: boolean
+  /** 本の再生が一時停止中か。表示中の動画も同じ状態で停止・再開する。 */
+  playing?: boolean
 }
 
 export interface RenderSpreadFrame {

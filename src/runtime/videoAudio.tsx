@@ -5,6 +5,7 @@ import type { Book } from '../schema/book'
 import { DEFAULT_EMBEDDED_VIDEO_AUDIO, type EmbeddedVideoAudio } from '../schema/audio'
 import type { Asset } from '../schema/assets'
 import { CAMERA_REFERENCE_ASPECT, evaluatePlayCameraPose } from './camera/playCamera'
+import { isVideoPlaybackEnabled, subscribeVideoPlayback } from './assets'
 
 interface RuntimeVideoAudio {
   listener: THREE.AudioListener
@@ -26,6 +27,10 @@ interface Attachment {
 const attachments = new Set<Attachment>()
 const attachmentsByVideo = new WeakMap<HTMLVideoElement, Attachment>()
 let unlocked = false
+
+subscribeVideoPlayback(() => {
+  for (const attachment of attachments) applyGate(attachment)
+})
 
 /** ユーザー操作の同期区間でWeb Audioと動画要素の自動再生制限を解除する。 */
 export function unlockVideoAudio(): void {
@@ -137,7 +142,7 @@ export function VideoAudioSource({ video, settings, positional = true, active = 
 }
 
 function applyGate(attachment: Attachment): void {
-  const audible = unlocked && attachment.desiredAudible
+  const audible = unlocked && attachment.desiredAudible && isVideoPlaybackEnabled()
   attachment.video.muted = !audible
   if (audible) void attachment.video.play().catch(() => { /* 次のユーザー操作で再試行する */ })
 }

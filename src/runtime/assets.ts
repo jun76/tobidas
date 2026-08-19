@@ -244,6 +244,24 @@ const videoTextureCache = new Map<string, VideoCacheEntry>()
 const residentVideoTimes = new Map<string, number>()
 const blobUrls = new WeakMap<Blob, { url: string; refs: number; revokeTimer?: ReturnType<typeof setTimeout> }>()
 const embeddedVideoBlobs = new Map<string, { blob: Blob; refs: number }>()
+let videoPlaybackEnabled = true
+const videoPlaybackListeners = new Set<(enabled: boolean) => void>()
+
+/** BookRuntimeの再生状態を全動画へ即時反映する。Reactの再描画待ちで一瞬進まないようにする。 */
+export function setVideoPlaybackEnabled(enabled: boolean): void {
+  videoPlaybackEnabled = enabled
+  for (const entry of videoTextureCache.values()) updateVideoPlayback(entry)
+  for (const listener of videoPlaybackListeners) listener(enabled)
+}
+
+export function isVideoPlaybackEnabled(): boolean {
+  return videoPlaybackEnabled
+}
+
+export function subscribeVideoPlayback(listener: (enabled: boolean) => void): () => void {
+  videoPlaybackListeners.add(listener)
+  return () => videoPlaybackListeners.delete(listener)
+}
 
 /**
  * 同じ配置を中央線で二翼へ分けても、動画デコーダーと再生時刻は1つだけ使う。
@@ -352,7 +370,7 @@ function createVideoEntry(asset: Asset, key: string): VideoCacheEntry {
 }
 
 function updateVideoPlayback(entry: VideoCacheEntry): void {
-  if (document.hidden || entry.activeRefs <= 0) {
+  if (document.hidden || !videoPlaybackEnabled || entry.activeRefs <= 0) {
     entry.element.pause()
     return
   }

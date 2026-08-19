@@ -1,5 +1,5 @@
 import { useFrame, useThree } from '@react-three/fiber'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useLayoutEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import { ClockStore } from './clock'
 import { evaluateTimelineEnvironment } from './camera'
@@ -12,7 +12,7 @@ import { stowIsDrawn } from './stow/evaluate'
 import { SpanningVFoldNode, StowElements } from './stow-renderer/StowRenderer'
 import type { BookRuntimeProps, RenderSpreadFrame } from './types'
 import { PaperSlab, assetFor } from './visuals/ElementVisuals'
-import { useImageTexture, useSvgTexture, useVideoTexture } from './assets'
+import { setVideoPlaybackEnabled, useImageTexture, useSvgTexture, useVideoTexture } from './assets'
 import { VideoAudioProvider, VideoAudioSource } from './videoAudio'
 
 export type { BookRuntimeProps, RuntimeSelection } from './types'
@@ -34,8 +34,12 @@ export function BookRuntime({
   onSelect,
   audioActive = false,
   audioMuted = true,
+  playing = true,
 }: BookRuntimeProps) {
   const { book } = project
+  useLayoutEffect(() => {
+    setVideoPlaybackEnabled(playing)
+  }, [playing])
   const signals = useMemo(() => evaluateBookSignals(book, progress), [book, progress])
   const gates = useMemo(() => new GateSet(GATE_THRESHOLDS), [project.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const clocks = useMemo(() => new ClockStore(), [project.id]) // eslint-disable-line react-hooks/exhaustive-deps

@@ -201,7 +201,7 @@ export function PlayerApp() {
     <Canvas dpr={[1, 2]} shadows gl={VIEW_GL}
       camera={{ position: project.book.camera.position, fov: project.book.camera.fov, ...VIEW_CLIP }}
       onCreated={({ camera }) => camera.lookAt(...project.book.camera.target)}>
-      <BookRuntime project={project} progress={progress} audioActive audioMuted={audioMuted} />
+      <BookRuntime project={project} progress={progress} playing={playing} audioActive audioMuted={audioMuted} />
     </Canvas>
     <style>{BAR_CSS}</style>
     <div className="tobiBar" data-audio={hasAudio ? '' : 'none'}>
