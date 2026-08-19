@@ -341,7 +341,7 @@ function HalfPlane({ width, height, u0, u1, texture, opacity, layer }: {
 
 export function AssetPlane({
   asset, back, width, height, opacity = 1, layer = 0, instanceKey,
-  audio, backAudio, videoActive = true, backVideoActive = true,
+  audio, backAudio, audioActive = true, backAudioActive = true, videoActive = true, backVideoActive = true,
 }: {
   asset?: Asset
   back?: Asset
@@ -352,6 +352,8 @@ export function AssetPlane({
   instanceKey?: string
   audio?: import('../../schema/audio').EmbeddedVideoAudio
   backAudio?: import('../../schema/audio').EmbeddedVideoAudio
+  audioActive?: boolean
+  backAudioActive?: boolean
   videoActive?: boolean
   backVideoActive?: boolean
 }) {
@@ -373,8 +375,8 @@ export function AssetPlane({
   const reverse = backImage ?? backSvg ?? backVideo
   const bias = layerDepthBias(layer)
   return <mesh castShadow={castsShadow(opacity)} renderOrder={100 + layer}>
-    <VideoAudioSource video={video?.video} settings={audio} />
-    <VideoAudioSource video={backVideo?.video} settings={backAudio} />
+    <VideoAudioSource video={video?.video} settings={audio} active={audioActive} />
+    <VideoAudioSource video={backVideo?.video} settings={backAudio} active={backAudioActive} />
     <planeGeometry args={[width, height]} />
     {front
       ? <meshBasicMaterial color="#ffffff" map={front.texture} transparent opacity={opacity} alphaTest={.02}
@@ -420,7 +422,7 @@ function VisualPlane({ element, asset, back, opacity, instanceKey }: {
 
 export function PaperSlab({
   position, size, color, edge, asset, back, backColor, instanceKey,
-  audio, backAudio, videoActive = true, backVideoActive = true,
+  audio, backAudio, audioActive = true, backAudioActive = true, videoActive = true, backVideoActive = true,
 }: {
   position: [number, number, number]
   size: [number, number, number]
@@ -432,6 +434,8 @@ export function PaperSlab({
   instanceKey?: string
   audio?: import('../../schema/audio').EmbeddedVideoAudio
   backAudio?: import('../../schema/audio').EmbeddedVideoAudio
+  audioActive?: boolean
+  backAudioActive?: boolean
   videoActive?: boolean
   backVideoActive?: boolean
 }) {
@@ -441,6 +445,7 @@ export function PaperSlab({
     <group position={[0, size[1] / 2 + .003, 0]} rotation={[-Math.PI / 2, 0, 0]}>
       {asset
         ? <AssetPlane asset={asset} width={size[0]} height={size[2]} audio={audio}
+          audioActive={audioActive}
           videoActive={videoActive}
           instanceKey={`${instanceKey ?? 'paper'}:front`} />
         : <mesh><planeGeometry args={[size[0], size[2]]} /><meshStandardMaterial color={color} /></mesh>}
@@ -448,6 +453,7 @@ export function PaperSlab({
     {(back || backColor) && <group position={[0, -size[1] / 2 - .003, 0]} rotation={[Math.PI / 2, 0, Math.PI]}>
       {back
         ? <AssetPlane asset={back} width={size[0]} height={size[2]} audio={backAudio}
+          audioActive={backAudioActive}
           videoActive={backVideoActive}
           instanceKey={`${instanceKey ?? 'paper'}:back`} />
         : <mesh><planeGeometry args={[size[0], size[2]]} /><meshStandardMaterial color={backColor} /></mesh>}

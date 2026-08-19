@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { Book } from '../schema/book'
-import type { EmbeddedVideoAudio } from '../schema/audio'
+import { DEFAULT_EMBEDDED_VIDEO_AUDIO, type EmbeddedVideoAudio } from '../schema/audio'
+import type { Asset } from '../schema/assets'
 import { CAMERA_REFERENCE_ASPECT, evaluatePlayCameraPose } from './camera/playCamera'
 
 interface RuntimeVideoAudio {
@@ -72,16 +73,19 @@ export function VideoAudioProvider({ book, progress, active, muted, children }: 
 }
 
 /** 同じ動画要素を映像と音の両方へ使い、位置音源を描画ツリーへ取り付ける。 */
-export function VideoAudioSource({ video, settings, positional = true }: {
+export function VideoAudioSource({ video, settings, positional = true, active = true }: {
   video?: HTMLVideoElement
   settings?: EmbeddedVideoAudio
   positional?: boolean
+  /** ページ面が現在の音声対象か。未指定設定の既定再生と分けて扱う。 */
+  active?: boolean
 }) {
   const runtime = useContext(VideoAudioContext)
   const [audio, setAudio] = useState<Attachment['audio'] | null>(null)
 
   useEffect(() => {
-    if (!runtime || !video || !settings?.enabled) {
+    const effective = settings ?? DEFAULT_EMBEDDED_VIDEO_AUDIO
+    if (!runtime || !video || !active || !effective.enabled) {
       setAudio(null)
       if (video) video.muted = true
       return
@@ -102,11 +106,11 @@ export function VideoAudioSource({ video, settings, positional = true }: {
     }
     attachment.refs++
     attachments.add(attachment)
-    attachment.audio.setVolume(settings.volume)
+    attachment.audio.setVolume(effective.volume)
     if (attachment.audio instanceof THREE.PositionalAudio) {
       attachment.audio.setDistanceModel('inverse')
-      attachment.audio.setRefDistance(settings.referenceDistance * runtime.pageWidth)
-      attachment.audio.setRolloffFactor(settings.rolloffFactor)
+      attachment.audio.setRefDistance(effective.referenceDistance * runtime.pageWidth)
+      attachment.audio.setRolloffFactor(effective.rolloffFactor)
       attachment.audio.panner.panningModel = 'HRTF'
     }
     attachment.desiredAudible = runtime.audible
@@ -127,7 +131,7 @@ export function VideoAudioSource({ video, settings, positional = true }: {
       }
       setAudio(null)
     }
-  }, [runtime, video, settings, positional])
+  }, [runtime, video, settings, positional, active])
 
   return audio ? <primitive object={audio} /> : null
 }
@@ -139,13 +143,20 @@ function applyGate(attachment: Attachment): void {
 }
 
 /** 再生バーへ音声ボタンを出す必要があるか。 */
-export function hasEmbeddedVideoAudio(book: Book): boolean {
-  const enabled = (value: EmbeddedVideoAudio | undefined) => value?.enabled === true
-  if (enabled(book.appearance.backgroundVideoAudio)) return true
-  if (enabled(book.frontCover.frontVideoAudio) || enabled(book.frontCover.backVideoAudio)) return true
-  if (enabled(book.backCover.frontVideoAudio) || enabled(book.backCover.backVideoAudio)) return true
-  return book.spreads.some((spread) => enabled(spread.leftPage.backgroundVideoAudio)
-    || enabled(spread.rightPage.backgroundVideoAudio)
+export function hasEmbeddedVideoAudio(book: Book, assets?: ReadonlyMap<string, Pick<Asset, 'type'>>): boolean {
+  const enabled = (value: EmbeddedVideoAudio | undefined, assetId?: string) => value?.enabled === true
+    || (value === undefined && assetId !== undefined && assets?.get(assetId)?.type === 'video')
+  const timelineHasVideo = (spread: Book['spreads'][number]) => spread.timeline.tracks.some((track) =>
+    track.property === 'visual.image'
+      && track.keys.some((key) => typeof key.value === 'string' && assets?.get(key.value)?.type === 'video'))
+  if (enabled(book.appearance.backgroundVideoAudio, book.appearance.backgroundAsset)) return true
+  if (enabled(book.frontCover.frontVideoAudio, book.frontCover.frontAsset)
+    || enabled(book.frontCover.backVideoAudio, book.frontCover.backAsset)) return true
+  if (enabled(book.backCover.frontVideoAudio, book.backCover.frontAsset)
+    || enabled(book.backCover.backVideoAudio, book.backCover.backAsset)) return true
+  return book.spreads.some((spread) => enabled(spread.leftPage.backgroundVideoAudio, spread.leftPage.backgroundAsset)
+    || enabled(spread.rightPage.backgroundVideoAudio, spread.rightPage.backgroundAsset)
+    || timelineHasVideo(spread)
     || spread.elements.some((element) => element.type === 'visual'
-      && (enabled(element.videoAudio) || enabled(element.backVideoAudio))))
+      && (enabled(element.videoAudio, element.image) || enabled(element.backVideoAudio, element.backImage))))
 }

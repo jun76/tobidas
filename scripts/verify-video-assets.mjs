@@ -117,7 +117,7 @@ async function verifyBuilder(browser, port, inputMovie, errors) {
   await page.getByRole('button', { name: '編集', exact: true }).click()
   await page.getByText('自動保存済み').waitFor({ timeout: 5_000 })
   const bodyPutsBefore = await page.evaluate(() => window.__tobidasVideoQa.bodyPuts)
-  await page.getByLabel('動画音量').fill('0.8')
+  await page.getByLabel(/動画音量倍率/).fill('1.5')
   await page.getByText('自動保存中…').waitFor({ timeout: 2_000 })
   await page.getByText('自動保存済み').waitFor({ timeout: 5_000 })
   const bodyPutsAfter = await page.evaluate(() => window.__tobidasVideoQa.bodyPuts)
@@ -269,7 +269,6 @@ function videoProject(bytes) {
           backgroundColor: '#00000000', foregroundColor: '#ffffff', image: 'movie.mp4',
           text: 'VIDEO', fontSize: .35, align: 'center', font: 'rounded', bold: true, italic: false, underline: false,
           particles: { enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
-          videoAudio: { enabled: true, volume: 1, referenceDistance: .5, rolloffFactor: 1 },
         }],
       }],
       backCover: {},

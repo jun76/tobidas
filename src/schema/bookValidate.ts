@@ -37,8 +37,10 @@ export function validateBookProject(data: unknown): BookValidationResult {
     label: string,
     timelineCanUseVideo = false,
   ): number => {
-    if (!settings?.enabled) return 0
     const asset = id ? assets.get(id) : undefined
+    // 動画音声の設定を省略した作品は既定で鳴らす。明示的な false だけを無効とする。
+    const enabled = settings?.enabled ?? (asset?.type === 'video' || timelineCanUseVideo)
+    if (!enabled) return 0
     if (asset?.type === 'video' || timelineCanUseVideo) return 1
     if (!id) {
       warnings.push(`${label}: enabled video audio has no video asset`)

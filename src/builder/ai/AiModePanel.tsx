@@ -117,14 +117,12 @@ export function AiModePanel() {
     if (!elementSelection || !selectedElement) return
     const data = new FormData(event.currentTarget)
     const number = (name: string) => parseFinite(data.get(name))
-    const videoAudio = (prefix: string): EmbeddedVideoAudio | null => data.get(`${prefix}-enabled`) === 'on'
-      ? {
-        enabled: true,
-        volume: number(`${prefix}-volume`),
-        referenceDistance: number(`${prefix}-reference-distance`),
-        rolloffFactor: number(`${prefix}-rolloff`),
-      }
-      : null
+    const videoAudio = (prefix: string): EmbeddedVideoAudio => ({
+      enabled: data.get(`${prefix}-enabled`) === 'on',
+      volume: number(`${prefix}-volume`),
+      referenceDistance: number(`${prefix}-reference-distance`),
+      rolloffFactor: number(`${prefix}-rolloff`),
+    })
     setResult(updateAiElement(elementSelection.spreadId, selectedElement.id, {
       name: String(data.get('name') ?? ''),
       position: [number('position-x'), number('position-y'), number('position-z')],
@@ -350,16 +348,16 @@ function AiVideoAudio({ prefix, settings, label }: {
   label: string
 }) {
   const t = useT()
-  const value = settings ?? { ...DEFAULT_EMBEDDED_VIDEO_AUDIO, enabled: false }
+  const value = settings ?? DEFAULT_EMBEDDED_VIDEO_AUDIO
   return <fieldset className={st.aiFieldGroup}>
     <legend>{t.properties.videoAudio} · {label}</legend>
     <div className={st.row}>
       <label className={st.rowLabel} htmlFor={`ai-${prefix}-enabled`}>{t.properties.videoAudioEnabled}</label>
       <input id={`ai-${prefix}-enabled`} name={`${prefix}-enabled`} type="checkbox"
-        defaultChecked={settings?.enabled ?? false} />
+        defaultChecked={settings?.enabled ?? DEFAULT_EMBEDDED_VIDEO_AUDIO.enabled} />
     </div>
     <AiNumber name={`${prefix}-volume`} label={t.properties.videoAudioVolume}
-      value={value.volume} min={0} max={1} step={.05} />
+      value={value.volume} min={0} max={2} step={.05} />
     <AiNumber name={`${prefix}-reference-distance`} label={t.properties.videoAudioReferenceDistance}
       value={value.referenceDistance} min={.05} max={8} step={.05} />
     <AiNumber name={`${prefix}-rolloff`} label={t.properties.videoAudioRolloff}

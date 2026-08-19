@@ -1152,6 +1152,14 @@
   background: #17171c;
 }
 
+.aiWorkspacePlayback {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.aiWorkspacePlayback .aiControlPane {
+  display: none;
+}
+
 .aiControlPane {
   min-width: 0;
   overflow-y: auto;

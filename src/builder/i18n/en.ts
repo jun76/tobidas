@@ -143,7 +143,7 @@ export const en: Dict = {
     backgroundImage: 'Background visual',
     videoAudio: 'Embedded video audio',
     videoAudioEnabled: 'Play embedded audio',
-    videoAudioVolume: 'Video volume',
+    videoAudioVolume: 'Video volume multiplier (1.0 = normal, max 2.0)',
     videoAudioReferenceDistance: 'Reference distance (page widths)',
     videoAudioRolloff: 'Distance rolloff',
     videoAudioGlobal: 'Stage-background audio plays globally without distance attenuation.',

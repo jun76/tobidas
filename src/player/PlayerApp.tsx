@@ -140,7 +140,7 @@ export function PlayerApp() {
   if (!project) return <div style={{ padding: 20, fontFamily: 'sans-serif' }}>Loading…</div>
   // 音声ボタンはBGMと効果音の両方を消すので、どちらかを持つ作品なら出す
   const hasAudio = Boolean(project.audio) || soundCueAssetIds(project.book).length > 0
-    || hasEmbeddedVideoAudio(project.book)
+    || hasEmbeddedVideoAudio(project.book, new Map(project.assets.map((asset) => [asset.id, asset])))
   const pause = () => { playingRef.current = false; setPlaying(false) }
   const add = (pixels: number) => {
     unlockVideoAudio()

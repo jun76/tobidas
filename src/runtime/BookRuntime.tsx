@@ -130,6 +130,8 @@ export function BookRuntime({
           backColor={book.appearance.paperColor} instanceKey={`${project.id}:front-cover`}
           videoActive={signals.beat.kind === 'cover-open'}
           backVideoActive={frames[0].open}
+          audioActive={signals.beat.kind === 'cover-open'}
+          backAudioActive={frames[0].open && signals.activeSpreadIndex === 0}
           audio={signals.beat.kind === 'cover-open' ? book.frontCover.frontVideoAudio : undefined}
           backAudio={frames[0].open && signals.activeSpreadIndex === 0 && book.spreads[0].leftPage.backgroundAsset
             ? book.spreads[0].leftPage.backgroundVideoAudio
@@ -161,6 +163,8 @@ export function BookRuntime({
               ? before.spread.rightPage.backgroundVideoAudio : undefined}
             backAudio={after.open && signals.activeSpreadIndex === after.index
               ? after.spread.leftPage.backgroundVideoAudio : undefined}
+            audioActive={before.open && signals.activeSpreadIndex === before.index}
+            backAudioActive={after.open && signals.activeSpreadIndex === after.index}
             videoActive={before.open} backVideoActive={after.open}
             instanceKey={`${project.id}:sheet:${sheet}`} />
           <group position={[width / 2, pageThickness / 2, 0]}>
@@ -182,6 +186,7 @@ export function BookRuntime({
           asset={assetFor(assets, book.spreads[spreadCount - 1].rightPage.backgroundAsset)}
           audio={frames[spreadCount - 1].open && signals.activeSpreadIndex === spreadCount - 1
             ? book.spreads[spreadCount - 1].rightPage.backgroundVideoAudio : undefined}
+          audioActive={frames[spreadCount - 1].open && signals.activeSpreadIndex === spreadCount - 1}
           videoActive={frames[spreadCount - 1].open}
           instanceKey={`${project.id}:last-page`} />
         <PaperSlab position={[width / 2, -stack - coverThickness / 2, 0]}
@@ -190,6 +195,8 @@ export function BookRuntime({
           back={assetFor(assets, book.backCover.backAsset)}
           audio={signals.activeSpreadIndex === spreadCount - 1 ? book.backCover.frontVideoAudio : undefined}
           backAudio={signals.beat.kind === 'back-cover-close' ? book.backCover.backVideoAudio : undefined}
+          audioActive={signals.activeSpreadIndex === spreadCount - 1}
+          backAudioActive={signals.beat.kind === 'back-cover-close'}
           videoActive={frames[spreadCount - 1].open}
           backVideoActive={signals.beat.kind === 'back-cover-close'}
           instanceKey={`${project.id}:back-cover`} />

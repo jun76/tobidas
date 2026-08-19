@@ -13,10 +13,11 @@ export const spreadAudioFields = {
   pageTurnSound: audioAssetIdSchema.optional(),
 }
 
-/** 動画を置いた面ごとの内蔵音声設定。存在しない既存作品は無音のまま。 */
+/** 動画を置いた面ごとの内蔵音声設定。未指定の動画は既定で再生する。 */
 export const embeddedVideoAudioSchema = z.object({
   enabled: z.boolean(),
-  volume: z.number().min(0).max(1),
+  /** 1 が元の音量。2 までの倍率を許可する。 */
+  volume: z.number().min(0).max(2),
   /** ページ幅に対する基準距離。 */
   referenceDistance: z.number().min(0.05).max(8),
   rolloffFactor: z.number().min(0).max(4),

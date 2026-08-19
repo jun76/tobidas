@@ -232,7 +232,8 @@ export function useViewportPlayback() {
     // 終端では再生ボタンが「最初から」の絵になる (書き出した再生画面と同じ)
     atEnd,
     // 音声ボタンはBGMと効果音の両方を消すので、どちらかを持つ作品なら出す
-    hasAudio: Boolean(bookAudio) || soundCueAssetIds(book).length > 0 || hasEmbeddedVideoAudio(book),
+    hasAudio: Boolean(bookAudio) || soundCueAssetIds(book).length > 0
+      || hasEmbeddedVideoAudio(book, new Map(assets.map((asset) => [asset.id, asset]))),
     audioMuted,
     toggleAudio,
     seek,

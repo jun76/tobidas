@@ -377,16 +377,16 @@ function VideoAudioFields({ assetId, settings, onChange, positional = true }: {
   const isVideo = useBuilderStore((state) => state.project.assets
     .some((asset) => asset.id === assetId && asset.type === 'video'))
   if (!isVideo) return null
-  const current = settings ?? { ...DEFAULT_EMBEDDED_VIDEO_AUDIO, enabled: false }
+  const current = settings ?? DEFAULT_EMBEDDED_VIDEO_AUDIO
   return <>
     <div className={st.subsectionTitle}>{t.properties.videoAudio}</div>
     {!positional && <div className={st.hintSmall}>{t.properties.videoAudioGlobal}</div>}
-    <label><input type="checkbox" aria-label={t.properties.videoAudioEnabled} checked={settings?.enabled ?? false}
-      onChange={(event) => onChange(event.target.checked ? { ...DEFAULT_EMBEDDED_VIDEO_AUDIO } : undefined)} />
+    <label><input type="checkbox" aria-label={t.properties.videoAudioEnabled} checked={settings?.enabled ?? DEFAULT_EMBEDDED_VIDEO_AUDIO.enabled}
+      onChange={(event) => onChange({ ...DEFAULT_EMBEDDED_VIDEO_AUDIO, enabled: event.target.checked })} />
       {' '}{t.properties.videoAudioEnabled}</label>
-    {settings?.enabled && <>
+    {(settings?.enabled ?? DEFAULT_EMBEDDED_VIDEO_AUDIO.enabled) && <>
       <Num label={t.properties.videoAudioVolume} value={current.volume}
-        onChange={(value) => onChange({ ...current, volume: Math.min(1, Math.max(0, value)), enabled: true })} />
+        onChange={(value) => onChange({ ...current, volume: Math.min(2, Math.max(0, value)), enabled: true })} />
       {positional && <>
         <Num label={t.properties.videoAudioReferenceDistance} value={current.referenceDistance}
           onChange={(value) => onChange({ ...current, referenceDistance: Math.min(8, Math.max(.05, value)), enabled: true })} />

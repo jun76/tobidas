@@ -146,7 +146,7 @@ export const ja = {
     backgroundImage: '背景素材',
     videoAudio: '動画の内蔵音声',
     videoAudioEnabled: '内蔵音声を鳴らす',
-    videoAudioVolume: '動画音量',
+    videoAudioVolume: '動画音量倍率（1.0＝等倍、最大2.0）',
     videoAudioReferenceDistance: '基準距離（ページ幅）',
     videoAudioRolloff: '距離減衰',
     videoAudioGlobal: '舞台背景の音は距離で減衰しない全体音として再生します。',

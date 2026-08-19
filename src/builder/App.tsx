@@ -36,6 +36,7 @@ export default function App() {
   const t = useT()
   const setProject = useBuilderStore((state) => state.setProject)
   const projectSession = useBuilderStore((state) => state.projectSession)
+  const mode = useBuilderStore((state) => state.mode)
   const [booted, setBooted] = useState(false)
   const [pendingElementDelete, setPendingElementDelete] = useState<{
     spreadId: string
@@ -149,22 +150,22 @@ export default function App() {
     />}
     <Toolbar key={`toolbar-${projectSession}`} onScreenshot={screenshot} aiMode={aiMode} onAiModeChange={setAiMode} />
     {aiMode ? <AiWorkspace key={`ai-workspace-${projectSession}`} /> : <div className={st.main} key={`workspace-${projectSession}`}>
-      <aside className={st.left} style={{ width: leftWidth, minWidth: leftWidth }}>
+      {mode === 'edit' && <aside className={st.left} style={{ width: leftWidth, minWidth: leftWidth }}>
         <SplitStack storageKey="left" initial={[280, 210]} panes={[
           { key: 'navigator', label: t.app.panelNavigator, node: <BookNavigator /> },
           { key: 'presets', label: t.app.panelPresets, node: <PartPresets /> },
           { key: 'assets', label: t.app.panelAssets, node: <AssetsPanel /> },
         ]} />
-      </aside>
-      <Splitter onDelta={(delta) => setLeftWidth((value) => clampPanelWidth(value + delta))} />
+      </aside>}
+      {mode === 'edit' && <Splitter onDelta={(delta) => setLeftWidth((value) => clampPanelWidth(value + delta))} />}
       <Viewport />
-      <Splitter onDelta={(delta) => setRightWidth((value) => clampPanelWidth(value - delta))} />
-      <aside className={st.right} style={{ width: rightWidth, minWidth: rightWidth }}>
+      {mode === 'edit' && <Splitter onDelta={(delta) => setRightWidth((value) => clampPanelWidth(value - delta))} />}
+      {mode === 'edit' && <aside className={st.right} style={{ width: rightWidth, minWidth: rightWidth }}>
         <SplitStack storageKey="right" initial={[300]} panes={[
           { key: 'book', label: 'BOOK', node: <BookProperties /> },
           { key: 'detail', label: t.app.panelDetail, node: <SelectionDetails /> },
         ]} />
-      </aside>
+      </aside>}
     </div>}
     <StatusBar key={`status-${projectSession}`} />
   </div>
