@@ -12,6 +12,8 @@ text_language: "English"
 story_spreads: 5
 parts_per_spread: 4
 visual_style: "hand-drawn picture-book"
+text_treatment: "fixed page-printed (shared caption settings)"
+character_asset_policy: "unique-per-spread"
 save_path: "<Documents>/tobidas/projects/<slug>"
 status: "draft"
 ```
@@ -50,6 +52,7 @@ status: "draft"
 | --- | --- |
 | 場面 | その見開きで起きる出来事 |
 | 作中テキスト | 指定言語の短い本文 |
+| 本文の扱い | 共有 `caption` 設定（所有ページ、layer 9、v 0.92 基準）。保持中もページ遷移中も演出なし |
 | 見開き地面 | 地面、床、水面、道など。主要な建物や人物は描かない |
 | 空間背景 | 地面とは別の淡い遠景。立体パーツと同じ主役を置かない |
 | 立体パーツ | 地面以外に最低3点。人物、建物、動物、道具など |
@@ -69,4 +72,6 @@ status: "draft"
 4. 立体パーツ：透過背景、接地線、単独のシルエット、不要なチェッカーボードなしを指定する。
 
 同じ建物や人物を地面、空間背景、立体パーツの複数へ描かない。
+人物・動物の立ち絵は見開きごとに別素材・別ファイル名にし、同じ立ち絵をページ間で再利用しない。
+再登場する人物・動物は、同じ画風と人物設定を保った場面別の描き下ろしにする。
 生成後に素材を一覧表示し、背景へ物語の主役が入り込んでいないか確認する。

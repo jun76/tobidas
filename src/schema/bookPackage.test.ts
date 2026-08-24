@@ -13,6 +13,8 @@ interface Catalog {
 }
 
 const catalog = JSON.parse(readFileSync('projects/catalog.json', 'utf8')) as Catalog
+// momotaro は配布カタログには残すが、生成物を追跡しないためリポジトリ内検査から除外する。
+const trackedSamples = catalog.samples.filter((sample) => sample.id !== 'momotaro')
 const load = (id: string): BookProjectFile =>
   bookProjectSchema.parse(JSON.parse(readFileSync(`projects/${id}/project.json`, 'utf8')))
 const raw = (id: string): unknown => JSON.parse(readFileSync(`projects/${id}/project.json`, 'utf8'))
@@ -33,15 +35,15 @@ const centeredBackboards = {
 
 describe('public samples', () => {
   it('catalogs each project under its own folder', () => {
-    expect(catalog.samples.length).toBeGreaterThan(0)
-    expect(new Set(catalog.samples.map((sample) => sample.id)).size).toBe(catalog.samples.length)
-    for (const sample of catalog.samples) {
+    expect(trackedSamples.length).toBeGreaterThan(0)
+    expect(new Set(trackedSamples.map((sample) => sample.id)).size).toBe(trackedSamples.length)
+    for (const sample of trackedSamples) {
       expect(sample.projectPath).toBe(`/projects/${sample.id}/`)
       expect(sample.thumbnail.startsWith(`/projects/${sample.id}/assets/`)).toBe(true)
     }
   })
 
-  it.each(catalog.samples)('$id is a valid timeline package', ({ id }) => {
+  it.each(trackedSamples)('$id is a valid timeline package', ({ id }) => {
     const project = load(id)
     const validation = validateBookProject(raw(id))
     expect(validation.errors).toEqual([])
@@ -52,7 +54,7 @@ describe('public samples', () => {
   })
 
   /** 保存形式はプリセットや支持機構を持たず、開姿勢だけを持つ。 */
-  it.each(catalog.samples)('$id builds each spread out of paper mechanisms', ({ id }) => {
+  it.each(trackedSamples)('$id builds each spread out of paper mechanisms', ({ id }) => {
     const project = load(id)
     for (const spread of project.book.spreads) {
       const roots = spread.elements.filter((element) => element.parent.type !== 'element')
@@ -67,7 +69,7 @@ describe('public samples', () => {
     }
   })
 
-  it.each(catalog.samples)('$id gives every text visual enough room for all glyphs and lines', ({ id }) => {
+  it.each(trackedSamples)('$id gives every text visual enough room for all glyphs and lines', ({ id }) => {
     const project = load(id)
     for (const spread of project.book.spreads) {
       for (const element of spread.elements) {
@@ -129,7 +131,7 @@ describe('public samples', () => {
     expect(delayed.every((track) => (track.keys.at(-1)?.time ?? 1) < 1)).toBe(true)
   })
 
-  it.each(catalog.samples)('$id keeps page captions glued to their owning page', ({ id }) => {
+  it.each(trackedSamples)('$id keeps page captions glued to their owning page', ({ id }) => {
     const project = load(id)
     for (const spread of project.book.spreads) {
       const compiled = compileSpreadStow(project.book, spread)
@@ -164,7 +166,7 @@ describe('public samples', () => {
     }
   })
 
-  it.each(catalog.samples)('$id keeps every particle visual airborne', ({ id }) => {
+  it.each(trackedSamples)('$id keeps every particle visual airborne', ({ id }) => {
     const project = load(id)
     for (const spread of project.book.spreads) {
       const compiled = compileSpreadStow(project.book, spread)
@@ -217,7 +219,7 @@ describe('public samples', () => {
     })
   })
 
-  it.each(catalog.samples)('$id stays inside the asset budget', ({ id }) => {
+  it.each(trackedSamples)('$id stays inside the asset budget', ({ id }) => {
     const project = load(id)
     const bytes = project.assets.reduce((total, asset) => total + (asset.bytes ?? 0), 0)
     expect(bytes).toBeLessThan(12 * 1024 * 1024)
