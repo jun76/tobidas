@@ -25,6 +25,14 @@
       "theme": "watercolor-seasons"
     },
     {
+      "id": "momotaro",
+      "title": "Momotaro: The Peach Boy",
+      "description": "A washi-paper pop-up retelling about courage, friendship, and sharing. Created through the AI workspace workflow.",
+      "projectPath": "/projects/momotaro/",
+      "thumbnail": "/projects/momotaro/assets/cover-front.webp",
+      "theme": "washi-cut-paper"
+    },
+    {
       "id": "crooked_castle",
       "title": "The Crooked Castle",
       "description": "A storm-lit castle of crooked spires, seen from under the open book.",

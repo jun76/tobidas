@@ -20,6 +20,10 @@ coverage/
 
 # Local agent, editor, and OS state
 .agents/
+!.agents/
+!.agents/skills/
+!.agents/skills/tobidas-create/
+!.agents/skills/tobidas-create/**
 .claude/
 .codex/
 .idea/

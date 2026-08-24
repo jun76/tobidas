@@ -1,0 +1,7 @@
+interface:
+  display_name: "tobidas-create"
+  short_description: "Design, build, and verify tobidas picture books"
+  default_prompt: "Use $tobidas-create to turn this picture-book idea into a tobidas design and project."
+
+policy:
+  allow_implicit_invocation: true
