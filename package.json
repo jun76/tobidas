@@ -1,7 +1,7 @@
 {
   "name": "tobidas",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "description": "飛び出す絵本風Webコンテンツ・ビルダー (pop-up picture book style web content builder)",
   "license": "Apache-2.0",
