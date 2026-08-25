@@ -60,14 +60,9 @@ for (const spread of project.book.spreads ?? []) {
     addFinding('warning', spread, undefined, '背景パネル候補が見つかりません。名前またはアセットIDへ backdrop / 背景 / 遠景 を含めてください。')
     continue
   }
-  const highestLayer = Math.max(...upright.map((element) => Number(element.layer ?? 0)))
   const earliestStagger = Math.min(...upright.map((element) => Number(element.stow?.stagger ?? 0)))
   const foreground = upright.filter((element) => !candidates.includes(element))
   for (const panel of candidates) {
-    const panelLayer = Number(panel.layer ?? 0)
-    if (panelLayer < highestLayer) {
-      addFinding('error', spread, panel, `背景パネルの layer ${panelLayer} が起立部品の最大値 ${highestLayer} より低く、収納時に上へ積まれません。`)
-    }
     const panelStagger = Number(panel.stow?.stagger ?? 0)
     if (panelStagger > earliestStagger + 1e-6) {
       addFinding('error', spread, panel, `背景パネルの stagger ${panelStagger} が他の起立部品より遅く、展開時に最初に起立しません。`)

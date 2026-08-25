@@ -92,7 +92,7 @@
               0.5,
               0
             ],
-            "layer": 17,
+            "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -998,7 +998,7 @@
               0.5,
               0
             ],
-            "layer": 22,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -2521,7 +2521,7 @@
               0.5,
               0
             ],
-            "layer": 18,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -3767,7 +3767,7 @@
               0.5,
               0
             ],
-            "layer": 17,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -4808,7 +4808,7 @@
               0.5,
               0
             ],
-            "layer": 38,
+            "layer": 0,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -4867,7 +4867,7 @@
               0.5,
               0
             ],
-            "layer": 38,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -4926,7 +4926,7 @@
               0.5,
               0
             ],
-            "layer": 38,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -4985,7 +4985,7 @@
               0.5,
               0
             ],
-            "layer": 38,
+            "layer": 0,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -5044,7 +5044,7 @@
               0.5,
               0
             ],
-            "layer": 38,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -5103,7 +5103,7 @@
               0.5,
               0
             ],
-            "layer": 38,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {

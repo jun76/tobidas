@@ -92,7 +92,7 @@
               0.5,
               0
             ],
-            "layer": 13,
+            "layer": 0,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -151,7 +151,7 @@
               0.5,
               0
             ],
-            "layer": 13,
+            "layer": 0,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -210,7 +210,7 @@
               0.5,
               0
             ],
-            "layer": 13,
+            "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -1254,7 +1254,7 @@
               0.5,
               0
             ],
-            "layer": 13,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -1313,7 +1313,7 @@
               0.5,
               0
             ],
-            "layer": 13,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -1372,7 +1372,7 @@
               0.5,
               0
             ],
-            "layer": 13,
+            "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -2363,7 +2363,7 @@
               0.5,
               0
             ],
-            "layer": 12,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -2422,7 +2422,7 @@
               0.5,
               0
             ],
-            "layer": 12,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -2481,7 +2481,7 @@
               0.5,
               0
             ],
-            "layer": 12,
+            "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -3527,7 +3527,7 @@
               0.5,
               0
             ],
-            "layer": 13,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -3586,7 +3586,7 @@
               0.5,
               0
             ],
-            "layer": 13,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -3645,7 +3645,7 @@
               0.5,
               0
             ],
-            "layer": 13,
+            "layer": 3,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -4676,7 +4676,7 @@
               0.5,
               0
             ],
-            "layer": 21,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -4735,7 +4735,7 @@
               0.5,
               0
             ],
-            "layer": 21,
+            "layer": 1,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -4794,7 +4794,7 @@
               0.5,
               0
             ],
-            "layer": 21,
+            "layer": 2,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
