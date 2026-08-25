@@ -3,10 +3,15 @@ import { assetAccept } from '../../package/model'
 import { fileToAsset } from '../assets/ingest'
 import { requestElementDelete } from '../elementDelete'
 import { useT } from '../i18n'
+import { BookProperties, SelectionDetails } from '../panels/Properties'
 import type { VisualPresetId } from '../presets'
 import { useBuilderStore } from '../store'
 import { useDialogs } from '../ui/DialogProvider'
 import st from '../builder.module.css'
+import type { ContentMotion, TextFont, VisualElement } from '../../schema/stageElement'
+import type { TimelineProperty, TimelineValue } from '../../schema/timeline'
+import { TEXT_FONT_IDS } from '../../runtime/textStyle'
+import { evaluateBookSignals } from '../../runtime/signals'
 import {
   createAiVisual,
   moveAiElement,
@@ -123,18 +128,40 @@ export function AiModePanel() {
       referenceDistance: number(`${prefix}-reference-distance`),
       rolloffFactor: number(`${prefix}-rolloff`),
     })
+    const motionType = String(data.get('motion') ?? '')
     setResult(updateAiElement(elementSelection.spreadId, selectedElement.id, {
       name: String(data.get('name') ?? ''),
       position: [number('position-x'), number('position-y'), number('position-z')],
       rotation: [number('rotation-x'), number('rotation-y'), number('rotation-z')],
       scale: [number('scale-x'), number('scale-y'), number('scale-z')],
+      pivot: [number('pivot-x'), number('pivot-y')],
       layer: number('layer'),
       visible: data.get('visible') === 'on',
       opacity: number('opacity'),
+      motion: createMotion(motionType),
       ...(visualElement(selectedElement) ? {
         width: number('width'),
         height: number('height'),
+        image: String(data.get('image') ?? '') || null,
+        backImage: String(data.get('back-image') ?? '') || null,
+        billboard: data.get('billboard') === 'on',
+        backgroundColor: String(data.get('background-color') ?? ''),
+        foregroundColor: String(data.get('foreground-color') ?? ''),
         text: String(data.get('text') ?? ''),
+        fontSize: number('font-size'),
+        font: String(data.get('font') ?? '') as VisualElement['font'],
+        align: String(data.get('align') ?? '') as VisualElement['align'],
+        bold: data.get('bold') === 'on',
+        italic: data.get('italic') === 'on',
+        underline: data.get('underline') === 'on',
+        particles: {
+          enabled: data.get('particles-enabled') === 'on',
+          color: String(data.get('particles-color') ?? ''),
+          count: Math.round(number('particles-count')),
+          size: number('particles-size'),
+          drift: number('particles-drift'),
+          period: number('particles-period'),
+        },
         ...(selectedVideoFront ? { videoAudio: videoAudio('video-audio') } : {}),
         ...(selectedVideoBack ? { backVideoAudio: videoAudio('back-video-audio') } : {}),
       } : {}),
@@ -196,6 +223,22 @@ export function AiModePanel() {
       {result?.ok === false && Object.entries(result.fieldErrors).map(([field, message]) =>
         <div key={field} className={st.err}>{field}: {message}</div>)}
     </details>
+
+    <details open>
+      <summary>{t.ai.timeline}</summary>
+      <AiTimelineEditor
+        key={`timeline:${activeSpreadId}`}
+        spreadId={activeSpreadId}
+        defaultTarget={store.selection.type === 'element' ? `element:${store.selection.elementId}` : 'environment'}
+        readOnly={readOnly}
+        onResult={setResult}
+      />
+    </details>
+
+    {store.selection.type !== 'element' && <details open>
+      <summary>{t.ai.standardProperties}</summary>
+      {store.selection.type === 'book' ? <BookProperties /> : <SelectionDetails />}
+    </details>}
 
     <details open>
       <summary>{t.ai.targets}</summary>
@@ -264,6 +307,7 @@ export function AiModePanel() {
           <button type="button" onClick={() => setResult(createAiVisual({ spreadId: activeSpreadId, side: 'right', presetId: 'page-text' }))}>{t.ai.createText}</button>
           <button type="button" onClick={() => setResult(createAiVisual({ spreadId: activeSpreadId, side: 'right', presetId: 'light-particles' }))}>{t.ai.createParticles}</button>
         </div>
+        <AiBgmEditor readOnly={readOnly} onResult={setResult} />
       </fieldset>
     </details>
 
@@ -276,6 +320,8 @@ export function AiModePanel() {
             <fieldset className={st.aiFieldGroup}>
               <legend>{t.ai.basic}</legend>
               <AiText name="name" label={t.ai.name} value={selectedElement.name} />
+              <AiNumber name="pivot-x" label={t.properties.pivotX} value={selectedElement.pivot[0]} step="any" />
+              <AiNumber name="pivot-y" label={t.properties.pivotY} value={selectedElement.pivot[1]} step="any" />
               <AiNumber name="layer" label={t.ai.layer} value={selectedElement.layer} step={1} />
               <div className={st.row}><label htmlFor="ai-visible" className={st.rowLabel}>{t.ai.visible}</label>
                 <input id="ai-visible" name="visible" type="checkbox" defaultChecked={selectedElement.visible} /></div>
@@ -289,12 +335,54 @@ export function AiModePanel() {
                 return <AiNumber key={`${group}-${axis}`} name={`${group}-${axis.toLowerCase()}`} label={label} value={value} step={group === 'rotation' ? 1 : 0.1} />
               })}</div>
             </fieldset>)}
-            {visualElement(selectedElement) && <fieldset className={st.aiFieldGroup}>
-              <legend>{t.ai.content}</legend>
-              <AiNumber name="width" label={t.ai.width} value={selectedElement.width} min={0.01} step="any" />
-              <AiNumber name="height" label={t.ai.height} value={selectedElement.height} min={0.01} step="any" />
-              <AiText name="text" label={t.ai.text} value={selectedElement.text} />
-            </fieldset>}
+            <fieldset className={st.aiFieldGroup}>
+              <legend>{t.properties.motion}</legend>
+              <AiSelect name="motion" label={t.properties.motion} defaultValue={selectedElement.motion[0]?.type ?? ''}
+                options={[
+                  ['', t.properties.motionNone], ['bob', t.properties.motionBob], ['sway', t.properties.motionSway],
+                  ['drift', t.properties.motionDrift], ['spin', t.properties.motionSpin], ['pulse', t.properties.motionPulse],
+                ]} />
+            </fieldset>
+            {visualElement(selectedElement) && <>
+              <fieldset className={st.aiFieldGroup}>
+                <legend>{t.ai.content}</legend>
+                <AiSelect name="image" label={t.properties.image} defaultValue={selectedElement.image ?? ''}
+                  options={[['', t.properties.unset], ...imageAssets.map((asset) => [asset.id, `${asset.name} (${asset.id})`] as [string, string])]} />
+                <AiSelect name="back-image" label={t.properties.backImage} defaultValue={selectedElement.backImage ?? ''}
+                  options={[['', t.properties.unset], ...imageAssets.map((asset) => [asset.id, `${asset.name} (${asset.id})`] as [string, string])]} />
+                <AiNumber name="width" label={t.ai.width} value={selectedElement.width} min={0.01} step="any" />
+                <AiNumber name="height" label={t.ai.height} value={selectedElement.height} min={0.01} step="any" />
+                <div className={st.row}><label htmlFor="ai-billboard" className={st.rowLabel}>{t.properties.billboard}</label>
+                  <input id="ai-billboard" name="billboard" type="checkbox" defaultChecked={selectedElement.billboard} /></div>
+                <AiText name="background-color" label={t.properties.backgroundColor} value={selectedElement.backgroundColor} />
+                <AiText name="foreground-color" label={t.properties.textColor} value={selectedElement.foregroundColor} />
+              </fieldset>
+              <fieldset className={st.aiFieldGroup}>
+                <legend>{t.properties.text}</legend>
+                <AiText name="text" label={t.ai.text} value={selectedElement.text} />
+                <AiSelect name="font" label={t.properties.font} defaultValue={selectedElement.font}
+                  options={TEXT_FONT_IDS.map((id) => [id, t.properties[fontLabel(id)]] as [string, string])} />
+                <AiNumber name="font-size" label={t.properties.fontSize} value={selectedElement.fontSize} min={0.02} step="any" />
+                <AiSelect name="align" label={t.properties.align} defaultValue={selectedElement.align}
+                  options={[
+                    ['left', t.properties.alignLeft], ['center', t.properties.alignCenter], ['right', t.properties.alignRight],
+                  ]} />
+                {(['bold', 'italic', 'underline'] as const).map((key) => <div className={st.row} key={key}>
+                  <label className={st.rowLabel} htmlFor={`ai-${key}`}>{t.properties[key]}</label>
+                  <input id={`ai-${key}`} name={key} type="checkbox" defaultChecked={selectedElement[key]} />
+                </div>)}
+              </fieldset>
+              <fieldset className={st.aiFieldGroup}>
+                <legend>{t.presets['light-particles']}</legend>
+                <div className={st.row}><label className={st.rowLabel} htmlFor="ai-particles-enabled">{t.presets['light-particles']}</label>
+                  <input id="ai-particles-enabled" name="particles-enabled" type="checkbox" defaultChecked={selectedElement.particles.enabled} /></div>
+                <AiText name="particles-color" label={t.properties.effectColor} value={selectedElement.particles.color} />
+                <AiNumber name="particles-count" label={t.properties.particleCount} value={selectedElement.particles.count} min={1} max={200} step={1} />
+                <AiNumber name="particles-size" label={t.properties.effectSize} value={selectedElement.particles.size} min={0.01} step="any" />
+                <AiNumber name="particles-drift" label={t.properties.particleDrift} value={selectedElement.particles.drift} min={0} step="any" />
+                <AiNumber name="particles-period" label={t.properties.particlePeriod} value={selectedElement.particles.period} min={0.01} step="any" />
+              </fieldset>
+            </>}
             {selectedElement.type === 'visual' && selectedVideoFront
               && <AiVideoAudio prefix="video-audio" settings={selectedElement.videoAudio} label={t.properties.image} />}
             {selectedElement.type === 'visual' && selectedVideoBack
@@ -340,6 +428,240 @@ export function AiModePanel() {
       {summary.validation.warnings.map((issue, index) => <div className={st.warn} key={`warning-${index}`}>{issue}</div>)}
     </details>
   </section>
+}
+
+const ELEMENT_TIMELINE_PROPERTIES: readonly TimelineProperty[] = [
+  'position.x', 'position.y', 'position.z', 'rotation.x', 'rotation.y', 'rotation.z',
+  'scale.x', 'scale.y', 'scale.z', 'scale', 'opacity', 'visible',
+  'visual.image', 'visual.foregroundColor', 'visual.backgroundColor', 'visual.width', 'visual.height',
+  'visual.particles.color', 'visual.particles.size',
+]
+const ENVIRONMENT_TIMELINE_PROPERTIES: readonly TimelineProperty[] = [
+  'background', 'ambient.color', 'ambient.intensity', 'directional.color', 'directional.intensity',
+]
+const CAMERA_TIMELINE_PROPERTIES: readonly TimelineProperty[] = ['position', 'target', 'fov']
+
+function AiTimelineEditor({ spreadId, defaultTarget, readOnly, onResult }: {
+  spreadId: string
+  defaultTarget: string
+  readOnly: boolean
+  onResult: (result: AiCommandResult) => void
+}) {
+  const t = useT()
+  const store = useBuilderStore()
+  const spread = store.project.book.spreads.find((item) => item.id === spreadId)
+  const [target, setTarget] = useState(defaultTarget)
+  const [property, setProperty] = useState<TimelineProperty>(() => timelinePropertiesForTarget(defaultTarget)[0])
+  const [time, setTime] = useState(() => {
+    const index = store.project.book.spreads.findIndex((item) => item.id === spreadId)
+    return evaluateBookSignals(store.project.book, store.previewProgress).spreadTimes[index] ?? 0
+  })
+
+  if (!spread) return <div className={st.hintSmall}>{t.ai.notFound}</div>
+  const properties = timelinePropertiesForTarget(target)
+  const targets = [
+    ['environment', t.timeline.laneEnvironment] as const,
+    ['camera', t.timeline.laneCamera] as const,
+    ...spread.elements.map((element) => [`element:${element.id}`, `${element.name} (${element.id})`] as const),
+    ...store.project.assets.filter((asset) => asset.type === 'audio')
+      .map((asset) => [`sound:${asset.id}`, `${asset.name} (${asset.id})`] as const),
+  ]
+  const kind = timelineValueKind(property)
+  const defaultValue = timelineDefaultValue(store, spreadId, target, property)
+
+  const changeTarget = (value: string) => {
+    setTarget(value)
+    const next = timelinePropertiesForTarget(value)[0]
+    setProperty(next)
+  }
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (readOnly) {
+      onResult({ ok: false, action: 'add-timeline-key', message: t.ai.readOnly, fieldErrors: {} })
+      return
+    }
+    const data = new FormData(event.currentTarget)
+    const nextTime = Number(data.get('time'))
+    const nextValue = parseTimelineValue(property, data.get('value'))
+    const fieldErrors: Record<string, string> = {}
+    if (!Number.isFinite(nextTime) || nextTime < 0 || nextTime > spread.sequence.holdSeconds) fieldErrors.time = t.ai.timelineTimeRange
+    if (nextValue === undefined) fieldErrors.value = t.ai.invalidInput
+    if (Object.keys(fieldErrors).length || nextValue === undefined) {
+      onResult({ ok: false, action: 'add-timeline-key', message: t.ai.invalidInput, fieldErrors })
+      return
+    }
+    const parsedTarget = parseTimelineTarget(target)
+    if (!parsedTarget) {
+      onResult({ ok: false, action: 'add-timeline-key', message: t.ai.notFound, fieldErrors: { target: t.ai.notFound } })
+      return
+    }
+    if (!timelinePropertiesForTarget(target).includes(property)) {
+      onResult({ ok: false, action: 'add-timeline-key', message: t.ai.invalidInput, fieldErrors: { property: t.ai.invalidInput } })
+      return
+    }
+    if (parsedTarget.type === 'element' && !spread.elements.some((element) => element.id === parsedTarget.elementId)) {
+      onResult({ ok: false, action: 'add-timeline-key', message: t.ai.notFound, fieldErrors: { target: t.ai.notFound } })
+      return
+    }
+    if (parsedTarget.type === 'sound' && !store.project.assets.some((asset) => asset.id === parsedTarget.assetId && asset.type === 'audio')) {
+      onResult({ ok: false, action: 'add-timeline-key', message: t.ai.notFound, fieldErrors: { target: t.ai.notFound } })
+      return
+    }
+    if (property === 'visual.image' && (typeof nextValue !== 'string'
+      || !store.project.assets.some((asset) => asset.id === nextValue && ['image', 'svg', 'video'].includes(asset.type)))) {
+      onResult({ ok: false, action: 'add-timeline-key', message: t.ai.invalidInput, fieldErrors: { value: t.ai.notFound } })
+      return
+    }
+    store.upsertTimelineKey(spreadId, parsedTarget, property, nextTime, nextValue)
+    const issues = useBuilderStore.getState().issues
+    onResult({
+      ok: true,
+      action: 'add-timeline-key',
+      target: { kind: 'timeline', id: `${target}:${property}:${nextTime}` },
+      message: t.ai.timelineKeyAdded,
+      corrections: [],
+      validation: { errors: issues.errors.length, warnings: issues.warnings.length },
+    })
+    setTime(nextTime)
+  }
+
+  return <form className={st.aiTimelineForm} onSubmit={submit}>
+    <div className={st.row}><label className={st.rowLabel} htmlFor="ai-timeline-target">{t.ai.timelineTarget}</label>
+      <select id="ai-timeline-target" value={target} disabled={readOnly} onChange={(event) => changeTarget(event.target.value)}>
+        {targets.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+      </select>
+    </div>
+    <div className={st.row}><label className={st.rowLabel} htmlFor="ai-timeline-property">{t.ai.timelineProperty}</label>
+      <select id="ai-timeline-property" value={property} disabled={readOnly}
+        onChange={(event) => setProperty(event.target.value as TimelineProperty)}>
+        {properties.map((value) => <option key={value} value={value}>{value}</option>)}
+      </select>
+    </div>
+    <AiNumber name="time" label={t.ai.timelineTime} value={time} min={0} max={spread.sequence.holdSeconds} step="any" />
+    {kind === 'vec3'
+      ? <AiText key={`timeline-value:${target}:${property}`} name="value" label={t.ai.timelineValue} value={Array.isArray(defaultValue) ? defaultValue.join(', ') : ''} />
+      : kind === 'boolean'
+        ? <AiSelect key={`timeline-value:${target}:${property}`} name="value" label={t.ai.timelineValue} defaultValue={defaultValue === true ? 'true' : 'false'} options={[["true", t.ai.yes], ["false", t.ai.no]]} />
+        : <AiText key={`timeline-value:${target}:${property}`} name="value" label={t.ai.timelineValue} value={String(defaultValue ?? '')} />}
+    <button type="submit" disabled={readOnly}>{t.ai.addTimelineKey}</button>
+    <div className={st.hintSmall}>{t.ai.timelineHint}</div>
+  </form>
+}
+
+function AiBgmEditor({ readOnly, onResult }: {
+  readOnly: boolean
+  onResult: (result: AiCommandResult) => void
+}) {
+  const t = useT()
+  const store = useBuilderStore()
+  const audioAssets = store.project.assets.filter((asset) => asset.type === 'audio')
+  const [assetId, setAssetId] = useState(store.project.audio?.bgmAsset ?? audioAssets[0]?.id ?? '')
+  useEffect(() => {
+    if (!audioAssets.some((asset) => asset.id === assetId)) setAssetId(store.project.audio?.bgmAsset ?? audioAssets[0]?.id ?? '')
+  }, [assetId, audioAssets, store.project.audio?.bgmAsset])
+  const assign = () => {
+    const asset = audioAssets.find((item) => item.id === assetId)
+    if (!asset) {
+      onResult({ ok: false, action: 'assign-bgm', message: t.ai.notFound, fieldErrors: { asset: t.ai.notFound } })
+      return
+    }
+    store.assignBgm(asset)
+    const issues = useBuilderStore.getState().issues
+    onResult({ ok: true, action: 'assign-bgm', message: t.ai.bgmAssigned, corrections: [],
+      target: { kind: 'bgm', id: asset.id }, validation: { errors: issues.errors.length, warnings: issues.warnings.length } })
+  }
+  return <fieldset className={st.aiFieldGroup}>
+    <legend>{t.properties.bgm}</legend>
+    <div className={st.row}><label className={st.rowLabel} htmlFor="ai-bgm-asset">{t.properties.bgmAsset}</label>
+      <select id="ai-bgm-asset" value={assetId} disabled={readOnly || !audioAssets.length} onChange={(event) => setAssetId(event.target.value)}>
+        {!audioAssets.length && <option value="">{t.ai.noAssets}</option>}
+        {audioAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.name} ({asset.id})</option>)}
+      </select>
+    </div>
+    <div className={st.aiButtonRow}>
+      <button type="button" disabled={readOnly || !audioAssets.length} onClick={assign}>{t.ai.assignBgm}</button>
+      <button type="button" disabled={readOnly || !store.project.audio} onClick={() => {
+        store.clearBgm()
+        onResult({ ok: true, action: 'clear-bgm', message: t.ai.bgmCleared, corrections: [], validation: {
+          errors: useBuilderStore.getState().issues.errors.length, warnings: useBuilderStore.getState().issues.warnings.length,
+        } })
+      }}>{t.properties.clearBgm}</button>
+    </div>
+  </fieldset>
+}
+
+function timelinePropertiesForTarget(target: string): readonly TimelineProperty[] {
+  if (target === 'environment') return ENVIRONMENT_TIMELINE_PROPERTIES
+  if (target === 'camera') return CAMERA_TIMELINE_PROPERTIES
+  if (target.startsWith('sound:')) return ['cue']
+  return ELEMENT_TIMELINE_PROPERTIES
+}
+
+function timelineValueKind(property: TimelineProperty): 'number' | 'string' | 'boolean' | 'vec3' {
+  if (property === 'visible' || property === 'cue') return 'boolean'
+  if (property === 'position' || property === 'target') return 'vec3'
+  if (property === 'visual.image' || property.includes('color') || property === 'background') return 'string'
+  return 'number'
+}
+
+function timelineDefaultValue(store: ReturnType<typeof useBuilderStore.getState>, spreadId: string, target: string, property: TimelineProperty): TimelineValue {
+  const spread = store.project.book.spreads.find((item) => item.id === spreadId)
+  const existing = spread?.timeline.tracks.find((track) => {
+    const targetKey = track.target.type === 'element' ? `element:${track.target.elementId}`
+      : track.target.type === 'sound' ? `sound:${track.target.assetId}` : track.target.type
+    return targetKey === target && track.property === property
+  })?.keys.at(-1)?.value
+  if (existing !== undefined) return existing
+  if (property === 'visible' || property === 'cue') return true
+  if (property === 'position' || property === 'target') return [0, 0, 0]
+  if (property.includes('color') || property === 'background' || property === 'visual.image') return property === 'visual.image' ? '' : '#ffffff'
+  if (target.startsWith('element:')) {
+    const element = spread?.elements.find((item) => item.id === target.slice('element:'.length))
+    if (element) {
+      if (property === 'opacity') return element.opacity
+      if (property === 'visual.width' && element.type === 'visual') return element.width
+      if (property === 'visual.height' && element.type === 'visual') return element.height
+      if (property.startsWith('position.')) return element.baseTransform.position['xyz'.indexOf(property.at(-1)!)]
+      if (property.startsWith('rotation.')) return element.baseTransform.rotation['xyz'.indexOf(property.at(-1)!)]
+      if (property.startsWith('scale.')) return element.baseTransform.scale['xyz'.indexOf(property.at(-1)!)]
+    }
+  }
+  return 0
+}
+
+function parseTimelineTarget(value: string): { type: 'element'; elementId: string } | { type: 'environment' } | { type: 'camera' } | { type: 'sound'; assetId: string } | null {
+  if (value === 'environment') return { type: 'environment' }
+  if (value === 'camera') return { type: 'camera' }
+  if (value.startsWith('element:')) return { type: 'element', elementId: value.slice('element:'.length) }
+  if (value.startsWith('sound:')) return { type: 'sound', assetId: value.slice('sound:'.length) }
+  return null
+}
+
+function parseTimelineValue(property: TimelineProperty, value: FormDataEntryValue | null): TimelineValue | undefined {
+  if (typeof value !== 'string') return undefined
+  if (timelineValueKind(property) === 'boolean') return value === 'true' || value === 'on'
+  if (timelineValueKind(property) === 'vec3') {
+    const parts = value.split(',').map((part) => Number(part.trim()))
+    return parts.length === 3 && parts.every(Number.isFinite) ? parts as [number, number, number] : undefined
+  }
+  if (timelineValueKind(property) === 'number') {
+    const number = Number(value)
+    return Number.isFinite(number) ? number : undefined
+  }
+  return value
+}
+
+function createMotion(type: string): ContentMotion[] {
+  if (type === 'drift') return [{ type: 'drift', amplitude: [.25, .2, .25], period: 3, phase: 0 }]
+  if (type === 'spin') return [{ type: 'spin', axis: 'y', speed: .8 }]
+  if (type === 'sway') return [{ type: 'sway', amplitude: 5, period: 2.5, phase: 0 }]
+  if (type === 'pulse') return [{ type: 'pulse', amplitude: .06, period: 2, phase: 0 }]
+  if (type === 'bob') return [{ type: 'bob', amplitude: .18, period: 2.5, phase: 0 }]
+  return []
+}
+
+function fontLabel(font: TextFont): 'fontRounded' | 'fontSans' | 'fontSerif' | 'fontMono' {
+  return ({ rounded: 'fontRounded', sans: 'fontSans', serif: 'fontSerif', mono: 'fontMono' } as const)[font]
 }
 
 function AiVideoAudio({ prefix, settings, label }: {

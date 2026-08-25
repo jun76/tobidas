@@ -85,12 +85,26 @@ describe('AI commands', () => {
       position: [0, -5, 0],
       rotation: [0, 0, 0],
       scale: [1, 1, 1],
+      pivot: [.25, .75],
       layer: 2,
       visible: true,
       opacity: .7,
       width: 2,
       height: 4,
+      billboard: true,
+      image: null,
+      backImage: 'tree.webp',
+      backgroundColor: '#11223344',
+      foregroundColor: '#ffeedd',
       text: '',
+      fontSize: .5,
+      font: 'serif',
+      align: 'right',
+      bold: false,
+      italic: true,
+      underline: true,
+      particles: { enabled: true, color: '#aabbcc', count: 12, size: .2, drift: .3, period: 4 },
+      motion: [{ type: 'spin', axis: 'y', speed: .5 }],
     })
 
     expect(result.ok).toBe(true)
@@ -99,6 +113,12 @@ describe('AI commands', () => {
     const updated = useBuilderStore.getState().project.book.spreads[0].elements[0]
     expect(updated.name).toBe('Updated tree')
     expect(updated.baseTransform.position[1]).toBeGreaterThanOrEqual(0)
+    expect(updated.pivot).toEqual([.25, .75])
+    expect(updated.type === 'visual' && updated.backImage).toBe('tree.webp')
+    expect(updated.type === 'visual' && updated.billboard).toBe(true)
+    expect(updated.type === 'visual' && updated.font).toBe('serif')
+    expect(updated.type === 'visual' && updated.particles.count).toBe(12)
+    expect(updated.motion[0]?.type).toBe('spin')
     expect(useBuilderStore.getState().issues.ok).toBe(true)
   })
 })

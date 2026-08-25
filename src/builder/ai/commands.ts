@@ -1,4 +1,4 @@
-import type { ParentSpace, StageElement } from '../../schema/stageElement'
+import type { ContentMotion, ParentSpace, StageElement, VisualElement } from '../../schema/stageElement'
 import { embeddedVideoAudioSchema, type EmbeddedVideoAudio } from '../../schema/audio'
 import { elementDescendantIds } from '../hierarchy'
 import { t } from '../i18n'
@@ -82,9 +82,23 @@ export interface AiElementUpdate {
   layer: number
   visible: boolean
   opacity: number
+  pivot?: [number, number]
   width?: number
   height?: number
+  billboard?: boolean
+  image?: string | null
+  backImage?: string | null
+  backgroundColor?: string
+  foregroundColor?: string
   text?: string
+  fontSize?: number
+  font?: VisualElement['font']
+  align?: VisualElement['align']
+  bold?: boolean
+  italic?: boolean
+  underline?: boolean
+  particles?: VisualElement['particles']
+  motion?: ContentMotion[]
   videoAudio?: EmbeddedVideoAudio | null
   backVideoAudio?: EmbeddedVideoAudio | null
 }
@@ -102,8 +116,18 @@ export function updateAiElement(spreadId: string, elementId: string, input: AiEl
   }
   if (!Number.isFinite(input.layer)) errors.layer = t().ai.finiteNumber
   if (!Number.isFinite(input.opacity)) errors.opacity = t().ai.finiteNumber
+  if (input.pivot && input.pivot.some((value) => !Number.isFinite(value))) errors.pivot = t().ai.finiteNumber
   if (input.width !== undefined && (!Number.isFinite(input.width) || input.width <= 0)) errors.width = t().ai.positiveNumber
   if (input.height !== undefined && (!Number.isFinite(input.height) || input.height <= 0)) errors.height = t().ai.positiveNumber
+  if (input.fontSize !== undefined && (!Number.isFinite(input.fontSize) || input.fontSize <= 0)) errors.fontSize = t().ai.positiveNumber
+  if (input.particles) {
+    if (!Number.isInteger(input.particles.count) || input.particles.count < 1 || input.particles.count > 200) {
+      errors.particleCount = t().ai.invalidInput
+    }
+    if (!Number.isFinite(input.particles.size) || input.particles.size <= 0) errors.particleSize = t().ai.positiveNumber
+    if (!Number.isFinite(input.particles.drift) || input.particles.drift < 0) errors.particleDrift = t().ai.invalidInput
+    if (!Number.isFinite(input.particles.period) || input.particles.period <= 0) errors.particlePeriod = t().ai.positiveNumber
+  }
   for (const [field, value] of [['videoAudio', input.videoAudio], ['backVideoAudio', input.backVideoAudio]] as const) {
     if (value && !embeddedVideoAudioSchema.safeParse(value).success) errors[field] = t().ai.invalidInput
   }
@@ -114,13 +138,27 @@ export function updateAiElement(spreadId: string, elementId: string, input: AiEl
     target.baseTransform.position = [...input.position]
     target.baseTransform.rotation = [...input.rotation]
     target.baseTransform.scale = [...input.scale]
+    if (input.pivot) target.pivot = [...input.pivot]
     target.layer = Math.round(input.layer)
     target.visible = input.visible
     target.opacity = Math.min(1, Math.max(0, input.opacity))
     if (target.type === 'visual') {
       if (input.width !== undefined) target.width = input.width
       if (input.height !== undefined) target.height = input.height
+      if (input.billboard !== undefined) target.billboard = input.billboard
+      if (input.image !== undefined) target.image = input.image ?? undefined
+      if (input.backImage !== undefined) target.backImage = input.backImage ?? undefined
+      if (input.backgroundColor !== undefined) target.backgroundColor = input.backgroundColor
+      if (input.foregroundColor !== undefined) target.foregroundColor = input.foregroundColor
       if (input.text !== undefined) target.text = input.text
+      if (input.fontSize !== undefined) target.fontSize = input.fontSize
+      if (input.font !== undefined) target.font = input.font
+      if (input.align !== undefined) target.align = input.align
+      if (input.bold !== undefined) target.bold = input.bold
+      if (input.italic !== undefined) target.italic = input.italic
+      if (input.underline !== undefined) target.underline = input.underline
+      if (input.particles !== undefined) target.particles = structuredClone(input.particles)
+      if (input.motion !== undefined) target.motion = structuredClone(input.motion)
       if (input.videoAudio !== undefined) target.videoAudio = input.videoAudio ?? undefined
       if (input.backVideoAudio !== undefined) target.backVideoAudio = input.backVideoAudio ?? undefined
     }

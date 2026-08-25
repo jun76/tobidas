@@ -41,12 +41,13 @@ try {
   if (viewportBox.width < controlBox.width * 1.8) throw new Error('ビューポートが操作ペインの約2倍ありません')
   if (await page.getByText('BOOK ナビゲーター', { exact: true }).count()) throw new Error('通常ナビゲーターがAIモードに残っています')
   if (await page.getByText('部品プリセット', { exact: true }).count()) throw new Error('通常プリセットがAIモードに残っています')
-  if (await page.getByLabel('見開き保持時刻', { exact: true }).count()) throw new Error('通常タイムラインがAIモードに残っています')
+  await page.getByLabel('見開き保持時刻', { exact: true }).waitFor()
+  await panel.getByLabel('対象トラック', { exact: true }).waitFor()
   if (await panel.getByRole('button', { name: '検証結果', exact: true }).count()) throw new Error('効果のない検証更新ボタンが残っています')
   await page.getByRole('treeitem', { name: /見開き 1/ }).first().waitFor()
 
   await page.getByLabel('読み込み').setInputFiles([assetPath, audioPath])
-  const assetOption = panel.getByLabel('画像アセット').locator('option').filter({ hasText: 'favicon' })
+  const assetOption = panel.getByLabel('画像・動画アセット').locator('option').filter({ hasText: 'favicon' })
   await assetOption.waitFor({ state: 'attached' })
   await panel.getByText('アセット一覧', { exact: true }).click()
   try {
@@ -57,11 +58,13 @@ try {
   } catch {
     throw new Error(`音声の再生時間を確認できません:\n${await panel.innerText()}\n${consoleErrors.join('\n')}`)
   }
-  await panel.getByLabel('画像アセット').selectOption(await assetOption.getAttribute('value'))
+  await panel.getByLabel('画像・動画アセット').selectOption(await assetOption.getAttribute('value'))
   await panel.getByLabel('位置 u（0=背表紙、1=小口）').fill('0.25')
   await panel.getByLabel('位置 v（0=奥、1=手前）').fill('0.6')
-  await panel.getByRole('button', { name: '画像を直接配置' }).click()
+  await panel.getByRole('button', { name: '画像・動画を直接配置' }).click()
   await panel.getByText(/配置しました/).waitFor()
+  await panel.getByRole('button', { name: 'タイムラインキーを追加', exact: true }).click()
+  await panel.getByText('タイムラインキーを追加しました。', { exact: true }).waitFor()
 
   const selectedId = await panel.locator('[data-tobidas-kind="element"][aria-selected="true"]').getAttribute('data-tobidas-id')
   if (!selectedId) throw new Error('配置した部品IDをDOMから取得できません')
@@ -89,16 +92,20 @@ try {
   await panel.getByRole('button', { name: '元に戻す' }).click()
   await panel.locator(`[data-tobidas-id="${selectedId}"]`).click()
   await panel.getByRole('button', { name: '再生', exact: true }).click()
-  await panel.getByText('再生（読み取り専用）').waitFor()
+  await page.getByRole('button', { name: '編集', exact: true }).waitFor()
   await viewportPane.getByRole('button', { name: '再生', exact: true }).waitFor()
   await viewportPane.getByRole('slider', { name: '作品進行' }).waitFor()
-  if (await panel.getByRole('button', { name: '部品を更新' }).isEnabled()) {
+  const updateInDom = page.locator('button[type="submit"]').filter({ hasText: '部品を更新' })
+  if (await updateInDom.count() && await updateInDom.first().isEnabled()) {
     throw new Error('再生モード中に部品更新が有効です')
   }
-  if (await panel.getByRole('button', { name: '画像を直接配置' }).isEnabled()) {
+  const placeInDom = page.locator('button').filter({ hasText: '画像・動画を直接配置' })
+  if (await placeInDom.count() && await placeInDom.first().isEnabled()) {
     throw new Error('再生モード中に直接配置が有効です')
   }
 
+  await page.getByRole('button', { name: '編集', exact: true }).click()
+  await panel.waitFor()
   await page.getByRole('button', { name: '通常モードへ戻る' }).click()
   await page.getByRole('tree', { name: 'BOOK ナビゲーター' }).waitFor()
   await page.getByRole('region', { name: new RegExp(selectedId) }).waitFor()

@@ -14,7 +14,7 @@ export function AiWorkspace() {
       <AiModePanel />
     </aside>
     <section className={st.aiViewportPane} aria-label={t.ai.viewportPane}>
-      <Viewport showEditTimeline={false} />
+      <Viewport />
     </section>
   </main>
 }
