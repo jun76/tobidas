@@ -275,6 +275,7 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
   const scene = `spread-${index + 1}`
   const elements = []
   const tracks = []
+  const backdropIds = new Set()
   const fail = (message) => {
     throw new Error(`${workId} / ${name}: ${message}`)
   }
@@ -341,7 +342,7 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
     const chosen = fall ?? (height + FOLD_MARGIN <= backRoom ? 'back' : 'front')
     const room = chosen === 'back' ? backRoom : frontRoom
     // 寝姿が足りない場合はランタイムが閉じ際だけ自動縮小し、包含検査が警告する。
-    return add({
+    const element = {
       ...base(id, {
         name: label, parent: { type: `${page}-page` }, layer,
         position: [pageX(page, u), 0.01 + swingLift(motion, width), faceZ(v)],
@@ -349,7 +350,9 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
         preset: backdrop ? 'depth-layer' : 'bottom-upright',
       }),
       ...visual({ image: asset, width, height }),
-    })
+    }
+    if (backdrop) backdropIds.add(element.id)
+    return add(element)
   }
 
   /**
@@ -516,15 +519,35 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
     }
   }
 
-  const serialize = () => ({
+  const serialize = () => {
+    const isRoot = (element) => element.parent?.type === 'left-page' || element.parent?.type === 'right-page'
+    const isUpright = (element) => {
+      const rotation = Number(element.baseTransform?.rotation?.[0])
+      return Number.isFinite(rotation) && Math.abs(Math.sin(rotation * Math.PI / 180)) < Math.sin(35 * Math.PI / 180)
+    }
+    const isText = (element) => String(element.text ?? '').trim().length > 0
+    const uprightParts = elements.filter((element) => isRoot(element) && isUpright(element) && !isText(element))
+    const foregroundLayer = Math.max(0, ...uprightParts
+      .filter((element) => !backdropIds.has(element.id))
+      .map((element) => Number(element.layer ?? 0)))
+    const backdropLayer = foregroundLayer + 1
+    const serializedElements = elements.map((element) => backdropIds.has(element.id)
+      ? {
+          ...element,
+          layer: backdropLayer,
+          stow: { ...element.stow, stagger: 0 },
+        }
+      : element)
+    return {
     id: scene,
     name,
     leftPage: { backgroundAsset: leftPage },
     rightPage: { backgroundAsset: rightPage },
-    elements,
+    elements: serializedElements,
     sequence: { holdSeconds: hold, turnSeconds: turn },
     timeline: { tracks },
-  })
+    }
+  }
 
   return { scene, hold, flat, stand, hover, caption, signText, sparkle, pivotGroup, track, cue, camera, environment, serialize }
 }

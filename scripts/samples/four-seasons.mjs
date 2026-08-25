@@ -39,7 +39,7 @@ const C = {
  * 粒子が使ってよい奥行き。窓の外＝景色の板 (z=-2.43) と窓枠のV折り (背で z=-1.41、
  * 翼先で z=-2.21) のあいだ。ここより手前へ出すと室内を横切って見える。
  */
-const OUTSIDE_FAR_Z = -2.3
+const OUTSIDE_FAR_Z = -2.1
 const OUTSIDE_NEAR_Z = -2.1
 
 /**
@@ -367,7 +367,7 @@ export function build(updatedAt) {
     // 窓の外の景色は片面ごとの立ち板。見開き1〜4は頭から終わりまでこの季節だけ
     for (const [side, id] of [['left', 'view-l'], ['right', 'view-r']]) {
       s.stand(side, {
-        id, name: `窓の外 (${side === 'left' ? '左' : '右'})`, asset: season.view[side],
+        id, name: `背景の窓外 (${side === 'left' ? '左' : '右'})`, asset: season.view[side],
         u: VIEW_U, v: .12, width: VIEW_WIDTH, height: VIEW_HEIGHT, backdrop: true,
       })
     }
@@ -463,8 +463,8 @@ export function build(updatedAt) {
         : [[layerRise(index + 1), 1], [layerFull(index + 1), 0]]
       for (const page of ['left', 'right']) {
         const id = s.stand(page, {
-          id: `layer-${page}-${index + 1}`, name: `${season.name}の層 (${page === 'left' ? '左' : '右'})`, asset: season.view[page],
-          u: VIEW_U, v: .12 + index * .006, width: VIEW_WIDTH, height: VIEW_HEIGHT, backdrop: index === 0, fall: 'front', layer: index,
+          id: `layer-${page}-${index + 1}`, name: `背景の${season.name}の層 (${page === 'left' ? '左' : '右'})`, asset: season.view[page],
+          u: VIEW_U, v: .12 + index * .006, width: VIEW_WIDTH, height: VIEW_HEIGHT, backdrop: true, fall: 'front', layer: index,
         })
         s.track(id, 'opacity', [...fadeIn, ...fadeOut])
       }

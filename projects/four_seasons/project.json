@@ -65,7 +65,7 @@
         "elements": [
           {
             "id": "spread-1-view-l",
-            "name": "窓の外 (左)",
+            "name": "背景の窓外 (左)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -92,7 +92,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 25,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -124,7 +124,7 @@
           },
           {
             "id": "spread-1-view-r",
-            "name": "窓の外 (右)",
+            "name": "背景の窓外 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -151,7 +151,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 25,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -856,7 +856,7 @@
               "position": [
                 2.6,
                 2.5,
-                -2.3
+                -2.1
               ],
               "rotation": [
                 0,
@@ -1742,7 +1742,7 @@
         "elements": [
           {
             "id": "spread-2-view-l",
-            "name": "窓の外 (左)",
+            "name": "背景の窓外 (左)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -1769,7 +1769,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 25,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -1801,7 +1801,7 @@
           },
           {
             "id": "spread-2-view-r",
-            "name": "窓の外 (右)",
+            "name": "背景の窓外 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -1828,7 +1828,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 25,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -2533,7 +2533,7 @@
               "position": [
                 -2.6,
                 2.5,
-                -2.3
+                -2.1
               ],
               "rotation": [
                 0,
@@ -3419,7 +3419,7 @@
         "elements": [
           {
             "id": "spread-3-view-l",
-            "name": "窓の外 (左)",
+            "name": "背景の窓外 (左)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -3446,7 +3446,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 25,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -3478,7 +3478,7 @@
           },
           {
             "id": "spread-3-view-r",
-            "name": "窓の外 (右)",
+            "name": "背景の窓外 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -3505,7 +3505,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 25,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -4210,7 +4210,7 @@
               "position": [
                 2.6,
                 2.5,
-                -2.3
+                -2.1
               ],
               "rotation": [
                 0,
@@ -5096,7 +5096,7 @@
         "elements": [
           {
             "id": "spread-4-view-l",
-            "name": "窓の外 (左)",
+            "name": "背景の窓外 (左)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -5123,7 +5123,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 25,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -5155,7 +5155,7 @@
           },
           {
             "id": "spread-4-view-r",
-            "name": "窓の外 (右)",
+            "name": "背景の窓外 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -5182,7 +5182,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 25,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -5887,7 +5887,7 @@
               "position": [
                 -2.6,
                 2.5,
-                -2.3
+                -2.1
               ],
               "rotation": [
                 0,
@@ -6773,7 +6773,7 @@
         "elements": [
           {
             "id": "spread-5-layer-left-1",
-            "name": "春の層 (左)",
+            "name": "背景の春の層 (左)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -6800,7 +6800,7 @@
               0.5,
               0
             ],
-            "layer": 0,
+            "layer": 28,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -6832,7 +6832,7 @@
           },
           {
             "id": "spread-5-layer-right-1",
-            "name": "春の層 (右)",
+            "name": "背景の春の層 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -6859,7 +6859,7 @@
               0.5,
               0
             ],
-            "layer": 0,
+            "layer": 28,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -6891,7 +6891,7 @@
           },
           {
             "id": "spread-5-layer-left-2",
-            "name": "夏の層 (左)",
+            "name": "背景の夏の層 (左)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -6918,7 +6918,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 28,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -6950,7 +6950,7 @@
           },
           {
             "id": "spread-5-layer-right-2",
-            "name": "夏の層 (右)",
+            "name": "背景の夏の層 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -6977,7 +6977,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 28,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -7009,7 +7009,7 @@
           },
           {
             "id": "spread-5-layer-left-3",
-            "name": "秋の層 (左)",
+            "name": "背景の秋の層 (左)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -7036,7 +7036,7 @@
               0.5,
               0
             ],
-            "layer": 2,
+            "layer": 28,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -7068,7 +7068,7 @@
           },
           {
             "id": "spread-5-layer-right-3",
-            "name": "秋の層 (右)",
+            "name": "背景の秋の層 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -7095,7 +7095,7 @@
               0.5,
               0
             ],
-            "layer": 2,
+            "layer": 28,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -7127,7 +7127,7 @@
           },
           {
             "id": "spread-5-layer-left-4",
-            "name": "冬の層 (左)",
+            "name": "背景の冬の層 (左)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -7154,7 +7154,7 @@
               0.5,
               0
             ],
-            "layer": 3,
+            "layer": 28,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -7186,7 +7186,7 @@
           },
           {
             "id": "spread-5-layer-right-4",
-            "name": "冬の層 (右)",
+            "name": "背景の冬の層 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -7213,7 +7213,7 @@
               0.5,
               0
             ],
-            "layer": 3,
+            "layer": 28,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -7741,7 +7741,7 @@
               "position": [
                 2.6,
                 2.5,
-                -2.3
+                -2.1
               ],
               "rotation": [
                 0,

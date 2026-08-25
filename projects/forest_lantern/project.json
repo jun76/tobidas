@@ -65,7 +65,7 @@
         "elements": [
           {
             "id": "spread-1-far-line-l",
-            "name": "遠くの木立 (左)",
+            "name": "遠景の木立 (左)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -92,7 +92,7 @@
               0.5,
               0
             ],
-            "layer": 0,
+            "layer": 13,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -124,7 +124,7 @@
           },
           {
             "id": "spread-1-far-line-r",
-            "name": "遠くの木立 (右)",
+            "name": "遠景の木立 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -151,7 +151,7 @@
               0.5,
               0
             ],
-            "layer": 0,
+            "layer": 13,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -183,7 +183,7 @@
           },
           {
             "id": "spread-1-canopy",
-            "name": "森の樹冠",
+            "name": "遠景の樹冠",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -210,7 +210,7 @@
               0.5,
               0
             ],
-            "layer": 2,
+            "layer": 13,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -1227,7 +1227,7 @@
         "elements": [
           {
             "id": "spread-2-bank-l",
-            "name": "対岸の木立",
+            "name": "遠景の対岸の木立",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -1254,7 +1254,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 13,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -1286,7 +1286,7 @@
           },
           {
             "id": "spread-2-bank-r",
-            "name": "対岸の木立 (右)",
+            "name": "遠景の対岸の木立 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -1313,7 +1313,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 13,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -1345,7 +1345,7 @@
           },
           {
             "id": "spread-2-canopy",
-            "name": "川面へ差し出す枝",
+            "name": "遠景の川辺の枝",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -1372,7 +1372,7 @@
               0.5,
               0
             ],
-            "layer": 2,
+            "layer": 13,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -2336,7 +2336,7 @@
         "elements": [
           {
             "id": "spread-3-far-hill-l",
-            "name": "遠い稜線 (左)",
+            "name": "遠景の稜線 (左)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -2363,7 +2363,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -2395,7 +2395,7 @@
           },
           {
             "id": "spread-3-far-hill-r",
-            "name": "遠い稜線 (右)",
+            "name": "遠景の稜線 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -2422,7 +2422,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -2454,7 +2454,7 @@
           },
           {
             "id": "spread-3-ridge",
-            "name": "丘の稜線",
+            "name": "遠景の丘の稜線",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -2481,7 +2481,7 @@
               0.5,
               0
             ],
-            "layer": 2,
+            "layer": 12,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -3500,7 +3500,7 @@
         "elements": [
           {
             "id": "spread-4-far-line-l",
-            "name": "奥の木立 (左)",
+            "name": "遠景の木立 (左)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -3527,7 +3527,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 13,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -3559,7 +3559,7 @@
           },
           {
             "id": "spread-4-far-line-r",
-            "name": "奥の木立 (右)",
+            "name": "遠景の木立 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -3586,7 +3586,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 13,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -3618,7 +3618,7 @@
           },
           {
             "id": "spread-4-great-tree",
-            "name": "眠る大樹",
+            "name": "遠景の眠る大樹",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -3645,7 +3645,7 @@
               0.5,
               0
             ],
-            "layer": 3,
+            "layer": 13,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -4649,7 +4649,7 @@
         "elements": [
           {
             "id": "spread-5-far-line-l",
-            "name": "奥の木立 (左)",
+            "name": "遠景の木立 (左)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -4676,7 +4676,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 21,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -4708,7 +4708,7 @@
           },
           {
             "id": "spread-5-far-line-r",
-            "name": "奥の木立 (右)",
+            "name": "遠景の木立 (右)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -4735,7 +4735,7 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 21,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
@@ -4767,7 +4767,7 @@
           },
           {
             "id": "spread-5-canopy",
-            "name": "森の樹冠",
+            "name": "遠景の樹冠",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -4794,7 +4794,7 @@
               0.5,
               0
             ],
-            "layer": 2,
+            "layer": 21,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {

@@ -20,7 +20,7 @@ const POSITION_EPSILON = Math.max(.08, pageWidth * .01)
 const DEPTH_EPSILON = Math.max(.08, pageWidth * .01)
 
 const tokenOf = (element) => [element.id, element.name, element.image].filter(Boolean).join(' ').toLowerCase()
-const backgroundToken = /backdrop|background|bg[-_ ]|背景|遠景|奥の|窓の外|稜線|view[-_ ]/i
+const backgroundToken = /backdrop|background|bg[-_ ]|背景|遠景/i
 const isVisual = (element) => element.type === 'visual'
 const isRoot = (element) => element.parent?.type === 'left-page' || element.parent?.type === 'right-page'
 const isUpright = (element) => {

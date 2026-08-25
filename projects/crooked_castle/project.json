@@ -188,7 +188,7 @@
           },
           {
             "id": "forest-left-in",
-            "name": "左奥の枯れ森 (のど側)",
+            "name": "背景の枯れ森 (左・のど側)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -198,7 +198,7 @@
               "position": [
                 1.991,
                 0.025,
-                -3
+                -3.5
               ],
               "rotation": [
                 0,
@@ -215,12 +215,12 @@
               0.5,
               0
             ],
-            "layer": 1,
+            "layer": 79,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
               "fallDirection": "front",
-              "stagger": 0.028
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -279,7 +279,7 @@
           },
           {
             "id": "forest-left-out",
-            "name": "左奥の枯れ森 (小口側)",
+            "name": "背景の枯れ森 (左・小口側)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -289,7 +289,7 @@
               "position": [
                 -1.808,
                 0.025,
-                -3
+                -3.5
               ],
               "rotation": [
                 0,
@@ -306,12 +306,12 @@
               0.5,
               0
             ],
-            "layer": 2,
+            "layer": 79,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
               "fallDirection": "front",
-              "stagger": 0.056
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -370,7 +370,7 @@
           },
           {
             "id": "forest-right-in",
-            "name": "右奥の枯れ森 (のど側)",
+            "name": "背景の枯れ森 (右・のど側)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -380,7 +380,7 @@
               "position": [
                 -2.009,
                 0.025,
-                -3
+                -3.5
               ],
               "rotation": [
                 0,
@@ -397,12 +397,12 @@
               0.5,
               0
             ],
-            "layer": 3,
+            "layer": 79,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
               "fallDirection": "front",
-              "stagger": 0.084
+              "stagger": 0
             },
             "stowFlourish": [
               {
@@ -461,7 +461,7 @@
           },
           {
             "id": "forest-right-out",
-            "name": "右奥の枯れ森 (小口側)",
+            "name": "背景の枯れ森 (右・小口側)",
             "visible": true,
             "opacity": 1,
             "parent": {
@@ -471,7 +471,7 @@
               "position": [
                 1.792,
                 0.025,
-                -3
+                -3.5
               ],
               "rotation": [
                 0,
@@ -488,12 +488,12 @@
               0.5,
               0
             ],
-            "layer": 4,
+            "layer": 79,
             "motion": [],
             "clock": "visible-elapsed",
             "stow": {
               "fallDirection": "front",
-              "stagger": 0.112
+              "stagger": 0
             },
             "stowFlourish": [
               {

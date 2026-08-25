@@ -12,11 +12,10 @@ import { join } from 'node:path'
 import { build as forestLantern } from './samples/forest-lantern.mjs'
 import { build as morningWalk } from './samples/morning-walk.mjs'
 import { build as fourSeasons } from './samples/four-seasons.mjs'
-import { build as momotaro } from './samples/momotaro.mjs'
 import { applyOverrides, loadOverrides } from './samples/overrides.mjs'
 
 const ROOT = 'projects'
-const BUILDERS = [forestLantern, morningWalk, fourSeasons, momotaro]
+const BUILDERS = [forestLantern, morningWalk, fourSeasons]
 // 公開サンプルはソース管理する生成物なので、同じ generator から同じJSONを得る。
 // 内容を更新したときだけ、この値も generator の変更として明示的に進める。
 const updatedAt = '2026-07-26T00:00:00.000Z'

@@ -426,9 +426,9 @@ export function build(updatedAt) {
       leftPage: ground('page-1-left.svg', '#cdb086', '#b2966f'),
       rightPage: ground('page-1-right.svg', '#cdb086', '#b2966f'),
     })
-    s.stand('right', { id: 'mountain', name: '遠景の山', asset: backdropMountain, u: 0, width: BACKDROP_SPAN.width, height: BACKDROP_SPAN.height, v: BACKDROP_SPAN.v, layer: 1 })
+    s.stand('right', { id: 'mountain', name: '遠景の山', asset: backdropMountain, u: 0, width: BACKDROP_SPAN.width, height: BACKDROP_SPAN.height, v: BACKDROP_SPAN.v, backdrop: true, layer: 1 })
     // 遠景の稜線は前景の家より低く抑える。同じ高さだと奥行きが出ない
-    s.stand('right', { id: 'skyline', name: '街並みの稜線', asset: townscapeArt, u: 0, width: 9.2, height: 1.7, v: .20, layer: 2 })
+    s.stand('right', { id: 'skyline', name: '遠景の街並み', asset: townscapeArt, u: 0, width: 9.2, height: 1.7, v: .20, backdrop: true, layer: 2 })
 
     // 一戸建ての絵は正方形、集合住宅は縦長。どちらも絵の縦横比のまま拡げる。
     // 集合住宅は 4 単位ぶんしか紙に畳めないので、奥へ置いて手前へ倒す
@@ -442,12 +442,11 @@ export function build(updatedAt) {
       { page: 'right', u: .82, v: .48, w: small, h: small, asset: houseE },
     ]
     houses.forEach((item, index) => {
-      const id = s.stand(item.page, {
+      s.stand(item.page, {
         id: `house-${index + 1}`, name: `家並み ${index + 1}`, asset: item.asset,
         u: item.u, v: item.v, width: item.w, height: item.h, fall: item.fall ?? 'back', layer: 3 + index,
       })
-      // 家並みは奥から手前へ順に起き上がる
-      s.track(id, 'rotation.x', [[0, -90], [.2 + index * .3, -90], [1.1 + index * .3, 0]])
+      // 起立は収納機構に任せ、背景パネルの起立後に部品が紙面へ残らないようにする。
     })
     ;[['left', .48, .78], ['right', .44, .84], ['right', .84, .90]].forEach(([page, u, v], index) => {
       s.stand(page, {
@@ -478,7 +477,7 @@ export function build(updatedAt) {
       leftPage: ground('page-2-left.svg', '#d2b58b', '#bb9c70'),
       rightPage: ground('page-2-right.svg', '#d2b58b', '#bb9c70'),
     })
-    s.stand('right', { id: 'far-row', name: '奥の家並み', asset: backdropRow, u: 0, width: BACKDROP_SPAN.width, height: BACKDROP_SPAN.height, v: BACKDROP_SPAN.v, layer: 1 })
+    s.stand('right', { id: 'far-row', name: '遠景の家並み', asset: backdropRow, u: 0, width: BACKDROP_SPAN.width, height: BACKDROP_SPAN.height, v: BACKDROP_SPAN.v, backdrop: true, layer: 1 })
     s.stand('right', { id: 'arcade', name: '商店街のアーケード', asset: arcadeArt, u: 0, width: 9.0, height: 2.4, v: .22, layer: 2 })
 
     const shops = [
@@ -487,12 +486,17 @@ export function build(updatedAt) {
       { page: 'right', u: .28, v: .58, asset: shopArtC },
       { page: 'right', u: .76, v: .58, asset: shopArtD },
     ]
-    // 高さは4軒とも揃える。幅は絵ごとの縦横比で決まるので店ごとに違う
+    // 高さは4軒とも揃える。幅は絵ごとの縦横比で決まるので店ごとに違う。
+    // シャッターも高さを共通化し、左右端の店だけ上端が下がらないようにする。
     const SHOP_HEIGHT = street(5.6)
+    const SHUTTER_HEIGHT = Math.max(...shops.map((shop) => {
+      const shopWidth = wide(SHOP_HEIGHT, shop.asset)
+      const shutterWidth = Math.round(shopWidth * 84) / 100
+      return Math.round((shutterWidth / aspect(shutterArt)) * 100) / 100
+    }))
     shops.forEach((shop, index) => {
       const shopWidth = wide(SHOP_HEIGHT, shop.asset)
       const shutterWidth = Math.round(shopWidth * 84) / 100
-      const shutterHeight = Math.round((shutterWidth / aspect(shutterArt)) * 100) / 100
       s.stand(shop.page, {
         id: `shop-${index + 1}`, name: `商店 ${index + 1}`, asset: shop.asset,
         u: shop.u, v: shop.v, width: shopWidth, height: SHOP_HEIGHT, fall: 'back', layer: 3 + index,
@@ -502,11 +506,11 @@ export function build(updatedAt) {
       // 上端の高さ (position.y + height×scale.y) を一定に保つ。
       const shutterId = s.stand(shop.page, {
         id: `shutter-${index + 1}`, name: `シャッター ${index + 1}`, asset: shutterArt,
-        u: shop.u, v: shop.v + .014, width: shutterWidth, height: shutterHeight, fall: 'back', layer: 8 + index,
+        u: shop.u, v: shop.v + .014, width: shutterWidth, height: SHUTTER_HEIGHT, fall: 'back', layer: 8 + index,
       })
       const opens = .6 + index * .95
       const opened = opens + 1.2
-      s.track(shutterId, 'position.y', [[0, .01], [opens, .01], [opened, shutterHeight * .93]])
+      s.track(shutterId, 'position.y', [[0, .01], [opens, .01], [opened, SHUTTER_HEIGHT * .93]])
       s.track(shutterId, 'scale.y', [[0, 1], [opens, 1], [opened, .07]])
     })
     s.stand('left', { id: 'bicycle', name: '自転車', asset: bicycleArt, u: .52, v: .86, width: wide(near(REAL.bicycle), bicycleArt), height: near(REAL.bicycle), fall: 'back', layer: 14 })
@@ -539,9 +543,11 @@ export function build(updatedAt) {
       leftPage: ground('page-3-left.svg', '#8d8b90', '#75737a'),
       rightPage: ground('page-3-right.svg', '#8d8b90', '#75737a'),
     })
-    s.stand('right', { id: 'far-row', name: '奥の家並み', asset: backdropTown, u: 0, width: BACKDROP_SPAN.width, height: BACKDROP_SPAN.height, v: BACKDROP_SPAN.v, layer: 1 })
-    s.flat('left', { id: 'rails', name: '線路 (左)', asset: railArt, u: .5, v: .40, width: 7.9, depth: 1.39, layer: 1 })
-    s.flat('right', { id: 'rails-r', name: '線路 (右)', asset: railArt, u: .5, v: .40, width: 7.9, depth: 1.39, layer: 1 })
+    s.stand('right', { id: 'far-row', name: '遠景の家並み', asset: backdropTown, u: 0, width: BACKDROP_SPAN.width, height: BACKDROP_SPAN.height, v: BACKDROP_SPAN.v, backdrop: true, layer: 1 })
+    // 中央線の端がページ送り中に次の見開きへ露出しないよう、左右対称に逃がす
+    const RAIL_WIDTH = 7.6
+    s.flat('left', { id: 'rails', name: '線路 (左)', asset: railArt, u: .5, v: .40, width: RAIL_WIDTH, depth: 1.39, layer: 1 })
+    s.flat('right', { id: 'rails-r', name: '線路 (右)', asset: railArt, u: .5, v: .40, width: RAIL_WIDTH, depth: 1.39, layer: 1 })
 
     // 遮断機: 支柱は紙に立ち、腕は支柱の先端へ取り付けた子部品として回る
     const POST_HEIGHT = crossing(3.6)
@@ -599,7 +605,7 @@ export function build(updatedAt) {
       leftPage: ground('page-4-left.svg', '#d5b98e', '#c0a476'),
       rightPage: ground('page-4-right.svg', '#d5b98e', '#c0a476'),
     })
-    s.stand('right', { id: 'mountain', name: '遠景の山', asset: backdropMountain, u: 0, width: BACKDROP_SPAN.width, height: BACKDROP_SPAN.height, v: BACKDROP_SPAN.v, layer: 1 })
+    s.stand('right', { id: 'mountain', name: '遠景の山', asset: backdropMountain, u: 0, width: BACKDROP_SPAN.width, height: BACKDROP_SPAN.height, v: BACKDROP_SPAN.v, backdrop: true, layer: 1 })
     s.stand('right', { id: 'school', name: '校舎', asset: schoolArt, u: 0, width: wide(4.2, schoolArt), height: 4.2, v: .24, layer: 3 })
     const slopeHouse = street(REAL.house2f)
     const slopeSmall = street(6)
@@ -649,17 +655,17 @@ export function build(updatedAt) {
     })
     for (const [page, side] of [['left', '左'], ['right', '右']]) {
       s.stand(page, {
-        id: `mountain-${page}`, name: `窓の外の山 (${side})`, asset: page === 'left' ? mountainFar : mountainNear,
-        u: .375, v: .05, width: 6.0, height: 2.86, fall: 'front', layer: 0,
+        id: `mountain-${page}`, name: `遠景の山 (${side})`, asset: page === 'left' ? mountainFar : mountainNear,
+        u: .375, v: .05, width: 6.0, height: 2.86, backdrop: true, fall: 'front', layer: 0,
       })
       s.stand(page, {
-        id: `town-${page}`, name: `窓の外の町 (${side})`, asset: townRowArt,
+        id: `town-${page}`, name: `遠景の町 (${side})`, asset: townRowArt,
         u: .375, v: .13, width: 6.0, height: 2.32, backdrop: true,
       })
-      // 窓の外の桜。景色と同じく窓枠より奥、窓の内側へ収める
+      // 窓の外の桜も背景グループとして先に起立させ、町の板を貫通させない
       s.stand(page, {
-        id: `cherry-${page}`, name: `窓の外の桜 (${side})`, asset: cherrySmallArt,
-        u: .62, v: .09, width: 2.06, height: 2.1, fall: 'front', layer: 1,
+        id: `cherry-${page}`, name: `背景の桜 (${side})`, asset: cherrySmallArt,
+        u: .62, v: .09, width: 2.06, height: 2.1, backdrop: true, fall: 'front', layer: 1,
       })
     }
     s.stand('right', { id: 'window', name: '教室の窓', asset: windowArt, u: 0, width: 12.0, height: 4.0, v: .30, layer: 4 })

@@ -13,8 +13,7 @@ interface Catalog {
 }
 
 const catalog = JSON.parse(readFileSync('projects/catalog.json', 'utf8')) as Catalog
-// momotaro は配布カタログには残すが、生成物を追跡しないためリポジトリ内検査から除外する。
-const trackedSamples = catalog.samples.filter((sample) => sample.id !== 'momotaro')
+const trackedSamples = catalog.samples
 const load = (id: string): BookProjectFile =>
   bookProjectSchema.parse(JSON.parse(readFileSync(`projects/${id}/project.json`, 'utf8')))
 const raw = (id: string): unknown => JSON.parse(readFileSync(`projects/${id}/project.json`, 'utf8'))
