@@ -247,7 +247,7 @@ const embeddedVideoBlobs = new Map<string, { blob: Blob; refs: number }>()
 let videoPlaybackEnabled = true
 const videoPlaybackListeners = new Set<(enabled: boolean) => void>()
 
-/** BookRuntimeの再生状態を全動画へ即時反映する。Reactの再描画待ちで一瞬進まないようにする。 */
+/** BookRuntimeが決めた動画要素の再生可否を全動画へ即時反映する。Reactの再描画待ちを挟まない。 */
 export function setVideoPlaybackEnabled(enabled: boolean): void {
   videoPlaybackEnabled = enabled
   for (const entry of videoTextureCache.values()) updateVideoPlayback(entry)

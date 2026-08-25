@@ -6,8 +6,6 @@ export interface AudioGateInput {
   active: boolean
   /** 自動再生で進んでいるか。つまみ・ホイール・drag で動かしている間は false */
   playing: boolean
-  /** 終端に着いているか */
-  atEnd: boolean
   /** 音声ボタンで消しているか */
   muted: boolean
 }
@@ -23,20 +21,20 @@ export interface AudioGate {
 /**
  * 音が出る条件。**再生画面とビルダーで同じ答えを使う**ので、規則はここだけが持つ。
  *
- * 黙るのは2通り: 再生が止まっているとき (一時停止・スクラブ) と、音声ボタンで
- * 消しているとき。音声ボタンはBGMと効果音の両方を消す — スピーカーの絵で音楽だけ
- * 消えても、ページをめくる音が鳴り続けたら消音に見えない。
+ * BGMは再生画面にいる間は一時停止・スクラブでも流し続け、音声ボタンでだけ消音する。
+ * 音声ボタンはBGMと効果音の両方を消す — スピーカーの絵で音楽だけ消えても、ページを
+ * めくる音が鳴り続けたら消音に見えない。
  *
- * **終端だけはBGMを止めない**。そこは「止めた」のではなく「終わった」ので、最後の絵が
- * 出た瞬間に曲がぶつっと切れると余韻が残らない。曲は流したままにして、もう一度再生を
- * 押したら絵だけ頭から始める。BGMは切れていないぶん、そのまま一続きに聞こえる。
+ * 終端でもBGMは流したままにする。最後の絵が出た瞬間に曲がぶつっと切れず、もう一度
+ * 再生を押したときも音源を作り直さずに絵だけ頭から始められる。
  *
  * 効果音は跨いだ瞬間の出来事で「続きから」が無いので、終端でも切ってよい
  * (そもそも進んでいないので跨がない)。
  */
-export function audioGate({ active, playing, atEnd, muted }: AudioGateInput): AudioGate {
+export function audioGate({ active, playing, muted }: AudioGateInput): AudioGate {
   return {
-    bgmPaused: !playing && !(active && atEnd),
+    // 絵の一時停止と音声の一時停止を分ける。動画アセットも同じ規則で動かす。
+    bgmPaused: !active,
     bgmMuted: muted,
     cuesMuted: active && (muted || !playing),
     videoMuted: !active || muted,

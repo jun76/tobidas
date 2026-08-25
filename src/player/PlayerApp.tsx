@@ -37,8 +37,8 @@ export function PlayerApp() {
   const bank = useMemo(() => new AudioBank(), [])
   /** audioMuted の即値。消した後に操作しても BGM を鳴らし直させない */
   const audioMutedRef = useRef(false)
-  /** 終端で止まっているか。止めたのではなく終わったので、BGMはここで切らない */
-  const atEnd = progress >= 1
+  /** 初回は再生ボタンかシークバーに触れるまでBGMを開始しない */
+  const bgmArmedRef = useRef(false)
 
   useEffect(() => {
     try {
@@ -102,17 +102,15 @@ export function PlayerApp() {
 
   /**
    * 音が出る条件は `audioGate` だけが持つ (ビルダーの再生モードと同じ規則)。
-   * 取りこぼしを防ぐため、状態から毎回引き直す。BGMの止め方が一時停止と消音の
-   * 2通りあるのは音の性質の違いで、どちらも音源を作り直さない (作り直すと頭から鳴る)。
-   * 進行値そのものを依存に置くと毎フレーム走るので、終端は真偽値へ落として渡す。
+   * 取りこぼしを防ぐため、状態から毎回引き直す。BGMは絵の一時停止では止めず、
+   * 音声ボタンの消音だけを反映する。
    */
   useEffect(() => {
-    const gate = audioGate({ active: true, playing, atEnd, muted: audioMuted })
-    // 終端シークで再開する場合も、先に完全消音してから時計を動かす。
+    const gate = audioGate({ active: true, playing, muted: audioMuted })
     bgm.setMuted(gate.bgmMuted, gate.bgmMuted ? 0 : .25)
     bgm.setPaused(gate.bgmPaused)
     bank.setCuesMuted(gate.cuesMuted)
-  }, [playing, atEnd, audioMuted, bgm, bank])
+  }, [playing, audioMuted, bgm, bank])
 
   // 効果音は跨いだ瞬間に鳴らすので、待たせないよう先に読み込んでおく
   useEffect(() => {
@@ -124,16 +122,13 @@ export function PlayerApp() {
   }, [project, bank])
 
   /**
-   * BGMは冒頭からループ再生する。ただし自動再生制限があるので、
-   * 最初のユーザー操作まで待つ。以降は音楽ボタンで切り替える。
+   * BGMは冒頭からループ再生する。初回は再生ボタンかシークバーの操作を待つ。
+   * これはブラウザの自動再生許可に依存せず、単一HTMLと同じ開始条件に揃えるためのガード。
    */
-  const startBgm = () => {
-    if (!project?.audio || bgm.playing || audioMutedRef.current) return
+  const startBgm = (arm = false) => {
+    if (arm) bgmArmedRef.current = true
+    if (!bgmArmedRef.current || !project?.audio || bgm.playing || audioMutedRef.current) return
     void bgm.play(project.audio.volume, project.audio.loop)
-    // 止めている最中の操作で鳴り始めたぶんは、その場で止めておく。
-    // playing の同期は上の useEffect が持つが、それは状態が変わったときにしか働かない。
-    // 終端で鳴り始めたぶんは止めない (上と同じ約束。target は終端で 1 のまま)
-    bgm.setPaused(!playingRef.current && target.current < 1)
   }
 
   if (error) return <pre style={{ padding: 20, color: '#c33', whiteSpace: 'pre-wrap' }}>{error}</pre>
@@ -151,13 +146,13 @@ export function PlayerApp() {
   const seek = (value: number) => {
     unlockVideoAudio()
     pause()
-    startBgm()
+    startBgm(true)
     target.current = THREE.MathUtils.clamp(value, 0, 1)
     setProgress(target.current)
   }
   const togglePlayback = () => {
     unlockVideoAudio()
-    startBgm()
+    startBgm(true)
     if (playingRef.current) {
       pause()
       return
@@ -191,7 +186,12 @@ export function PlayerApp() {
   return <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', touchAction: 'none' }}
     onWheel={(event) => add(event.deltaY)}
     onPointerDown={(event) => {
-      if ((event.target as HTMLElement).closest('button, input')) return
+      if ((event.target as HTMLElement).closest('button')) return
+      if ((event.target as HTMLElement).closest('input')) {
+        pause()
+        startBgm(true)
+        return
+      }
       pause()
       drag.current = event.clientY
       event.currentTarget.setPointerCapture(event.pointerId)

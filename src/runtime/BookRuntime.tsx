@@ -38,8 +38,10 @@ export function BookRuntime({
 }: BookRuntimeProps) {
   const { book } = project
   useLayoutEffect(() => {
-    setVideoPlaybackEnabled(playing)
-  }, [playing])
+    // 音声ONなら絵を一時停止しても video 要素を動かし続け、内蔵音声を途切れさせない。
+    // 音声OFF時は、従来どおり絵の再生状態に動画を合わせる。
+    setVideoPlaybackEnabled(playing || (audioActive && !audioMuted))
+  }, [playing, audioActive, audioMuted])
   const signals = useMemo(() => evaluateBookSignals(book, progress), [book, progress])
   const gates = useMemo(() => new GateSet(GATE_THRESHOLDS), [project.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const clocks = useMemo(() => new ClockStore(), [project.id]) // eslint-disable-line react-hooks/exhaustive-deps

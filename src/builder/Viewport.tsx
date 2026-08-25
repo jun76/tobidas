@@ -177,7 +177,10 @@ export function Viewport({ showEditTimeline = true }: { showEditTimeline?: boole
             style={{
               background: `linear-gradient(to right, #168af0 0%, #168af0 ${playback.progress * 100}%, #d6d6dd ${playback.progress * 100}%, #d6d6dd 100%)`,
             }}
-            onPointerDown={playback.pause}
+            onPointerDown={() => {
+              playback.pause()
+              playback.seek(playback.progress)
+            }}
             onChange={(event) => playback.seek(Number(event.target.value))}
           />
         </div>

@@ -21,6 +21,8 @@ export function useViewportPlayback() {
   /** 音声ボタンで消したか。BGMも効果音もまとめて黙らせる。再生の開始・停止を跨いで覚える */
   const [audioMuted, setAudioMuted] = useState(false)
   const audioMutedRef = useRef(false)
+  /** 再生モードへ入っただけではBGMを開始せず、再生ボタンかシークバーの操作を待つ */
+  const bgmArmedRef = useRef(false)
   /** 終端で止まっているか。止めたのではなく終わったので、BGMはここで切らない */
   const atEnd = playProgress >= 1
   const target = useRef(playProgress)
@@ -46,6 +48,12 @@ export function useViewportPlayback() {
   const progress = mode === 'play' ? (enteringPlay ? 0 : playProgress) : previewProgress
   const playbackDuration = playbackDurationSeconds(book)
 
+  const startBgm = (arm = false) => {
+    if (arm) bgmArmedRef.current = true
+    if (!bgmArmedRef.current || !bookAudio || builderBgm.playing || audioMutedRef.current) return
+    void builderBgm.play(bookAudio.volume, bookAudio.loop)
+  }
+
   useLayoutEffect(() => {
     if (mode === 'play' && previousMode.current !== 'play') {
       target.current = 0
@@ -55,6 +63,7 @@ export function useViewportPlayback() {
     if (mode !== 'play') {
       autoPlayingRef.current = false
       setIsAutoPlaying(false)
+      bgmArmedRef.current = false
     }
     previousMode.current = mode
   }, [mode])
@@ -70,7 +79,7 @@ export function useViewportPlayback() {
 
   /**
    * BGMは再生モードの間だけ鳴らす。編集へ戻ったら止める。
-   * 再生ボタンを押した操作が自動再生制限を解くので、ここから鳴らしてよい。
+   * 初回は再生ボタンかシークバーの操作を待つ。再生モードへ入っただけでは鳴らさない。
    */
   useEffect(() => {
     if (mode !== 'play') {
@@ -84,10 +93,7 @@ export function useViewportPlayback() {
     void builderBgm.load(asset)
       .then(() => {
         if (cancelled || audioMutedRef.current) return
-        void builderBgm.play(audio.volume, audio.loop)
-        // 再生していない間に鳴り始めたぶんはその場で止める (音は再生中だけ)。
-        // 終端で止まっているぶんは切らない (上の useEffect と同じ約束)
-        builderBgm.setPaused(!autoPlayingRef.current && playProgressRef.current < 1)
+        startBgm()
       })
       .catch((reason) => console.warn('failed to load BGM:', reason))
     return () => {
@@ -98,17 +104,16 @@ export function useViewportPlayback() {
 
   /**
    * 音が出る条件は `audioGate` だけが持つ (再生画面とまったく同じ規則)。
-   * 編集モードでは `active` が降りるので、BGMは止まり、効果音の消音は中立へ戻る
-   * (アセット一覧の試し聞きは別経路。立てたまま残す理由がない)。
+   * 編集モードでは `active` が降りるので、BGMは止まり、効果音の消音は中立へ戻る。
+   * 再生モードでは一時停止中もBGMを流し、効果音だけを抑制する。
    */
   useEffect(() => {
     const active = mode === 'play'
-    const gate = audioGate({ active, playing: active && isAutoPlaying, atEnd, muted: audioMuted })
-    // 終端シークで再開する場合も、先に完全消音してから時計を動かす。
+    const gate = audioGate({ active, playing: active && isAutoPlaying, muted: audioMuted })
     builderBgm.setMuted(gate.bgmMuted, gate.bgmMuted ? 0 : .25)
     builderBgm.setPaused(gate.bgmPaused)
     builderBank.setCuesMuted(gate.cuesMuted)
-  }, [mode, isAutoPlaying, atEnd, audioMuted])
+  }, [mode, isAutoPlaying, audioMuted])
 
   /**
    * 効果音は再生モードでだけ鳴らす。編集中のスクラブでいちいち鳴っては
@@ -176,6 +181,7 @@ export function useViewportPlayback() {
 
   const toggle = () => {
     unlockVideoAudio()
+    startBgm(true)
     if (autoPlayingRef.current) {
       pause()
       return
@@ -200,6 +206,7 @@ export function useViewportPlayback() {
   const seek = (value: number) => {
     unlockVideoAudio()
     pause()
+    startBgm(true)
     const next = THREE.MathUtils.clamp(value, 0, 1)
     target.current = next
     playProgressRef.current = next
@@ -221,8 +228,7 @@ export function useViewportPlayback() {
     builderBank.setCuesMuted(mode === 'play' && (muted || !autoPlayingRef.current))
     setAudioMuted(muted)
     if (!muted && bookAudio && !builderBgm.playing) {
-      void builderBgm.play(bookAudio.volume, bookAudio.loop)
-      builderBgm.setPaused(!autoPlayingRef.current && playProgressRef.current < 1)
+      startBgm()
     }
   }
 
@@ -239,6 +245,7 @@ export function useViewportPlayback() {
     seek,
     adjust: (pixels: number) => {
       unlockVideoAudio()
+      startBgm()
       target.current = THREE.MathUtils.clamp(target.current + pixels / 4200, 0, 1)
       // 送っている途中で編集へ戻しても、送り先の見開きへ戻れるようにする
       sync(target.current)

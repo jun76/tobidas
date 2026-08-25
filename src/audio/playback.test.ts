@@ -263,28 +263,22 @@ describe('AudioPlayback', () => {
 
 describe('audioGate', () => {
   const gate = (over: Partial<Parameters<typeof audioGate>[0]>) =>
-    audioGate({ active: true, playing: false, atEnd: false, muted: false, ...over })
+    audioGate({ active: true, playing: false, muted: false, ...over })
 
-  it('rings while playing and falls silent while stopped', () => {
+  it('keeps BGM running while paused and mutes cues', () => {
     expect(gate({ playing: true })).toEqual({
       bgmPaused: false, bgmMuted: false, cuesMuted: false, videoMuted: false,
     })
     // つまみ・ホイール・drag で動かしている間 (途中で止まっている)
     expect(gate({ playing: false })).toEqual({
-      bgmPaused: true, bgmMuted: false, cuesMuted: true, videoMuted: false,
+      bgmPaused: false, bgmMuted: false, cuesMuted: true, videoMuted: false,
     })
   })
 
-  /**
-   * 終端は「止めた」のではなく「終わった」。最後の絵が出た瞬間に曲がぶつっと
-   * 切れると余韻が残らないので、BGMだけは流したままにする。
-   */
-  it('lets the BGM ring on at the end instead of cutting it', () => {
-    expect(gate({ playing: false, atEnd: true }).bgmPaused).toBe(false)
-    // 効果音は跨いだ瞬間の出来事なので、終端でも切ってよい
-    expect(gate({ playing: false, atEnd: true }).cuesMuted).toBe(true)
-    // 終端から頭へ戻して再生し直しても、BGMは一度も止まっていない
-    expect(gate({ playing: true, atEnd: false }).bgmPaused).toBe(false)
+  it('keeps the BGM running at the end as well', () => {
+    expect(gate({ playing: false }).bgmPaused).toBe(false)
+    // 効果音は跨いだ瞬間の出来事なので、停止中は切ってよい
+    expect(gate({ playing: false }).cuesMuted).toBe(true)
   })
 
   /** 音声ボタンはBGMと効果音の両方を消す。片方だけ残ると消音に見えない */
@@ -299,7 +293,7 @@ describe('audioGate', () => {
 
   /** 編集モードへ戻ったら音は止め、効果音の消音は中立へ戻す (試し聞きは別経路) */
   it('stops the BGM outside the play view and leaves cues neutral', () => {
-    expect(gate({ active: false, playing: false, atEnd: true })).toEqual({
+    expect(gate({ active: false, playing: false })).toEqual({
       bgmPaused: true, bgmMuted: false, cuesMuted: false, videoMuted: true,
     })
   })
