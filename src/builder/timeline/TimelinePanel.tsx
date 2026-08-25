@@ -236,7 +236,7 @@ function TrackRow({ lane, holdSeconds }: { lane: TimelineLane; holdSeconds: numb
         value={selectedKey?.ease ?? ''}
         onChange={(event) => selectedKey && store.setTimelineKeyEase(
           store.activeSpreadId, track.id, selectedKey.id, event.target.value as TimelineKey['ease'])}>
-        {!selectedKey && <option value="">—</option>}
+        {!selectedKey && <option value="" />}
         {discrete
           ? <option value="hold">hold</option>
           : <><option value="linear">linear</option><option value="easeInOut">easeInOut</option></>}

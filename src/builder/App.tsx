@@ -20,6 +20,15 @@ import { AiWorkspace } from './ai/AiWorkspace'
 import { readAiMode, writeAiMode } from './ai/session'
 import st from './builder.module.css'
 
+const RIGHT_PANEL_DEFAULT = 340
+
+function loadRightPanelWidth(): number {
+  const saved = localStorage.getItem('tobidas4.panelW.right')
+  // 旧既定値だけを移行し、ユーザーが手動で決めた幅は保持する。
+  if (saved === '320') return RIGHT_PANEL_DEFAULT
+  return loadPanelWidth('right', RIGHT_PANEL_DEFAULT)
+}
+
 function Splitter({ onDelta }: { onDelta: (delta: number) => void }) {
   const last = useRef(0)
   return <div className={st.splitter} onPointerDown={(event) => {
@@ -55,7 +64,7 @@ export default function App() {
     elementCount: number
   } | null>(null)
   const [leftWidth, setLeftWidth] = useState(() => loadPanelWidth('left', 280))
-  const [rightWidth, setRightWidth] = useState(() => loadPanelWidth('right', 320))
+  const [rightWidth, setRightWidth] = useState(loadRightPanelWidth)
   const [aiMode, setAiModeState] = useState(readAiMode)
 
   const setAiMode = (enabled: boolean) => {

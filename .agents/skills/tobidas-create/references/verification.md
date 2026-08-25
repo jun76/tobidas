@@ -25,6 +25,16 @@ node <skill-dir>/scripts/run-repo-qa.mjs --repo <repo-root> --project <sample-id
 node scripts/screenshot.mjs --project projects/<sample-id> --scroll 0.5 --out shots/<sample-id>-mid.png
 ```
 
+背景パネルの収納順と初期配置を機械検査するときは次を実行する。
+
+```powershell
+node scripts/verify-stow-layout.mjs projects/<sample-id> --strict
+```
+
+`--strict` なしでは既存作品を止めずに警告・エラーを一覧できる。
+背景パネルは名前またはアセットIDの `backdrop`、`background`、`背景`、`遠景` などから検出する。
+検査は起立部品内の最高 `layer`、最も早い `stow.stagger`、背景板より上に出る初期Y、背景板より奥へ入る初期Zを確認する。
+
 スタンドアロン作品では、作品フォルダを `--project` に絶対パスで渡して同じ再生経路を検査する。
 同梱ランナーはリポジトリの既存 `screenshot.mjs` を保持時刻ごとに呼び出す。
 リポジトリに依存する検査が必要な場合は、作品を公開サンプルへ移さず、検査用の一時作業フォルダを使う。
@@ -53,6 +63,8 @@ node scripts/screenshot.mjs --project projects/<sample-id> --scroll 0.5 --out sh
 - 部品が隣接ページへ一瞬でも貫通しない。
 - 部品同士が意図せず重ならない。
 - 背景、空間背景、立体パーツの役割が視覚的に分かれる。
+- 背景パネルが収納時の積層で一番上にあり、展開時に他の起立部品より遅れて起きない。
+- 他の部品の初期位置が背景パネルの下端より上へ出ず、背景パネルより奥側へ入り込んでいない。
 - 中央線付近の大きな部品が折れやすい構成になっていない。
 - カメラ移動と光源が主役を見失わせない。
 - 保持中のモーションが紙面外へ部品を出さない。

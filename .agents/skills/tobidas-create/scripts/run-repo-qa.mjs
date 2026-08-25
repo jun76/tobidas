@@ -47,15 +47,22 @@ if (!fs.existsSync(absoluteProject) && fs.existsSync(path.join(repo, 'projects',
 }
 const publicRoot = path.join(repo, 'projects')
 const isPublicProject = absoluteProject.startsWith(`${publicRoot}${path.sep}`)
+const stowLayoutScript = path.join(repo, 'scripts', 'verify-stow-layout.mjs')
+const runStowLayoutCheck = async () => {
+  if (!fs.existsSync(stowLayoutScript)) return
+  await run(process.execPath, [stowLayoutScript, absoluteProject], repo)
+}
 
 if (isPublicProject) {
   const id = path.relative(publicRoot, absoluteProject).replaceAll(path.sep, '/')
   await run(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'samples:generate'], repo)
   await run(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'samples:check'], repo)
   await run(process.execPath, ['scripts/verify-builder-ai-mode.mjs'], repo)
+  await runStowLayoutCheck()
   await run(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'qa:holds', '--', id, '--out', out, '--phases', phases, '--turns'], repo)
 } else {
   if (!fs.existsSync(path.join(absoluteProject, 'project.json'))) throw new Error(`project.json がありません: ${absoluteProject}`)
+  await runStowLayoutCheck()
   await run(process.execPath, [bundledHolds, absoluteProject, '--out', out, '--phases', phases, '--turns'], repo)
   await run(process.execPath, [bundledScreenshot, '--project', absoluteProject, '--scroll', '0.5', '--out', path.join(out, 'mid.png')], repo)
   console.log('スタンドアロン作品では、同梱した既存系統のscreenshot.mjsとshoot-holds.mjsで保持時刻とページ遷移を検査しました。')

@@ -50,6 +50,10 @@ npm run dev
 パーティクルは奥行きを持たない矩形上へ配置し、ほかのビジュアル部品と同様に回転できます。
 綴じ目付近は閉じたときの隙間が小さいため、大きな部品や空中の部品を密集させません。
 背景プリセットは画像の幅を見開き幅へ合わせ、縦横比を保って紙面の奥へ接地する作成ショートカットです。
+背景パネルは部品名またはアセットIDに `backdrop`、`background`、`背景`、`遠景` などの語を含め、本文以外の起立部品の中で最も高い `layer` にします。
+`stow.stagger` は0にして展開時の起立開始を遅らせません。
+他の部品は背景パネルの下端より上へ初期配置せず、背景パネルより奥側または同じ奥行きへ置きません。
+配置後は `node scripts/verify-stow-layout.mjs <作品フォルダ> --strict` と保持・ページ遷移のスクリーンショットで、起立中の背景パネル貫通を確認します。
 
 時間軸は次の2種類です。
 
@@ -204,6 +208,12 @@ node scripts/screenshot.mjs --project projects/forest_lantern --scroll 0.5 --out
 
 ```bash
 npm run qa:holds -- --out shots/holds --phases 0.5 --turns
+```
+
+背景パネルの積層順と初期配置だけを点検する場合は次のコマンドを使います。
+
+```bash
+node scripts/verify-stow-layout.mjs projects/<作品名> --strict
 ```
 
 公開サンプルの演出内容を変えた場合は `src/schema/bookPackage.test.ts` の構造検査も更新します。
