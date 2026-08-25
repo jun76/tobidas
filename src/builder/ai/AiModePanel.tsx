@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { assetAccept } from '../../package/model'
 import { fileToAsset } from '../assets/ingest'
-import { requestElementDelete } from '../elementDelete'
+import { requestElementDelete, requestSpreadDelete } from '../elementDelete'
 import { useT } from '../i18n'
 import { BookProperties, SelectionDetails } from '../panels/Properties'
 import type { VisualPresetId } from '../presets'
@@ -177,7 +177,41 @@ export function AiModePanel() {
       : { ok: false, action: 'move-element', message: t.ai.invalidInput, fieldErrors: { parent: t.ai.notFound } })
   }
 
-  return <section className={`${st.panel} ${st.aiPanel}`} data-tobidas-ai-mode="true" aria-label={t.ai.panelTitle}>
+  const reportStoreAction = (action: string, message: string, target?: { kind: string; id: string }) => {
+    const issues = useBuilderStore.getState().issues
+    setResult({ ok: true, action, target, message, corrections: [],
+      validation: { errors: issues.errors.length, warnings: issues.warnings.length } })
+  }
+
+  const requireEdit = (action: string) => {
+    if (!readOnly) return true
+    setResult({ ok: false, action, message: t.ai.readOnly, fieldErrors: {} })
+    return false
+  }
+
+  const addSpread = () => {
+    if (!requireEdit('add-spread')) return
+    store.addSpread()
+    const next = useBuilderStore.getState().activeSpreadId
+    reportStoreAction('add-spread', t.ai.spreadAdded, { kind: 'spread', id: next })
+  }
+
+  const duplicateSpread = () => {
+    if (!requireEdit('duplicate-spread') || !activeSpreadId) return
+    store.duplicateSpread(activeSpreadId)
+    const next = useBuilderStore.getState().activeSpreadId
+    reportStoreAction('duplicate-spread', t.ai.spreadDuplicated, { kind: 'spread', id: next })
+  }
+
+  const moveSpread = (direction: -1 | 1) => {
+    if (!requireEdit(direction < 0 ? 'move-spread-earlier' : 'move-spread-later') || !activeSpreadId) return
+    store.moveSpread(activeSpreadId, direction)
+    reportStoreAction(direction < 0 ? 'move-spread-earlier' : 'move-spread-later',
+      direction < 0 ? t.ai.spreadMovedEarlier : t.ai.spreadMovedLater,
+      { kind: 'spread', id: activeSpreadId })
+  }
+
+  return <section className={`${st.panel} ${st.aiPanel}`} data-tobidas-ai-mode="true" data-tobidas-mode="ai" aria-label={t.ai.panelTitle}>
     <div className={st.panelTitle}>{t.ai.panelTitle}</div>
 
     <details open>
@@ -202,17 +236,23 @@ export function AiModePanel() {
           onChange={(event) => store.setPreviewProgress(Number(event.target.value))} />
       </div>
       <div className={st.aiButtonRow}>
-        <button type="button" disabled={!summary.canUndo || readOnly} onClick={() => store.undo()}>{t.toolbar.undo}</button>
-        <button type="button" disabled={!summary.canRedo || readOnly} onClick={() => store.redo()}>{t.toolbar.redo}</button>
-        <button type="button" onClick={() => store.setMode(readOnly ? 'edit' : 'play')}>
+        <button type="button" data-tobidas-action="undo" disabled={!summary.canUndo || readOnly} onClick={() => store.undo()}>{t.toolbar.undo}</button>
+        <button type="button" data-tobidas-action="redo" disabled={!summary.canRedo || readOnly} onClick={() => store.redo()}>{t.toolbar.redo}</button>
+        <button type="button" data-tobidas-action={readOnly ? 'enter-edit-mode' : 'enter-play-mode'} onClick={() => store.setMode(readOnly ? 'edit' : 'play')}>
           {readOnly ? t.toolbar.edit : t.toolbar.play}
         </button>
       </div>
+      <details>
+        <summary>{t.ai.stateSnapshot}</summary>
+        <pre className={st.aiCode} data-tobidas-kind="ai-state" data-tobidas-state-version="2"
+          aria-label={t.ai.stateSnapshot}>{JSON.stringify(summary, null, 2)}</pre>
+      </details>
     </details>
 
     <details open>
       <summary>{t.ai.lastResult}</summary>
-      <div className={result?.ok === false ? st.err : result?.ok ? st.ok : st.hintSmall} aria-live="polite" aria-atomic="true">
+      <div className={result?.ok === false ? st.err : result?.ok ? st.ok : st.hintSmall}
+        data-tobidas-kind="ai-operation-result" aria-live="polite" aria-atomic="true">
         {result ? result.message : t.ai.noResult}
       </div>
       {result?.ok && <>
@@ -222,6 +262,22 @@ export function AiModePanel() {
       </>}
       {result?.ok === false && Object.entries(result.fieldErrors).map(([field, message]) =>
         <div key={field} className={st.err}>{field}: {message}</div>)}
+    </details>
+
+    <details open>
+      <summary>{t.ai.spreadActions}</summary>
+      <div className={st.aiButtonRow} data-tobidas-kind="spread-actions">
+        <button type="button" data-tobidas-action="add-spread" disabled={readOnly} onClick={addSpread}>{t.ai.addSpread}</button>
+        <button type="button" data-tobidas-action="duplicate-spread" disabled={readOnly || !activeSpreadId}
+          onClick={duplicateSpread}>{t.ai.duplicateSpread}</button>
+        <button type="button" data-tobidas-action="move-spread-earlier" disabled={readOnly || !activeSpreadId || (summary.activeSpread?.index ?? 0) === 0}
+          onClick={() => moveSpread(-1)}>{t.ai.moveSpreadEarlier}</button>
+        <button type="button" data-tobidas-action="move-spread-later" disabled={readOnly || !activeSpreadId || (summary.activeSpread?.index ?? 0) === summary.spreads.length - 1}
+          onClick={() => moveSpread(1)}>{t.ai.moveSpreadLater}</button>
+        <button type="button" className={st.ghostDanger} data-tobidas-action="delete-spread"
+          disabled={readOnly || summary.spreads.length < 2} title={summary.spreads.length < 2 ? t.ai.lastSpread : t.ai.deleteSpreadHint}
+          onClick={() => activeSpreadId && requestSpreadDelete(activeSpreadId)}>{t.ai.deleteSpread}</button>
+      </div>
     </details>
 
     <details open>
@@ -242,7 +298,7 @@ export function AiModePanel() {
 
     <details open>
       <summary>{t.ai.targets}</summary>
-      <div className={st.aiTargetList} role="tree" aria-label={t.ai.targets}>
+      <div className={st.aiTargetList} role="tree" aria-label={t.ai.targets} data-tobidas-kind="target-tree">
         <button type="button" role="treeitem" aria-selected={store.selection.type === 'book'}
           data-tobidas-kind="book" data-tobidas-id={store.project.id}
           onClick={() => announceSelection(store.project.name, () => store.select({ type: 'book' }))}>{t.ai.selectBook}</button>
@@ -290,7 +346,7 @@ export function AiModePanel() {
             event.currentTarget.value = ''
             void addFiles(files)
           }} />
-        <form onSubmit={place}>
+        <form onSubmit={place} data-tobidas-kind="place-asset-form">
           <AiSelect name="spreadId" label={t.ai.spread} defaultValue={activeSpreadId}
             options={store.project.book.spreads.map((spread) => [spread.id, `${spread.name} (${spread.id})`])} />
           <AiSelect name="side" label={t.ai.side} defaultValue="right"
@@ -301,11 +357,11 @@ export function AiModePanel() {
             options={imageAssets.map((asset) => [asset.id, `${asset.name} (${asset.id})`])} />
           <AiNumber name="u" label={t.ai.normalizedU} value={0.5} min={0} max={1} step={0.01} />
           <AiNumber name="v" label={t.ai.normalizedV} value={0.5} min={0} max={1} step={0.01} />
-          <button type="submit" disabled={!imageAssets.length}>{t.ai.place}</button>
+          <button type="submit" data-tobidas-action="place-asset" disabled={!imageAssets.length}>{t.ai.place}</button>
         </form>
         <div className={st.aiButtonRow}>
-          <button type="button" onClick={() => setResult(createAiVisual({ spreadId: activeSpreadId, side: 'right', presetId: 'page-text' }))}>{t.ai.createText}</button>
-          <button type="button" onClick={() => setResult(createAiVisual({ spreadId: activeSpreadId, side: 'right', presetId: 'light-particles' }))}>{t.ai.createParticles}</button>
+          <button type="button" data-tobidas-action="create-text" onClick={() => setResult(createAiVisual({ spreadId: activeSpreadId, side: 'right', presetId: 'page-text' }))}>{t.ai.createText}</button>
+          <button type="button" data-tobidas-action="create-particles" onClick={() => setResult(createAiVisual({ spreadId: activeSpreadId, side: 'right', presetId: 'light-particles' }))}>{t.ai.createParticles}</button>
         </div>
         <AiBgmEditor readOnly={readOnly} onResult={setResult} />
       </fieldset>
@@ -316,7 +372,7 @@ export function AiModePanel() {
       {!selectedElement || !elementSelection ? <div className={st.hintSmall}>{t.ai.noElement}</div> : <>
         <div className={st.aiCode}>{t.ai.elementId}: {selectedElement.id}</div>
         <fieldset disabled={readOnly}>
-          <form key={`${selectedElement.id}:${store.project.updatedAt}`} onSubmit={update}>
+          <form key={`${selectedElement.id}:${store.project.updatedAt}`} onSubmit={update} data-tobidas-kind="element-update-form">
             <fieldset className={st.aiFieldGroup}>
               <legend>{t.ai.basic}</legend>
               <AiText name="name" label={t.ai.name} value={selectedElement.name} />
@@ -387,7 +443,7 @@ export function AiModePanel() {
               && <AiVideoAudio prefix="video-audio" settings={selectedElement.videoAudio} label={t.properties.image} />}
             {selectedElement.type === 'visual' && selectedVideoBack
               && <AiVideoAudio prefix="back-video-audio" settings={selectedElement.backVideoAudio} label={t.properties.backImage} />}
-            <button type="submit">{t.ai.apply}</button>
+            <button type="submit" data-tobidas-action="update-element">{t.ai.apply}</button>
           </form>
           <form key={`parent:${selectedElement.id}:${store.project.updatedAt}`} onSubmit={move}>
             <AiSelect name="parent" label={t.ai.parent} defaultValue={parentValue(selectedElement.parent)} options={[
@@ -397,9 +453,9 @@ export function AiModePanel() {
                 .filter((element) => element.id !== selectedElement.id)
                 .map((element) => [`element:${element.id}`, `${element.name} (${element.id})`] as [string, string]),
             ]} />
-            <button type="submit">{t.ai.move}</button>
+            <button type="submit" data-tobidas-action="move-element">{t.ai.move}</button>
           </form>
-          <button type="button" className={st.ghostDanger}
+          <button type="button" className={st.ghostDanger} data-tobidas-action="delete-element"
             onClick={() => requestElementDelete({ spreadId: elementSelection.spreadId, elementId: selectedElement.id })}>{t.ai.delete}</button>
         </fieldset>
       </>}
@@ -525,14 +581,14 @@ function AiTimelineEditor({ spreadId, defaultTarget, readOnly, onResult }: {
     setTime(nextTime)
   }
 
-  return <form className={st.aiTimelineForm} onSubmit={submit}>
+  return <form className={st.aiTimelineForm} data-tobidas-kind="ai-timeline-form" onSubmit={submit}>
     <div className={st.row}><label className={st.rowLabel} htmlFor="ai-timeline-target">{t.ai.timelineTarget}</label>
-      <select id="ai-timeline-target" value={target} disabled={readOnly} onChange={(event) => changeTarget(event.target.value)}>
+      <select id="ai-timeline-target" data-tobidas-kind="timeline-target" value={target} disabled={readOnly} onChange={(event) => changeTarget(event.target.value)}>
         {targets.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
       </select>
     </div>
     <div className={st.row}><label className={st.rowLabel} htmlFor="ai-timeline-property">{t.ai.timelineProperty}</label>
-      <select id="ai-timeline-property" value={property} disabled={readOnly}
+      <select id="ai-timeline-property" data-tobidas-kind="timeline-property" value={property} disabled={readOnly}
         onChange={(event) => setProperty(event.target.value as TimelineProperty)}>
         {properties.map((value) => <option key={value} value={value}>{value}</option>)}
       </select>
@@ -543,7 +599,7 @@ function AiTimelineEditor({ spreadId, defaultTarget, readOnly, onResult }: {
       : kind === 'boolean'
         ? <AiSelect key={`timeline-value:${target}:${property}`} name="value" label={t.ai.timelineValue} defaultValue={defaultValue === true ? 'true' : 'false'} options={[["true", t.ai.yes], ["false", t.ai.no]]} />
         : <AiText key={`timeline-value:${target}:${property}`} name="value" label={t.ai.timelineValue} value={String(defaultValue ?? '')} />}
-    <button type="submit" disabled={readOnly}>{t.ai.addTimelineKey}</button>
+    <button type="submit" data-tobidas-action="add-timeline-key" disabled={readOnly}>{t.ai.addTimelineKey}</button>
     <div className={st.hintSmall}>{t.ai.timelineHint}</div>
   </form>
 }
@@ -570,17 +626,17 @@ function AiBgmEditor({ readOnly, onResult }: {
     onResult({ ok: true, action: 'assign-bgm', message: t.ai.bgmAssigned, corrections: [],
       target: { kind: 'bgm', id: asset.id }, validation: { errors: issues.errors.length, warnings: issues.warnings.length } })
   }
-  return <fieldset className={st.aiFieldGroup}>
+  return <fieldset className={st.aiFieldGroup} data-tobidas-kind="bgm-editor">
     <legend>{t.properties.bgm}</legend>
     <div className={st.row}><label className={st.rowLabel} htmlFor="ai-bgm-asset">{t.properties.bgmAsset}</label>
-      <select id="ai-bgm-asset" value={assetId} disabled={readOnly || !audioAssets.length} onChange={(event) => setAssetId(event.target.value)}>
+      <select id="ai-bgm-asset" data-tobidas-kind="bgm-asset" value={assetId} disabled={readOnly || !audioAssets.length} onChange={(event) => setAssetId(event.target.value)}>
         {!audioAssets.length && <option value="">{t.ai.noAssets}</option>}
         {audioAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.name} ({asset.id})</option>)}
       </select>
     </div>
     <div className={st.aiButtonRow}>
-      <button type="button" disabled={readOnly || !audioAssets.length} onClick={assign}>{t.ai.assignBgm}</button>
-      <button type="button" disabled={readOnly || !store.project.audio} onClick={() => {
+      <button type="button" data-tobidas-action="assign-bgm" disabled={readOnly || !audioAssets.length} onClick={assign}>{t.ai.assignBgm}</button>
+      <button type="button" data-tobidas-action="clear-bgm" disabled={readOnly || !store.project.audio} onClick={() => {
         store.clearBgm()
         onResult({ ok: true, action: 'clear-bgm', message: t.ai.bgmCleared, corrections: [], validation: {
           errors: useBuilderStore.getState().issues.errors.length, warnings: useBuilderStore.getState().issues.warnings.length,

@@ -1,7 +1,8 @@
 import { evaluateBookSignals } from '../../runtime/signals'
 import type { BookProject } from '../../schema/bookPackage'
 import type { EditorState } from '../state/editorState'
-import type { AiStateSummary, AiTargetSummary } from './types'
+import type { StageElement } from '../../schema/stageElement'
+import type { AiElementSummary, AiStateSummary, AiTargetSummary } from './types'
 
 function selectionSummary(state: EditorState): AiTargetSummary {
   const selection = state.selection
@@ -46,6 +47,35 @@ function assetReferences(project: BookProject): Map<string, number> {
   return counts
 }
 
+function elementSummary(element: StageElement, spreadId: string, trackIds: string[]): AiElementSummary {
+  return {
+    id: element.id,
+    name: element.name,
+    type: element.type,
+    parent: element.parent,
+    spreadId,
+    position: [...element.baseTransform.position],
+    rotation: [...element.baseTransform.rotation],
+    scale: [...element.baseTransform.scale],
+    pivot: [...element.pivot],
+    layer: element.layer,
+    visible: element.visible,
+    opacity: element.opacity,
+    ...(element.type === 'visual' ? {
+      width: element.width,
+      height: element.height,
+      image: element.image,
+      backImage: element.backImage,
+      videoAudio: element.videoAudio,
+      backVideoAudio: element.backVideoAudio,
+      text: element.text,
+      particles: element.particles.enabled,
+    } : {}),
+    motion: element.motion.map((item) => item.type),
+    trackIds,
+  }
+}
+
 export function buildAiStateSummary(state: EditorState): AiStateSummary {
   const spreadIndex = state.project.book.spreads.findIndex((item) => item.id === state.activeSpreadId)
   const spread = state.project.book.spreads[spreadIndex]
@@ -54,10 +84,33 @@ export function buildAiStateSummary(state: EditorState): AiStateSummary {
   const selected = selection.type === 'element'
     ? state.project.book.spreads.find((item) => item.id === selection.spreadId)?.elements.find((item) => item.id === selection.elementId)
     : undefined
+  const selectedSpread = selection.type === 'element'
+    ? state.project.book.spreads.find((item) => item.id === selection.spreadId)
+    : spread
   const references = assetReferences(state.project)
+  const spreads = state.project.book.spreads.map((item, index) => ({
+    id: item.id,
+    name: item.name,
+    index,
+    holdSeconds: item.sequence.holdSeconds,
+    turnSeconds: item.sequence.turnSeconds,
+    leftPage: { backgroundAsset: item.leftPage.backgroundAsset },
+    rightPage: { backgroundAsset: item.rightPage.backgroundAsset },
+    elements: item.elements.map((element) => elementSummary(element, item.id, item.timeline.tracks
+      .filter((track) => track.target.type === 'element' && track.target.elementId === element.id)
+      .map((track) => track.id))),
+    timeline: item.timeline.tracks.map((track) => ({
+      id: track.id,
+      target: track.target,
+      property: track.property,
+      keys: track.keys.map((key) => ({ id: key.id, time: key.time, value: key.value, ease: key.ease })),
+    })),
+  }))
 
   return {
     project: { id: state.project.id, name: state.project.name, source: state.source },
+    book: state.project.book,
+    audio: state.project.audio,
     mode: state.mode,
     activeSpread: spread ? {
       id: spread.id,
@@ -67,34 +120,11 @@ export function buildAiStateSummary(state: EditorState): AiStateSummary {
       turnSeconds: spread.sequence.turnSeconds,
     } : undefined,
     selection: selectionSummary(state),
-    selectedElement: selected ? {
-      id: selected.id,
-      name: selected.name,
-      type: selected.type,
-      parent: selected.parent,
-      spreadId: selection.type === 'element' ? selection.spreadId : state.activeSpreadId,
-      position: [...selected.baseTransform.position],
-      rotation: [...selected.baseTransform.rotation],
-      scale: [...selected.baseTransform.scale],
-      pivot: [...selected.pivot],
-      layer: selected.layer,
-      visible: selected.visible,
-      opacity: selected.opacity,
-      ...(selected.type === 'visual' ? {
-        width: selected.width,
-        height: selected.height,
-        image: selected.image,
-        backImage: selected.backImage,
-        videoAudio: selected.videoAudio,
-        backVideoAudio: selected.backVideoAudio,
-        text: selected.text,
-        particles: selected.particles.enabled,
-      } : {}),
-      motion: selected.motion.map((item) => item.type),
-      trackIds: spread?.timeline.tracks
+    selectedElement: selected ? elementSummary(selected, selection.type === 'element' ? selection.spreadId : state.activeSpreadId,
+      selectedSpread?.timeline.tracks
         .filter((track) => track.target.type === 'element' && track.target.elementId === selected.id)
-        .map((track) => track.id) ?? [],
-    } : undefined,
+        .map((track) => track.id) ?? []) : undefined,
+    spreads,
     previewProgress: state.previewProgress,
     spreadTime: spreadIndex < 0 ? 0 : signals.spreadTimes[spreadIndex] ?? 0,
     canUndo: state.undoStack.length > 0,

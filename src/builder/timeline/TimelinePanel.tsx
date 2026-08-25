@@ -105,17 +105,18 @@ export function TimelinePanel() {
 
   if (!spread) return null
   return <section ref={sectionRef} className={st.timelineEditor}
+    data-tobidas-kind="timeline" data-tobidas-spread-id={spread.id}
     style={{ height, '--timelineLabelWidth': `${labelWidth}px` } as CSSProperties}
     onPointerDown={(event) => event.stopPropagation()}>
     <ResizeHandle onDelta={resize} />
     <div className={st.timelineScrubberRow}>
-      <button type="button" className={st.playbackToggle}
+      <button type="button" className={st.playbackToggle} data-tobidas-action={playing ? 'pause-timeline' : 'play-timeline'}
         aria-label={playing ? t.timeline.pause : t.timeline.playSpread} title={playing ? t.timeline.pause : t.timeline.playSpreadHint}
         onClick={() => {
           if (!playing && time >= spread.sequence.holdSeconds - 0.01) store.setSpreadTime(spread.id, 0)
           setPlaying(!playing)
         }}><Icon as={playing ? Pause : Play} size={ICON.bar} /></button>
-      <input className={st.timelineScrubber} aria-label={t.timeline.holdTime} type="range" min={0}
+      <input className={st.timelineScrubber} data-tobidas-kind="timeline-scrubber" aria-label={t.timeline.holdTime} type="range" min={0}
         max={spread.sequence.holdSeconds} step={0.01} value={time}
         onChange={(event) => store.setSpreadTime(spread.id, Number(event.target.value))} />
       <span className={st.timelineTime}>{t.timeline.seconds(time.toFixed(2), spread.sequence.holdSeconds.toFixed(2))}</span>
@@ -177,11 +178,13 @@ function TrackRow({ lane, holdSeconds }: { lane: TimelineLane; holdSeconds: numb
    */
   const selectKey = (keyId: string) =>
     store.selectKey({ spreadId: store.activeSpreadId, trackId: track.id, keyId })
-  return <div className={st.timelineRow} data-track-id={track.id}>
+  return <div className={st.timelineRow} data-track-id={track.id} data-tobidas-kind="timeline-track"
+    data-tobidas-id={track.id} data-tobidas-target={JSON.stringify(track.target)} data-tobidas-property={track.property}>
     <div className={st.timelineRowLabel}>
       <span>{targetName}</span>
       <strong>{track.property}</strong>
-      <button className={st.ghostDanger} aria-label={t.timeline.deleteTrack(targetName, track.property)} title={t.timeline.deleteTrackHint}
+      <button className={st.ghostDanger} data-tobidas-action="delete-timeline-track" data-tobidas-track-id={track.id}
+        aria-label={t.timeline.deleteTrack(targetName, track.property)} title={t.timeline.deleteTrackHint}
         onClick={() => store.removeTimelineTrack(store.activeSpreadId, track.id)}><Icon as={Trash2} /></button>
     </div>
     <div className={st.timelineLane}>
@@ -189,8 +192,11 @@ function TrackRow({ lane, holdSeconds }: { lane: TimelineLane; holdSeconds: numb
         const shownTime = drag?.keyId === key.id ? drag.time : key.time
         return <button key={key.id}
         className={`${st.timelineKey} ${selectedKeyId === key.id ? st.timelineKeySelected : ''}`}
+        data-tobidas-kind="timeline-key" data-tobidas-id={key.id} data-tobidas-track-id={track.id}
+        data-tobidas-time={String(key.time)} data-tobidas-value={formatTimelineValue(key.value)}
         style={{ left: `${holdSeconds <= 0 ? 0 : shownTime / holdSeconds * 100}%` }}
         title={t.timeline.keyHint(shownTime.toFixed(2), formatTimelineValue(key.value))}
+        aria-label={t.timeline.keyHint(shownTime.toFixed(2), formatTimelineValue(key.value))}
         onPointerDown={(event) => {
           event.stopPropagation()
           event.currentTarget.setPointerCapture(event.pointerId)
@@ -222,7 +228,8 @@ function TrackRow({ lane, holdSeconds }: { lane: TimelineLane; holdSeconds: numb
     </div>
     {/* キーの操作。常に見えていて、キーを選ぶまでは無効 */}
     <div className={st.timelineRowTools}>
-      <select className={st.timelineKeyEase} aria-label={t.timeline.ease(track.property)}
+      <select className={st.timelineKeyEase} data-tobidas-kind="timeline-ease" data-tobidas-track-id={track.id}
+        aria-label={t.timeline.ease(track.property)}
         disabled={!selectedKey}
         title={!selectedKey ? t.timeline.easeNoKey
           : discrete ? t.timeline.easeDiscrete : t.timeline.easeSelected}
@@ -234,7 +241,8 @@ function TrackRow({ lane, holdSeconds }: { lane: TimelineLane; holdSeconds: numb
           ? <option value="hold">hold</option>
           : <><option value="linear">linear</option><option value="easeInOut">easeInOut</option></>}
       </select>
-      <button className={st.ghostDanger} disabled={!selectedKey}
+      <button className={st.ghostDanger} data-tobidas-action="delete-timeline-key" data-tobidas-track-id={track.id}
+        data-tobidas-key-id={selectedKey?.id ?? ''} disabled={!selectedKey}
         aria-label={t.timeline.deleteKey}
         title={selectedKey ? t.timeline.deleteKeyHint : t.timeline.deleteKeyNone}
         onClick={() => selectedKey && store.removeTimelineKey(store.activeSpreadId, track.id, selectedKey.id)}><Icon as={Trash2} /></button>
@@ -245,4 +253,3 @@ function TrackRow({ lane, holdSeconds }: { lane: TimelineLane; holdSeconds: numb
 function formatTimelineValue(value: TimelineTrack['keys'][number]['value']): string {
   return Array.isArray(value) ? value.map((part) => Number(part).toFixed(2)).join(', ') : String(value)
 }
-

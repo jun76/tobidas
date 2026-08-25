@@ -43,6 +43,20 @@ try {
   if (await page.getByText('部品プリセット', { exact: true }).count()) throw new Error('通常プリセットがAIモードに残っています')
   await page.getByLabel('見開き保持時刻', { exact: true }).waitFor()
   await panel.getByLabel('対象トラック', { exact: true }).waitFor()
+  const initialState = await panel.locator('[data-tobidas-kind="ai-state"]').evaluate((node) => JSON.parse(node.textContent ?? '{}'))
+  if (!Array.isArray(initialState.spreads) || initialState.spreads.length !== 1) throw new Error('AI状態JSONに見開き一覧がありません')
+  await panel.getByRole('button', { name: '見開きを追加', exact: true }).click()
+  await page.waitForFunction((count) => {
+    const node = document.querySelector('[data-tobidas-kind="ai-state"]')
+    if (!node) return false
+    try { return JSON.parse(node.textContent ?? '{}').spreads?.length === count } catch { return false }
+  }, initialState.spreads.length + 1)
+  await panel.getByRole('button', { name: '現在の見開きを複製', exact: true }).click()
+  await page.waitForFunction((count) => {
+    const node = document.querySelector('[data-tobidas-kind="ai-state"]')
+    if (!node) return false
+    try { return JSON.parse(node.textContent ?? '{}').spreads?.length === count } catch { return false }
+  }, initialState.spreads.length + 2)
   if (await panel.getByRole('button', { name: '検証結果', exact: true }).count()) throw new Error('効果のない検証更新ボタンが残っています')
   await page.getByRole('treeitem', { name: /見開き 1/ }).first().waitFor()
 
@@ -65,6 +79,9 @@ try {
   await panel.getByText(/配置しました/).waitFor()
   await panel.getByRole('button', { name: 'タイムラインキーを追加', exact: true }).click()
   await panel.getByText('タイムラインキーを追加しました。', { exact: true }).waitFor()
+  const timelineKey = page.locator('[data-tobidas-kind="timeline-key"]').first()
+  await timelineKey.waitFor()
+  if (!await timelineKey.getAttribute('data-tobidas-track-id')) throw new Error('タイムラインキーのトラックIDがありません')
 
   const selectedId = await panel.locator('[data-tobidas-kind="element"][aria-selected="true"]').getAttribute('data-tobidas-id')
   if (!selectedId) throw new Error('配置した部品IDをDOMから取得できません')

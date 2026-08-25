@@ -1,5 +1,6 @@
 import type { ParentSpace } from '../../schema/stageElement'
 import type { EmbeddedVideoAudio } from '../../schema/audio'
+import type { TimelineProperty, TimelineTarget, TimelineValue } from '../../schema/timeline'
 import type { BookSelection, EditorMode, ProjectSource } from '../state/editorState'
 
 export interface AiTargetSummary {
@@ -33,6 +34,32 @@ export interface AiElementSummary {
   trackIds: string[]
 }
 
+export interface AiTimelineKeySummary {
+  id: string
+  time: number
+  value: TimelineValue
+  ease: 'linear' | 'easeInOut' | 'hold'
+}
+
+export interface AiTimelineTrackSummary {
+  id: string
+  target: TimelineTarget
+  property: TimelineProperty
+  keys: AiTimelineKeySummary[]
+}
+
+export interface AiSpreadSummary {
+  id: string
+  name: string
+  index: number
+  holdSeconds: number
+  turnSeconds: number
+  leftPage: { backgroundAsset?: string }
+  rightPage: { backgroundAsset?: string }
+  elements: AiElementSummary[]
+  timeline: AiTimelineTrackSummary[]
+}
+
 export interface AiAssetSummary {
   id: string
   name: string
@@ -47,8 +74,12 @@ export interface AiAssetSummary {
 
 export interface AiStateSummary {
   project: { id: string; name: string; source: ProjectSource }
+  /** 素材本体を除く作品データ。AIがフォームを再走査せず現在値を照合できるようにする。 */
+  book: import('../../schema/bookPackage').BookProject['book']
+  audio?: import('../../schema/bookPackage').BookProject['audio']
   mode: EditorMode
   activeSpread?: { id: string; name: string; index: number; holdSeconds: number; turnSeconds: number }
+  spreads: AiSpreadSummary[]
   selection: AiTargetSummary
   selectedElement?: AiElementSummary
   previewProgress: number

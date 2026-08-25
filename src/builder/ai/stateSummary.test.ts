@@ -42,4 +42,28 @@ describe('AI state summary', () => {
     expect(assets.find((asset) => asset.id === 'image.webp')?.references).toBe(3)
     expect(assets.find((asset) => asset.id === 'sound.wav')?.references).toBe(1)
   })
+
+  it('exposes every spread, part, track, and key for autonomous editing', () => {
+    const project = createBookProject('AI production state')
+    const first = project.book.spreads[0]
+    first.name = 'Opening'
+    first.sequence.holdSeconds = 4
+    const element = createStageElement('visual', { type: 'right-page' })
+    element.name = 'Train'
+    first.elements.push(element)
+    first.timeline.tracks.push({
+      id: 'train-x',
+      target: { type: 'element', elementId: element.id },
+      property: 'position.x',
+      keys: [{ id: 'train-x-0', time: 0, value: 0, ease: 'linear' }],
+    })
+    useBuilderStore.getState().setProject(project, 'import')
+
+    const summary = buildAiStateSummary(useBuilderStore.getState())
+    expect(summary.spreads).toHaveLength(1)
+    expect(summary.spreads[0]).toMatchObject({ id: first.id, name: 'Opening', holdSeconds: 4 })
+    expect(summary.spreads[0].elements[0]).toMatchObject({ id: element.id, name: 'Train' })
+    expect(summary.spreads[0].timeline[0]).toMatchObject({ id: 'train-x', property: 'position.x' })
+    expect(summary.spreads[0].timeline[0].keys).toEqual([{ id: 'train-x-0', time: 0, value: 0, ease: 'linear' }])
+  })
 })

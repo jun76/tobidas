@@ -62,6 +62,8 @@ node scripts/screenshot.mjs --project projects/<sample-id> --scroll 0.5 --out sh
 
 - 作品を新規作成してAIモードへ移れる。
 - 素材を一括読み込みできる。
+- `data-tobidas-kind="ai-state"` のJSONから、作品の `book`、見開き、要素、タイムライン、選択、検証結果を取得できる。
+- 見開きの追加、複製、前後移動、削除がAIモードの操作結果へ反映される。
 - 見開きのツリー選択後に、対象見開きへだけ部品を配置できる。
 - 配置後の名前、位置、寸法、レイヤー、表示状態が更新できる。
 - 不正なstep値を送信せず、更新結果を確認できる。
@@ -69,6 +71,8 @@ node scripts/screenshot.mjs --project projects/<sample-id> --scroll 0.5 --out sh
 - AIモードのタイムラインで、キーの再生、スクラブ、時刻変更、補間変更、キー・トラック削除ができる。
 - 位置、回転、拡縮、表示、不透明度、画像切替、環境、カメラ、音声キューの演出が標準モードと同じ作品データへ保存される。
 - 標準モードにある表紙、ページ、見開き、BOOK、光源、部品の全編集項目へAIモードから到達できる。
+- 操作後に `data-tobidas-kind="ai-operation-result"` から成功・失敗と検証件数を取得できる。
+- タイムラインのトラックとキーは `data-tobidas-kind="timeline-track"` / `timeline-key` と保存IDで特定できる。
 - 再生中に編集操作が無効になる。
 - 通常モードへ戻っても作品が失われない。
 
