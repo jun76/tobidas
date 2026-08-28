@@ -2,6 +2,8 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  min-height: 100vh;
+  height: 100dvh;
   background: #1c1c22;
   color: #d8d8de;
   font-size: 12px;
@@ -11,12 +13,13 @@
   display: flex;
   flex: 1;
   min-height: 0;
+  min-width: 0;
 }
 
 .left,
 .right {
-  width: 250px;
-  min-width: 250px;
+  width: var(--panel-width, 250px);
+  min-width: var(--panel-width, 250px);
   display: flex;
   flex-direction: column;
   background: #232329;
@@ -30,6 +33,15 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+/* 狭幅時だけ SplitStack を見出し付きアコーディオンとして表示する */
+.mobileAccordionToggle {
+  display: none;
+}
+
+.mobileAccordionChevronOpen {
+  transform: rotate(180deg);
 }
 
 .splitPane {
@@ -52,8 +64,8 @@
 }
 
 .right {
-  width: 340px;
-  min-width: 340px;
+  width: var(--panel-width, 340px);
+  min-width: var(--panel-width, 340px);
   border-right: none;
   border-left: 1px solid #333;
 }
@@ -1381,9 +1393,199 @@
 }
 
 @media (max-width: 959px) {
+  .toolbar {
+    align-items: stretch;
+    gap: 5px;
+    padding: max(6px, env(safe-area-inset-top)) 8px 6px;
+  }
+
+  .toolbar button,
+  .localePicker {
+    min-height: 40px;
+    padding: 7px 9px;
+  }
+
+  .toolbar .spacer {
+    display: none;
+  }
+
+  .toolbar .hintSmall {
+    flex: 1 1 100%;
+    order: 20;
+    margin: 0;
+  }
+
+  .main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    overflow-x: hidden;
+    overflow-y: auto;
+    align-content: start;
+  }
+
+  .mainEdit {
+    grid-template-areas: 'viewport' 'left' 'right';
+    grid-template-rows: max(300px, 52dvh) max-content max-content;
+  }
+
+  .mainPlay {
+    grid-template-areas: 'viewport';
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .mainEdit > .viewport,
+  .mainPlay > .viewport {
+    grid-area: viewport;
+  }
+
+  .mainEdit > .left {
+    grid-area: left;
+  }
+
+  .mainEdit > .right {
+    grid-area: right;
+  }
+
+  .mainEdit > .splitter {
+    display: none;
+  }
+
+  .mainEdit > .left,
+  .mainEdit > .right {
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    overflow: visible;
+    border-right: 0;
+    border-left: 0;
+    border-top: 1px solid #333;
+  }
+
+  .mainEdit > .left .splitStack,
+  .mainEdit > .right .splitStack {
+    min-height: 0;
+    flex: none;
+    height: auto;
+  }
+
+  .mobileAccordionToggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 0;
+    border-bottom: 1px solid #3a3a44;
+    background: #292932;
+    color: #d8d8e2;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .mobileAccordionToggle:hover,
+  .mobileAccordionToggle[aria-expanded='true'] {
+    background: #353542;
+  }
+
+  .mobileAccordionPane {
+    display: none;
+    flex: none !important;
+    height: auto !important;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .mobileAccordionPane[data-mobile-open='true'] {
+    display: block;
+  }
+
+  .mobileAccordionPane > .panel {
+    min-height: 0;
+  }
+
+  .mobileAccordionPane > .panel > .panelTitle {
+    display: none;
+  }
+
+  .mobileAccordionHandle {
+    display: none;
+  }
+
+  .viewportTitle {
+    top: 10px;
+    left: 10px;
+    max-width: calc(100% - 86px);
+    padding: 6px 9px;
+  }
+
+  .transformTools {
+    top: 10px;
+    right: 10px;
+    gap: 4px;
+  }
+
+  .transformTools button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .status {
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    padding: 5px 8px max(5px, env(safe-area-inset-bottom));
+    font-size: 10px;
+  }
+
+  .status > span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .status .spacer {
+    display: none;
+  }
+
+  .status > span:last-child {
+    margin-left: auto;
+  }
+
+  .timelineEditor {
+    --timelineLabelWidth: clamp(110px, 28vw, 170px) !important;
+    --timelineToolsWidth: 96px;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    max-height: min(52dvh, 340px);
+  }
+
+  .timelineRowTools {
+    grid-template-columns: minmax(0, 1fr) 30px;
+    gap: 4px;
+    padding-right: 4px;
+  }
+
+  .timelineRowTools button,
+  .timelineRowLabel button {
+    width: 30px;
+    min-width: 30px;
+    min-height: 30px;
+  }
+
+  .timelineRow button.timelineKey {
+    top: 2px;
+    width: 30px;
+    min-height: 30px;
+  }
+
   .aiWorkspace {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(360px, 46vh) minmax(360px, 1fr);
+    grid-template-rows: minmax(280px, 44dvh) minmax(300px, 1fr);
     overflow-y: auto;
   }
 
@@ -1393,7 +1595,49 @@
   }
 
   .aiViewportPane {
-    min-height: 360px;
+    min-height: 300px;
+  }
+
+  .aiPanel {
+    padding: 12px;
+  }
+
+  .aiPanel > .panelTitle {
+    top: -12px;
+    margin: -12px -12px 12px;
+    padding: 12px;
+  }
+
+  .aiPanel button,
+  .aiPanel select,
+  .aiPanel input {
+    min-height: 40px;
+  }
+
+  .aiVectorGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .aiAssetLoad {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .aiAssetLoad button {
+    flex: 1 1 140px;
+  }
+
+  .aiAssetLoad span {
+    flex: 1 1 100%;
+  }
+
+  .aiButtonRow > button {
+    flex: 1 1 140px;
+  }
+
+  .aiTargetList {
+    max-height: 220px;
   }
 }
 

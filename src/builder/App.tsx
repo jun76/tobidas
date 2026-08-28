@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { CircleAlert, TriangleAlert } from 'lucide-react'
 import { Icon } from '../ui/Icon'
 import packageJson from '../../package.json'
@@ -158,9 +158,9 @@ export default function App() {
       onClose={() => setPendingContainerDelete(null)}
     />}
     <Toolbar key={`toolbar-${projectSession}`} onScreenshot={screenshot} aiMode={aiMode} onAiModeChange={setAiMode} />
-    {aiMode ? <AiWorkspace key={`ai-workspace-${projectSession}`} /> : <div className={st.main} key={`workspace-${projectSession}`}>
-      {mode === 'edit' && <aside className={st.left} style={{ width: leftWidth, minWidth: leftWidth }}>
-        <SplitStack storageKey="left" initial={[280, 210]} panes={[
+    {aiMode ? <AiWorkspace key={`ai-workspace-${projectSession}`} /> : <div className={`${st.main} ${mode === 'edit' ? st.mainEdit : st.mainPlay}`} key={`workspace-${projectSession}`}>
+      {mode === 'edit' && <aside className={st.left} style={{ '--panel-width': `${leftWidth}px` } as CSSProperties}>
+        <SplitStack storageKey="left" initial={[280, 210]} mobileAccordion panes={[
           { key: 'navigator', label: t.app.panelNavigator, node: <BookNavigator /> },
           { key: 'presets', label: t.app.panelPresets, node: <PartPresets /> },
           { key: 'assets', label: t.app.panelAssets, node: <AssetsPanel /> },
@@ -169,10 +169,10 @@ export default function App() {
       {mode === 'edit' && <Splitter onDelta={(delta) => setLeftWidth((value) => clampPanelWidth(value + delta))} />}
       <Viewport />
       {mode === 'edit' && <Splitter onDelta={(delta) => setRightWidth((value) => clampPanelWidth(value - delta))} />}
-      {mode === 'edit' && <aside className={st.right} style={{ width: rightWidth, minWidth: rightWidth }}>
-        <SplitStack storageKey="right" initial={[300]} panes={[
+      {mode === 'edit' && <aside className={st.right} style={{ '--panel-width': `${rightWidth}px` } as CSSProperties}>
+        <SplitStack storageKey="right" initial={[300]} mobileAccordion panes={[
           { key: 'book', label: 'BOOK', node: <BookProperties /> },
-          { key: 'detail', label: t.app.panelDetail, node: <SelectionDetails /> },
+          { key: 'detail', label: t.navigator.tagSpread, node: <SelectionDetails /> },
         ]} />
       </aside>}
     </div>}

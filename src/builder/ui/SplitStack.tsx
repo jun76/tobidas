@@ -1,11 +1,14 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { t } from '../i18n'
+import { Icon, ICON } from '../../ui/Icon'
 import st from '../builder.module.css'
 
 /**
  * 縦に積んだ領域を、境界のハンドルで拡縮できるようにする。
  * 最後の領域だけが余りを占め、それより上は明示的な高さを持つ。
  * 各領域は自前でスクロールし、高さは localStorage へ保存する。
+ * mobileAccordion を指定した場合、狭幅時はこの高さ管理を使わず、見出しのアコーディオンにする。
  */
 
 export interface SplitPane {
@@ -17,15 +20,18 @@ export interface SplitPane {
 /** ハンドルの高さ。領域の合計を出すときに数える */
 const HANDLE = 8
 
-export function SplitStack({ storageKey, panes, initial, min = 90 }: {
+export function SplitStack({ storageKey, panes, initial, min = 90, mobileAccordion = false }: {
   storageKey: string
   panes: SplitPane[]
   /** 上から順の初期高さ。最後の領域は余りを占めるので指定しない */
   initial: number[]
   min?: number
+  /** 狭幅時に見出しごとのアコーディオンへ切り替える */
+  mobileAccordion?: boolean
 }) {
   const stackRef = useRef<HTMLDivElement>(null)
   const [heights, setHeights] = useState(() => storedHeights(storageKey, initial))
+  const [openPane, setOpenPane] = useState<string | null>(null)
 
   useEffect(() => {
     localStorage.setItem(storageId(storageKey), JSON.stringify(heights.map(Math.round)))
@@ -44,11 +50,14 @@ export function SplitStack({ storageKey, panes, initial, min = 90 }: {
   }
 
   useEffect(() => {
-    const onResize = () => setHeights((current) => fit(current, stackRef.current?.clientHeight ?? 0))
+    const onResize = () => {
+      if (mobileAccordion && window.matchMedia('(max-width: 959px)').matches) return
+      setHeights((current) => fit(current, stackRef.current?.clientHeight ?? 0))
+    }
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [panes.length, min])
+  }, [mobileAccordion, panes.length, min])
 
   /** 境界indexのドラッグ。下へ引くと上の領域が伸びる */
   const resize = (index: number, delta: number) => setHeights((current) => {
@@ -63,18 +72,27 @@ export function SplitStack({ storageKey, panes, initial, min = 90 }: {
 
   return <div ref={stackRef} className={st.splitStack}>
     {panes.map((pane, index) => <Fragment key={pane.key}>
-      <div className={st.splitPane}
+      {mobileAccordion && <button type="button" className={st.mobileAccordionToggle}
+        aria-expanded={openPane === pane.key}
+        aria-controls={`${storageKey}-${pane.key}-mobile-pane`}
+        onClick={() => setOpenPane((current) => current === pane.key ? null : pane.key)}>
+        <span>{pane.label}</span>
+        <Icon as={ChevronDown} size={ICON.bar} className={openPane === pane.key ? st.mobileAccordionChevronOpen : ''} />
+      </button>}
+      <div id={`${storageKey}-${pane.key}-mobile-pane`}
+        className={`${st.splitPane} ${mobileAccordion ? st.mobileAccordionPane : ''}`}
+        data-mobile-open={mobileAccordion ? openPane === pane.key : undefined}
         style={index < heights.length ? { flex: 'none', height: heights[index] } : undefined}>
         {pane.node}
       </div>
-      {index < panes.length - 1 && <StackHandle label={pane.label} onDelta={(delta) => resize(index, delta)} />}
+      {index < panes.length - 1 && <StackHandle mobileAccordion={mobileAccordion} label={pane.label} onDelta={(delta) => resize(index, delta)} />}
     </Fragment>)}
   </div>
 }
 
-function StackHandle({ label, onDelta }: { label: string; onDelta: (delta: number) => void }) {
+function StackHandle({ mobileAccordion, label, onDelta }: { mobileAccordion: boolean; label: string; onDelta: (delta: number) => void }) {
   const last = useRef(0)
-  return <div className={st.splitStackHandle} role="separator" aria-orientation="horizontal"
+  return <div className={`${st.splitStackHandle} ${mobileAccordion ? st.mobileAccordionHandle : ''}`} role="separator" aria-orientation="horizontal"
     aria-label={t().app.paneHeight(label)} title={t().app.paneHeightHint}
     onPointerDown={(event) => {
       last.current = event.clientY
