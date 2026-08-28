@@ -14,12 +14,21 @@ import { TEXT_FONT_IDS } from '../../runtime/textStyle'
 import { evaluateBookSignals } from '../../runtime/signals'
 import {
   createAiVisual,
+  addAiSpread,
+  addAiTimelineKey,
+  assignAiBgm,
+  clearAiBgm,
+  duplicateAiSpread,
   moveAiElement,
+  moveAiSpread,
   parentValue,
   parseFinite,
   parseParent,
   placeAiAsset,
   updateAiElement,
+  timelinePropertiesForTarget as commandTimelinePropertiesForTarget,
+  redoAi,
+  undoAi,
   visualElement,
 } from './commands'
 import { buildAiStateSummary } from './stateSummary'
@@ -177,12 +186,6 @@ export function AiModePanel() {
       : { ok: false, action: 'move-element', message: t.ai.invalidInput, fieldErrors: { parent: t.ai.notFound } })
   }
 
-  const reportStoreAction = (action: string, message: string, target?: { kind: string; id: string }) => {
-    const issues = useBuilderStore.getState().issues
-    setResult({ ok: true, action, target, message, corrections: [],
-      validation: { errors: issues.errors.length, warnings: issues.warnings.length } })
-  }
-
   const requireEdit = (action: string) => {
     if (!readOnly) return true
     setResult({ ok: false, action, message: t.ai.readOnly, fieldErrors: {} })
@@ -191,24 +194,17 @@ export function AiModePanel() {
 
   const addSpread = () => {
     if (!requireEdit('add-spread')) return
-    store.addSpread()
-    const next = useBuilderStore.getState().activeSpreadId
-    reportStoreAction('add-spread', t.ai.spreadAdded, { kind: 'spread', id: next })
+    setResult(addAiSpread())
   }
 
   const duplicateSpread = () => {
     if (!requireEdit('duplicate-spread') || !activeSpreadId) return
-    store.duplicateSpread(activeSpreadId)
-    const next = useBuilderStore.getState().activeSpreadId
-    reportStoreAction('duplicate-spread', t.ai.spreadDuplicated, { kind: 'spread', id: next })
+    setResult(duplicateAiSpread(activeSpreadId))
   }
 
   const moveSpread = (direction: -1 | 1) => {
     if (!requireEdit(direction < 0 ? 'move-spread-earlier' : 'move-spread-later') || !activeSpreadId) return
-    store.moveSpread(activeSpreadId, direction)
-    reportStoreAction(direction < 0 ? 'move-spread-earlier' : 'move-spread-later',
-      direction < 0 ? t.ai.spreadMovedEarlier : t.ai.spreadMovedLater,
-      { kind: 'spread', id: activeSpreadId })
+    setResult(moveAiSpread(activeSpreadId, direction))
   }
 
   return <section className={`${st.panel} ${st.aiPanel}`} data-tobidas-ai-mode="true" data-tobidas-mode="ai" aria-label={t.ai.panelTitle}>
@@ -236,8 +232,8 @@ export function AiModePanel() {
           onChange={(event) => store.setPreviewProgress(Number(event.target.value))} />
       </div>
       <div className={st.aiButtonRow}>
-        <button type="button" data-tobidas-action="undo" disabled={!summary.canUndo || readOnly} onClick={() => store.undo()}>{t.toolbar.undo}</button>
-        <button type="button" data-tobidas-action="redo" disabled={!summary.canRedo || readOnly} onClick={() => store.redo()}>{t.toolbar.redo}</button>
+        <button type="button" data-tobidas-action="undo" disabled={!summary.canUndo || readOnly} onClick={() => setResult(undoAi())}>{t.toolbar.undo}</button>
+        <button type="button" data-tobidas-action="redo" disabled={!summary.canRedo || readOnly} onClick={() => setResult(redoAi())}>{t.toolbar.redo}</button>
         <button type="button" data-tobidas-action={readOnly ? 'enter-edit-mode' : 'enter-play-mode'} onClick={() => store.setMode(readOnly ? 'edit' : 'play')}>
           {readOnly ? t.toolbar.edit : t.toolbar.play}
         </button>
@@ -346,7 +342,10 @@ export function AiModePanel() {
             event.currentTarget.value = ''
             void addFiles(files)
           }} />
-        <form onSubmit={place} data-tobidas-kind="place-asset-form">
+        <form onSubmit={place} data-tobidas-kind="place-asset-form" {...{
+          toolname: 'tobidas-place-asset-form',
+          tooldescription: 'Place an already imported tobidas image, SVG, or video after reviewing the form values.',
+        }}>
           <AiSelect name="spreadId" label={t.ai.spread} defaultValue={activeSpreadId}
             options={store.project.book.spreads.map((spread) => [spread.id, `${spread.name} (${spread.id})`])} />
           <AiSelect name="side" label={t.ai.side} defaultValue="right"
@@ -486,17 +485,6 @@ export function AiModePanel() {
   </section>
 }
 
-const ELEMENT_TIMELINE_PROPERTIES: readonly TimelineProperty[] = [
-  'position.x', 'position.y', 'position.z', 'rotation.x', 'rotation.y', 'rotation.z',
-  'scale.x', 'scale.y', 'scale.z', 'scale', 'opacity', 'visible',
-  'visual.image', 'visual.foregroundColor', 'visual.backgroundColor', 'visual.width', 'visual.height',
-  'visual.particles.color', 'visual.particles.size',
-]
-const ENVIRONMENT_TIMELINE_PROPERTIES: readonly TimelineProperty[] = [
-  'background', 'ambient.color', 'ambient.intensity', 'directional.color', 'directional.intensity',
-]
-const CAMERA_TIMELINE_PROPERTIES: readonly TimelineProperty[] = ['position', 'target', 'fov']
-
 function AiTimelineEditor({ spreadId, defaultTarget, readOnly, onResult }: {
   spreadId: string
   defaultTarget: string
@@ -568,17 +556,9 @@ function AiTimelineEditor({ spreadId, defaultTarget, readOnly, onResult }: {
       onResult({ ok: false, action: 'add-timeline-key', message: t.ai.invalidInput, fieldErrors: { value: t.ai.notFound } })
       return
     }
-    store.upsertTimelineKey(spreadId, parsedTarget, property, nextTime, nextValue)
-    const issues = useBuilderStore.getState().issues
-    onResult({
-      ok: true,
-      action: 'add-timeline-key',
-      target: { kind: 'timeline', id: `${target}:${property}:${nextTime}` },
-      message: t.ai.timelineKeyAdded,
-      corrections: [],
-      validation: { errors: issues.errors.length, warnings: issues.warnings.length },
-    })
-    setTime(nextTime)
+    const result = addAiTimelineKey({ spreadId, target: parsedTarget, property, time: nextTime, value: nextValue })
+    onResult(result)
+    if (result.ok) setTime(nextTime)
   }
 
   return <form className={st.aiTimelineForm} data-tobidas-kind="ai-timeline-form" onSubmit={submit}>
@@ -621,10 +601,7 @@ function AiBgmEditor({ readOnly, onResult }: {
       onResult({ ok: false, action: 'assign-bgm', message: t.ai.notFound, fieldErrors: { asset: t.ai.notFound } })
       return
     }
-    store.assignBgm(asset)
-    const issues = useBuilderStore.getState().issues
-    onResult({ ok: true, action: 'assign-bgm', message: t.ai.bgmAssigned, corrections: [],
-      target: { kind: 'bgm', id: asset.id }, validation: { errors: issues.errors.length, warnings: issues.warnings.length } })
+    onResult(assignAiBgm(asset.id))
   }
   return <fieldset className={st.aiFieldGroup} data-tobidas-kind="bgm-editor">
     <legend>{t.properties.bgm}</legend>
@@ -636,21 +613,15 @@ function AiBgmEditor({ readOnly, onResult }: {
     </div>
     <div className={st.aiButtonRow}>
       <button type="button" data-tobidas-action="assign-bgm" disabled={readOnly || !audioAssets.length} onClick={assign}>{t.ai.assignBgm}</button>
-      <button type="button" data-tobidas-action="clear-bgm" disabled={readOnly || !store.project.audio} onClick={() => {
-        store.clearBgm()
-        onResult({ ok: true, action: 'clear-bgm', message: t.ai.bgmCleared, corrections: [], validation: {
-          errors: useBuilderStore.getState().issues.errors.length, warnings: useBuilderStore.getState().issues.warnings.length,
-        } })
-      }}>{t.properties.clearBgm}</button>
+      <button type="button" data-tobidas-action="clear-bgm" disabled={readOnly || !store.project.audio}
+        onClick={() => onResult(clearAiBgm())}>{t.properties.clearBgm}</button>
     </div>
   </fieldset>
 }
 
 function timelinePropertiesForTarget(target: string): readonly TimelineProperty[] {
-  if (target === 'environment') return ENVIRONMENT_TIMELINE_PROPERTIES
-  if (target === 'camera') return CAMERA_TIMELINE_PROPERTIES
-  if (target.startsWith('sound:')) return ['cue']
-  return ELEMENT_TIMELINE_PROPERTIES
+  const parsed = parseTimelineTarget(target)
+  return parsed ? commandTimelinePropertiesForTarget(parsed) : []
 }
 
 function timelineValueKind(property: TimelineProperty): 'number' | 'string' | 'boolean' | 'vec3' {

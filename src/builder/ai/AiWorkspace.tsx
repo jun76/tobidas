@@ -3,6 +3,7 @@ import { useT } from '../i18n'
 import st from '../builder.module.css'
 import { AiModePanel } from './AiModePanel'
 import { useBuilderStore } from '../store'
+import { AiWebMcpBridge } from './webmcp'
 
 export function AiWorkspace() {
   const t = useT()
@@ -10,6 +11,7 @@ export function AiWorkspace() {
 
   return <main className={`${st.aiWorkspace} ${mode === 'play' ? st.aiWorkspacePlayback : ''}`}
     data-tobidas-ai-mode="true" aria-label={t.ai.workspaceTitle}>
+    <AiWebMcpBridge />
     <aside className={st.aiControlPane} aria-label={t.ai.controlPane}>
       <AiModePanel />
     </aside>

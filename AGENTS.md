@@ -34,6 +34,35 @@ npm run dev
 `http://localhost:5174/` を開き、「新規作成」「開く」「保存」「エクスポート」を使います。
 作品データと読み込んだ素材はブラウザ内で処理します。
 
+## ブラウザ操作AIとWebMCP
+
+AIモードは、WebMCP対応の有無にかかわらず一つのユーザー向けモードです。
+WebMCPが使える場合は構造化ツールを追加し、使えない場合は意味付きDOM、ARIA、フォーム操作へフォールバックします。
+WebMCPの有無で作品データ、編集規則、検証、undo、自動保存の経路を変えません。
+
+WebMCPはブラウザへ標準搭載されているだけでは有効になりません。
+2026年8月26日のローカル実測では、Chrome 151とEdge 151は通常起動で `modelContext` がなく、
+`--enable-experimental-web-platform-features --enable-blink-features=WebMCP` を付けると登録とツール実行が成功しました。
+Firefox 154.0.1は通常起動でAPIがなく、`dom.modelcontext.enabled=true` と `dom.modelcontext.testing.enabled=true` を実験用に指定すると、
+`navigator.modelContext`へ19個のimperativeツールが登録され、`get-state`と`create-visual`の実行まで成功しました。
+Firefoxでは現行の実測でも `document.modelContext` はなく、宣言的フォームAPIの公開も確認していません。
+詳細な条件と実測結果は[READMEのブラウザ操作AIの章](./README.md#ブラウザ操作aiから使う)に合わせます。
+
+WebMCPの利用可否は、次の順で扱います。
+
+1. `document.modelContext` または `navigator.modelContext` をfeature detectする
+2. 利用できる場合だけ、AIモードの表示期間中に固定ツール集合を登録する
+3. AIモードを閉じると `AbortController` で登録を解除する
+4. 利用できない場合、登録処理を行わず既存のDOM操作経路を使う
+
+登録するimperativeツールは、状態取得、対象選択、プレビュー制御、編集、undo、redoです。
+配置、更新、再配置、タイムライン、BGM、見開き操作は、WebMCPから作品オブジェクトやDOMを直接変更せず、`src/builder/ai/commands.ts` の共通コマンドを呼びます。
+配置フォームの宣言的APIは補助的に使いますが、`toolautosubmit`は付けません。
+
+アセットのアップロードは従来どおりAIモードのファイル入力で行います。
+WebMCPの引数と戻り値へdata URL、Blob、IndexedDBの内部構造、undoスタック全体を含めません。
+任意JSON置換、削除、外部URL取得、画像生成、保存、単一HTML出力、ZIP出力、外部MCPサーバーはWebMCPツールとして公開しません。
+
 ## 構図と紙工作
 
 制作時に途中姿勢を作り込まず、完全に開いた状態で位置、回転、寸法を決めます。

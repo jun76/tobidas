@@ -5,8 +5,27 @@ import { t } from '../i18n'
 import type { VisualPresetId } from '../presets'
 import { useBuilderStore } from '../store'
 import type { AiCommandResult } from './types'
+import { COLOR_PROPERTIES, DISCRETE_PROPERTIES, NUMBER_PROPERTIES, VEC3_PROPERTIES, type TimelineProperty, type TimelineTarget, type TimelineValue } from '../../schema/timeline'
 
 type AssetPreset = Extract<VisualPresetId, 'paper-stack' | 'bottom-upright' | 'depth-layer'>
+
+export const ELEMENT_TIMELINE_PROPERTIES: readonly TimelineProperty[] = [
+  'position.x', 'position.y', 'position.z', 'rotation.x', 'rotation.y', 'rotation.z',
+  'scale.x', 'scale.y', 'scale.z', 'scale', 'opacity', 'visible',
+  'visual.image', 'visual.foregroundColor', 'visual.backgroundColor', 'visual.width', 'visual.height',
+  'visual.particles.color', 'visual.particles.size',
+]
+export const ENVIRONMENT_TIMELINE_PROPERTIES: readonly TimelineProperty[] = [
+  'background', 'ambient.color', 'ambient.intensity', 'directional.color', 'directional.intensity',
+]
+export const CAMERA_TIMELINE_PROPERTIES: readonly TimelineProperty[] = ['position', 'target', 'fov']
+
+export function timelinePropertiesForTarget(target: TimelineTarget): readonly TimelineProperty[] {
+  if (target.type === 'environment') return ENVIRONMENT_TIMELINE_PROPERTIES
+  if (target.type === 'camera') return CAMERA_TIMELINE_PROPERTIES
+  if (target.type === 'sound') return ['cue']
+  return ELEMENT_TIMELINE_PROPERTIES
+}
 
 const failure = (action: string, message: string, fieldErrors: Record<string, string> = {}): AiCommandResult => ({
   ok: false,
@@ -185,6 +204,123 @@ export function moveAiElement(spreadId: string, elementId: string, parent: Paren
   }
   state.moveElement(spreadId, elementId, parent)
   return success(action, t().ai.moved(element.name), { kind: 'element', id: elementId })
+}
+
+export function addAiTimelineKey(input: {
+  spreadId: string
+  target: TimelineTarget
+  property: TimelineProperty
+  time: number
+  value: TimelineValue
+}): AiCommandResult {
+  const action = 'add-timeline-key'
+  const state = useBuilderStore.getState()
+  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  const spread = state.project.book.spreads.find((item) => item.id === input.spreadId)
+  if (!spread) return failure(action, t().ai.notFound, { spreadId: t().ai.notFound })
+  const errors: Record<string, string> = {}
+  if (!Number.isFinite(input.time) || input.time < 0 || input.time > spread.sequence.holdSeconds) {
+    errors.time = t().ai.timelineTimeRange
+  }
+  if (!timelinePropertiesForTarget(input.target).includes(input.property)) errors.property = t().ai.invalidInput
+  if (input.target.type === 'element') {
+    const elementId = input.target.elementId
+    if (!spread.elements.some((element) => element.id === elementId)) errors.target = t().ai.notFound
+  }
+  if (input.target.type === 'sound') {
+    const assetId = input.target.assetId
+    if (!state.project.assets.some((asset) => asset.id === assetId && asset.type === 'audio')) errors.target = t().ai.notFound
+  }
+  if (NUMBER_PROPERTIES.has(input.property) && typeof input.value !== 'number') errors.value = t().ai.invalidInput
+  if (COLOR_PROPERTIES.has(input.property) && typeof input.value !== 'string') errors.value = t().ai.invalidInput
+  if (DISCRETE_PROPERTIES.has(input.property) && typeof input.value !== 'boolean' && input.property !== 'visual.image') {
+    errors.value = t().ai.invalidInput
+  }
+  if (VEC3_PROPERTIES.has(input.property) && (!Array.isArray(input.value) || input.value.length !== 3
+    || input.value.some((value) => !Number.isFinite(value)))) errors.value = t().ai.invalidInput
+  if (input.property === 'visual.image' && (typeof input.value !== 'string'
+    || !state.project.assets.some((asset) => asset.id === input.value && ['image', 'svg', 'video'].includes(asset.type)))) {
+    errors.value = t().ai.notFound
+  }
+  if (Object.keys(errors).length) return failure(action, t().ai.invalidInput, errors)
+
+  state.upsertTimelineKey(input.spreadId, input.target, input.property, input.time, input.value)
+  return success(action, t().ai.timelineKeyAdded, {
+    kind: 'timeline',
+    id: `${timelineTargetValue(input.target)}:${input.property}:${input.time}`,
+  })
+}
+
+export function assignAiBgm(assetId: string): AiCommandResult {
+  const action = 'assign-bgm'
+  const state = useBuilderStore.getState()
+  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  const asset = state.project.assets.find((item) => item.id === assetId)
+  if (!asset || asset.type !== 'audio') return failure(action, t().ai.notFound, { asset: t().ai.notFound })
+  state.assignBgm(asset)
+  return success(action, t().ai.bgmAssigned, { kind: 'bgm', id: asset.id })
+}
+
+export function clearAiBgm(): AiCommandResult {
+  const action = 'clear-bgm'
+  const state = useBuilderStore.getState()
+  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  state.clearBgm()
+  return success(action, t().ai.bgmCleared)
+}
+
+export function addAiSpread(): AiCommandResult {
+  const action = 'add-spread'
+  const state = useBuilderStore.getState()
+  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  state.addSpread()
+  return success(action, t().ai.spreadAdded, { kind: 'spread', id: useBuilderStore.getState().activeSpreadId })
+}
+
+export function duplicateAiSpread(spreadId: string): AiCommandResult {
+  const action = 'duplicate-spread'
+  const state = useBuilderStore.getState()
+  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (!state.project.book.spreads.some((spread) => spread.id === spreadId)) return failure(action, t().ai.notFound)
+  state.duplicateSpread(spreadId)
+  return success(action, t().ai.spreadDuplicated, { kind: 'spread', id: useBuilderStore.getState().activeSpreadId })
+}
+
+export function moveAiSpread(spreadId: string, direction: -1 | 1): AiCommandResult {
+  const action = direction < 0 ? 'move-spread-earlier' : 'move-spread-later'
+  const state = useBuilderStore.getState()
+  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (!state.project.book.spreads.some((spread) => spread.id === spreadId)) return failure(action, t().ai.notFound)
+  const index = state.project.book.spreads.findIndex((spread) => spread.id === spreadId)
+  if (index + direction < 0 || index + direction >= state.project.book.spreads.length) {
+    return failure(action, t().ai.invalidInput, { direction: t().ai.invalidInput })
+  }
+  state.moveSpread(spreadId, direction)
+  return success(action, direction < 0 ? t().ai.spreadMovedEarlier : t().ai.spreadMovedLater, { kind: 'spread', id: spreadId })
+}
+
+export function undoAi(): AiCommandResult {
+  const action = 'undo'
+  const state = useBuilderStore.getState()
+  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (!state.undoStack.length) return failure(action, t().ai.commandFailed)
+  state.undo()
+  return success(action, 'Undid the last edit')
+}
+
+export function redoAi(): AiCommandResult {
+  const action = 'redo'
+  const state = useBuilderStore.getState()
+  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (!state.redoStack.length) return failure(action, t().ai.commandFailed)
+  state.redo()
+  return success(action, 'Redid the last edit')
+}
+
+function timelineTargetValue(target: TimelineTarget): string {
+  if (target.type === 'element') return `element:${target.elementId}`
+  if (target.type === 'sound') return `sound:${target.assetId}`
+  return target.type
 }
 
 export function parseFinite(value: FormDataEntryValue | null): number {

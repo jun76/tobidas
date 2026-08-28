@@ -68,6 +68,76 @@ AIモードは、左側の操作ペインと右側のビューポートを約1�
 AIモードは外部AIとの通信を追加せず、作品と素材は通常モードと同じくブラウザ内に残ります。
 AIモードの有効状態と操作結果は作品データへ保存されません。
 
+### WebMCPを使う
+
+tobidasのAIモードは、WebMCPに対応したブラウザでは、ページ内の操作をAI向けの構造化ツールとして公開します。
+WebMCPはAIモードとは別の画面やモードではなく、同じAIモードに追加される実装経路です。
+
+WebMCPを使える場合は、AIが対象ID、正規化座標、タイムラインの型をそのまま指定できます。
+ツールの実行結果には、storeへ反映した後の対象、収納やレイアウトの補正、検証件数を含めます。
+アセット本体のアップロード、外部URLの取得、削除、保存、エクスポートはWebMCPツールから行いません。
+アセットの取り込みは、従来どおりAIモードのファイル入力を使います。
+
+WebMCPツールはAIモードの画面には表示されません。
+WebMCP対応AIまたはModel Context Tool Inspectorがページを開くと、登録済みツールを発見できます。
+ブラウザのコンソールで確認する場合は、次の式が使えます。
+
+```js
+const context = document.modelContext ?? navigator.modelContext
+const tools = context ? await context.getTools() : []
+tools.map((tool) => tool.name)
+```
+
+#### ブラウザごとの動作状況
+
+次の結果は、2026年8月26日にローカルの `http://localhost:5174/?ai=1` を各ブラウザの実行ファイルから開いて確認したものです。
+ChromeとEdgeの実験起動では `--enable-experimental-web-platform-features --enable-blink-features=WebMCP` を指定しました。
+Firefoxは通常起動と、WebMCPの内部設定を指定したFirefox専用WebDriver BiDi経路の両方で確認しました。
+
+| ブラウザ | 通常起動 | WebMCPを有効にした起動 | 実測結果 |
+| --- | --- | --- | --- |
+| Chrome 151.0.7922.170 | `modelContext`なし | `modelContext`あり | 20ツールを発見し、`get-state`と`create-visual`を実行できた |
+| Edge 151.0.4129.107 | `modelContext`なし | `modelContext`あり | 20ツールを発見し、`get-state`と`create-visual`を実行できた |
+| Firefox 154.0.1 | `modelContext`なし | `--pref dom.modelcontext.enabled=true --pref dom.modelcontext.testing.enabled=true` | `navigator.modelContext`に19個のimperativeツールを発見し、`get-state`と`create-visual`を実行できた。`document.modelContext`は現れない |
+
+ChromeとEdgeでは、`chrome://flags/#enable-webmcp-testing` または `edge://flags/#enable-webmcp-testing` の「WebMCP for testing」を有効にして再起動する方法も使えます。
+Origin Trialを使う場合は、対象オリジンに有効なWebMCPトークンを設定します。
+Firefoxの `dom.modelcontext.*` は実験・テスト用の内部設定です。Firefoxでの実測では旧APIの `navigator.modelContext` が現れますが、通常起動で有効になることや、宣言的フォームAPIまで同じように公開されることは前提にしません。
+WebMCPの対応状況は、[WebMCPの実装状況](https://github.com/webmachinelearning/webmcp/blob/main/implementation-status.md)を参照してください。
+
+WebMCPを使えないブラウザでは、AIモードのDOM、ARIA、フォーム操作がそのまま使われます。
+ブラウザの種類だけでなく、WebMCPの実験フラグ、Origin Trial、対応AIの有無によって利用可否が決まります。
+
+#### 提供するツール
+
+WebMCPを利用できる条件では、AIモードの表示中に次のimperativeツールを登録します。
+
+| 分類 | ツール | 内容 |
+| --- | --- | --- |
+| 読み取り | `tobidas-get-state` | アセット本体を含めず作品状態を取得する。最初に呼び出して見開きIDと部品IDを得る。範囲は作品全体、現在の見開き、現在の選択から選び、省略時は作品全体 |
+| 読み取り | `tobidas-get-spread` | ページ、部品、タイムラインを含む1つの見開きを取得する。`tobidas-get-state`で得た見開きIDを渡す |
+| 読み取り | `tobidas-get-element` | 安定した見開きIDと部品IDで部品を取得する。IDは状態または見開き取得結果から得る |
+| 読み取り | `tobidas-list-assets` | 後の配置やBGM割り当てに使うアセットのメタデータと参照情報を取得する。バイナリの返却やファイルのアップロードは行わない |
+| 読み取り | `tobidas-validate-book` | 最新の検証エラーと警告を取得する。見開きIDを渡すと、その見開きの文脈に絞る |
+| セッション | `tobidas-select-target` | 作品、光源、表紙、見開き、ページ、部品を人が確認できる対象として選択する。見開き、ページ、部品には対応するIDを渡す |
+| セッション | `tobidas-set-preview` | 表示中のプレビューを作品全体の正規化進行値、または見開きの保持時刻へ移動する。進行値、または見開きIDと保持区間内の秒数を指定する |
+| セッション | `tobidas-enter-play` | 人が作品を確認できる再生モードへ切り替える。表示中の編集セッションだけを変更する |
+| セッション | `tobidas-enter-edit` | 構造化された作品編集ができる編集モードへ戻る。表示中の編集セッションだけを変更する |
+| 編集 | `tobidas-place-asset` | 取り込み済みの画像、SVG、動画をプリセットと正規化ページ座標で配置する。アセットはAIモードのファイル入力で先に取り込み、配置は通常の検証とundo履歴を通す |
+| 編集 | `tobidas-create-visual` | 既存のtobidasプリセットでテキストまたは光のパーティクル部品を作成する。通常のレイアウト検証とundo履歴を通す |
+| 編集 | `tobidas-update-element` | レイアウト補正と検証を通して部品を更新する。入力は型付きの全体更新であり任意JSON置換ではなく、省略した項目は現在値を保つ |
+| 編集 | `tobidas-move-element` | 通常の制約を保ちながら部品をページまたは別の部品へ付け替える。共通の編集、検証、undo経路を通す |
+| 編集 | `tobidas-add-timeline-key` | 見開きの保持区間へ型付きタイムラインキーを追加または置換する。時刻と値は対象プロパティに対して検証する |
+| 編集 | `tobidas-assign-bgm` | 取り込み済みの音声アセットを作品のBGMへ割り当てる。アセットはAIモードのファイル入力で先に取り込む |
+| 編集 | `tobidas-clear-bgm` | 通常の編集、検証、undo経路を通して作品のBGMを解除する |
+| 編集 | `tobidas-add-spread` | 通常の編集とundo経路を通して見開きを追加、複製、移動する。削除はWebMCPから公開しない |
+| 編集 | `tobidas-undo` | 通常の履歴を使って直前の編集を取り消す。取り消し後の選択とプレビュー状態を返す |
+| 編集 | `tobidas-redo` | 通常の履歴を使って取り消した編集をやり直す。やり直し後の選択とプレビュー状態を返す |
+
+配置フォームには、宣言的APIの検証用に `tobidas-place-asset-form` も付けています。
+このフォームは通常の送信経路を残したまま使う補助的な公開であり、imperativeの `tobidas-place-asset` と同じ名前は使いません。
+`toolautosubmit`は付けていないため、フォームの自動送信によって利用者の確認を省略しません。
+
 ## 作品フォルダ
 
 作品はJSONと素材をまとめたフォルダです。

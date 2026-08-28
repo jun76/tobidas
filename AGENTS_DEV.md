@@ -225,6 +225,14 @@ AIモードの有効状態、フォーム入力、操作結果は編集セッシ
 AIブラウザ操作モードの直接配置は、ブラウザ操作AIがCanvas座標を推定せずに済むための代替操作面です。
 プリセットID、ページ、既存アセット、正規化座標を明示し、通常のドラッグ配置と同じstoreアクションと初期姿勢を使います。
 
+WebMCPはAIモードに追加する構造化ツール経路です。
+ユーザー向けのAIモードをWebMCPの有無で分割せず、`document.modelContext` または `navigator.modelContext` をfeature detectして、利用できる場合だけ登録します。
+AIモードを閉じると `AbortController` で登録を解除し、非対応ブラウザでは既存の意味付きDOM、ARIA、フォーム操作を使います。
+WebMCPの登録、実行、失敗時のフォールバックは `src/builder/ai/webmcp.ts` と `src/builder/ai/webmcpTypes.ts` に閉じ込めます。
+ツールの編集処理は `src/builder/ai/commands.ts` の共通コマンドを通し、storeの `commit()`、検証、undo、自動保存を迂回させません。
+アセットのバイナリをWebMCP引数へ渡さず、アップロードはAIモードのファイル入力に残します。
+ブラウザ別の実測条件と公開するツールは `README.md` の「ブラウザ操作AIから使う」に記載します。
+
 音声は作品に1つのBGMと、音声トラック上の効果音キューで構成します。
 1ファイルの上限は `AUDIO_BYTE_LIMIT` の3MBです。
 音量は投入時の既定値で固定し、効果音どうしの重なりは許可します。
