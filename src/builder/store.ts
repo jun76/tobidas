@@ -13,6 +13,7 @@ import { normalizeElementLayout } from './state/elementConstraints'
 import { PART_PRESETS, type VisualPresetId } from './presets'
 import { BGM_VOLUME } from '../audio/playback'
 import { createTimelineCommands } from './state/timelineCommands'
+import { createStandardAssets, STANDARD_ASSET_IDS } from './standardAssets'
 
 /**
  * 編集ビューで一時的に隠すものの識別子。
@@ -62,6 +63,11 @@ function isQuotaError(error: unknown): boolean {
 export function createLocalizedBookProject(): BookProject {
   const project = createBookProject(t().defaults.bookName)
   project.book.spreads[0].name = t().defaults.spreadName(1)
+  project.assets = createStandardAssets()
+  project.book.frontCover.frontAsset = STANDARD_ASSET_IDS.coverFront
+  project.book.backCover.backAsset = STANDARD_ASSET_IDS.coverBack
+  project.audio = { bgmAsset: STANDARD_ASSET_IDS.bgm, volume: 0.7, loop: true }
+  project.book.spreads[0].pageTurnSound = STANDARD_ASSET_IDS.pageTurn
   return project
 }
 

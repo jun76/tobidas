@@ -1,7 +1,28 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createBookProject } from '../schema/bookDefaults'
+import { validateBookProject } from '../schema/bookValidate'
 import { compileBookBeats } from '../runtime/signals'
-import { useBuilderStore } from './store'
+import { createLocalizedBookProject, useBuilderStore } from './store'
+
+describe('new project defaults', () => {
+  it('registers and assigns the bundled cover and page-turn assets', () => {
+    const project = createLocalizedBookProject()
+
+    expect(project.assets.map((asset) => asset.id)).toEqual([
+      'standard/tobidas-cover-front.webp',
+      'standard/tobidas-cover-back.webp',
+      'standard/bgm.mp3',
+      'standard/page-turn.wav',
+    ])
+    expect(project.book.frontCover.frontAsset).toBe('standard/tobidas-cover-front.webp')
+    expect(project.book.frontCover.backAsset).toBeUndefined()
+    expect(project.book.backCover.frontAsset).toBeUndefined()
+    expect(project.book.backCover.backAsset).toBe('standard/tobidas-cover-back.webp')
+    expect(project.audio).toEqual({ bgmAsset: 'standard/bgm.mp3', volume: 0.7, loop: true })
+    expect(project.book.spreads[0].pageTurnSound).toBe('standard/page-turn.wav')
+    expect(validateBookProject(project)).toMatchObject({ ok: true, errors: [], warnings: [] })
+  })
+})
 
 describe('builder playback start', () => {
   beforeEach(() => {

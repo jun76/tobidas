@@ -110,6 +110,14 @@
   justify-content: space-between;
 }
 
+/* 見出し右端のアイコン付き操作は、通常のインライン配置によるベースラインずれを避ける */
+.panelTitle > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
+}
+
 .subsectionTitle {
   display: flex;
   align-items: center;
