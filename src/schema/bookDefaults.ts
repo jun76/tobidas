@@ -48,5 +48,9 @@ export function createStageElement(
     align: 'center', font: 'rounded', bold: true, italic: false, underline: false,
     particles: { enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
   }
+  if (type === 'particle') return {
+    ...common, type, width: 2, height: 2,
+    particles: { color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
+  }
   return { ...common, type, baseTransform: { ...common.baseTransform, rotation: [0, 0, 0] } }
 }

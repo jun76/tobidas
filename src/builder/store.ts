@@ -151,16 +151,14 @@ export const useBuilderStore = create<EditorState>((set, get) => {
   ): string | null => {
     const state = get()
     if (!state.project.book.spreads.some((item) => item.id === spreadId)) return null
-    const created = createStageElement('visual', { type: `${side}-page` })
-    if (created.type !== 'visual') return null
-    if (presetId === 'light-particles') {
+    const created = createStageElement(presetId === 'light-particles' ? 'particle' : 'visual', { type: `${side}-page` })
+    if (created.type === 'particle') {
       created.name = t().presets[presetId]
-      created.particles.enabled = true
       created.width = 2
       created.height = 2
       created.pivot = [.5, 0]
       created.baseTransform.rotation = [0, 0, 0]
-    } else {
+    } else if (created.type === 'visual') {
       created.name = t().defaults.text
       created.text = t().defaults.text
       created.pivot = [.5, .5]

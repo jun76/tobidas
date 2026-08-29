@@ -36,7 +36,7 @@ export function SelectionGizmo() {
       const width = store.project.book.format.pageWidth
       if (element.parent.type === 'left-page') anchor = [-width / 2, 0, 0]
       else if (element.parent.type === 'right-page') anchor = [width / 2, 0, 0]
-      if (element.type === 'visual') {
+      if (element.type === 'visual' || element.type === 'particle') {
         size = [element.width, element.height]
       }
       if (element.type !== 'group') {

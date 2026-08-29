@@ -1,4 +1,4 @@
-import type { ParentSpace } from '../../schema/stageElement'
+import type { ParentSpace, ParticleElement } from '../../schema/stageElement'
 import type { EmbeddedVideoAudio } from '../../schema/audio'
 import type { TimelineProperty, TimelineTarget, TimelineValue } from '../../schema/timeline'
 import type { BookSelection, EditorMode, ProjectSource } from '../state/editorState'
@@ -30,6 +30,7 @@ export interface AiElementSummary {
   backVideoAudio?: EmbeddedVideoAudio
   text?: string
   particles?: boolean
+  particleSettings?: ParticleElement['particles']
   motion: string[]
   trackIds: string[]
 }

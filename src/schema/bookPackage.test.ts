@@ -171,7 +171,7 @@ describe('public samples', () => {
       const compiled = compileSpreadStow(project.book, spread)
       const items = [...compiled.left, ...compiled.right]
       for (const element of spread.elements) {
-        if (element.type !== 'visual' || !element.particles.enabled) continue
+        if (element.type !== 'particle' && (element.type !== 'visual' || !element.particles.enabled)) continue
         expect(items.find((item) => item.element.id === element.id)?.mechanism).toBe('airborne-route')
       }
     }
@@ -194,8 +194,7 @@ describe('public samples', () => {
       const elements = project.book.spreads.flatMap((spread) => spread.elements)
       for (const [elementId, position] of Object.entries(positions)) {
         const element = elements.find((candidate) => candidate.id === elementId)!
-        expect(element.type).toBe('visual')
-        expect(element.type === 'visual' && element.particles.enabled).toBe(true)
+        expect(element.type).toBe('particle')
         expect([
           element.baseTransform.position[0] + pageAnchorX(element.parent, project.book.format.pageWidth),
           element.baseTransform.position[1],
@@ -329,7 +328,7 @@ describe('public samples', () => {
   it('allows a particle plane to rotate like other planar parts', () => {
     const project = load('forest_lantern')
     const particle = project.book.spreads.flatMap((spread) => spread.elements)
-      .find((element) => element.type === 'visual' && element.particles.enabled)!
+      .find((element) => element.type === 'particle')!
     particle.baseTransform.rotation[0] = 20
     expect(validateBookProject(project).errors).toEqual([])
   })

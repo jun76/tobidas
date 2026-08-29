@@ -71,6 +71,12 @@ function elementSummary(element: StageElement, spreadId: string, trackIds: strin
       text: element.text,
       particles: element.particles.enabled,
     } : {}),
+    ...(element.type === 'particle' ? {
+      width: element.width,
+      height: element.height,
+      particles: true,
+      particleSettings: { ...element.particles },
+    } : {}),
     motion: element.motion.map((item) => item.type),
     trackIds,
   }

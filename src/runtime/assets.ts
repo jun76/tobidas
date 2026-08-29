@@ -443,7 +443,7 @@ function releaseEmbeddedVideoBlob(data: string): void {
 
 /** 背景色・画像・文字を、ビジュアル矩形と同じUVを持つ1枚へCPU合成する。 */
 export function useVisualTexture(
-  element: VisualElement,
+  element: VisualElement | undefined,
   asset?: Asset,
   instanceKey?: string,
 ): MediaTextureResult | null {
@@ -451,10 +451,10 @@ export function useVisualTexture(
   const svg = useSvgTexture(asset?.type === 'svg' ? asset : undefined)
   const video = useVideoTexture(asset?.type === 'video' ? asset : undefined, instanceKey)
   const source = image ?? svg ?? video
-  const hasBackground = element.backgroundColor !== '#00000000'
-  const needsComposite = hasBackground || Boolean(element.text)
+  const hasBackground = element?.backgroundColor !== '#00000000' && element !== undefined
+  const needsComposite = hasBackground || Boolean(element?.text)
   const result = useMemo(() => {
-    if (!hasBackground && !source && !element.text) return null
+    if (!element || (!hasBackground && !source && !element.text)) return null
     if (video && !needsComposite) return video
     const aspect = element.width / element.height
     const canvas = document.createElement('canvas')
@@ -493,8 +493,8 @@ export function useVisualTexture(
     texture.colorSpace = THREE.SRGBColorSpace
     texture.anisotropy = 4
     return { texture, aspect, draw, video: video?.video }
-  }, [element.width, element.height, element.backgroundColor, element.foregroundColor, element.text,
-    element.fontSize, element.font, element.bold, element.italic, element.underline, element.align,
+  }, [element?.width, element?.height, element?.backgroundColor, element?.foregroundColor, element?.text,
+    element?.fontSize, element?.font, element?.bold, element?.italic, element?.underline, element?.align,
     source, video, needsComposite, hasBackground])
   useFrame(() => {
     if (!video || !needsComposite || !result || !('draw' in result)) return

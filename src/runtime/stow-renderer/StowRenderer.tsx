@@ -12,7 +12,7 @@ import { airborneFade, evaluateChildPose, evaluateStow, evaluateVFoldSpan, stowI
 import type { PlanarElement, SpanningVFold, StowItem } from '../stow/model'
 import { evaluateElementTimeline } from '../timeline/evaluate'
 import type { BookRuntimeProps, RenderSpreadFrame } from '../types'
-import { ElementVisual, SparkleMaterial, WingVisual, assetFor, layerDepthBias, visualPivotOffset } from '../visuals/ElementVisuals'
+import { ElementVisual, SparkleMaterial, WingVisual, assetFor, layerDepthBias, particleSettings, visualPivotOffset } from '../visuals/ElementVisuals'
 import { SPARKLE, buildSparkleField } from '../visuals/sparkleField'
 import { buildSparkleSpriteGeometry } from '../visuals/sparkleGeometry'
 import { VideoAudioSource } from '../videoAudio'
@@ -214,7 +214,8 @@ export function SpanningVFoldNode({ span, leftAngle, rightAngle, assets, clocks,
   const leftMesh = useRef<THREE.Mesh>(null)
   const rightMesh = useRef<THREE.Mesh>(null)
   const audioAnchor = useRef<THREE.Group>(null)
-  const composite = useVisualTexture(element, assetFor(assets, element.image), clockKey)
+  const visualElement = element.type === 'visual' ? element : undefined
+  const composite = useVisualTexture(visualElement, assetFor(assets, visualElement?.image), clockKey)
   const texture = composite?.texture
   const geometryLeft = useMemo(() => spanWingGeometry(span.creaseU, 'left'), [span.creaseU])
   const geometryRight = useMemo(() => spanWingGeometry(span.creaseU, 'right'), [span.creaseU])
@@ -285,26 +286,28 @@ export function SpanningVFoldNode({ span, leftAngle, rightAngle, assets, clocks,
       alphaTest={.02} side={THREE.DoubleSide} toneMapped={false} {...bias} />
     : null
   return <>
-    <group ref={audioAnchor}>
+    {element.type === 'visual' && <group ref={audioAnchor}>
       <VideoAudioSource video={composite?.video} settings={element.videoAudio} />
-    </group>
+    </group>}
     {material && <mesh ref={leftMesh} geometry={geometryLeft} matrixAutoUpdate={false} castShadow
       renderOrder={100 + element.layer} onClick={select}>{material}</mesh>
     }
     {material && <mesh ref={rightMesh} geometry={geometryRight} matrixAutoUpdate={false} castShadow
       renderOrder={100 + element.layer} onClick={select}>{material}</mesh>}
-    {element.particles.enabled && <SpanningParticleNode span={evaluatedSpan} leftAngle={leftAngle} rightAngle={rightAngle}
-      clocks={clocks} clockKey={`${clockKey}:particles`} element={element} spreadId={spreadId} onSelect={onSelect} />}
+    {particleSettings(element) && <SpanningParticleNode span={evaluatedSpan} leftAngle={leftAngle} rightAngle={rightAngle}
+      clocks={clocks} clockKey={`${clockKey}:particles`} element={element} particles={particleSettings(element)!}
+      spreadId={spreadId} onSelect={onSelect} />}
   </>
 }
 
-function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, element, spreadId, onSelect }: {
+function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, element, particles, spreadId, onSelect }: {
   span: SpanningVFold
   leftAngle: number
   rightAngle: number
   clocks: ClockStore
   clockKey: string
   element: PlanarElement
+  particles: NonNullable<ReturnType<typeof particleSettings>>
   spreadId: string
   onSelect?: BookRuntimeProps['onSelect']
 }) {
@@ -313,12 +316,12 @@ function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, e
   const geometries = useMemo(() => ({
     left: spanParticleGeometry(element, span.creaseU, 'left'),
     right: spanParticleGeometry(element, span.creaseU, 'right'),
-  }), [element.id, element.width, element.height, element.particles.count, span.creaseU])
-  const driftScale = element.particles.drift / Math.max(1, span.widthLeft, span.widthRight, span.height)
+  }), [element.id, element.width, element.height, particles.count, span.creaseU])
+  const driftScale = particles.drift / Math.max(1, span.widthLeft, span.widthRight, span.height)
   const materials = useMemo(() => ({
-    left: new SparkleMaterial(driftScale, element.particles.period, element.particles.size),
-    right: new SparkleMaterial(driftScale, element.particles.period, element.particles.size),
-  }), [driftScale, element.particles.period, element.particles.size])
+    left: new SparkleMaterial(driftScale, particles.period, particles.size),
+    right: new SparkleMaterial(driftScale, particles.period, particles.size),
+  }), [driftScale, particles.period, particles.size])
   useEffect(() => () => {
     geometries.left.dispose(); geometries.right.dispose()
     materials.left.dispose(); materials.right.dispose()
@@ -337,7 +340,7 @@ function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, e
       points.matrix.makeBasis(basis.x, basis.y, basis.z)
       points.matrix.setPosition(...pose.origin)
       points.matrixWorldNeedsUpdate = true
-      material.uniforms.color.value.set(element.particles.color)
+      material.uniforms.color.value.set(particles.color)
       material.uniforms.opacity.value = element.opacity * pose.opacityMul
     }
   }

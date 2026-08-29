@@ -163,16 +163,18 @@ export function AiModePanel() {
         bold: data.get('bold') === 'on',
         italic: data.get('italic') === 'on',
         underline: data.get('underline') === 'on',
+        ...(selectedVideoFront ? { videoAudio: videoAudio('video-audio') } : {}),
+        ...(selectedVideoBack ? { backVideoAudio: videoAudio('back-video-audio') } : {}),
+      } : selectedElement.type === 'particle' ? {
+        width: number('width'),
+        height: number('height'),
         particles: {
-          enabled: data.get('particles-enabled') === 'on',
           color: String(data.get('particles-color') ?? ''),
           count: Math.round(number('particles-count')),
           size: number('particles-size'),
           drift: number('particles-drift'),
           period: number('particles-period'),
         },
-        ...(selectedVideoFront ? { videoAudio: videoAudio('video-audio') } : {}),
-        ...(selectedVideoBack ? { backVideoAudio: videoAudio('back-video-audio') } : {}),
       } : {}),
     }))
   }
@@ -427,17 +429,17 @@ export function AiModePanel() {
                   <input id={`ai-${key}`} name={key} type="checkbox" defaultChecked={selectedElement[key]} />
                 </div>)}
               </fieldset>
-              <fieldset className={st.aiFieldGroup}>
-                <legend>{t.presets['light-particles']}</legend>
-                <div className={st.row}><label className={st.rowLabel} htmlFor="ai-particles-enabled">{t.presets['light-particles']}</label>
-                  <input id="ai-particles-enabled" name="particles-enabled" type="checkbox" defaultChecked={selectedElement.particles.enabled} /></div>
-                <AiText name="particles-color" label={t.properties.effectColor} value={selectedElement.particles.color} />
-                <AiNumber name="particles-count" label={t.properties.particleCount} value={selectedElement.particles.count} min={1} max={200} step={1} />
-                <AiNumber name="particles-size" label={t.properties.effectSize} value={selectedElement.particles.size} min={0.01} step="any" />
-                <AiNumber name="particles-drift" label={t.properties.particleDrift} value={selectedElement.particles.drift} min={0} step="any" />
-                <AiNumber name="particles-period" label={t.properties.particlePeriod} value={selectedElement.particles.period} min={0.01} step="any" />
-              </fieldset>
             </>}
+            {selectedElement.type === 'particle' && <fieldset className={st.aiFieldGroup}>
+              <legend>{t.presets['light-particles']}</legend>
+              <AiNumber name="width" label={t.ai.width} value={selectedElement.width} min={0.01} step="any" />
+              <AiNumber name="height" label={t.ai.height} value={selectedElement.height} min={0.01} step="any" />
+              <AiText name="particles-color" label={t.properties.effectColor} value={selectedElement.particles.color} />
+              <AiNumber name="particles-count" label={t.properties.particleCount} value={selectedElement.particles.count} min={1} max={200} step={1} />
+              <AiNumber name="particles-size" label={t.properties.effectSize} value={selectedElement.particles.size} min={0.01} step="any" />
+              <AiNumber name="particles-drift" label={t.properties.particleDrift} value={selectedElement.particles.drift} min={0} step="any" />
+              <AiNumber name="particles-period" label={t.properties.particlePeriod} value={selectedElement.particles.period} min={0.01} step="any" />
+            </fieldset>}
             {selectedElement.type === 'visual' && selectedVideoFront
               && <AiVideoAudio prefix="video-audio" settings={selectedElement.videoAudio} label={t.properties.image} />}
             {selectedElement.type === 'visual' && selectedVideoBack
@@ -646,8 +648,8 @@ function timelineDefaultValue(store: ReturnType<typeof useBuilderStore.getState>
     const element = spread?.elements.find((item) => item.id === target.slice('element:'.length))
     if (element) {
       if (property === 'opacity') return element.opacity
-      if (property === 'visual.width' && element.type === 'visual') return element.width
-      if (property === 'visual.height' && element.type === 'visual') return element.height
+      if (property === 'visual.width' && (element.type === 'visual' || element.type === 'particle')) return element.width
+      if (property === 'visual.height' && (element.type === 'visual' || element.type === 'particle')) return element.height
       if (property.startsWith('position.')) return element.baseTransform.position['xyz'.indexOf(property.at(-1)!)]
       if (property.startsWith('rotation.')) return element.baseTransform.rotation['xyz'.indexOf(property.at(-1)!)]
       if (property.startsWith('scale.')) return element.baseTransform.scale['xyz'.indexOf(property.at(-1)!)]

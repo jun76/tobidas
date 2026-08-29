@@ -1,4 +1,4 @@
-import type { ContentMotion, ParentSpace, StageElement, VisualElement } from '../../schema/stageElement'
+import type { ContentMotion, ParentSpace, ParticleElement, StageElement, VisualElement } from '../../schema/stageElement'
 import { embeddedVideoAudioSchema, type EmbeddedVideoAudio } from '../../schema/audio'
 import { elementDescendantIds } from '../hierarchy'
 import { t } from '../i18n'
@@ -116,7 +116,7 @@ export interface AiElementUpdate {
   bold?: boolean
   italic?: boolean
   underline?: boolean
-  particles?: VisualElement['particles']
+  particles?: Omit<VisualElement['particles'], 'enabled'> & { enabled?: boolean }
   motion?: ContentMotion[]
   videoAudio?: EmbeddedVideoAudio | null
   backVideoAudio?: EmbeddedVideoAudio | null
@@ -176,10 +176,22 @@ export function updateAiElement(spreadId: string, elementId: string, input: AiEl
       if (input.bold !== undefined) target.bold = input.bold
       if (input.italic !== undefined) target.italic = input.italic
       if (input.underline !== undefined) target.underline = input.underline
-      if (input.particles !== undefined) target.particles = structuredClone(input.particles)
       if (input.motion !== undefined) target.motion = structuredClone(input.motion)
       if (input.videoAudio !== undefined) target.videoAudio = input.videoAudio ?? undefined
       if (input.backVideoAudio !== undefined) target.backVideoAudio = input.backVideoAudio ?? undefined
+      if (input.particles !== undefined) target.particles = {
+        ...target.particles,
+        ...structuredClone(input.particles),
+        enabled: input.particles.enabled ?? target.particles.enabled,
+      }
+    } else if (target.type === 'particle') {
+      if (input.width !== undefined) target.width = input.width
+      if (input.height !== undefined) target.height = input.height
+      if (input.particles !== undefined) target.particles = {
+        ...target.particles,
+        ...structuredClone(input.particles),
+      }
+      if (input.motion !== undefined) target.motion = structuredClone(input.motion)
     }
   })
   const after = useBuilderStore.getState().project.book.spreads.find((spread) => spread.id === spreadId)
@@ -340,4 +352,8 @@ export function parseParent(value: string): ParentSpace | null {
 
 export function visualElement(element: StageElement | undefined): element is Extract<StageElement, { type: 'visual' }> {
   return element?.type === 'visual'
+}
+
+export function particleElement(element: StageElement | undefined): element is ParticleElement {
+  return element?.type === 'particle'
 }

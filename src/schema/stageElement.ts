@@ -93,6 +93,19 @@ export const particleLayerSchema = z.object({
   period: z.number().positive().default(11),
 })
 
+/** 独立したパーティクル部品の設定。表示のON/OFFは部品の存在で表す。 */
+export const particleSettingsSchema = z.object({
+  color: z.string().default('#fff3a0'),
+  count: z.number().int().min(1).max(200).default(6),
+  size: z.number().positive().default(.45),
+  drift: z.number().nonnegative().default(.05),
+  period: z.number().positive().default(11),
+})
+
+const defaultParticleSettings = {
+  color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11,
+}
+
 const currentStageElementSchema = z.discriminatedUnion('type', [
   z.object({
     ...common,
@@ -113,6 +126,13 @@ const currentStageElementSchema = z.discriminatedUnion('type', [
     particles: particleLayerSchema.default(() => ({
       enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11,
     })),
+  }),
+  z.object({
+    ...common,
+    type: z.literal('particle'),
+    width: z.number().positive(),
+    height: z.number().positive(),
+    particles: particleSettingsSchema.default(() => ({ ...defaultParticleSettings })),
   }),
   z.object({ ...common, type: z.literal('group') }),
 ])
@@ -146,7 +166,18 @@ export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown
   }
   delete input.sourcePreset
 
-  if (input.type === 'visual' || input.type === 'group') return input
+  if (input.type === 'visual') {
+    const particles = input.particles as { enabled?: unknown } | undefined
+    const hasLegacyParticle = particles?.enabled === true
+      && !input.image && !input.backImage && !input.text
+      && (!input.backgroundColor || input.backgroundColor === '#00000000')
+    if (hasLegacyParticle) {
+      const { enabled: _enabled, ...settings } = particles as Record<string, unknown>
+      return { ...input, type: 'particle', particles: settings }
+    }
+    return input
+  }
+  if (input.type === 'particle' || input.type === 'group') return input
   const base: Record<string, unknown> = { ...input, type: 'visual' }
   if (input.type === 'image') {
     delete base.asset
@@ -157,7 +188,7 @@ export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown
       backImage: input.backAsset,
       backgroundColor: '#00000000', foregroundColor: '#2e241b', text: '',
       fontSize: .35, align: 'center', font: 'rounded', bold: true, italic: false, underline: false,
-      particles: { enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
+      particles: { enabled: false, ...defaultParticleSettings },
     }
   }
   if (input.type === 'text') {
@@ -166,7 +197,7 @@ export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown
       ...base,
       billboard: false,
       backgroundColor: '#00000000', foregroundColor: input.color ?? '#2e241b',
-      particles: { enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
+      particles: { enabled: false, ...defaultParticleSettings },
     }
   }
   if (input.type === 'effect') {
@@ -176,10 +207,8 @@ export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown
     delete base.size
     return {
       ...base,
-      width: extent, height: extent, billboard: false,
-      backgroundColor: '#00000000', foregroundColor: '#2e241b', text: '',
-      fontSize: .35, align: 'center', font: 'rounded', bold: true, italic: false, underline: false,
-      particles: { enabled: true, color: input.color ?? '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
+      type: 'particle', width: extent, height: extent,
+      particles: { color: input.color ?? '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
     }
   }
   return input
@@ -197,4 +226,5 @@ export type MotionTrack = z.infer<typeof motionTrackSchema>
 export type StageElement = z.infer<typeof stageElementSchema>
 export type StageElementType = StageElement['type']
 export type VisualElement = Extract<StageElement, { type: 'visual' }>
+export type ParticleElement = Extract<StageElement, { type: 'particle' }>
 export type TextFont = z.infer<typeof textFontSchema>

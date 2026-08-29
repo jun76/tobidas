@@ -2,7 +2,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import type { Asset } from '../../schema/assets'
-import type { StageElement, VisualElement } from '../../schema/stageElement'
+import type { ParticleElement, StageElement, VisualElement } from '../../schema/stageElement'
 import { useImageTexture, useSvgTexture, useVideoTexture, useVisualTexture } from '../assets'
 import type { StowItem } from '../stow/model'
 import { SPARKLE, buildSparkleField } from './sparkleField'
@@ -55,6 +55,12 @@ export function visualPivotOffset(element: StageElement): [number, number] {
   return [(0.5 - element.pivot[0]) * element.width, (0.5 - element.pivot[1]) * element.height]
 }
 
+export function particleSettings(element: StageElement): ParticleElement['particles'] | VisualElement['particles'] | null {
+  if (element.type === 'particle') return element.particles
+  if (element.type === 'visual' && element.particles.enabled) return element.particles
+  return null
+}
+
 export function ElementVisual({ element, assets, opacityMul, openFactor = 1, instanceKey }: {
   element: StageElement
   assets: Map<string, Asset>
@@ -64,13 +70,19 @@ export function ElementVisual({ element, assets, opacityMul, openFactor = 1, ins
   instanceKey?: string
 }) {
   if (element.type === 'group') return null
+  const particles = particleSettings(element)
+  if (element.type === 'particle') return <SparkleCloud seed={element.id}
+    width={element.width * openFactor} height={element.height * openFactor} count={particles!.count}
+    color={particles!.color} drift={particles!.drift} period={particles!.period}
+    size={particles!.size} opacity={element.opacity * opacityMul * openFactor}
+    renderOrder={101 + element.layer} />
   return <>
     <VisualPlane element={element} asset={assetFor(assets, element.image)} back={assetFor(assets, element.backImage)}
       opacity={element.opacity * opacityMul} instanceKey={instanceKey ?? element.id} />
-    {element.particles.enabled && <SparkleCloud seed={element.id}
-      width={element.width * openFactor} height={element.height * openFactor} count={element.particles.count}
-      color={element.particles.color} drift={element.particles.drift} period={element.particles.period}
-      size={element.particles.size} opacity={element.opacity * opacityMul * openFactor}
+    {particles && <SparkleCloud seed={element.id}
+      width={element.width * openFactor} height={element.height * openFactor} count={particles.count}
+      color={particles.color} drift={particles.drift} period={particles.period}
+      size={particles.size} opacity={element.opacity * opacityMul * openFactor}
       renderOrder={101 + element.layer} />}
   </>
 }
@@ -246,8 +258,10 @@ export function WingVisual({ element, half, assets, opacityMul, instanceKey, fac
   face: 'left' | 'right'
 }) {
   if (element.type === 'group') return null
+  const particles = particleSettings(element)
   const audioKey = instanceKey ?? element.id
-  const composite = useVisualTexture(element, assetFor(assets, element.image), audioKey)
+  const composite = useVisualTexture(element.type === 'visual' ? element : undefined,
+    assetFor(assets, element.type === 'visual' ? element.image : undefined), audioKey)
   const group = useRef<THREE.Group>(null)
   const audioAnchor = useRef<THREE.Group>(null)
   const positions = useMemo(() => ({
@@ -289,27 +303,28 @@ export function WingVisual({ element, half, assets, opacityMul, instanceKey, fac
 
   const offsetY = (0.5 - element.pivot[1]) * element.height
   return <group ref={group} position={[0, offsetY, 0]}>
-    {face === 'left' && <group ref={audioAnchor}>
+    {face === 'left' && element.type === 'visual' && <group ref={audioAnchor}>
       <VideoAudioSource video={composite?.video} settings={element.videoAudio} />
     </group>}
     {composite && <HalfPlane width={half.width} height={element.height} u0={half.u0} u1={half.u1}
       texture={composite.texture} opacity={element.opacity * opacityMul} layer={element.layer} />}
-    {element.particles.enabled && <ParticleWing element={element} half={half} opacityMul={opacityMul} />}
+    {particles && <ParticleWing element={element} particles={particles} half={half} opacityMul={opacityMul} />}
   </group>
 }
 
-function ParticleWing({ element, half, opacityMul }: {
-  element: VisualElement
+function ParticleWing({ element, particles, half, opacityMul }: {
+  element: VisualElement | ParticleElement
+  particles: ParticleElement['particles'] | VisualElement['particles']
   half: NonNullable<StowItem['half']>
   opacityMul: number
 }) {
   const geometry = useMemo(() => buildSparkleSliceGeometry(
-    element.id, element.width, element.height, element.particles.count, half.u0, half.u1,
-  ), [element.id, element.width, element.height, element.particles.count, half.u0, half.u1])
+    element.id, element.width, element.height, particles.count, half.u0, half.u1,
+  ), [element.id, element.width, element.height, particles.count, half.u0, half.u1])
   return <>
-    <SparklePoints geometry={geometry} color={element.particles.color} opacity={element.opacity * opacityMul}
-      renderOrder={101 + element.layer} drift={element.particles.drift}
-      period={element.particles.period} size={element.particles.size} />
+    <SparklePoints geometry={geometry} color={particles.color} opacity={element.opacity * opacityMul}
+      renderOrder={101 + element.layer} drift={particles.drift}
+      period={particles.period} size={particles.size} />
   </>
 }
 

@@ -50,7 +50,7 @@ const aiElementUpdateSchema = z.object({
   italic: z.boolean().optional(),
   underline: z.boolean().optional(),
   particles: z.object({
-    enabled: z.boolean(),
+    enabled: z.boolean().optional(),
     color: z.string(),
     count: z.number().finite(),
     size: z.number().finite(),
@@ -363,8 +363,8 @@ function makeTools(): WebMcpTool[] {
     },
     {
       name: 'tobidas-create-visual', title: 'Create tobidas visual',
-      description: 'Create a text or light-particle visual using an existing tobidas preset. The new element is committed through normal layout validation and undo history.',
-      inputSchema: { type: 'object', properties: { spreadId: { type: 'string', description: 'Stable ID of the spread receiving the new visual.' }, side: { type: 'string', enum: ['left', 'right'], description: 'Page side where the new visual is created.' }, presetId: { type: 'string', enum: ['light-particles', 'page-text'], description: 'Visual preset: page-text creates text, and light-particles creates a particle effect.' } }, required: ['spreadId', 'side', 'presetId'] },
+      description: 'Create a text visual or an independent light-particle part using an existing tobidas preset. A particle part has no image or text and is committed through normal layout validation and undo history.',
+      inputSchema: { type: 'object', properties: { spreadId: { type: 'string', description: 'Stable ID of the spread receiving the new part.' }, side: { type: 'string', enum: ['left', 'right'], description: 'Page side where the new part is created.' }, presetId: { type: 'string', enum: ['light-particles', 'page-text'], description: 'Preset: page-text creates a text visual, and light-particles creates an independent particle part without image or text.' } }, required: ['spreadId', 'side', 'presetId'] },
       execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof createVisualSchema>>(createVisualSchema, input, 'create-visual'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(createAiVisual(parsed)) },
     },
     {
@@ -373,7 +373,7 @@ function makeTools(): WebMcpTool[] {
       inputSchema: { type: 'object', properties: {
         spreadId: { type: 'string', description: 'Stable ID of the spread containing the element.' },
         elementId: { type: 'string', description: 'Stable ID of the element to update.' },
-        input: { type: 'object', description: 'Typed element fields such as name, position, rotation, scale, layer, visibility, opacity, dimensions, text, colors, motion, or video audio. Do not pass arbitrary project JSON.' },
+        input: { type: 'object', description: 'Typed element fields such as name, position, rotation, scale, layer, visibility, opacity, dimensions, text, colors, particle settings, motion, or video audio. For a particle part, provide only its dimensions and particle settings; do not pass image or text fields. Do not pass arbitrary project JSON.' },
       }, required: ['spreadId', 'elementId', 'input'] },
       execute: async (input, options) => {
         checkAborted(options?.signal)

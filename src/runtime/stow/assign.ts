@@ -160,7 +160,7 @@ function spineCrossingKind(
 }
 
 function planarDimensions(element: StageElement): { width: number; height: number } | null {
-  return element.type === 'visual' ? { width: element.width, height: element.height } : null
+  return element.type === 'visual' || element.type === 'particle' ? { width: element.width, height: element.height } : null
 }
 
 /** 紙面へ寝ている中央線またぎ部品を、左右ページへ追従する二片へ分ける。 */

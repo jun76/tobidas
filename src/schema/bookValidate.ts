@@ -176,8 +176,7 @@ function validateTimeline(
       const element = elementMap.get(track.target.elementId)
       if (!element) {
         errors.push(`${lane}: target element not found`)
-      } else if (!ELEMENT_PROPERTIES.has(track.property)
-        || track.property.startsWith('visual.') && element.type !== 'visual') {
+      } else if (!ELEMENT_PROPERTIES.has(track.property) || !elementCanUseProperty(element, track.property)) {
         errors.push(`${lane}: property not available on element type ${element.type}`)
       }
     } else if (track.target.type === 'environment' && !ENVIRONMENT_PROPERTIES.has(track.property)) {
@@ -212,6 +211,14 @@ function validateTimeline(
       }
     }
   }
+}
+
+function elementCanUseProperty(element: BookProject['book']['spreads'][number]['elements'][number], property: TimelineProperty): boolean {
+  if (!property.startsWith('visual.')) return true
+  if (element.type === 'visual') return true
+  return element.type === 'particle' && [
+    'visual.width', 'visual.height', 'visual.particles.color', 'visual.particles.size',
+  ].includes(property)
 }
 
 function timelineValueMatches(property: TimelineProperty, value: TimelineValue): boolean {

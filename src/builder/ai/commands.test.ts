@@ -69,6 +69,18 @@ describe('AI commands', () => {
     expect(state.undoStack.length).toBe(before + 1)
   })
 
+  it('creates an independent particle part without visual content fields', () => {
+    const spreadId = setup()
+    const result = createAiVisual({ spreadId, side: 'right', presetId: 'light-particles' })
+
+    expect(result.ok).toBe(true)
+    const created = useBuilderStore.getState().project.book.spreads[0].elements[0]
+    expect(created.type).toBe('particle')
+    expect(created.type === 'particle' && created.particles.count).toBe(6)
+    expect(created.type === 'particle' && 'image' in created).toBe(false)
+    expect(created.type === 'particle' && 'text' in created).toBe(false)
+  })
+
   it('updates a part through the normal constraint and validation path', () => {
     const spreadId = setup()
     const placed = placeAiAsset({

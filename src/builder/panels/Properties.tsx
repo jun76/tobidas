@@ -1,7 +1,7 @@
 import { Diamond, Eye, EyeOff, Trash2 } from 'lucide-react'
 import { useId } from 'react'
 import { Icon } from '../../ui/Icon'
-import type { StageElement, TextFont, VisualElement } from '../../schema/stageElement'
+import type { ParticleElement, StageElement, TextFont, VisualElement } from '../../schema/stageElement'
 import { DEFAULT_EMBEDDED_VIDEO_AUDIO, type EmbeddedVideoAudio } from '../../schema/audio'
 import type { TimelineProperty, TimelineValue } from '../../schema/timeline'
 import { evaluateBookSignals } from '../../runtime/signals'
@@ -198,7 +198,7 @@ function Element({ element }: { element: StageElement }) {
   const key = (property: TimelineProperty, value: TimelineValue) =>
     store.upsertTimelineKey(selection.spreadId, { type: 'element', elementId: element.id }, property, time, value)
 
-  return <Panel title={t.properties.element(element.type)}>
+  return <Panel title={t.properties.element(element.type === 'particle' ? t.presets['light-particles'] : element.type)}>
     <Text label={t.properties.name} value={element.name} onChange={(value) => update((item) => { item.name = value })} />
     <Transform value={element} update={update} onKey={key} />
     <Num label={t.properties.pivotX} value={element.pivot[0]} onChange={(value) => update((item) => { item.pivot = [value, item.pivot[1]] })} />
@@ -211,50 +211,8 @@ function Element({ element }: { element: StageElement }) {
     <Num label={t.properties.opacity} value={element.opacity} onChange={(value) => update((item) => {
       item.opacity = Math.min(1, Math.max(0, value))
     })} onKey={() => key('opacity', element.opacity)} />
-    {element.type === 'visual' && <>
-      <Asset label={t.properties.image} value={element.image} onChange={(value) => update((item) => {
-        if (item.type !== 'visual') return
-        item.image = value || undefined
-      })}
-        onKey={() => key('visual.image', element.image ?? '')} />
-      <VideoAudioFields assetId={element.image} settings={element.videoAudio}
-        onChange={(settings) => update((item) => { if (item.type === 'visual') item.videoAudio = settings })} />
-      <Asset label={t.properties.backImage} value={element.backImage} onChange={(value) => update((item) => {
-        if (item.type !== 'visual') return
-        item.backImage = value || undefined
-      })} />
-      <VideoAudioFields assetId={element.backImage} settings={element.backVideoAudio}
-        onChange={(settings) => update((item) => { if (item.type === 'visual') item.backVideoAudio = settings })} />
-      <Num label={t.properties.width} value={element.width} onChange={(value) => update((item) => { if (item.type === 'visual') item.width = Math.max(.01, value) })} />
-      <Num label={t.properties.height} value={element.height} onChange={(value) => update((item) => { if (item.type === 'visual') item.height = Math.max(.01, value) })} />
-      <label><input type="checkbox" aria-label={t.properties.billboard} checked={element.billboard} onChange={(event) => update((item) => {
-        if (item.type === 'visual') item.billboard = event.target.checked
-      })} /> {t.properties.billboard}</label>
-      <Text label={t.properties.backgroundColor} value={element.backgroundColor} onChange={(value) => update((item) => {
-        if (item.type === 'visual') item.backgroundColor = value
-      })} />
-      <TextStyleFields element={element} update={update} />
-      <label><input type="checkbox" aria-label={t.presets['light-particles']} checked={element.particles.enabled} onChange={(event) => update((item) => {
-        if (item.type === 'visual') item.particles.enabled = event.target.checked
-      })} /> {t.presets['light-particles']}</label>
-      {element.particles.enabled && <>
-        <Color label={t.properties.effectColor} value={element.particles.color} onChange={(value) => update((item) => {
-          if (item.type === 'visual') item.particles.color = value
-        })} onKey={() => key('visual.particles.color', element.particles.color)} />
-        <Num label={t.properties.effectSize} value={element.particles.size} onChange={(value) => update((item) => {
-          if (item.type === 'visual') item.particles.size = Math.max(.01, value)
-        })} onKey={() => key('visual.particles.size', element.particles.size)} />
-        <Num label={t.properties.particleCount} value={element.particles.count} onChange={(value) => update((item) => {
-          if (item.type === 'visual') item.particles.count = Math.min(200, Math.max(1, Math.round(value)))
-        })} />
-        <Num label={t.properties.particleDrift} value={element.particles.drift} onChange={(value) => update((item) => {
-          if (item.type === 'visual') item.particles.drift = Math.max(0, value)
-        })} />
-        <Num label={t.properties.particlePeriod} value={element.particles.period} onChange={(value) => update((item) => {
-          if (item.type === 'visual') item.particles.period = Math.max(.01, value)
-        })} />
-      </>}
-    </>}
+    {element.type === 'visual' && <VisualFields element={element} update={update} onKey={key} />}
+    {element.type === 'particle' && <ParticleFields element={element} update={update} onKey={key} />}
     <Select label={t.properties.motion} value={element.motion[0]?.type ?? ''} options={[
       ['', t.properties.motionNone], ['bob', t.properties.motionBob], ['sway', t.properties.motionSway],
       ['drift', t.properties.motionDrift], ['spin', t.properties.motionSpin], ['pulse', t.properties.motionPulse],
@@ -365,6 +323,65 @@ function Asset({ label, value, onChange, onKey }: { label: string; value?: strin
     .filter((asset) => ['image', 'svg', 'video'].includes(asset.type))
   return <Select label={label} value={value ?? ''} options={[['', t.properties.unset], ...assets.map((asset) => [asset.id, asset.name] as [string, string])]}
     onChange={onChange} onKey={onKey} />
+}
+
+function VisualFields({ element, update, onKey }: {
+  element: VisualElement
+  update: (change: (item: StageElement) => void) => void
+  onKey: (property: TimelineProperty, value: TimelineValue) => void
+}) {
+  const t = useT()
+  return <>
+    <Asset label={t.properties.image} value={element.image} onChange={(value) => update((item) => {
+      if (item.type !== 'visual') return
+      item.image = value || undefined
+    })} onKey={() => onKey('visual.image', element.image ?? '')} />
+    <VideoAudioFields assetId={element.image} settings={element.videoAudio}
+      onChange={(settings) => update((item) => { if (item.type === 'visual') item.videoAudio = settings })} />
+    <Asset label={t.properties.backImage} value={element.backImage} onChange={(value) => update((item) => {
+      if (item.type !== 'visual') return
+      item.backImage = value || undefined
+    })} />
+    <VideoAudioFields assetId={element.backImage} settings={element.backVideoAudio}
+      onChange={(settings) => update((item) => { if (item.type === 'visual') item.backVideoAudio = settings })} />
+    <Num label={t.properties.width} value={element.width} onChange={(value) => update((item) => { if (item.type === 'visual') item.width = Math.max(.01, value) })} />
+    <Num label={t.properties.height} value={element.height} onChange={(value) => update((item) => { if (item.type === 'visual') item.height = Math.max(.01, value) })} />
+    <label><input type="checkbox" aria-label={t.properties.billboard} checked={element.billboard} onChange={(event) => update((item) => {
+      if (item.type === 'visual') item.billboard = event.target.checked
+    })} /> {t.properties.billboard}</label>
+    <Text label={t.properties.backgroundColor} value={element.backgroundColor} onChange={(value) => update((item) => {
+      if (item.type === 'visual') item.backgroundColor = value
+    })} />
+    <TextStyleFields element={element} update={update} />
+  </>
+}
+
+function ParticleFields({ element, update, onKey }: {
+  element: ParticleElement
+  update: (change: (item: StageElement) => void) => void
+  onKey: (property: TimelineProperty, value: TimelineValue) => void
+}) {
+  const t = useT()
+  return <>
+    <div className={st.subsectionTitle}>{t.presets['light-particles']}</div>
+    <Num label={t.properties.width} value={element.width} onChange={(value) => update((item) => { if (item.type === 'particle') item.width = Math.max(.01, value) })} />
+    <Num label={t.properties.height} value={element.height} onChange={(value) => update((item) => { if (item.type === 'particle') item.height = Math.max(.01, value) })} />
+    <Color label={t.properties.effectColor} value={element.particles.color} onChange={(value) => update((item) => {
+      if (item.type === 'particle') item.particles.color = value
+    })} onKey={() => onKey('visual.particles.color', element.particles.color)} />
+    <Num label={t.properties.effectSize} value={element.particles.size} onChange={(value) => update((item) => {
+      if (item.type === 'particle') item.particles.size = Math.max(.01, value)
+    })} onKey={() => onKey('visual.particles.size', element.particles.size)} />
+    <Num label={t.properties.particleCount} value={element.particles.count} onChange={(value) => update((item) => {
+      if (item.type === 'particle') item.particles.count = Math.min(200, Math.max(1, Math.round(value)))
+    })} />
+    <Num label={t.properties.particleDrift} value={element.particles.drift} onChange={(value) => update((item) => {
+      if (item.type === 'particle') item.particles.drift = Math.max(0, value)
+    })} />
+    <Num label={t.properties.particlePeriod} value={element.particles.period} onChange={(value) => update((item) => {
+      if (item.type === 'particle') item.particles.period = Math.max(.01, value)
+    })} />
+  </>
 }
 
 function VideoAudioFields({ assetId, settings, onChange, positional = true }: {

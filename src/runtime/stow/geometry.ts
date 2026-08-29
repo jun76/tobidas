@@ -35,7 +35,7 @@ export function subtreeOpenBounds(
   const box = new THREE.Box3()
   const visit = (element: StageElement, parentMatrix: THREE.Matrix4) => {
     const matrix = parentMatrix.clone().multiply(elementMatrix(element))
-    if (element.type === 'visual') {
+    if (element.type === 'visual' || element.type === 'particle') {
       const x0 = -element.pivot[0] * element.width
       const x1 = (1 - element.pivot[0]) * element.width
       const y0 = -element.pivot[1] * element.height

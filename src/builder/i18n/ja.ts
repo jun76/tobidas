@@ -204,7 +204,7 @@ export const ja = {
     width: '幅',
     height: '高さ',
     billboard: 'カメラ正対',
-    text: '文字',
+    text: 'テキスト',
     textBody: '本文',
     font: '書体',
     fontSize: '文字サイズ',
