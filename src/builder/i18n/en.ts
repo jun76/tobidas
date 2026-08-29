@@ -59,6 +59,11 @@ export const en: Dict = {
     aiMode: 'AI mode',
     aiModeExit: 'Return to standard mode',
     aiModeHint: 'Open state and direct controls for browser-use AI',
+    mobileMenu: 'Menu',
+    mobileMenuHint: 'File, edit and view actions',
+    fileActions: 'File',
+    editActions: 'Edit',
+    viewActions: 'View',
   },
   dialog: {
     ok: 'OK',

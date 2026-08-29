@@ -62,6 +62,11 @@ export const ja = {
     aiMode: 'AIモード',
     aiModeExit: '通常モードへ戻る',
     aiModeHint: 'ブラウザ操作AI向けの状態表示と直接操作を開く',
+    mobileMenu: 'メニュー',
+    mobileMenuHint: 'ファイル・編集・表示の操作',
+    fileActions: 'ファイル',
+    editActions: '編集',
+    viewActions: '表示',
   },
   dialog: {
     ok: 'OK',

@@ -1,8 +1,8 @@
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { Move, Pause, Play, RotateCcw, RotateCw, Scale3d, Video, Volume2, VolumeX } from 'lucide-react'
+import { Camera, Check, LoaderCircle, Move, Pause, Play, RotateCcw, RotateCw, Scale3d, Video, Volume2, VolumeX } from 'lucide-react'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { BookRuntime, type RuntimeSelection } from '../runtime/BookRuntime'
 import { VIEW_CLIP, VIEW_GL } from '../runtime/camera/view'
@@ -12,6 +12,7 @@ import { Icon, ICON } from '../ui/Icon'
 import st from './builder.module.css'
 import { useT } from './i18n'
 import { hiddenKey, useBuilderStore } from './store'
+import { useDialogs } from './ui/DialogProvider'
 import { TimelinePanel } from './timeline/TimelinePanel'
 import { didGizmoPress, useGizmoPressReset } from './viewport/gizmoInteraction'
 import { PageDropController } from './viewport/PageDropController'
@@ -23,9 +24,14 @@ import { selectActiveSpread } from './state/selectors'
 
 export const viewportGlRef: { current: THREE.WebGLRenderer | null } = { current: null }
 
-export function Viewport({ showEditTimeline = true }: { showEditTimeline?: boolean } = {}) {
+export function Viewport({ showEditTimeline = true, onScreenshot }: {
+  showEditTimeline?: boolean
+  onScreenshot?: () => Promise<void>
+} = {}) {
   const t = useT()
   const store = useBuilderStore()
+  const dialogs = useDialogs()
+  const [screenshotState, setScreenshotState] = useState<ScreenshotState>('idle')
   const editCameraRef = useRef<THREE.PerspectiveCamera | null>(null)
   const orbitRef = useRef<OrbitControlsImpl | null>(null)
   const playback = useViewportPlayback()
@@ -131,7 +137,32 @@ export function Viewport({ showEditTimeline = true }: { showEditTimeline?: boole
       </>}
     </Canvas>
 
-    {store.mode === 'edit' && viewTitle && <div className={st.viewportTitle}>{viewTitle}</div>}
+    {store.mode === 'edit' && viewTitle && <div className={st.viewportTitleBar}>
+      <div className={st.viewportTitle}>{viewTitle}</div>
+      {onScreenshot && <button
+        type="button"
+        className={st.viewportScreenshot}
+        aria-label={t.toolbar.screenshot}
+        title={t.toolbar.screenshot}
+        disabled={screenshotState === 'saving'}
+        onClick={() => {
+          setScreenshotState('saving')
+          void onScreenshot()
+            .then(() => {
+              setScreenshotState('saved')
+              window.setTimeout(() => setScreenshotState('idle'), 1400)
+            })
+            .catch((error) => {
+              setScreenshotState('idle')
+              dialogs.showMessage(t.toolbar.screenshotFailed, String(error))
+            })
+        }}
+      >
+        {screenshotState === 'saving' ? <Icon as={LoaderCircle} size={ICON.float} className={st.spin} />
+          : screenshotState === 'saved' ? <Icon as={Check} size={ICON.float} />
+            : <Icon as={Camera} size={ICON.float} />}
+      </button>}
+    </div>}
     {store.mode === 'edit' && <div className={st.transformTools} aria-label={t.viewport.tools}>
       {([
         ['translate', Move, t.viewport.translate],
@@ -196,3 +227,5 @@ export function Viewport({ showEditTimeline = true }: { showEditTimeline?: boole
       </div>}
   </div>
 }
+
+type ScreenshotState = 'idle' | 'saving' | 'saved'

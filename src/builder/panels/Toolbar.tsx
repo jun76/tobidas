@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Bot, Camera, Check, ChevronDown, LoaderCircle, Pencil, Play, Redo2, Undo2 } from 'lucide-react'
+import { Bot, ChevronDown, Pencil, Play, Redo2, Undo2 } from 'lucide-react'
 import { LOCALES, useLocaleStore, useT, type Locale } from '../i18n'
 import { Icon, ICON } from '../../ui/Icon'
 import { createLocalizedBookProject, useBuilderStore } from '../store'
@@ -11,16 +11,13 @@ import { requestElementDelete } from '../elementDelete'
 import st from '../builder.module.css'
 import { unlockVideoAudio } from '../../runtime/videoAudio'
 
-export function Toolbar({ onScreenshot, aiMode, onAiModeChange }: {
-  onScreenshot: () => Promise<void>
+export function Toolbar({ aiMode, onAiModeChange }: {
   aiMode: boolean
   onAiModeChange: (enabled: boolean) => void
 }) {
   const t = useT()
   const store = useBuilderStore()
-  const dialogs = useDialogs()
   const [confirmNew, setConfirmNew] = useState(false)
-  const [screenshotState, setScreenshotState] = useState<'idle' | 'saving' | 'saved'>('idle')
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -49,69 +46,96 @@ export function Toolbar({ onScreenshot, aiMode, onAiModeChange }: {
     return () => window.removeEventListener('keydown', onKey)
   }, [store])
 
-  return (
+  return <>
     <div className={st.toolbar}>
-      <button onClick={() => setConfirmNew(true)}>{t.toolbar.new}</button>
-      {confirmNew && (
-        <ConfirmDialog
-          title={t.toolbar.newTitle}
-          body={t.toolbar.newBody}
-          okLabel={t.toolbar.newOk}
-          onOk={() => store.setProject(createLocalizedBookProject(), 'new')}
-          onClose={() => setConfirmNew(false)}
-        />
-      )}
-      <OpenButton />
-      <SaveButton />
-      <ExportMenu />
-      <button aria-label={t.toolbar.undo} title={t.toolbar.undoHint}
-        onClick={store.undo} disabled={!store.undoStack.length}><Icon as={Undo2} size={ICON.bar} /></button>
-      <button aria-label={t.toolbar.redo} title={t.toolbar.redoHint}
-        onClick={store.redo} disabled={!store.redoStack.length}><Icon as={Redo2} size={ICON.bar} /></button>
-      <span className={st.spacer} />
-      {store.saveStatus !== 'idle' && <span className={st.hintSmall} role="status" title={store.saveError}>
-        {store.saveStatus === 'saving' ? t.toolbar.autosaveSaving
-          : store.saveStatus === 'saved' ? t.toolbar.autosaveSaved
-            : store.saveStatus === 'quota-error' ? t.toolbar.autosaveQuota
-              : t.toolbar.autosaveFailed}
-      </span>}
-      <button type="button" className={aiMode ? st.active : ''} aria-pressed={aiMode}
-        aria-label={aiMode ? t.toolbar.aiModeExit : t.toolbar.aiMode}
-        title={aiMode ? t.toolbar.aiModeExit : t.toolbar.aiModeHint} onClick={() => onAiModeChange(!aiMode)}>
-        <Icon as={Bot} size={ICON.bar} />{aiMode ? t.toolbar.aiModeExit : t.toolbar.aiMode}
-      </button>
-      <LocalePicker />
-      <button
-        aria-label={t.toolbar.screenshot}
-        title={t.toolbar.screenshot}
-        disabled={screenshotState === 'saving'}
-        onClick={() => {
-          setScreenshotState('saving')
-          void onScreenshot()
-            .then(() => {
-              setScreenshotState('saved')
-              window.setTimeout(() => setScreenshotState('idle'), 1400)
-            })
-            .catch((error) => {
-              setScreenshotState('idle')
-              dialogs.showMessage(t.toolbar.screenshotFailed, String(error))
-            })
-        }}
-      >
-        {screenshotState === 'saving' ? <Icon as={LoaderCircle} size={ICON.bar} className={st.spin} />
-          : screenshotState === 'saved' ? <Icon as={Check} size={ICON.bar} />
-            : <Icon as={Camera} size={ICON.bar} />}
-      </button>
-      <button className={store.mode === 'play' ? st.active : ''} onClick={() => {
-        if (store.mode === 'edit') unlockVideoAudio()
-        store.setMode(store.mode === 'edit' ? 'play' : 'edit')
-      }}>
-        {store.mode === 'edit'
-          ? <><Icon as={Play} size={ICON.bar} />{t.toolbar.play}</>
-          : <><Icon as={Pencil} size={ICON.bar} />{t.toolbar.edit}</>}
-      </button>
+      <div className={st.toolbarDesktop}>
+        <button onClick={() => setConfirmNew(true)}>{t.toolbar.new}</button>
+        <OpenButton />
+        <SaveButton />
+        <ExportMenu />
+        <button aria-label={t.toolbar.undo} title={t.toolbar.undoHint}
+          onClick={store.undo} disabled={!store.undoStack.length}><Icon as={Undo2} size={ICON.bar} /></button>
+        <button aria-label={t.toolbar.redo} title={t.toolbar.redoHint}
+          onClick={store.redo} disabled={!store.redoStack.length}><Icon as={Redo2} size={ICON.bar} /></button>
+        <span className={st.spacer} />
+        <AutosaveStatus />
+        <AiModeButton aiMode={aiMode} onAiModeChange={onAiModeChange} />
+        <LocalePicker />
+        <ModeButton />
+      </div>
+
+      <div className={st.toolbarMobile}>
+        <Dropdown label={t.toolbar.mobileMenu} title={t.toolbar.mobileMenuHint}>{(close) => <div className={st.toolbarMobileMenu}>
+          <section className={st.toolbarMenuSection}>
+            <h2>{t.toolbar.fileActions}</h2>
+            <button onClick={() => { close(); setConfirmNew(true) }}>{t.toolbar.new}</button>
+            <OpenButton onInvoke={close} />
+            <SaveButton onInvoke={close} />
+            <ExportMenu inline onClose={close} />
+          </section>
+          <section className={st.toolbarMenuSection}>
+            <h2>{t.toolbar.editActions}</h2>
+            <button onClick={() => { close(); store.undo() }} disabled={!store.undoStack.length}>
+              <Icon as={Undo2} size={ICON.bar} />{t.toolbar.undo}
+            </button>
+            <button onClick={() => { close(); store.redo() }} disabled={!store.redoStack.length}>
+              <Icon as={Redo2} size={ICON.bar} />{t.toolbar.redo}
+            </button>
+          </section>
+          <section className={st.toolbarMenuSection}>
+            <h2>{t.toolbar.viewActions}</h2>
+            <LocalePicker />
+          </section>
+        </div>}</Dropdown>
+        <AiModeButton aiMode={aiMode} onAiModeChange={onAiModeChange} />
+        <ModeButton />
+        <AutosaveStatus />
+      </div>
     </div>
-  )
+    {confirmNew && (
+      <ConfirmDialog
+        title={t.toolbar.newTitle}
+        body={t.toolbar.newBody}
+        okLabel={t.toolbar.newOk}
+        onOk={() => store.setProject(createLocalizedBookProject(), 'new')}
+        onClose={() => setConfirmNew(false)}
+      />
+    )}
+  </>
+}
+
+function AiModeButton({ aiMode, onAiModeChange }: { aiMode: boolean; onAiModeChange: (enabled: boolean) => void }) {
+  const t = useT()
+  return <button type="button" className={aiMode ? st.active : ''} aria-pressed={aiMode}
+    aria-label={aiMode ? t.toolbar.aiModeExit : t.toolbar.aiMode}
+    title={aiMode ? t.toolbar.aiModeExit : t.toolbar.aiModeHint} onClick={() => onAiModeChange(!aiMode)}>
+    <Icon as={Bot} size={ICON.bar} />{aiMode ? t.toolbar.aiModeExit : t.toolbar.aiMode}
+  </button>
+}
+
+function ModeButton() {
+  const t = useT()
+  const store = useBuilderStore()
+  return <button className={store.mode === 'play' ? st.active : ''} onClick={() => {
+    if (store.mode === 'edit') unlockVideoAudio()
+    store.setMode(store.mode === 'edit' ? 'play' : 'edit')
+  }}>
+    {store.mode === 'edit'
+      ? <><Icon as={Play} size={ICON.bar} />{t.toolbar.play}</>
+      : <><Icon as={Pencil} size={ICON.bar} />{t.toolbar.edit}</>}
+  </button>
+}
+
+function AutosaveStatus() {
+  const t = useT()
+  const { saveStatus, saveError } = useBuilderStore()
+  if (saveStatus === 'idle') return null
+  return <span className={st.hintSmall} role="status" title={saveError}>
+    {saveStatus === 'saving' ? t.toolbar.autosaveSaving
+      : saveStatus === 'saved' ? t.toolbar.autosaveSaved
+        : saveStatus === 'quota-error' ? t.toolbar.autosaveQuota
+          : t.toolbar.autosaveFailed}
+  </span>
 }
 
 /** 表示言語の切り替え。作品データではなく編集セッションの設定なので、書き出しには入らない */
@@ -124,7 +148,7 @@ function LocalePicker() {
   </select>
 }
 
-function Dropdown({ label, children }: { label: string; children: (close: () => void) => ReactNode }) {
+function Dropdown({ label, title, children }: { label: string; title?: string; children: (close: () => void) => ReactNode }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLSpanElement>(null)
   useEffect(() => {
@@ -134,7 +158,7 @@ function Dropdown({ label, children }: { label: string; children: (close: () => 
     return () => document.removeEventListener('pointerdown', close)
   }, [open])
   return <span ref={ref} className={st.dropdown}>
-    <button onClick={() => setOpen(!open)} aria-expanded={open}>{label}<Icon as={ChevronDown} size={ICON.bar} /></button>
+    <button title={title} onClick={() => setOpen(!open)} aria-expanded={open}>{label}<Icon as={ChevronDown} size={ICON.bar} /></button>
     {open && <div className={st.dropdownMenu}>{children(() => setOpen(false))}</div>}
   </span>
 }
@@ -143,7 +167,7 @@ function Dropdown({ label, children }: { label: string; children: (close: () => 
  * 作業フォルダを開く。作品はフォルダ (`project.json` + `assets/`) の一形式だけ。
  * ピッカーを持たないブラウザだけ、フォルダ選択の input へ落とす。
  */
-function OpenButton() {
+function OpenButton({ onInvoke }: { onInvoke?: () => void } = {}) {
   const t = useT()
   const dialogs = useDialogs()
   const setProject = useBuilderStore((state) => state.setProject)
@@ -160,8 +184,10 @@ function OpenButton() {
     } catch (error) { dialogs.showMessage(t.dialog.errorTitle, String(error)) }
   }
   return <>
-    <button title={t.toolbar.openHint} onClick={() =>
-      void run(async () => (await import('../io/packageImport')).importPackageViaDirectoryPicker())}>
+    <button title={t.toolbar.openHint} onClick={() => {
+      onInvoke?.()
+      void run(async () => (await import('../io/packageImport')).importPackageViaDirectoryPicker())
+    }}>
       {t.toolbar.open}
     </button>
     <input ref={dirRef} hidden type="file" aria-label={t.toolbar.open} {...({ webkitdirectory: '' } as object)} onChange={(event) => {
@@ -175,11 +201,12 @@ function OpenButton() {
 }
 
 /** 保存先フォルダへ `project.json` + `assets/` を書く。書ける口を持たないブラウザでは断る */
-function SaveButton() {
+function SaveButton({ onInvoke }: { onInvoke?: () => void } = {}) {
   const t = useT()
   const dialogs = useDialogs()
   const project = useBuilderStore((state) => state.project)
   return <button title={t.toolbar.saveHint} onClick={() => {
+    onInvoke?.()
     if (!supportsDirectoryPicker()) {
       dialogs.showMessage(t.dialog.unsupportedTitle, t.io.folderSaveUnsupported)
       return
@@ -189,7 +216,7 @@ function SaveButton() {
   }}>{t.toolbar.save}</button>
 }
 
-function ExportMenu() {
+function ExportMenu({ inline = false, onClose }: { inline?: boolean; onClose?: () => void } = {}) {
   const t = useT()
   const dialogs = useDialogs()
   const project = useBuilderStore((state) => state.project)
@@ -201,13 +228,12 @@ function ExportMenu() {
     .filter((asset) => asset.type === 'video')
     .reduce((total, asset) => total + (asset.bytes ?? (asset.data instanceof Blob ? asset.data.size : 0)), 0)
   const estimatedMegabytes = Math.ceil((videoBytes * 4 / 3 + 1_500_000) / 1024 / 1024)
-  return <>
-    <Dropdown label={t.toolbar.export}>{(close) => {
-      const runAndClose = (work: () => Promise<unknown>) => {
-        close()
-        run(work)
-      }
-      return <>
+  const actions = (close: () => void) => {
+    const runAndClose = (work: () => Promise<unknown>) => {
+      close()
+      run(work)
+    }
+    return <>
         <button onClick={() => {
           if (videoBytes) {
             close()
@@ -221,8 +247,15 @@ function ExportMenu() {
         <button onClick={() => runAndClose(async () => (await import('../io/siteExport')).exportSiteZip(project))}>
           {t.toolbar.exportSiteZip}
         </button>
-      </>
-    }}</Dropdown>
+    </>
+  }
+  return <>
+    {inline
+      ? <div className={st.toolbarMenuSubgroup}>
+        <h3>{t.toolbar.export}</h3>
+        {actions(onClose ?? (() => {}))}
+      </div>
+      : <Dropdown label={t.toolbar.export}>{actions}</Dropdown>}
     {confirmVideoHtml && <ConfirmDialog
       title={t.toolbar.videoHtmlTitle}
       body={t.toolbar.videoHtmlBody(estimatedMegabytes)}

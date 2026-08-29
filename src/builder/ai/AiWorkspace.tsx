@@ -5,7 +5,7 @@ import { AiModePanel } from './AiModePanel'
 import { useBuilderStore } from '../store'
 import { AiWebMcpBridge } from './webmcp'
 
-export function AiWorkspace() {
+export function AiWorkspace({ onScreenshot }: { onScreenshot: () => Promise<void> }) {
   const t = useT()
   const mode = useBuilderStore((state) => state.mode)
 
@@ -16,7 +16,7 @@ export function AiWorkspace() {
       <AiModePanel />
     </aside>
     <section className={st.aiViewportPane} aria-label={t.ai.viewportPane}>
-      <Viewport />
+      <Viewport onScreenshot={onScreenshot} />
     </section>
   </main>
 }

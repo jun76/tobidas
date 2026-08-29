@@ -157,8 +157,8 @@ export default function App() {
       onOk={() => useBuilderStore.getState().clearContainerElements(pendingContainerDelete.spreadId, pendingContainerDelete.parentType)}
       onClose={() => setPendingContainerDelete(null)}
     />}
-    <Toolbar key={`toolbar-${projectSession}`} onScreenshot={screenshot} aiMode={aiMode} onAiModeChange={setAiMode} />
-    {aiMode ? <AiWorkspace key={`ai-workspace-${projectSession}`} /> : <div className={`${st.main} ${mode === 'edit' ? st.mainEdit : st.mainPlay}`} key={`workspace-${projectSession}`}>
+    <Toolbar key={`toolbar-${projectSession}`} aiMode={aiMode} onAiModeChange={setAiMode} />
+    {aiMode ? <AiWorkspace key={`ai-workspace-${projectSession}`} onScreenshot={screenshot} /> : <div className={`${st.main} ${mode === 'edit' ? st.mainEdit : st.mainPlay}`} key={`workspace-${projectSession}`}>
       {mode === 'edit' && <aside className={st.left} style={{ '--panel-width': `${leftWidth}px` } as CSSProperties}>
         <SplitStack storageKey="left" initial={[280, 210]} mobileAccordion panes={[
           { key: 'navigator', label: t.app.panelNavigator, node: <BookNavigator /> },
@@ -167,7 +167,7 @@ export default function App() {
         ]} />
       </aside>}
       {mode === 'edit' && <Splitter onDelta={(delta) => setLeftWidth((value) => clampPanelWidth(value + delta))} />}
-      <Viewport />
+      <Viewport onScreenshot={screenshot} />
       {mode === 'edit' && <Splitter onDelta={(delta) => setRightWidth((value) => clampPanelWidth(value - delta))} />}
       {mode === 'edit' && <aside className={st.right} style={{ '--panel-width': `${rightWidth}px` } as CSSProperties}>
         <SplitStack storageKey="right" initial={[300]} mobileAccordion panes={[
