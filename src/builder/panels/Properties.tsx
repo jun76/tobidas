@@ -1,5 +1,5 @@
 import { Diamond, Eye, EyeOff, Trash2 } from 'lucide-react'
-import { useId } from 'react'
+import { useId, type ReactNode } from 'react'
 import { Icon } from '../../ui/Icon'
 import type { ParticleElement, StageElement, TextFont, VisualElement } from '../../schema/stageElement'
 import { DEFAULT_EMBEDDED_VIDEO_AUDIO, type EmbeddedVideoAudio } from '../../schema/audio'
@@ -19,25 +19,50 @@ const FONT_LABEL_KEY: Record<TextFont, 'fontRounded' | 'fontSans' | 'fontSerif' 
   mono: 'fontMono',
 }
 
-export function SelectionDetails() {
+export function Inspector() {
+  const t = useT()
+  const store = useBuilderStore()
+  const selection = store.selection
+  const selectionLabel = selection.type === 'light'
+    ? t.properties.directionalLight
+    : selection.type === 'cover'
+      ? (selection.side === 'front' ? t.properties.frontCover : t.properties.backCover)
+      : selection.type === 'spread'
+        ? (selectSpreadById(store, selection.spreadId)?.name ?? t.properties.spread)
+        : selection.type === 'page'
+          ? (selection.side === 'left' ? t.properties.leftPage : t.properties.rightPage)
+          : selection.type === 'element'
+            ? (selectSelectedElement(store)?.name ?? t.properties.element(''))
+            : ''
+  return <Panel title={t.app.panelInspector}>
+    <div className={st.inspectorScopeTitle}>{t.app.inspectorProject}</div>
+    <BookProperties embedded />
+    {selection.type !== 'book' && <>
+      <div className={st.inspectorScopeTitle}>{t.app.inspectorSelection(selectionLabel)}</div>
+      <SelectionDetails embedded />
+    </>}
+  </Panel>
+}
+
+export function SelectionDetails({ embedded = false }: { embedded?: boolean } = {}) {
   const t = useT()
   const store = useBuilderStore()
   const selection = store.selection
   const empty = <Panel title={t.app.panelDetail}>
     <div className={st.hintSmall}>{t.properties.empty}</div>
   </Panel>
-  if (selection.type === 'book') return empty
-  if (selection.type === 'light') return <Light />
-  if (selection.type === 'cover') return <Cover side={selection.side} />
+  if (selection.type === 'book') return embedded ? null : empty
+  if (selection.type === 'light') return <Light embedded={embedded} />
+  if (selection.type === 'cover') return <Cover side={selection.side} embedded={embedded} />
   const spread = selectSpreadById(store, selection.spreadId)
-  if (!spread) return empty
-  if (selection.type === 'spread') return <SpreadProperties />
-  if (selection.type === 'page') return <Page side={selection.side} />
+  if (!spread) return embedded ? null : empty
+  if (selection.type === 'spread') return <SpreadProperties embedded={embedded} />
+  if (selection.type === 'page') return <Page side={selection.side} embedded={embedded} />
   const element = selectSelectedElement(store)
-  return element ? <Element element={element} /> : empty
+  return element ? <Element element={element} embedded={embedded} /> : embedded ? null : empty
 }
 
-export function BookProperties() {
+export function BookProperties({ embedded = false }: { embedded?: boolean } = {}) {
   const t = useT()
   const store = useBuilderStore()
   const book = store.project.book
@@ -45,61 +70,80 @@ export function BookProperties() {
   const time = activeSpreadTime()
   const environmentKey = (property: TimelineProperty, value: TimelineValue) =>
     store.upsertTimelineKey(spreadId, { type: 'environment' }, property, time, value)
-  return <Panel title="BOOK">
-    <Text label={t.properties.bookName} value={store.project.name} onChange={(value) => store.commit((project) => { project.name = value })} />
-    <Num label={t.properties.pageWidth} value={book.format.pageWidth} onChange={(value) => store.commit((project) => { project.book.format.pageWidth = value })} />
-    <Num label={t.properties.pageAspect} value={book.format.pageAspect} onChange={(value) => store.commit((project) => { project.book.format.pageAspect = value })} />
-    <Num label={t.properties.coverOpenSeconds} value={book.sequence.coverOpenSeconds} onChange={(value) => store.commit((project) => { project.book.sequence.coverOpenSeconds = Math.max(.1, value) })} />
-    <Color label={t.properties.background} value={book.appearance.background}
-      onChange={(value) => store.commit((project) => { project.book.appearance.background = value })}
-      onKey={() => environmentKey('background', book.appearance.background)} />
-    <Asset label={t.properties.backgroundImage} value={book.appearance.backgroundAsset}
-      onChange={(value) => store.commit((project) => {
-        project.book.appearance.backgroundAsset = value || undefined
-      })} />
-    <VideoAudioFields assetId={book.appearance.backgroundAsset} settings={book.appearance.backgroundVideoAudio}
-      positional={false} onChange={(settings) => store.commit((project) => {
-        project.book.appearance.backgroundVideoAudio = settings
-      })} />
-    <Color label={t.properties.coverColor} value={book.appearance.coverColor ?? '#4f392c'}
-      onChange={(value) => store.commit((project) => { project.book.appearance.coverColor = value })} />
-    <Color label={t.properties.coverEdgeColor} value={book.appearance.coverEdgeColor ?? '#2d2019'}
-      onChange={(value) => store.commit((project) => { project.book.appearance.coverEdgeColor = value })} />
-    <BookAudio />
-    <div className={st.subsectionTitle}>{t.properties.camera}<OverlayEye hiddenId={hiddenKey.camera} label={t.properties.cameraFrustum} /></div>
-    <Vec3 label={t.properties.position} value={book.camera.position} onChange={(value) => store.commit((project) => { project.book.camera.position = value })} />
-    <Vec3 label={t.properties.target} value={book.camera.target} onChange={(value) => store.commit((project) => { project.book.camera.target = value })} />
-    <Num label={t.properties.fov} value={book.camera.fov} onChange={(value) => store.commit((project) => { project.book.camera.fov = Math.min(179, Math.max(1, value)) })} />
-    <div className={st.cameraViewStatus}>{t.properties.cameraKeyHint}</div>
-    <div className={st.subsectionTitle}>{t.properties.lights}<OverlayEye hiddenId={hiddenKey.light} label={t.properties.lightMarker} /></div>
-    <Color label={t.properties.ambientColor} value={book.lights.ambient.color}
-      onChange={(value) => store.commit((project) => { project.book.lights.ambient.color = value })}
-      onKey={() => environmentKey('ambient.color', book.lights.ambient.color)} />
-    <Num label={t.properties.ambientIntensity} value={book.lights.ambient.intensity}
-      onChange={(value) => store.commit((project) => { project.book.lights.ambient.intensity = Math.max(0, value) })}
-      onKey={() => environmentKey('ambient.intensity', book.lights.ambient.intensity)} />
-    <Color label={t.properties.directionalColor} value={book.lights.directional.color}
-      onChange={(value) => store.commit((project) => { project.book.lights.directional.color = value })}
-      onKey={() => environmentKey('directional.color', book.lights.directional.color)} />
-    <Num label={t.properties.directionalIntensity} value={book.lights.directional.intensity}
-      onChange={(value) => store.commit((project) => { project.book.lights.directional.intensity = Math.max(0, value) })}
-      onKey={() => environmentKey('directional.intensity', book.lights.directional.intensity)} />
-    <Vec3 label={t.properties.directionalPosition} value={book.lights.directional.position}
-      onChange={(value) => store.commit((project) => { project.book.lights.directional.position = value })} />
-  </Panel>
+  return <PropertySection title="BOOK" embedded={embedded}>
+    <InspectorGroup title={t.app.inspectorBasic}>
+      <Text label={t.properties.bookName} value={store.project.name} onChange={(value) => store.commit((project) => { project.name = value })} />
+      <Num label={t.properties.pageWidth} value={book.format.pageWidth} onChange={(value) => store.commit((project) => { project.book.format.pageWidth = value })} />
+      <Num label={t.properties.pageAspect} value={book.format.pageAspect} onChange={(value) => store.commit((project) => { project.book.format.pageAspect = value })} />
+      <Num label={t.properties.coverOpenSeconds} value={book.sequence.coverOpenSeconds} onChange={(value) => store.commit((project) => { project.book.sequence.coverOpenSeconds = Math.max(.1, value) })} />
+    </InspectorGroup>
+    <InspectorGroup title={t.app.inspectorStage}>
+      <Color label={t.properties.background} value={book.appearance.background}
+        onChange={(value) => store.commit((project) => { project.book.appearance.background = value })}
+        onKey={() => environmentKey('background', book.appearance.background)} />
+      <Asset label={t.properties.backgroundImage} value={book.appearance.backgroundAsset}
+        onChange={(value) => store.commit((project) => {
+          project.book.appearance.backgroundAsset = value || undefined
+        })} />
+      <VideoAudioFields assetId={book.appearance.backgroundAsset} settings={book.appearance.backgroundVideoAudio}
+        positional={false} onChange={(settings) => store.commit((project) => {
+          project.book.appearance.backgroundVideoAudio = settings
+        })} />
+      <Color label={t.properties.coverColor} value={book.appearance.coverColor ?? '#4f392c'}
+        onChange={(value) => store.commit((project) => { project.book.appearance.coverColor = value })} />
+      <Color label={t.properties.coverEdgeColor} value={book.appearance.coverEdgeColor ?? '#2d2019'}
+        onChange={(value) => store.commit((project) => { project.book.appearance.coverEdgeColor = value })} />
+    </InspectorGroup>
+    <InspectorGroup title={t.app.inspectorSound}><BookAudio showTitle={false} /></InspectorGroup>
+    <InspectorGroup title={t.app.inspectorCamera}>
+      <div className={st.inspectorGroupTitle}><span>{t.properties.camera}</span><OverlayEye hiddenId={hiddenKey.camera} label={t.properties.cameraFrustum} /></div>
+      <Vec3 label={t.properties.position} value={book.camera.position} onChange={(value) => store.commit((project) => { project.book.camera.position = value })} />
+      <Vec3 label={t.properties.target} value={book.camera.target} onChange={(value) => store.commit((project) => { project.book.camera.target = value })} />
+      <Num label={t.properties.fov} value={book.camera.fov} onChange={(value) => store.commit((project) => { project.book.camera.fov = Math.min(179, Math.max(1, value)) })} />
+      <div className={st.cameraViewStatus}>{t.properties.cameraKeyHint}</div>
+    </InspectorGroup>
+    <InspectorGroup title={t.app.inspectorLighting}>
+      <div className={st.inspectorGroupTitle}><span>{t.properties.lights}</span><OverlayEye hiddenId={hiddenKey.light} label={t.properties.lightMarker} /></div>
+      <Color label={t.properties.ambientColor} value={book.lights.ambient.color}
+        onChange={(value) => store.commit((project) => { project.book.lights.ambient.color = value })}
+        onKey={() => environmentKey('ambient.color', book.lights.ambient.color)} />
+      <Num label={t.properties.ambientIntensity} value={book.lights.ambient.intensity}
+        onChange={(value) => store.commit((project) => { project.book.lights.ambient.intensity = Math.max(0, value) })}
+        onKey={() => environmentKey('ambient.intensity', book.lights.ambient.intensity)} />
+      <Color label={t.properties.directionalColor} value={book.lights.directional.color}
+        onChange={(value) => store.commit((project) => { project.book.lights.directional.color = value })}
+        onKey={() => environmentKey('directional.color', book.lights.directional.color)} />
+      <Num label={t.properties.directionalIntensity} value={book.lights.directional.intensity}
+        onChange={(value) => store.commit((project) => { project.book.lights.directional.intensity = Math.max(0, value) })}
+        onKey={() => environmentKey('directional.intensity', book.lights.directional.intensity)} />
+      <Vec3 label={t.properties.directionalPosition} value={book.lights.directional.position}
+        onChange={(value) => store.commit((project) => { project.book.lights.directional.position = value })} />
+    </InspectorGroup>
+  </PropertySection>
+}
+
+function PropertySection({ title, embedded, children }: { title: string; embedded: boolean; children: ReactNode }) {
+  return embedded ? <>{children}</> : <Panel title={title}>{children}</Panel>
+}
+
+function InspectorGroup({ title, children }: { title: string; children: ReactNode }) {
+  return <details className={st.inspectorGroup} open>
+    <summary>{title}</summary>
+    {children}
+  </details>
 }
 
 /**
  * BGM。割り当てはプリセットのBGMボタンから行い、
  * ここは確認と微調整、そして解除に絞る。
  */
-function BookAudio() {
+function BookAudio({ showTitle = true }: { showTitle?: boolean } = {}) {
   const t = useT()
   const store = useBuilderStore()
   const audio = store.project.audio
   const asset = store.project.assets.find((item) => item.id === audio?.bgmAsset)
   return <>
-    <div className={st.subsectionTitle}>{t.properties.bgm}</div>
+    {showTitle && <div className={st.subsectionTitle}>{t.properties.bgm}</div>}
     {!audio && <div className={st.hintSmall}>{t.properties.noBgm}</div>}
     {audio && <>
       <div className={st.row}>
@@ -116,79 +160,87 @@ function BookAudio() {
   </>
 }
 
-function Light() {
+function Light({ embedded = false }: { embedded?: boolean }) {
   const t = useT()
   const store = useBuilderStore()
   const light = store.project.book.lights.directional
-  return <Panel title={t.properties.directionalLight}>
-    <Color label={t.properties.color} value={light.color} onChange={(value) => store.commit((project) => { project.book.lights.directional.color = value })} />
-    <Num label={t.properties.intensity} value={light.intensity} onChange={(value) => store.commit((project) => { project.book.lights.directional.intensity = Math.max(0, value) })} />
-    <Vec3 label={t.properties.position} value={light.position} onChange={(value) => store.commit((project) => { project.book.lights.directional.position = value })} />
-  </Panel>
+  return <PropertySection title={t.properties.directionalLight} embedded={embedded}>
+    <InspectorGroup title={t.app.inspectorLighting}>
+      <Color label={t.properties.color} value={light.color} onChange={(value) => store.commit((project) => { project.book.lights.directional.color = value })} />
+      <Num label={t.properties.intensity} value={light.intensity} onChange={(value) => store.commit((project) => { project.book.lights.directional.intensity = Math.max(0, value) })} />
+      <Vec3 label={t.properties.position} value={light.position} onChange={(value) => store.commit((project) => { project.book.lights.directional.position = value })} />
+    </InspectorGroup>
+  </PropertySection>
 }
 
-function Cover({ side }: { side: 'front' | 'back' }) {
+function Cover({ side, embedded = false }: { side: 'front' | 'back'; embedded?: boolean }) {
   const t = useT()
   const store = useBuilderStore()
   const cover = side === 'front' ? store.project.book.frontCover : store.project.book.backCover
-  return <Panel title={side === 'front' ? t.properties.frontCover : t.properties.backCover}>
-    <Asset label={t.properties.coverFront} value={cover.frontAsset} onChange={(value) => store.commit((project) => {
-      const target = side === 'front' ? project.book.frontCover : project.book.backCover
-      target.frontAsset = value || undefined
-    })} />
-    <VideoAudioFields assetId={cover.frontAsset} settings={cover.frontVideoAudio}
-      onChange={(settings) => store.commit((project) => {
-        (side === 'front' ? project.book.frontCover : project.book.backCover).frontVideoAudio = settings
+  return <PropertySection title={side === 'front' ? t.properties.frontCover : t.properties.backCover} embedded={embedded}>
+    <InspectorGroup title={t.app.inspectorSurface}>
+      <Asset label={t.properties.coverFront} value={cover.frontAsset} onChange={(value) => store.commit((project) => {
+        const target = side === 'front' ? project.book.frontCover : project.book.backCover
+        target.frontAsset = value || undefined
       })} />
-    <Asset label={t.properties.coverBack} value={cover.backAsset} onChange={(value) => store.commit((project) => {
-      const target = side === 'front' ? project.book.frontCover : project.book.backCover
-      target.backAsset = value || undefined
-    })} />
-    <VideoAudioFields assetId={cover.backAsset} settings={cover.backVideoAudio}
-      onChange={(settings) => store.commit((project) => {
-        (side === 'front' ? project.book.frontCover : project.book.backCover).backVideoAudio = settings
+      <VideoAudioFields assetId={cover.frontAsset} settings={cover.frontVideoAudio}
+        onChange={(settings) => store.commit((project) => {
+          (side === 'front' ? project.book.frontCover : project.book.backCover).frontVideoAudio = settings
+        })} />
+      <Asset label={t.properties.coverBack} value={cover.backAsset} onChange={(value) => store.commit((project) => {
+        const target = side === 'front' ? project.book.frontCover : project.book.backCover
+        target.backAsset = value || undefined
       })} />
-  </Panel>
+      <VideoAudioFields assetId={cover.backAsset} settings={cover.backVideoAudio}
+        onChange={(settings) => store.commit((project) => {
+          (side === 'front' ? project.book.frontCover : project.book.backCover).backVideoAudio = settings
+        })} />
+    </InspectorGroup>
+  </PropertySection>
 }
 
-function SpreadProperties() {
+function SpreadProperties({ embedded = false }: { embedded?: boolean }) {
   const t = useT()
   const store = useBuilderStore()
   const id = store.activeSpreadId
   const spread = selectActiveSpread(store)!
-  return <Panel title={t.properties.spread}>
-    <Text label={t.properties.name} value={spread.name} onChange={(value) => store.commit((project) => {
-      project.book.spreads.find((item) => item.id === id)!.name = value
-    })} />
-    <Num label={t.properties.holdSeconds} value={spread.sequence.holdSeconds} onChange={(value) => store.commit((project) => {
-      project.book.spreads.find((item) => item.id === id)!.sequence.holdSeconds = Math.max(.1, value)
-    })} />
-    <Num label={t.properties.turnSeconds} value={spread.sequence.turnSeconds} onChange={(value) => store.commit((project) => {
-      project.book.spreads.find((item) => item.id === id)!.sequence.turnSeconds = Math.max(.1, value)
-    })} />
-    <div className={st.cameraViewStatus}>{t.properties.trackCount(spread.timeline.tracks.length)}</div>
-  </Panel>
+  return <PropertySection title={t.properties.spread} embedded={embedded}>
+    <InspectorGroup title={t.app.inspectorBasic}>
+      <Text label={t.properties.name} value={spread.name} onChange={(value) => store.commit((project) => {
+        project.book.spreads.find((item) => item.id === id)!.name = value
+      })} />
+      <Num label={t.properties.holdSeconds} value={spread.sequence.holdSeconds} onChange={(value) => store.commit((project) => {
+        project.book.spreads.find((item) => item.id === id)!.sequence.holdSeconds = Math.max(.1, value)
+      })} />
+      <Num label={t.properties.turnSeconds} value={spread.sequence.turnSeconds} onChange={(value) => store.commit((project) => {
+        project.book.spreads.find((item) => item.id === id)!.sequence.turnSeconds = Math.max(.1, value)
+      })} />
+      <div className={st.cameraViewStatus}>{t.properties.trackCount(spread.timeline.tracks.length)}</div>
+    </InspectorGroup>
+  </PropertySection>
 }
 
-function Page({ side }: { side: 'left' | 'right' }) {
+function Page({ side, embedded = false }: { side: 'left' | 'right'; embedded?: boolean }) {
   const t = useT()
   const store = useBuilderStore()
   const id = store.activeSpreadId
   const page = selectActiveSpread(store)![side === 'left' ? 'leftPage' : 'rightPage']
-  return <Panel title={side === 'left' ? t.properties.leftPage : t.properties.rightPage}>
-    <Asset label={t.properties.pageBackground} value={page.backgroundAsset} onChange={(value) => store.commit((project) => {
-      const target = project.book.spreads.find((item) => item.id === id)![side === 'left' ? 'leftPage' : 'rightPage']
-      target.backgroundAsset = value || undefined
-    })} />
-    <VideoAudioFields assetId={page.backgroundAsset} settings={page.backgroundVideoAudio}
-      onChange={(settings) => store.commit((project) => {
-        project.book.spreads.find((item) => item.id === id)![side === 'left' ? 'leftPage' : 'rightPage']
-          .backgroundVideoAudio = settings
+  return <PropertySection title={side === 'left' ? t.properties.leftPage : t.properties.rightPage} embedded={embedded}>
+    <InspectorGroup title={t.app.inspectorStage}>
+      <Asset label={t.properties.pageBackground} value={page.backgroundAsset} onChange={(value) => store.commit((project) => {
+        const target = project.book.spreads.find((item) => item.id === id)![side === 'left' ? 'leftPage' : 'rightPage']
+        target.backgroundAsset = value || undefined
       })} />
-  </Panel>
+      <VideoAudioFields assetId={page.backgroundAsset} settings={page.backgroundVideoAudio}
+        onChange={(settings) => store.commit((project) => {
+          project.book.spreads.find((item) => item.id === id)![side === 'left' ? 'leftPage' : 'rightPage']
+            .backgroundVideoAudio = settings
+        })} />
+    </InspectorGroup>
+  </PropertySection>
 }
 
-function Element({ element }: { element: StageElement }) {
+function Element({ element, embedded = false }: { element: StageElement; embedded?: boolean }) {
   const t = useT()
   const store = useBuilderStore()
   const selection = store.selection
@@ -198,34 +250,42 @@ function Element({ element }: { element: StageElement }) {
   const key = (property: TimelineProperty, value: TimelineValue) =>
     store.upsertTimelineKey(selection.spreadId, { type: 'element', elementId: element.id }, property, time, value)
 
-  return <Panel title={t.properties.element(element.type === 'particle' ? t.presets['light-particles'] : element.type)}>
-    <Text label={t.properties.name} value={element.name} onChange={(value) => update((item) => { item.name = value })} />
-    <Transform value={element} update={update} onKey={key} />
-    <Num label={t.properties.pivotX} value={element.pivot[0]} onChange={(value) => update((item) => { item.pivot = [value, item.pivot[1]] })} />
-    <Num label={t.properties.pivotY} value={element.pivot[1]} onChange={(value) => update((item) => { item.pivot = [item.pivot[0], value] })} />
-    <Num label={t.properties.layer} value={element.layer} onChange={(value) => update((item) => { item.layer = Math.round(value) })} />
-    <div className={st.row}><span className={st.rowLabel}>{t.properties.visible}</span><label>
-      <input type="checkbox" aria-label={t.properties.visible} checked={element.visible} onChange={(event) => update((item) => { item.visible = event.target.checked })} />
-      {element.visible ? t.properties.visibleOn : t.properties.visibleOff}
-    </label><KeyButton label={t.properties.visible} onKey={() => key('visible', element.visible)} /></div>
-    <Num label={t.properties.opacity} value={element.opacity} onChange={(value) => update((item) => {
-      item.opacity = Math.min(1, Math.max(0, value))
-    })} onKey={() => key('opacity', element.opacity)} />
-    {element.type === 'visual' && <VisualFields element={element} update={update} onKey={key} />}
-    {element.type === 'particle' && <ParticleFields element={element} update={update} onKey={key} />}
-    <Select label={t.properties.motion} value={element.motion[0]?.type ?? ''} options={[
-      ['', t.properties.motionNone], ['bob', t.properties.motionBob], ['sway', t.properties.motionSway],
-      ['drift', t.properties.motionDrift], ['spin', t.properties.motionSpin], ['pulse', t.properties.motionPulse],
-    ]} onChange={(value) => update((item) => {
-      item.motion = value
-        ? [value === 'drift' ? { type: 'drift', amplitude: [.25, .2, .25], period: 3, phase: 0 }
-          : value === 'spin' ? { type: 'spin', axis: 'y', speed: .8 }
-            : value === 'sway' ? { type: 'sway', amplitude: 5, period: 2.5, phase: 0 }
-              : value === 'pulse' ? { type: 'pulse', amplitude: .06, period: 2, phase: 0 }
-                : { type: 'bob', amplitude: .18, period: 2.5, phase: 0 }]
-        : []
-    })} />
-  </Panel>
+  return <PropertySection title={t.properties.element(element.type === 'particle' ? t.presets['light-particles'] : element.type)} embedded={embedded}>
+    <InspectorGroup title={t.app.inspectorBasic}>
+      <Text label={t.properties.name} value={element.name} onChange={(value) => update((item) => { item.name = value })} />
+      <Num label={t.properties.layer} value={element.layer} onChange={(value) => update((item) => { item.layer = Math.round(value) })} />
+      <div className={st.row}><span className={st.rowLabel}>{t.properties.visible}</span><label>
+        <input type="checkbox" aria-label={t.properties.visible} checked={element.visible} onChange={(event) => update((item) => { item.visible = event.target.checked })} />
+        {element.visible ? t.properties.visibleOn : t.properties.visibleOff}
+      </label><KeyButton label={t.properties.visible} onKey={() => key('visible', element.visible)} /></div>
+      <Num label={t.properties.opacity} value={element.opacity} onChange={(value) => update((item) => {
+        item.opacity = Math.min(1, Math.max(0, value))
+      })} onKey={() => key('opacity', element.opacity)} />
+    </InspectorGroup>
+    <InspectorGroup title={t.app.inspectorTransform}>
+      <Transform value={element} update={update} onKey={key} />
+      <Num label={t.properties.pivotX} value={element.pivot[0]} onChange={(value) => update((item) => { item.pivot = [value, item.pivot[1]] })} />
+      <Num label={t.properties.pivotY} value={element.pivot[1]} onChange={(value) => update((item) => { item.pivot = [item.pivot[0], value] })} />
+    </InspectorGroup>
+    {element.type !== 'group' && <InspectorGroup title={t.app.inspectorContent}>
+      {element.type === 'visual' && <VisualFields element={element} update={update} onKey={key} />}
+      {element.type === 'particle' && <ParticleFields element={element} update={update} onKey={key} />}
+    </InspectorGroup>}
+    <InspectorGroup title={t.app.inspectorMotion}>
+      <Select label={t.properties.motion} value={element.motion[0]?.type ?? ''} options={[
+        ['', t.properties.motionNone], ['bob', t.properties.motionBob], ['sway', t.properties.motionSway],
+        ['drift', t.properties.motionDrift], ['spin', t.properties.motionSpin], ['pulse', t.properties.motionPulse],
+      ]} onChange={(value) => update((item) => {
+        item.motion = value
+          ? [value === 'drift' ? { type: 'drift', amplitude: [.25, .2, .25], period: 3, phase: 0 }
+            : value === 'spin' ? { type: 'spin', axis: 'y', speed: .8 }
+              : value === 'sway' ? { type: 'sway', amplitude: 5, period: 2.5, phase: 0 }
+                : value === 'pulse' ? { type: 'pulse', amplitude: .06, period: 2, phase: 0 }
+                  : { type: 'bob', amplitude: .18, period: 2.5, phase: 0 }]
+          : []
+      })} />
+    </InspectorGroup>
+  </PropertySection>
 }
 
 /**

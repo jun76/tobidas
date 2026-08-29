@@ -124,6 +124,64 @@
   letter-spacing: 0.05em;
 }
 
+.inspectorScopeTitle {
+  margin: 2px 0 4px;
+  padding: 6px 0 8px;
+  color: #e0e1ec;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid #454552;
+}
+
+.inspectorGroup {
+  margin: 0;
+  padding: 0 0 4px;
+  border-bottom: 1px solid #34343e;
+}
+
+.inspectorGroup + .inspectorGroup {
+  margin-top: 4px;
+}
+
+.inspectorGroup > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  color: #b9bed2;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  list-style: none;
+}
+
+.inspectorGroup > summary::-webkit-details-marker {
+  display: none;
+}
+
+.inspectorGroup > summary::before {
+  content: '▾';
+  color: #9298b5;
+  font-size: 11px;
+}
+
+.inspectorGroup:not([open]) > summary::before {
+  content: '▸';
+}
+
+.inspectorGroupTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 4px 0 8px;
+  color: #aeb2c8;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 /* --- toolbar --- */
 .toolbar {
   display: flex;
