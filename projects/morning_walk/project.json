@@ -7605,6 +7605,7 @@
             "type": "particle",
             "width": 1.2,
             "height": 1.2,
+            "billboard": false,
             "particles": {
               "color": "#ffe6b0",
               "count": 6,

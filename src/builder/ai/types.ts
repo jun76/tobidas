@@ -24,6 +24,7 @@ export interface AiElementSummary {
   opacity: number
   width?: number
   height?: number
+  billboard?: boolean
   image?: string
   backImage?: string
   videoAudio?: EmbeddedVideoAudio

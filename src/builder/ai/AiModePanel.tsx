@@ -168,6 +168,7 @@ export function AiModePanel() {
       } : selectedElement.type === 'particle' ? {
         width: number('width'),
         height: number('height'),
+        billboard: data.get('billboard') === 'on',
         particles: {
           color: String(data.get('particles-color') ?? ''),
           count: Math.round(number('particles-count')),
@@ -434,6 +435,8 @@ export function AiModePanel() {
               <legend>{t.presets['light-particles']}</legend>
               <AiNumber name="width" label={t.ai.width} value={selectedElement.width} min={0.01} step="any" />
               <AiNumber name="height" label={t.ai.height} value={selectedElement.height} min={0.01} step="any" />
+              <div className={st.row}><label htmlFor="ai-billboard" className={st.rowLabel}>{t.properties.billboard}</label>
+                <input id="ai-billboard" name="billboard" type="checkbox" defaultChecked={selectedElement.billboard} /></div>
               <AiText name="particles-color" label={t.properties.effectColor} value={selectedElement.particles.color} />
               <AiNumber name="particles-count" label={t.properties.particleCount} value={selectedElement.particles.count} min={1} max={200} step={1} />
               <AiNumber name="particles-size" label={t.properties.effectSize} value={selectedElement.particles.size} min={0.01} step="any" />

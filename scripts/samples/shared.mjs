@@ -433,7 +433,7 @@ function createSpread({ workId, index, name, hold = 6, turn = 1.7, leftPage, rig
     const owner = pageOwner(x)
     return add({
       ...base(id, { name: label, parent: owner.parent, layer, position: [owner.localX, y, z] }),
-      type: 'particle', width: size, height: size,
+      type: 'particle', width: size, height: size, billboard: false,
       particles: { color, count: 6, size: .45, drift: .05, period: 11 },
     })
   }

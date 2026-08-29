@@ -373,7 +373,7 @@ function makeTools(): WebMcpTool[] {
       inputSchema: { type: 'object', properties: {
         spreadId: { type: 'string', description: 'Stable ID of the spread containing the element.' },
         elementId: { type: 'string', description: 'Stable ID of the element to update.' },
-        input: { type: 'object', description: 'Typed element fields such as name, position, rotation, scale, layer, visibility, opacity, dimensions, text, colors, particle settings, motion, or video audio. For a particle part, provide only its dimensions and particle settings; do not pass image or text fields. Do not pass arbitrary project JSON.' },
+        input: { type: 'object', description: 'Typed element fields such as name, position, rotation, scale, layer, visibility, opacity, dimensions, camera-facing, text, colors, particle settings, motion, or video audio. For a particle part, provide only its dimensions, camera-facing setting, and particle settings; do not pass image or text fields. Do not pass arbitrary project JSON.' },
       }, required: ['spreadId', 'elementId', 'input'] },
       execute: async (input, options) => {
         checkAborted(options?.signal)

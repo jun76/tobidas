@@ -187,6 +187,7 @@ export function updateAiElement(spreadId: string, elementId: string, input: AiEl
     } else if (target.type === 'particle') {
       if (input.width !== undefined) target.width = input.width
       if (input.height !== undefined) target.height = input.height
+      if (input.billboard !== undefined) target.billboard = input.billboard
       if (input.particles !== undefined) target.particles = {
         ...target.particles,
         ...structuredClone(input.particles),

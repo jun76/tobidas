@@ -426,6 +426,9 @@ function ParticleFields({ element, update, onKey }: {
     <div className={st.subsectionTitle}>{t.presets['light-particles']}</div>
     <Num label={t.properties.width} value={element.width} onChange={(value) => update((item) => { if (item.type === 'particle') item.width = Math.max(.01, value) })} />
     <Num label={t.properties.height} value={element.height} onChange={(value) => update((item) => { if (item.type === 'particle') item.height = Math.max(.01, value) })} />
+    <label><input type="checkbox" aria-label={t.properties.billboard} checked={element.billboard} onChange={(event) => update((item) => {
+      if (item.type === 'particle') item.billboard = event.target.checked
+    })} /> {t.properties.billboard}</label>
     <Color label={t.properties.effectColor} value={element.particles.color} onChange={(value) => update((item) => {
       if (item.type === 'particle') item.particles.color = value
     })} onKey={() => onKey('visual.particles.color', element.particles.color)} />

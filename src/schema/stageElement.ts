@@ -132,6 +132,7 @@ const currentStageElementSchema = z.discriminatedUnion('type', [
     type: z.literal('particle'),
     width: z.number().positive(),
     height: z.number().positive(),
+    billboard: z.boolean().default(false),
     particles: particleSettingsSchema.default(() => ({ ...defaultParticleSettings })),
   }),
   z.object({ ...common, type: z.literal('group') }),
@@ -173,7 +174,7 @@ export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown
       && (!input.backgroundColor || input.backgroundColor === '#00000000')
     if (hasLegacyParticle) {
       const { enabled: _enabled, ...settings } = particles as Record<string, unknown>
-      return { ...input, type: 'particle', particles: settings }
+      return { ...input, type: 'particle', billboard: false, particles: settings }
     }
     return input
   }
@@ -207,7 +208,7 @@ export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown
     delete base.size
     return {
       ...base,
-      type: 'particle', width: extent, height: extent,
+      type: 'particle', width: extent, height: extent, billboard: false,
       particles: { color: input.color ?? '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
     }
   }

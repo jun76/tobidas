@@ -71,11 +71,14 @@ export function ElementVisual({ element, assets, opacityMul, openFactor = 1, ins
 }) {
   if (element.type === 'group') return null
   const particles = particleSettings(element)
-  if (element.type === 'particle') return <SparkleCloud seed={element.id}
-    width={element.width * openFactor} height={element.height * openFactor} count={particles!.count}
-    color={particles!.color} drift={particles!.drift} period={particles!.period}
-    size={particles!.size} opacity={element.opacity * opacityMul * openFactor}
-    renderOrder={101 + element.layer} />
+  if (element.type === 'particle') return <>
+    <ParticleHitBox width={element.width * openFactor} height={element.height * openFactor} />
+    <SparkleCloud seed={element.id}
+      width={element.width * openFactor} height={element.height * openFactor} count={particles!.count}
+      color={particles!.color} drift={particles!.drift} period={particles!.period}
+      size={particles!.size} opacity={element.opacity * opacityMul * openFactor}
+      renderOrder={101 + element.layer} />
+  </>
   return <>
     <VisualPlane element={element} asset={assetFor(assets, element.image)} back={assetFor(assets, element.backImage)}
       opacity={element.opacity * opacityMul} instanceKey={instanceKey ?? element.id} />
@@ -249,6 +252,14 @@ function SparklePoints({ geometry, color, opacity, renderOrder, drift = SPARKLE.
   return <mesh geometry={geometry} material={material} renderOrder={renderOrder} />
 }
 
+/** 粒の見た目に依存せず、部品の矩形全体を編集画面のヒット領域にする。 */
+function ParticleHitBox({ width, height }: { width: number; height: number }) {
+  return <mesh>
+    <planeGeometry args={[width, height]} />
+    <meshBasicMaterial transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
+  </mesh>
+}
+
 export function WingVisual({ element, half, assets, opacityMul, instanceKey, face }: {
   element: StageElement
   half: NonNullable<StowItem['half']>
@@ -322,6 +333,7 @@ function ParticleWing({ element, particles, half, opacityMul }: {
     element.id, element.width, element.height, particles.count, half.u0, half.u1,
   ), [element.id, element.width, element.height, particles.count, half.u0, half.u1])
   return <>
+    <ParticleHitBox width={half.width} height={element.height} />
     <SparklePoints geometry={geometry} color={particles.color} opacity={element.opacity * opacityMul}
       renderOrder={101 + element.layer} drift={particles.drift}
       period={particles.period} size={particles.size} />

@@ -77,8 +77,33 @@ describe('AI commands', () => {
     const created = useBuilderStore.getState().project.book.spreads[0].elements[0]
     expect(created.type).toBe('particle')
     expect(created.type === 'particle' && created.particles.count).toBe(6)
+    expect(created.type === 'particle' && created.billboard).toBe(false)
     expect(created.type === 'particle' && 'image' in created).toBe(false)
     expect(created.type === 'particle' && 'text' in created).toBe(false)
+  })
+
+  it('updates the camera-facing setting of an independent particle part', () => {
+    const spreadId = setup()
+    const createdResult = createAiVisual({ spreadId, side: 'right', presetId: 'light-particles' })
+    if (!createdResult.ok || !createdResult.target) throw new Error('particle was not created')
+    const result = updateAiElement(spreadId, createdResult.target.id, {
+      name: 'Camera-facing particles',
+      position: [0, 0, 0],
+      rotation: [0, 0, 0],
+      scale: [1, 1, 1],
+      layer: 0,
+      visible: true,
+      opacity: 1,
+      width: 2,
+      height: 2,
+      billboard: true,
+      particles: { color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
+      motion: [],
+    })
+
+    expect(result.ok).toBe(true)
+    const updated = useBuilderStore.getState().project.book.spreads[0].elements[0]
+    expect(updated.type === 'particle' && updated.billboard).toBe(true)
   })
 
   it('updates a part through the normal constraint and validation path', () => {

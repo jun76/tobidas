@@ -100,7 +100,7 @@ export function analyzeSpreadContainment(book: Book, spread: Spread): Containmen
     }
     const item = byId.get(root.id)
     if (!item) continue
-    if (item.mechanism === 'airborne-route' && element.type === 'visual') airborne++
+    if (item.mechanism === 'airborne-route' && (element.type === 'visual' || element.type === 'particle')) airborne++
     if (root.id === element.id && item.fitScale < 1) {
       warnings.push(issue(element, 'shrunk-to-fit',
         `must shrink to ${(item.fitScale * 100).toFixed(0)}% while stowing to fit on the paper`
@@ -291,7 +291,7 @@ function chainBox(chain: StageElement[], motionTime: number): THREE.Box3 | undef
   const element = chain[chain.length - 1]
   let box = localBox(element)
   if (!box) return undefined
-  if (element.type === 'visual' && element.billboard) {
+  if ((element.type === 'visual' || element.type === 'particle') && element.billboard) {
     const reach = Math.max(box.min.length(), box.max.length())
     box = new THREE.Box3(new THREE.Vector3(-reach, -reach, -reach), new THREE.Vector3(reach, reach, reach))
   }

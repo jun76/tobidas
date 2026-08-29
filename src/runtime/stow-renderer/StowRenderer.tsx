@@ -99,7 +99,7 @@ function StowNode({ item, childrenMap, assets, clocks, t, spread, spreadTime, is
       event.stopPropagation()
       onSelect?.({ type: 'element', spreadId, elementId: element.id })
     }}>
-    {element.type === 'visual' && element.billboard && !item.half
+    {(element.type === 'visual' || element.type === 'particle') && element.billboard && !item.half
       ? <CameraFacing strength={facingStrength}>{visual}</CameraFacing>
       : visual}
     {!item.half && (childrenMap.get(element.id) ?? []).map((child) => (
@@ -155,7 +155,7 @@ function ChildNode({ element: sourceElement, childrenMap, assets, clocks, spread
       event.stopPropagation()
       onSelect?.({ type: 'element', spreadId, elementId: element.id })
     }}>
-    {element.type === 'visual' && element.billboard
+    {(element.type === 'visual' || element.type === 'particle') && element.billboard
       ? <CameraFacing strength={facingStrength}>{visual}</CameraFacing>
       : visual}
     {(childrenMap.get(element.id) ?? []).map((child) => (
@@ -313,6 +313,9 @@ function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, e
 }) {
   const left = useRef<THREE.Mesh>(null)
   const right = useRef<THREE.Mesh>(null)
+  const leftHit = useRef<THREE.Mesh>(null)
+  const rightHit = useRef<THREE.Mesh>(null)
+  const hitboxGeometry = useMemo(() => new THREE.PlaneGeometry(1, 1), [])
   const geometries = useMemo(() => ({
     left: spanParticleGeometry(element, span.creaseU, 'left'),
     right: spanParticleGeometry(element, span.creaseU, 'right'),
@@ -326,13 +329,14 @@ function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, e
     geometries.left.dispose(); geometries.right.dispose()
     materials.left.dispose(); materials.right.dispose()
   }, [geometries, materials])
+  useEffect(() => () => hitboxGeometry.dispose(), [hitboxGeometry])
   const basis = useMemo(() => ({ x: new THREE.Vector3(), y: new THREE.Vector3(), z: new THREE.Vector3() }), [])
   const apply = (pose: VFoldSpanPose) => {
-    const wings: Array<[THREE.Mesh | null, [number, number, number], number, SparkleMaterial]> = [
-      [left.current, pose.leftDir, span.widthLeft, materials.left],
-      [right.current, pose.rightDir, span.widthRight, materials.right],
+    const wings: Array<[THREE.Mesh | null, THREE.Mesh | null, [number, number, number], number, SparkleMaterial]> = [
+      [left.current, leftHit.current, pose.leftDir, span.widthLeft, materials.left],
+      [right.current, rightHit.current, pose.rightDir, span.widthRight, materials.right],
     ]
-    for (const [points, direction, width, material] of wings) {
+    for (const [points, hitbox, direction, width, material] of wings) {
       if (!points) continue
       basis.x.set(...direction).multiplyScalar(width * pose.scaleMul)
       basis.y.set(...pose.creaseDir).multiplyScalar(span.height * pose.scaleMul)
@@ -340,6 +344,10 @@ function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, e
       points.matrix.makeBasis(basis.x, basis.y, basis.z)
       points.matrix.setPosition(...pose.origin)
       points.matrixWorldNeedsUpdate = true
+      if (hitbox) {
+        hitbox.matrix.copy(points.matrix)
+        hitbox.matrixWorldNeedsUpdate = true
+      }
       material.uniforms.color.value.set(particles.color)
       material.uniforms.opacity.value = element.opacity * pose.opacityMul
     }
@@ -365,6 +373,12 @@ function SpanningParticleNode({ span, leftAngle, rightAngle, clocks, clockKey, e
       renderOrder={100 + element.layer} onClick={select} />
     <mesh ref={right} geometry={geometries.right} material={materials.right} matrixAutoUpdate={false}
       renderOrder={100 + element.layer} onClick={select} />
+    <mesh ref={leftHit} geometry={hitboxGeometry} matrixAutoUpdate={false} onClick={select}>
+      <meshBasicMaterial transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
+    </mesh>
+    <mesh ref={rightHit} geometry={hitboxGeometry} matrixAutoUpdate={false} onClick={select}>
+      <meshBasicMaterial transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
+    </mesh>
   </>
 }
 

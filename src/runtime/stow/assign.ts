@@ -147,7 +147,7 @@ function spineCrossingKind(
   children: Map<string, StageElement[]>,
 ): 'flat' | 'upright' | null {
   const dimensions = planarDimensions(element)
-  if (!dimensions || element.type === 'visual' && element.billboard || hasChildren) return null
+  if (!dimensions || ((element.type === 'visual' || element.type === 'particle') && element.billboard) || hasChildren) return null
   if (resolveMechanism(element, isAirborne) === 'airborne-route') return null
   const bounds = spreadOpenBounds(element, children, pageWidth)
   const x0 = bounds.min[0]

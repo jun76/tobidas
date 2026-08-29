@@ -64,6 +64,7 @@ function elementSummary(element: StageElement, spreadId: string, trackIds: strin
     ...(element.type === 'visual' ? {
       width: element.width,
       height: element.height,
+      billboard: element.billboard,
       image: element.image,
       backImage: element.backImage,
       videoAudio: element.videoAudio,
@@ -74,6 +75,7 @@ function elementSummary(element: StageElement, spreadId: string, trackIds: strin
     ...(element.type === 'particle' ? {
       width: element.width,
       height: element.height,
+      billboard: element.billboard,
       particles: true,
       particleSettings: { ...element.particles },
     } : {}),

@@ -42,7 +42,7 @@ export function SelectionGizmo() {
       if (element.type !== 'group') {
         visualOffset = [(0.5 - element.pivot[0]) * size[0], (0.5 - element.pivot[1]) * size[1]]
       }
-      billboard = element.type === 'visual' && element.billboard
+      billboard = (element.type === 'visual' || element.type === 'particle') && element.billboard
     }
   }
 
