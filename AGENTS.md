@@ -42,7 +42,9 @@ WebMCPの有無で作品データ、編集規則、検証、undo、自動保存�
 
 公式公開版は、`https://tobidas.9rsgy78c9c.workers.dev` とブラウザ提供元に対応するWebMCP Origin Trialトークンをビルド時にHTMLへ組み込み、そのトークンに対応するChromeまたはEdgeで利用者側のブラウザ設定を不要にします。
 ローカルclone版では、Chrome、Edge、Firefoxを判定し、それぞれのWebMCP設定を有効にして再起動する手順を案内します。
-ブラウザAPIの有効化とは別に、ページのツールを発見・呼び出せるWebMCP対応AI環境が必要です。
+ブラウザAPIの有効化とは別に、ページ定義ツールの一覧取得と実行に対応したAI環境が必要です。
+この対応状況はAIクライアントの種類、バージョン、選択モデルによって異なる場合があります。
+UIの「AIツール利用可能」はページへの登録完了だけを示すため、実際の接続確認では呼び出し元AIから `tobidas-get-state` を実行します。
 
 2026年8月26日のローカル実測では、Chrome 151とEdge 151は既定状態で `modelContext` がなく、各ブラウザ設定の「WebMCP for testing」を有効にすると登録とツール実行が成功しました。
 Firefox 154.0.1は通常起動でAPIがなく、`dom.modelcontext.enabled=true` と `dom.modelcontext.testing.enabled=true` を実験用に指定すると、

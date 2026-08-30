@@ -100,7 +100,7 @@ export const ja = {
     webMcpFirefoxSettingsHint: '「dom.modelcontext.enabled」と「dom.modelcontext.testing.enabled」をtrueにします。',
     webMcpFirefoxSettingsUrl: 'about:config',
     webMcpAiEnvironment: '対応AI環境',
-    webMcpAiEnvironmentHint: 'ブラウザ側のWebMCPに加えて、ページのツールを発見・呼び出せるAIクライアントが必要です。',
+    webMcpAiEnvironmentHint: 'ブラウザ側のWebMCPに加えて、ページ定義ツールの一覧取得と実行に対応したAIクライアントが必要です。対応状況はクライアントの種類、バージョン、選択モデルによって異なります。',
     webMcpFallback: '非対応環境',
     webMcpFallbackHint: '「AIモード」から従来の意味付きDOM、ARIA、フォーム操作を利用できます。ユーザー向けのAIモードは一つのままです。',
     webMcpCopy: '設定をコピー',

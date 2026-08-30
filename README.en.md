@@ -96,8 +96,11 @@ tools.map((tool) => tool.name)
 | Local clone | Enable the browser-specific WebMCP setting listed below in Chrome, Edge, or Firefox | Restart the browser and open `http://localhost:5174/` |
 | Browser or AI environment without WebMCP | Do not use WebMCP | Use the same AI mode for the existing semantic DOM, ARIA, and form controls |
 
-Enabling the browser API through an Origin Trial or browser-specific setting is separate from using an AI environment that can discover and call page tools.
+Enabling the browser API through an Origin Trial or browser-specific setting is separate from using an AI environment that can discover and call page-defined tools.
 Both conditions are required for the structured WebMCP tools.
+Support for listing and invoking page tools can vary with the AI client, its version, and the selected model.
+The toolbar's **AI tools available** status means that the page registered its tools; it does not guarantee that the calling AI can retrieve them.
+To verify the complete path, list the tools from the AI environment and call `tobidas-get-state` first.
 The Chrome WebMCP Origin Trial covers Chrome 149 through 156 and is scheduled to end on November 17, 2026.
 Use the [WebMCP Origin Trial registration page](https://developer.chrome.com/origintrials/#/register_trial/4163014905550602241) for the official deployment.
 
@@ -117,7 +120,7 @@ Firefox's `dom.modelcontext.*` preferences are experimental testing controls. Fi
 See the [WebMCP implementation status](https://github.com/webmachinelearning/webmcp/blob/main/implementation-status.md) for the broader browser status.
 
 When WebMCP is unavailable, the AI mode continues to use its semantic DOM, ARIA, and form controls.
-Availability depends on the browser, its settings or Origin Trial, and the AI client that opens the page.
+Availability is determined by the combination of browser support or Origin Trial enablement and the calling AI's ability to list and invoke page tools.
 
 #### Available tools
 
@@ -242,6 +245,17 @@ npm run build
 
 Agent instructions for creating books are in [AGENTS.md](./AGENTS.md).
 Instructions for developing tobidas itself are in [AGENTS_DEV.md](./AGENTS_DEV.md).
+
+## FAQ
+
+### Why can't I call WebMCP tools from gpt-5.6-luna in the Codex App?
+
+This appears to be a model-specific limitation or integration issue in the Codex App's Browser path, rather than a tobidas tool-registration failure.
+In the tested environment, the page-side WebMCP API and **AI tools available** status were active, but gpt-5.6-luna stopped while listing tools with `gpt-5.6-luna does not support command "webmcp_list_tools"`. On the same page and browser setup, gpt-5.6-sol and gpt-5.6-terra successfully listed the tools and called `tobidas-get-state`.
+
+Because the error occurs inside the Codex App before `tobidas-get-state` is invoked, it does not indicate a failure in tobidas's WebMCP registration, Origin Trial token, or browser setting. OpenAI's public documentation does not explicitly state that gpt-5.6-luna is unsupported for the Codex App's `webmcp_list_tools` command, and no exact matching official issue has been identified. The official tracker does, however, contain open bug reports about [Browser plugin availability changing by model](https://github.com/openai/codex/issues/33592) and [missing tool injection for gpt-5.6-terra/luna](https://github.com/openai/codex/issues/33250).
+
+For now, use gpt-5.6-sol or gpt-5.6-terra, or fall back to the same **AI mode** and its semantic DOM, ARIA, and form controls. AI-client and model support can change, so tobidas does not require a particular Codex model.
 
 ## Privacy
 

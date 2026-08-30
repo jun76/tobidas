@@ -97,7 +97,7 @@ export const en: Dict = {
     webMcpFirefoxSettingsHint: 'Set dom.modelcontext.enabled and dom.modelcontext.testing.enabled to true.',
     webMcpFirefoxSettingsUrl: 'about:config',
     webMcpAiEnvironment: 'Compatible AI environment',
-    webMcpAiEnvironmentHint: 'In addition to browser-side WebMCP, an AI client that can discover and call the page tools is required.',
+    webMcpAiEnvironmentHint: 'In addition to browser-side WebMCP, the AI client must be able to list and invoke page-defined tools. Support can vary by client, version, and selected model.',
     webMcpFallback: 'Unsupported environment',
     webMcpFallbackHint: 'Use AI mode for the existing semantic DOM, ARIA, and form controls. There is still only one user-facing AI mode.',
     webMcpCopy: 'Copy setting',

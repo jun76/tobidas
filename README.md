@@ -99,7 +99,10 @@ tools.map((tool) => tool.name)
 | WebMCP非対応のブラウザ・AI環境 | WebMCPは使わない | 従来どおり一つの「AIモード」から意味付きDOM、ARIA、フォーム操作を使う |
 
 Origin Trialや各ブラウザ設定でブラウザAPIを有効にすることと、そのツールを発見・呼び出せるAI環境を使うことは別の条件です。
-ブラウザ側でWebMCPが有効でも、呼び出し元のAIクライアントがWebMCPに対応していなければ構造化ツールは利用できません。
+ブラウザ側でWebMCPが有効でも、呼び出し元のAIクライアントがページ定義ツールの一覧取得と実行に対応していなければ、構造化ツールは利用できません。
+この対応状況はAIクライアントの種類、バージョン、選択モデルによって異なる場合があります。
+ツールバーの「AIツール利用可能」はページへの登録完了を示す表示であり、呼び出し元AIからの取得成功までは保証しません。
+利用時はAI環境からツール一覧を取得し、まず `tobidas-get-state` を呼び出して接続を確認します。
 ChromeのWebMCP Origin TrialはChrome 149〜156が対象で、終了予定日は2026年11月17日です。
 公式公開版の登録には[WebMCP Origin Trial登録画面](https://developer.chrome.com/origintrials/#/register_trial/4163014905550602241)を使います。
 
@@ -118,8 +121,8 @@ WebMCPの対応状況はブラウザごとに異なります。
 Firefoxの `dom.modelcontext.*` は実験・テスト用の内部設定です。Firefoxでは現状、旧APIの `navigator.modelContext` 経由でimperativeツールを利用します。
 WebMCPの対応状況は、[WebMCPの実装状況](https://github.com/webmachinelearning/webmcp/blob/main/implementation-status.md)を参照してください。
 
-WebMCPを使えないブラウザでは、AIモードのDOM、ARIA、フォーム操作がそのまま使われます。
-ブラウザの種類だけでなく、ブラウザ設定またはOrigin Trial、対応AIの有無によって利用可否が決まります。
+WebMCPを使えない環境では、AIモードのDOM、ARIA、フォーム操作がそのまま使われます。
+利用可否はブラウザだけで決まらず、ブラウザ設定またはOrigin Trialと、呼び出し元AIによるページツールの一覧取得・実行対応の組み合わせで決まります。
 
 #### 提供するツール
 
@@ -249,6 +252,17 @@ npm run build
 
 エージェント向けの作品制作規約は[AGENTS.md](./AGENTS.md)、
 tobidas本体の実装規約は[AGENTS_DEV.md](./AGENTS_DEV.md)にまとめています。
+
+## FAQ
+
+### Codex Appのgpt-5.6-lunaからWebMCP toolを呼べないのですが？
+
+tobidasのツール登録ではなく、呼び出し元であるCodex AppのBrowser連携におけるモデル別対応の問題と考えられます。
+確認した環境では、ページ側のWebMCP APIと「AIツール利用可能」の表示は有効でも、gpt-5.6-lunaはツール一覧取得時に `gpt-5.6-luna does not support command "webmcp_list_tools"` で停止しました。同じページとブラウザ環境で、gpt-5.6-solとgpt-5.6-terraからはツール一覧の取得と `tobidas-get-state` の実行に成功しています。
+
+このエラーは `tobidas-get-state` を呼ぶ前にCodex App側で発生するため、tobidasのWebMCP登録、Origin Trial、ブラウザ設定の失敗ではありません。OpenAIの公開情報には、gpt-5.6-lunaがCodex Appの `webmcp_list_tools` に非対応であるという明示的な記載はなく、完全一致する公式issueも確認できていません。一方、公式trackerには[モデルによってBrowserプラグインの利用可否が変わる問題](https://github.com/openai/codex/issues/33592)や、[gpt-5.6-terra／lunaでツール注入が欠落する問題](https://github.com/openai/codex/issues/33250)が未解決バグとして報告されています。
+
+現時点ではgpt-5.6-solまたはgpt-5.6-terraを使うか、一つの「AIモード」から意味付きDOM、ARIA、フォーム操作へフォールバックしてください。AIクライアントやモデルの対応は更新される可能性があるため、tobidas自体は特定のCodexモデルを必須条件にしていません。
 
 ## プライバシー
 
