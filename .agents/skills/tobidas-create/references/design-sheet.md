@@ -1,9 +1,9 @@
-# 設計書の形式
+# Design sheet format
 
-`design.md` は、初期プロンプトから決めたことと、ユーザーへ確認することを分けて記録する。
-確定していない項目は、素材生成や配置へ進む前に確認する。
+In `design.md`, record decisions derived from the initial prompt separately from items that require user confirmation.
+Confirm unresolved items before proceeding to asset generation or placement.
 
-## 冒頭のメタデータ
+## Opening metadata
 
 ```yaml
 title: "English title"
@@ -18,62 +18,62 @@ save_path: "<Documents>/tobidas/projects/<slug>"
 status: "draft"
 ```
 
-`story_spreads` は表紙を含まない見開き数である。
-`parts_per_spread` は地面背景を含む最小数であり、場面に必要な部品数を下回らせない。
+`story_spreads` is the number of story spreads excluding the cover.
+`parts_per_spread` is the minimum number including the ground background; do not set it below the number of parts the scene requires.
 
-## 確認事項
+## Confirmation items
 
 ```markdown
-## 推定した項目
+## Estimated items
 
-- タイトル：...
-- テキスト言語：...
-- 画像テイスト：...
-- 見開き数：...
-- 保存先：...
+- Title: ...
+- Text language: ...
+- Image style: ...
+- Number of spreads: ...
+- Save path: ...
 
-## 追加確認
+## Additional questions
 
-1. 読者年齢や読み聞かせ向けかどうか：未指定なら幼児から低学年向けとしてよいか。
-2. 雰囲気や結末の制約：未指定なら安心できる結末としてよいか。
-3. 固有の人物設定、避けたい表現、音声や効果音の制約：指定があれば反映する。
+1. Reader age and whether the work is intended for reading aloud: if unspecified, may it target preschool through early elementary readers?
+2. Constraints on tone or ending: if unspecified, may it have a reassuring ending?
+3. Specific character settings, content to avoid, or constraints on audio and sound effects: apply any that are provided.
 
-上記の推定値と既定値で制作を進めてよいですか。
+May I proceed with the estimates and defaults above?
 ```
 
-既定値で解決できる項目を質問だけで止めず、草案に値を入れて確認する。
-ユーザーが既定値を採用すると答えたら `status: confirmed` に変更する。
+Do not stop at questions for items that defaults can resolve; put values in the draft and ask for confirmation.
+When the user accepts the defaults, change the metadata to `status: confirmed`.
 
-## 見開き表
+## Spread table
 
-ページごとに次の表を作る。
+Create the following table for every spread.
 
-| 項目 | 内容 |
+| Item | Content |
 | --- | --- |
-| 場面 | その見開きで起きる出来事 |
-| 作中テキスト | 指定言語の短い本文 |
-| 本文の扱い | 共有 `caption` 設定（所有ページ、layer 9、v 0.92 基準）。保持中もページ遷移中も演出なし |
-| 見開き地面 | 地面、床、水面、道など。主要な建物や人物は描かない |
-| 空間背景 | 地面とは別の淡い遠景。立体パーツと同じ主役を置かない |
-| 背景パネルの起立順 | 背景パネルの部品名・素材ID、`stow.stagger: 0` |
-| 各部品の初期配置 | 背景パネルの下端より上へ部品を出さず、背景パネルより手前の `z` に置く。意図的な浮遊部品は理由を記録する |
-| 立体パーツ | 地面以外に最低3点。人物、建物、動物、道具など |
-| カメラ | 保持中の寄り引き、視線誘導、ページ遷移との関係 |
-| 光源 | 位置、色、強さ、場面の時間帯 |
-| 効果音 | 音の種類、発生条件、時刻 |
-| 配色 | 紙面、表紙、文字、光の色 |
-| 検証リスク | 中央線、隣接ページ、背景パネルの貫通、初期配置の上下・前後関係、重なり、端切れ、音の重複 |
+| Scene | What happens on the spread |
+| In-story text | Short body text in the chosen language |
+| Body-text treatment | Shared `caption` settings (owning page, layer 9, baseline v 0.92). No direction during holds or page transitions |
+| Spread ground | Ground, floor, water surface, path, and similar surfaces. Do not draw major buildings or people |
+| Spatial background | A pale distant view separate from the ground. Do not feature the same subject as the 3D parts |
+| Background-panel rise order | Background-panel part name and asset ID; `stow.stagger: 0` |
+| Initial placement of each part | Keep parts no higher than the background panel's lower edge and at a `z` in front of the panel. Record the reason for intentional floating parts |
+| 3D parts | At least three besides the ground, such as people, buildings, animals, and tools |
+| Camera | Camera distance during the hold, guidance of the reader's gaze, and relationship to page transitions |
+| Lights | Position, color, intensity, and time of day for the scene |
+| Sound effects | Type of sound, trigger condition, and time |
+| Color palette | Paper, cover, text, and light colors |
+| Verification risks | Center fold, adjacent pages, background-panel intersections, initial vertical/depth relationships, overlap, clipping, and duplicate sounds |
 
-## 素材プロンプトの分割
+## Divide asset prompts by role
 
-画像生成の指示は、次の4種類に分ける。
+Divide image-generation instructions into these four types:
 
-1. 表紙：タイトル文字を後処理で焼き込む場合は文字なしで生成する。
-2. 見開き地面：淡い質感と接地表現に限定する。
-3. 空間背景：低コントラストの遠景に限定し、立体パーツの主役を描かない。
-4. 立体パーツ：透過背景、接地線、単独のシルエット、不要なチェッカーボードなしを指定する。
+1. Cover: generate it without text when the title will be baked in during post-processing.
+2. Spread ground: limit it to subtle texture and surface-contact treatment.
+3. Spatial background: limit it to a low-contrast distant view and do not draw the subject of a 3D part.
+4. 3D parts: specify a transparent background, a ground-contact line, an isolated silhouette, and no unwanted checkerboard.
 
-同じ建物や人物を地面、空間背景、立体パーツの複数へ描かない。
-人物・動物の立ち絵は見開きごとに別素材・別ファイル名にし、同じ立ち絵をページ間で再利用しない。
-再登場する人物・動物は、同じ画風と人物設定を保った場面別の描き下ろしにする。
-生成後に素材を一覧表示し、背景へ物語の主役が入り込んでいないか確認する。
+Do not draw the same building or person in more than one of the ground, spatial background, and 3D parts.
+Use a separate asset and filename for character and animal art on each spread; do not reuse the same illustration across pages.
+For returning characters and animals, create scene-specific new art while preserving the same art style and character design.
+After generation, display the asset list and confirm that the story's subject has not slipped into a background.

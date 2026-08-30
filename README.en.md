@@ -62,14 +62,16 @@ Images can be placed by page and normalized coordinates without dragging on the 
 When page constraints correct a requested position or page assignment, the operation result exposes both the requested and accepted values.
 Every control has a semantic name and role, so browser-use AI does not need to depend on visual order or CSS classes.
 
-Append `?ai=1` to the URL when a browser-use AI should start with the mode enabled.
+WebMCP-capable browsers can discover the page tools as soon as the page loads, without a special query parameter.
+Open the AI mode workspace from the same toolbar button when it is useful, including as the fallback in environments without WebMCP.
+The **AI operation tips** badge distinguishes the public Origin Trial, browser-specific settings for Chrome, Edge, and Firefox, compatible AI clients, and the fallback path.
 The mode does not add an AI service or external communication, so projects and assets remain in the browser.
 Its enabled state and operation results are not stored in project data.
 
 ### Use WebMCP
 
-When the browser exposes WebMCP, tobidas registers structured tools from the same AI mode.
-WebMCP is an additional tool path, not a separate user-facing mode.
+When the browser exposes WebMCP, tobidas registers structured tools when the page starts.
+WebMCP is an additional tool path, not a separate user-facing mode, and the AI mode workspace does not need to be open for tool discovery.
 
 The tools accept stable target IDs, normalized coordinates, and typed timeline values directly.
 Tool results include the committed target, any placement or layout corrections, and validation counts.
@@ -86,30 +88,40 @@ const tools = context ? await context.getTools() : []
 tools.map((tool) => tool.name)
 ```
 
+#### Access paths
+
+| Where tobidas runs | Browser-side enablement | User action |
+| --- | --- | --- |
+| [Public web app](https://tobidas.9rsgy78c9c.workers.dev/) | Embed a WebMCP Origin Trial token issued for the target origin and browser in the served HTML | Chrome or Edge needs no setting when its matching token is embedded; Firefox uses its browser setting |
+| Local clone | Enable the browser-specific WebMCP setting listed below in Chrome, Edge, or Firefox | Restart the browser and open `http://localhost:5174/` |
+| Browser or AI environment without WebMCP | Do not use WebMCP | Use the same AI mode for the existing semantic DOM, ARIA, and form controls |
+
+Enabling the browser API through an Origin Trial or browser-specific setting is separate from using an AI environment that can discover and call page tools.
+Both conditions are required for the structured WebMCP tools.
+The Chrome WebMCP Origin Trial covers Chrome 149 through 156 and is scheduled to end on November 17, 2026.
+Use the [WebMCP Origin Trial registration page](https://developer.chrome.com/origintrials/#/register_trial/4163014905550602241) for the official deployment.
+
 #### Browser compatibility
 
-The following results were measured on August 26, 2026 by opening `http://localhost:5174/?ai=1` from each local browser executable.
-Chrome and Edge were launched with `--enable-experimental-web-platform-features --enable-blink-features=WebMCP` for the experimental run.
-Firefox was checked both with its normal settings and through a Firefox WebDriver BiDi path with its WebMCP testing preferences enabled.
+WebMCP availability differs by browser.
 
-| Browser | Normal launch | WebMCP-enabled launch | Observed result |
-| --- | --- | --- | --- |
-| Chrome 151.0.7922.170 | No `modelContext` | `modelContext` available | Discovered 20 tools; `get-state` and `create-visual` executed successfully |
-| Edge 151.0.4129.107 | No `modelContext` | `modelContext` available | Discovered 20 tools; `get-state` and `create-visual` executed successfully |
-| Firefox 154.0.1 | No `modelContext` | `--pref dom.modelcontext.enabled=true --pref dom.modelcontext.testing.enabled=true` | Discovered 19 imperative tools through `navigator.modelContext`; `get-state` and `create-visual` executed successfully. `document.modelContext` remains unavailable |
+| Browser | WebMCP access path | Confirmed behavior |
+| --- | --- | --- |
+| Chrome | Origin Trial for the public app; Chrome setting for a local clone | 19 imperative tools; declarative form tools are available where the browser supports them |
+| Edge | Edge Origin Trial or Edge setting | 19 imperative tools; declarative form tools are available where the browser supports them |
+| Firefox | Enable `dom.modelcontext.enabled` and `dom.modelcontext.testing.enabled` in `about:config` | 19 imperative tools through `navigator.modelContext`; `document.modelContext` and declarative form tools are not confirmed |
 
-Chrome and Edge can also enable WebMCP by turning on **WebMCP for testing** at `chrome://flags/#enable-webmcp-testing` or `edge://flags/#enable-webmcp-testing` and restarting the browser.
-For an Origin Trial, configure a valid WebMCP token for the target origin.
-Firefox's `dom.modelcontext.*` preferences are experimental testing controls.
-The measured Firefox implementation exposes the older `navigator.modelContext` surface; do not assume that normal Firefox launches it or that declarative form tools are exposed in the same way.
+For a local clone, enable the setting for the current browser and restart it. Chrome uses `chrome://flags/#enable-webmcp-testing`; Edge uses `edge://flags/#enable-webmcp-testing`.
+The public web app embeds an Origin Trial token issued for its exact origin and browser provider, so matching Chrome or Edge users do not need to change browser settings. A token cannot be reused for another origin or browser provider.
+Firefox's `dom.modelcontext.*` preferences are experimental testing controls. Firefox currently uses the older `navigator.modelContext` surface for imperative tools.
 See the [WebMCP implementation status](https://github.com/webmachinelearning/webmcp/blob/main/implementation-status.md) for the broader browser status.
 
 When WebMCP is unavailable, the AI mode continues to use its semantic DOM, ARIA, and form controls.
-Availability depends on the browser, experimental flags or Origin Trial, and the AI client that opens the page.
+Availability depends on the browser, its settings or Origin Trial, and the AI client that opens the page.
 
 #### Available tools
 
-When WebMCP is available, tobidas registers these imperative tools while AI mode is visible:
+When WebMCP is available, tobidas registers these imperative tools when the page starts. AI mode does not need to be visible:
 
 | Group | Tool | Purpose |
 | --- | --- | --- |
@@ -186,6 +198,8 @@ npm run dev
 
 Open `http://localhost:5174/`.
 
+The repository also includes the [`tobidas-create` skill](./.agents/skills/tobidas-create/SKILL.md), which helps plan a book from a prompt, prepare assets, build it through AI mode, and verify the result. It can be used from Codex or another agent environment that supports repository skills.
+
 ## Self-host
 
 ```bash
@@ -200,6 +214,20 @@ Deploy the generated `dist/` directory to any static host. For Cloudflare Pages:
 | Build command | `npm run build` |
 | Build output directory | `dist` |
 | Node.js | 22 or later |
+
+For a public build that participates in the WebMCP Origin Trial, put the issued token in `.env.webmcp-public` and run `npm run build:public`.
+
+```dotenv
+WEBMCP_ORIGIN_TRIAL_TOKEN=Chrome_token_issued_for_this_origin
+# Add only when also enrolling in the Edge Origin Trial
+WEBMCP_EDGE_ORIGIN_TRIAL_TOKEN=Edge_token_issued_for_this_origin
+```
+
+`build:public` fails when the Chrome token is absent and validates its signature, origin, feature name, and expiry.
+It also requires subdomain matching and third-party matching to be off, then injects the token as `<meta http-equiv="origin-trial">` in `dist/index.html`.
+The token is a public value visible in served HTML, but it expires, so keep it in the build environment instead of fixing it in source.
+The official deployment registers `https://tobidas.9rsgy78c9c.workers.dev`; another self-hosted origin needs its own registration and token.
+The current Chrome trial is scheduled to end on November 17, 2026. Review any extension or stable release and update both the token and guidance before that date.
 
 The app expects to be served at the root of a domain. Hosting it below a subpath requires adjusting
 `base` in `vite.config.ts` and the bundled-player URL.

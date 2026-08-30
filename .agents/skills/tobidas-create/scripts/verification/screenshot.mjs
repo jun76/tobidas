@@ -1,6 +1,6 @@
-// 開発用スクリーンショット: vite dev サーバーを起動し、作品を埋め込んだ再生画面を
-// 撮影する (要 playwright: npm i -D playwright && npx playwright install chromium)。
-// 使い方: node scripts/screenshot.mjs [--project projects/forest_lantern] [--scroll 0..1] [--out shots/shot.png]
+// Development screenshot helper: start the Vite dev server and capture the player
+// with an embedded work (requires Playwright: npm i -D playwright && npx playwright install chromium).
+// Usage: node scripts/screenshot.mjs [--project projects/forest_lantern] [--scroll 0..1] [--out shots/shot.png]
 import fs from 'node:fs'
 import path from 'node:path'
 import { createRequire } from 'node:module'
@@ -42,4 +42,4 @@ fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true })
 await page.screenshot({ path: out })
 await browser.close()
 await server.close()
-console.log(`スクリーンショット: ${out} (project=${project}, scroll=${scroll})`)
+console.log(`Screenshot: ${out} (project=${project}, scroll=${scroll})`)

@@ -66,7 +66,7 @@ AIモードは、左側の操作ペインと右側のビューポートを約1�
 
 WebMCP対応ブラウザでは、URLへ特別なクエリを付けなくても、ページ起動時からWebMCPツールを発見できます。
 AIモードの画面は必要に応じてツールバーから開きます。WebMCP非対応ブラウザでブラウザ操作AIを使う場合も、同じボタンからAIモードを開けます。
-ツールバーの「AI操作のヒント」から、WebMCPの接続状態と、未接続時に必要なブラウザ起動設定を確認できます。
+ツールバーの「AI操作のヒント」から、WebMCPの接続状態、公開版のOrigin Trial、Chrome・Edge・Firefoxそれぞれの設定、対応AI環境、フォールバックを区別して確認できます。
 AIモードは外部AIとの通信を追加せず、作品と素材は通常モードと同じくブラウザ内に残ります。
 AIモードの有効状態と操作結果は作品データへ保存されません。
 
@@ -90,25 +90,36 @@ const tools = context ? await context.getTools() : []
 tools.map((tool) => tool.name)
 ```
 
+#### 利用経路
+
+| 利用場所 | ブラウザ側の有効化 | 利用者の操作 |
+| --- | --- | --- |
+| [公開Web版](https://tobidas.9rsgy78c9c.workers.dev/) | 対象Originとブラウザ向けのWebMCP Origin Trialトークンを配信HTMLへ組み込む | 対応するトークンがあるChrome・Edgeでは開くだけ。Firefoxはブラウザ設定を使う |
+| ローカルclone版 | Chrome・Edge・Firefoxで、それぞれ下記のWebMCP設定を有効化 | 設定後にブラウザを再起動し、`http://localhost:5174/` を開く |
+| WebMCP非対応のブラウザ・AI環境 | WebMCPは使わない | 従来どおり一つの「AIモード」から意味付きDOM、ARIA、フォーム操作を使う |
+
+Origin Trialや各ブラウザ設定でブラウザAPIを有効にすることと、そのツールを発見・呼び出せるAI環境を使うことは別の条件です。
+ブラウザ側でWebMCPが有効でも、呼び出し元のAIクライアントがWebMCPに対応していなければ構造化ツールは利用できません。
+ChromeのWebMCP Origin TrialはChrome 149〜156が対象で、終了予定日は2026年11月17日です。
+公式公開版の登録には[WebMCP Origin Trial登録画面](https://developer.chrome.com/origintrials/#/register_trial/4163014905550602241)を使います。
+
 #### ブラウザごとの動作状況
 
-次の結果は、2026年8月26日にローカルの `http://localhost:5174/` を各ブラウザの実行ファイルから開いて確認したものです。
-ChromeとEdgeの実験起動では `--enable-experimental-web-platform-features --enable-blink-features=WebMCP` を指定しました。
-Firefoxは通常起動と、WebMCPの内部設定を指定したFirefox専用WebDriver BiDi経路の両方で確認しました。
+WebMCPの対応状況はブラウザごとに異なります。
 
-| ブラウザ | 通常起動 | WebMCPを有効にした起動 | 実測結果 |
-| --- | --- | --- | --- |
-| Chrome 151.0.7922.170 | `modelContext`なし | `modelContext`あり | 20ツールを発見し、`get-state`と`create-visual`を実行できた |
-| Edge 151.0.4129.107 | `modelContext`なし | `modelContext`あり | 20ツールを発見し、`get-state`と`create-visual`を実行できた |
-| Firefox 154.0.1 | `modelContext`なし | `--pref dom.modelcontext.enabled=true --pref dom.modelcontext.testing.enabled=true` | `navigator.modelContext`に19個のimperativeツールを発見し、`get-state`と`create-visual`を実行できた。`document.modelContext`は現れない |
+| ブラウザ | WebMCPの利用経路 | 確認できている内容 |
+| --- | --- | --- |
+| Chrome | 公開版はOrigin Trial、ローカル版はChrome設定 | 19個のimperativeツール。対応環境では宣言的フォームAPIも利用可能 |
+| Edge | Edge用Origin TrialまたはEdge設定 | 19個のimperativeツール。対応環境では宣言的フォームAPIも利用可能 |
+| Firefox | `about:config`で `dom.modelcontext.enabled` と `dom.modelcontext.testing.enabled` を有効化 | `navigator.modelContext`から19個のimperativeツール。`document.modelContext`と宣言的フォームAPIは未確認 |
 
-ChromeとEdgeでは、`chrome://flags/#enable-webmcp-testing` または `edge://flags/#enable-webmcp-testing` の「WebMCP for testing」を有効にして再起動する方法も使えます。
-Origin Trialを使う場合は、対象オリジンに有効なWebMCPトークンを設定します。
-Firefoxの `dom.modelcontext.*` は実験・テスト用の内部設定です。Firefoxでの実測では旧APIの `navigator.modelContext` が現れますが、通常起動で有効になることや、宣言的フォームAPIまで同じように公開されることは前提にしません。
+ローカルclone版では、現在のブラウザに合う設定を有効にして再起動します。Chromeは `chrome://flags/#enable-webmcp-testing`、Edgeは `edge://flags/#enable-webmcp-testing` を使います。
+公開Web版では対象Originとブラウザ向けのOrigin TrialトークンをHTMLへ組み込み、そのトークンに対応するChromeまたはEdgeで利用者側の設定を不要にします。トークンはOriginと提供元ごとに発行されるため、別ドメインや別ブラウザへそのまま流用できません。
+Firefoxの `dom.modelcontext.*` は実験・テスト用の内部設定です。Firefoxでは現状、旧APIの `navigator.modelContext` 経由でimperativeツールを利用します。
 WebMCPの対応状況は、[WebMCPの実装状況](https://github.com/webmachinelearning/webmcp/blob/main/implementation-status.md)を参照してください。
 
 WebMCPを使えないブラウザでは、AIモードのDOM、ARIA、フォーム操作がそのまま使われます。
-ブラウザの種類だけでなく、WebMCPの実験フラグ、Origin Trial、対応AIの有無によって利用可否が決まります。
+ブラウザの種類だけでなく、ブラウザ設定またはOrigin Trial、対応AIの有無によって利用可否が決まります。
 
 #### 提供するツール
 
@@ -194,6 +205,8 @@ npm run dev
 
 `http://localhost:5174/`を開きます。
 
+リポジトリには、プロンプトから作品の設計、素材準備、AIモードでの構築、検証までを支援する [`tobidas-create` スキル](./.agents/skills/tobidas-create/SKILL.md) も同梱しています。スキル対応のCodexやエージェント環境から利用できます。
+
 ## セルフホスト
 
 ```bash
@@ -208,6 +221,20 @@ npm run build
 | Build command | `npm run build` |
 | Build output directory | `dist` |
 | Node.js | 22以降 |
+
+WebMCP Origin Trialを使う公開ビルドでは、発行されたトークンを `.env.webmcp-public` へ設定して `npm run build:public` を使います。
+
+```dotenv
+WEBMCP_ORIGIN_TRIAL_TOKEN=対象Origin向けのChromeトークン
+# Edge側のOrigin Trialにも参加する場合だけ追加
+WEBMCP_EDGE_ORIGIN_TRIAL_TOKEN=対象Origin向けのEdgeトークン
+```
+
+`build:public` はChrome用トークンがない場合に失敗し、署名、対象Origin、機能名、有効期限を検査します。
+サブドメイン対象とThird-party matchingがOFFであることも確認し、トークンを `<meta http-equiv="origin-trial">` として `dist/index.html` へ組み込みます。
+トークンは配信HTMLから読める公開値ですが期限があるため、ソースへ固定せずビルド環境で更新します。
+公式公開版のトークンは `https://tobidas.9rsgy78c9c.workers.dev` に対して発行します。セルフホスト先が別Originなら、そのOriginを別途Origin Trialへ登録してください。
+Chromeの現在のtrialは2026年11月17日に終了予定です。延長や正式提供の状況を確認し、期限前にトークンと案内を更新します。
 
 アプリはドメインのルートで配信する構成です。サブパスへ配置する場合は、
 `vite.config.ts`の`base`とプレイヤー取得先の調整が必要です。

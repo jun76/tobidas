@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// リポジトリにある既存の確認用スクリプトを、作品の種類に合わせて呼び出す。
+// Invoke the repository's existing verification scripts for the type of work.
 import fs from 'node:fs'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
@@ -29,16 +29,16 @@ const run = (command, commandArgs, cwd) => new Promise((resolve, reject) => {
     env: { ...process.env, TOBIDAS_CREATE_REPO_ROOT: cwd },
   })
   child.on('error', reject)
-  child.on('exit', (code) => code === 0 ? resolve() : reject(new Error(`${command} ${commandArgs.join(' ')} が終了コード ${code}`)))
+  child.on('exit', (code) => code === 0 ? resolve() : reject(new Error(`${command} ${commandArgs.join(' ')} exited with code ${code}`)))
 })
 
 const repo = value('repo', findRepo(process.cwd()))
-if (!repo) throw new Error('tobidasリポジトリを見つけられません。--repo で指定してください')
+if (!repo) throw new Error('Could not find the tobidas repository. Specify it with --repo.')
 const skillRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const bundledScreenshot = path.join(skillRoot, 'scripts', 'verification', 'screenshot.mjs')
 const bundledHolds = path.join(skillRoot, 'scripts', 'verification', 'shoot-holds.mjs')
 const project = value('project')
-if (!project) throw new Error('--project <作品フォルダまたは公開サンプルID> が必要です')
+if (!project) throw new Error('--project <work-folder-or-public-sample-id> is required')
 const out = value('out', path.join('shots', 'tobidas-create'))
 const phases = value('phases', '0,0.5,1')
 let absoluteProject = path.resolve(repo, project)
@@ -61,9 +61,9 @@ if (isPublicProject) {
   await runStowLayoutCheck()
   await run(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'qa:holds', '--', id, '--out', out, '--phases', phases, '--turns'], repo)
 } else {
-  if (!fs.existsSync(path.join(absoluteProject, 'project.json'))) throw new Error(`project.json がありません: ${absoluteProject}`)
+  if (!fs.existsSync(path.join(absoluteProject, 'project.json'))) throw new Error(`project.json not found: ${absoluteProject}`)
   await runStowLayoutCheck()
   await run(process.execPath, [bundledHolds, absoluteProject, '--out', out, '--phases', phases, '--turns'], repo)
   await run(process.execPath, [bundledScreenshot, '--project', absoluteProject, '--scroll', '0.5', '--out', path.join(out, 'mid.png')], repo)
-  console.log('スタンドアロン作品では、同梱した既存系統のscreenshot.mjsとshoot-holds.mjsで保持時刻とページ遷移を検査しました。')
+  console.log('Checked hold times and page transitions for the standalone work with the bundled screenshot.mjs and shoot-holds.mjs scripts.')
 }

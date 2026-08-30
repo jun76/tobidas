@@ -11,6 +11,11 @@ import { requestElementDelete } from '../elementDelete'
 import st from '../builder.module.css'
 import { unlockVideoAudio } from '../../runtime/videoAudio'
 import { getWebMcpModelContext } from '../ai/webmcpTypes'
+import {
+  getWebMcpPageEnvironment,
+  type WebMcpBrowserKind,
+  type WebMcpPageEnvironment,
+} from '../ai/webmcpEnvironment'
 
 export function Toolbar({ aiMode, onAiModeChange }: {
   aiMode: boolean
@@ -117,6 +122,7 @@ function AiModeButton({ aiMode, onAiModeChange }: { aiMode: boolean; onAiModeCha
 function WebMcpHint() {
   const t = useT()
   const available = getWebMcpModelContext() !== null
+  const environment = getWebMcpPageEnvironment()
   const [open, setOpen] = useState(false)
   const hideTimer = useRef<number | undefined>(undefined)
   const show = () => {
@@ -130,8 +136,16 @@ function WebMcpHint() {
   useEffect(() => () => {
     if (hideTimer.current !== undefined) window.clearTimeout(hideTimer.current)
   }, [])
+  const browserName = webMcpBrowserName(environment.browserKind, t.toolbar)
+  const environmentHint = webMcpEnvironmentHint(environment, browserName, t.toolbar)
+  const browserHint = webMcpBrowserHint(environment.browserKind, t.toolbar)
+  const showBrowserSetting = browserHint !== null && !environment.browserOriginTrialTokenEmbedded
   return <div className={`${st.webMcpHint} ${available ? st.webMcpAvailable : st.webMcpUnavailable}`}
     data-tobidas-kind="webmcp-hint" data-tobidas-webmcp={available ? 'available' : 'unavailable'}
+    data-tobidas-webmcp-host={environment.hostKind}
+    data-tobidas-webmcp-browser={environment.browserKind}
+    data-tobidas-origin-trial={environment.originTrialTokenEmbedded ? 'embedded' : 'absent'}
+    data-tobidas-origin-trial-for-browser={environment.browserOriginTrialTokenEmbedded ? 'embedded' : 'absent'}
     onMouseEnter={show} onMouseLeave={hideLater}
     onFocus={(event) => { if (event.currentTarget === event.target) show() }}
     onBlur={(event) => {
@@ -144,16 +158,83 @@ function WebMcpHint() {
       aria-label={t.toolbar.webMcpHint} onMouseEnter={show} onMouseLeave={hideLater}>
       <p>{available ? t.toolbar.webMcpAvailableHint : t.toolbar.webMcpUnavailableHint}</p>
       {!available && <>
-        <p>{t.toolbar.webMcpSetupHint}</p>
         <dl>
-          <dt>{t.toolbar.webMcpChromium}</dt>
-          <dd><WebMcpCommand command={t.toolbar.webMcpChromiumOption} /></dd>
-          <dt>{t.toolbar.webMcpFirefox}</dt>
-          <dd><WebMcpCommand command={t.toolbar.webMcpFirefoxOption} /></dd>
+          <dt>{t.toolbar.webMcpCurrentBrowser}</dt>
+          <dd>{browserName}</dd>
+          <dt>{environmentHint.title}</dt>
+          <dd>{environmentHint.description}</dd>
+          {showBrowserSetting && <>
+            <dt>{browserHint.title}</dt>
+            <dd>
+              <p>{browserHint.description}</p>
+              <WebMcpCommand command={browserHint.setting} />
+            </dd>
+          </>}
+          <dt>{t.toolbar.webMcpAiEnvironment}</dt>
+          <dd>{t.toolbar.webMcpAiEnvironmentHint}</dd>
+          <dt>{t.toolbar.webMcpFallback}</dt>
+          <dd>{t.toolbar.webMcpFallbackHint}</dd>
         </dl>
       </>}
     </div>
   </div>
+}
+
+function webMcpEnvironmentHint(
+  environment: WebMcpPageEnvironment,
+  browserName: string,
+  toolbar: ReturnType<typeof useT>['toolbar'],
+) {
+  const unsupportedBrowser = environment.browserKind === 'other'
+  if (environment.hostKind === 'public') {
+    let description = toolbar.webMcpPublicTokenMissingHint(browserName)
+    if (unsupportedBrowser) description = toolbar.webMcpBrowserOtherHint
+    else if (environment.browserOriginTrialTokenEmbedded) description = toolbar.webMcpPublicHint(browserName)
+    else if (environment.browserKind === 'firefox') description = toolbar.webMcpPublicFirefoxHint
+    return { title: toolbar.webMcpPublic, description }
+  }
+  if (environment.hostKind === 'local') return {
+    title: toolbar.webMcpLocal,
+    description: unsupportedBrowser
+      ? toolbar.webMcpBrowserOtherHint
+      : toolbar.webMcpLocalHint(browserName),
+  }
+  let description = toolbar.webMcpSelfHostedHint(browserName)
+  if (unsupportedBrowser) description = toolbar.webMcpBrowserOtherHint
+  else if (environment.browserKind === 'firefox') description = toolbar.webMcpSelfHostedFirefoxHint
+  return { title: toolbar.webMcpSelfHosted, description }
+}
+
+function webMcpBrowserName(
+  browserKind: WebMcpBrowserKind,
+  toolbar: ReturnType<typeof useT>['toolbar'],
+): string {
+  if (browserKind === 'chrome') return toolbar.webMcpBrowserChrome
+  if (browserKind === 'edge') return toolbar.webMcpBrowserEdge
+  if (browserKind === 'firefox') return toolbar.webMcpBrowserFirefox
+  return toolbar.webMcpBrowserOther
+}
+
+function webMcpBrowserHint(
+  browserKind: WebMcpBrowserKind,
+  toolbar: ReturnType<typeof useT>['toolbar'],
+): { title: string; description: string; setting: string } | null {
+  if (browserKind === 'chrome') return {
+    title: toolbar.webMcpChromeSettings,
+    description: toolbar.webMcpChromeSettingsHint,
+    setting: toolbar.webMcpChromeSettingsUrl,
+  }
+  if (browserKind === 'edge') return {
+    title: toolbar.webMcpEdgeSettings,
+    description: toolbar.webMcpEdgeSettingsHint,
+    setting: toolbar.webMcpEdgeSettingsUrl,
+  }
+  if (browserKind === 'firefox') return {
+    title: toolbar.webMcpFirefoxSettings,
+    description: toolbar.webMcpFirefoxSettingsHint,
+    setting: toolbar.webMcpFirefoxSettingsUrl,
+  }
+  return null
 }
 
 function WebMcpCommand({ command }: { command: string }) {

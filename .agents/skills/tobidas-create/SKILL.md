@@ -1,154 +1,156 @@
 ---
 name: tobidas-create
-description: プロンプトからtobidasの絵本を設計し、素材生成、AIモードでの構築、演出設定、検証まで行う。tobidas作品の新規制作や、制作手順を設計書から再現したいときに使う。
+description: Design a tobidas picture book from a prompt, generate assets, build it in AI mode, configure its direction, and verify the result. Use this for creating new tobidas works or reproducing a production workflow from a design document.
 metadata:
-  short-description: tobidas絵本を設計・制作・検証する
+  short-description: Design, build, and verify tobidas picture books
 ---
 
 # tobidas-create
 
-ユーザーが添えた初期プロンプトを、tobidasで再生できる絵本プロジェクトへ変換する。
+Turn a user's initial prompt into a picture-book project that can be played in tobidas.
 
-作品制作とtobidas本体の改修を分ける。
-本体のソース、保存形式、ビルド、デプロイを変更する依頼では、作業前にリポジトリの `AGENTS_DEV.md` を読む。
-作品制作だけなら `AGENTS.md` とこのスキルの資料を読む。
-作品制作中に本体の変更、デプロイ、GitHubへのpush、タグ作成を自動で行わない。
+Keep picture-book production separate from changes to tobidas itself.
+For requests that change the core source, save format, build, or deployment, read the repository's `AGENTS_DEV.md` before starting.
+For picture-book production only, read `AGENTS.md` and the materials for this skill.
+Do not automatically change the core application, deploy, push to GitHub, or create tags during picture-book production.
 
-## 作業の境界
+## Scope of work
 
-既定の成果物は、ユーザーのドキュメントフォルダに保存するスタンドアロン作品である。
-公開サンプルとしてリポジトリへ追加する場合は、ユーザーが明示したときだけ `scripts/samples/`、`projects/`、catalogを変更する。
-生成済みの `projects/*/project.json` は直接編集せず、公開サンプルの定義と素材を更新して生成する。
+The default deliverable is a standalone work saved in the user's Documents folder.
+Only change `scripts/samples/`, `projects/`, or the catalog when the user explicitly asks to add a public sample to the repository.
+Do not edit generated `projects/*/project.json` files directly; update the public-sample definitions and assets, then regenerate them.
 
-## 設計書を先に作る
+## Create the design sheet first
 
-初期プロンプトを受け取った最初の応答では、素材生成や作品保存を始めず、設計書の草案を作る。
-テンプレートは [references/design-sheet.md](references/design-sheet.md) を使う。
+In the first response after receiving an initial prompt, do not begin asset generation or save a work; draft the design sheet instead.
+Use the template at [references/design-sheet.md](references/design-sheet.md).
 
-設計書には次の項目を必ず含める。
+The design sheet must include the following:
 
-- 作品タイトル：英語にする。
-- プロジェクトフォルダ名：タイトルから英語のkebab-case slugを作る。
-- 作中テキストの言語：指定がなければ英語にする。
-- あらすじ：指定がなければ初期プロンプトだけから創作する。
-- 画像のテイスト：指定がなければ手書き絵本風にする。
-- ページ数：指定がなければ5見開きにする。
-- 1見開きあたりの部品数：指定がなければ地面背景を含めて最低4部品にする。
-- 保存先：指定がなければユーザーのドキュメントフォルダ配下の `tobidas/projects/<slug>` にする。
+- Work title: write it in English.
+- Project folder name: derive an English kebab-case slug from the title.
+- Language of in-story text: use English unless specified otherwise.
+- Synopsis: invent one from the initial prompt alone unless specified otherwise.
+- Image style: use a hand-drawn picture-book style unless specified otherwise.
+- Page count: use five story spreads unless specified otherwise.
+- Parts per spread: use at least four parts including the ground background unless specified otherwise.
+- Save path: use `tobidas/projects/<slug>` under the user's Documents folder unless specified otherwise.
 
-ユーザーの初期プロンプトにない情報は、設計へ影響するものだけ追加質問する。
-上記の7項目には既定値を適用し、草案内で「推定」または「既定値」と明記したうえで確認する。
-既定値で進めてよいか、追加質問への回答と一緒に確認する。
-ユーザーが「そのまま進める」と答えた場合は既定値を確定する。
-設計へ影響しない好みを質問して制作を止めない。
+Ask additional questions only about information missing from the initial prompt that affects the design.
+Apply defaults to the seven items above, label them as "estimated" or "default" in the draft, and ask for confirmation.
+Ask whether it is acceptable to proceed with the defaults together with any answers to the additional questions.
+When the user says to proceed as-is, confirm the defaults.
+Do not stop production to ask about preferences that do not affect the design.
 
-ページ数は、表紙を除く物語の見開き数として扱う。
-表紙の表面、表紙の内側、裏表紙は別途用意する。
-各見開きの設計表には、場面、作中テキスト、地面、淡い空間背景、立体パーツ、カメラ、光源、効果音、配色、検証リスクを記す。
+Treat the page count as the number of story spreads excluding the cover.
+Prepare the cover exterior, cover interior, and back cover separately.
+Each spread's design table must record the scene, in-story text, ground, pale spatial background, 3D parts, camera, lights, sound effects, color palette, and verification risks.
 
-## 素材の役割を分ける
+## Separate asset roles
 
-見開きページ画像は、原則として地面の表現に徹する。
-山、家、城、橋、樹木、人物、道具など、立体化できる内容を見開き画像へ描き込まない。
-淡い稜線、霞、遠い樹影など、立体パーツと競合しない遠景は含めてよい。
+Spread page images should, in principle, be limited to the ground surface.
+Do not draw content that can become 3D parts—such as mountains, houses, castles, bridges, trees, people, or tools—into a spread image.
+Faint ridgelines, haze, and distant tree silhouettes are allowed when they do not compete with 3D parts.
 
-各見開きには、地面画像とは別に空間背景画像を1点用意する。
-空間背景は絵本の奥行きを示す淡い遠景とし、主要な建築物や人物を主役として描かない。
-その場面で立体パーツにする物体が空間背景にも大きく描かれていないか、生成後に確認する。
+Prepare one spatial-background image separately from the ground image for each spread.
+The spatial background should be a pale distant view that communicates depth without making a major building or person the subject.
+After generation, check that objects intended to become 3D parts are not also drawn prominently in the spatial background.
 
-各見開きには、地面背景を含めて最低4部品を置く。
-地面以外には、場面を説明する立体パーツを少なくとも3点置く。
-立体パーツは、人物、建築物、動物、道具、植物、光の欠片などから選び、同じ絵を背景と立体パーツへ重複させない。
-中央線付近へ大きな部品を密集させず、閉じるときに対向ページを横切らない位置へ置く。
+Place at least four parts on every spread, including the ground background.
+Place at least three 3D parts besides the ground to explain the scene.
+Choose 3D parts from people, buildings, animals, tools, plants, and light fragments, and do not duplicate the same image as both background and 3D part.
+Do not crowd large parts near the center fold or place them where they cross the opposite page when the book closes.
 
-### 背景パネルの起立順と初期配置
+### Background-panel rise order and initial placement
 
-背景パネルは、部品名またはアセットIDに `backdrop`、`background`、`背景`、`遠景` など背景と分かる語を含める。
-背景パネルは大きな起立板として扱い、`stow.stagger` は `0` として他の部品より遅れて起立させない。
+Include a background-identifying word such as `backdrop` or `background` in the part name or asset ID of a background panel.
+Treat the background panel as a large standing board and set `stow.stagger` to `0` so it does not rise later than other parts.
 
-背景パネルを配置した後、次の初期位置を守る。
+After placing a background panel, follow these initial-placement rules:
 
-- 背景パネルと横方向に重なる部品の足元は、背景パネルの下端より上へ持ち上げない。浮遊部品など意図した例外は設計書へ記録する。
-- 背景パネルより奥側または同じ奥行きへ部品を置かない。背景パネルを奥、立体部品を手前へ置き、起立中に背景板が部品を踏まないようにする。
-- 複数の背景パネルを使う場合は同じ背景グループとして扱い、背景同士を相互に違反として数えない。
+- Do not raise the foot of a part that overlaps the background panel horizontally above the panel's lower edge. Record intentional exceptions such as floating parts in the design sheet.
+- Do not place a part farther back than, or at the same depth as, the background panel. Put the background panel at the back and 3D parts in front so the rising panel does not step on them.
+- When using multiple background panels, treat them as one background group and do not count the panels against one another as violations.
 
-配置後に `node scripts/verify-stow-layout.mjs <作品フォルダ> --strict` を実行し、保持時刻 `0`、`0.5`、`1` とページ遷移中央のスクリーンショットで、背景板が他の部品を貫通しないことを目視する。
+After placement, run `node scripts/verify-stow-layout.mjs <work-folder> --strict` and visually check screenshots at hold times `0`, `0.5`, and `1`, plus the midpoint of each page transition, to ensure the background board does not pass through other parts.
 
-### 立ち絵は見開きごとに固有化する
+### Make character art unique per spread
 
-人物・動物の立ち絵を、複数の見開きで同じ画像ファイルのまま使い回さない。
-同じ登場人物が再登場する場合も、見開きごとに別素材を生成し、ポーズ、表情、衣装の状態、手に持つ物、光の当たり方の少なくとも一つを場面に合わせて変える。
-画風、身体比率、キャラクターの同一性は参照画像で保つが、同じ立ち絵のコピー、トリミング違い、アトラスの同一コマの再利用で済ませない。
-素材一覧に「見開きID・人物/動物ID・固有ファイル名」の対応表を作り、配置前に人物・動物の画像ファイル名が見開き間で重複していないことを確認する。
-ユーザーが明示的に同じ立ち絵の再利用を指定した場合だけ例外とし、その指定を設計書へ記録する。
+Do not reuse the same character or animal image file unchanged across multiple spreads.
+When the same character returns, generate a separate asset for each spread and change at least one of the pose, expression, clothing state, held object, or lighting to match the scene.
+Preserve the art style, body proportions, and character identity with reference images, but do not settle for a copy, a differently cropped version, or the same atlas frame.
+Create a mapping of spread ID, character/animal ID, and unique filename in the asset list, and confirm before placement that character and animal filenames do not repeat across spreads.
+Allow an exception only when the user explicitly requests reuse of the same character art, and record that request in the design sheet.
 
-### 本文はページへ固定して印字する
+### Fix body text to the page
 
-見開き上の作中テキスト、キャプション、台詞は装飾や演出用の浮遊部品ではなく、所有するページへ印字された本文として扱う。
+Treat in-story text, captions, and dialogue on a spread as body text printed on its owning page, not as floating decorative or directing parts.
 
-既存サンプルで使われている本文設定を基準にし、`scripts/samples/shared.mjs` の `caption` ヘルパーをそのまま踏襲する。
-本文の既定値は、所有ページを `parent` にすること、`layer: 9`、`rotation: [-90, 0, 0]`、`pivot: [0.5, 0.5]`、`scale: [1, 1, 1]`、`opacity: 1`、`visible: true`、`motion: []`、`clock: "visible-elapsed"`、透明背景、`font: "rounded"`、太字、パーティクル無効、テキスト要素へのタイムラインなしである。本文の位置は `caption` と同じページ座標で決め、`v: 0.92` を基準に、文字量に応じて `u`、`size`、色だけを調整する。本文の `width`、`height`、`fontSize` は `caption` ヘルパーに文字列から算出させ、手作業で別の寸法計算をしない。
+Use the body-text settings from existing samples as the baseline and follow the `caption` helper in `scripts/samples/shared.mjs`.
+The body-text defaults are: set the owning page as `parent`; `layer: 9`; `rotation: [-90, 0, 0]`; `pivot: [0.5, 0.5]`; `scale: [1, 1, 1]`; `opacity: 1`; `visible: true`; `motion: []`; `clock: "visible-elapsed"`; transparent background; `font: "rounded"`; bold; particles disabled; and no timeline for the text element.
+Choose the body-text position in the same page coordinates as `caption`, using `v: 0.92` as the baseline and adjusting only `u`, `size`, and color for the amount of text.
+Let the `caption` helper derive `width`, `height`, and `fontSize` from the string; do not calculate separate dimensions by hand.
 
-- 本文要素は必ず左ページまたは右ページを親にし、ページ面へ接着する。ページ送り時は親ページと一緒に折れ、紙面から離れない。
-- 本文へ `Content Motion`、`Resident Time`、パーティクル、点滅、拡大縮小、回転、`fadeIn`、`fadeOut`、透明度や表示状態のタイムラインを設定しない。
-- 保持の開始・中間・終了のすべてで本文を表示し、ページ送りの直前に消したり、遷移中だけ隠したりして浮遊や飛び出しを隠す実装は禁止する。
-- 「ページ面に固定できない場合」という分岐は設けない。共有 `caption` 設定で固定し、設定値を変えて浮遊や飛び出しを回避する。
-- ページ遷移中央のスクリーンショットで、本文が紙面上に残り、ページと同じ向きに動き、空中へ飛び出さないことを確認する。
+- Always make a body-text element a child of the left or right page and attach it to the page surface. It folds with its parent page and does not leave the paper during a page turn.
+- Do not assign `Content Motion`, `Resident Time`, particles, blinking, scaling, rotation, `fadeIn`, `fadeOut`, or opacity/visibility timeline tracks to body text.
+- Keep body text visible at the beginning, middle, and end of the hold. Do not hide it immediately before a page turn or only during the transition to conceal floating or popping.
+- Do not create a branch for cases where body text cannot be fixed to the page. Use the shared `caption` settings and avoid floating or popping by changing the settings.
+- In screenshots at the midpoint of a page transition, confirm that body text remains on the paper, moves in the same direction as the page, and does not fly into the air.
 
-生成した切り抜き素材のアルファチャンネルを機械的に確認する。
-チェッカーボードや白い背景を画像へ焼き込んだ素材は採用しない。
-透明余白を切り詰め、WebPで保存する。
-素材サイズと作品合計容量は `AGENTS.md` の制限に従う。
+Check the alpha channel of generated cutout assets mechanically.
+Do not use assets with a checkerboard or white background baked into the image.
+Trim transparent margins and save images as WebP.
+Follow the size and total-work limits in `AGENTS.md`.
 
-## 音と演出を使う
+## Use sound and direction
 
-スキル同梱の [assets/page-turn.wav](assets/page-turn.wav) を必ず作品へコピーし、各見開きのページ送り音として使用する。
-最後の見開きの後にはページ送り音を置かない。
+Always copy the skill-bundled [assets/page-turn.wav](assets/page-turn.wav) into the work and use it as the page-turn sound for each spread.
+Do not place a page-turn sound after the last spread.
 
-場面転換、登場、魔法、足音、水音、風、きらめきなど、物語に対応する効果音を積極的に用意する。
-音声生成機能が使える場合はそれを使い、使えない場合は [scripts/synthesize-sfx.mjs](scripts/synthesize-sfx.mjs) で短い効果音を生成する。
-効果音は各見開きの演出に対応する時刻へキューとして配置する。
-同じ効果音を無意味に全ページへ繰り返さない。
-音声ファイルは1点3MB以内にし、作品全体の容量もリポジトリ規約に収める。
+Actively prepare sound effects for scene changes, entrances, magic, footsteps, water, wind, and sparkles when they fit the story.
+Use an audio-generation capability when available; otherwise generate short effects with [scripts/synthesize-sfx.mjs](scripts/synthesize-sfx.mjs).
+Place sound effects as cues at times that match each spread's direction.
+Do not repeat the same sound across every page without a story reason.
+Keep each audio file within 3 MB and the total work within repository limits.
 
-ユーザーが削除しやすい設定も最初から活用する。
-表紙の色、紙面の色、光源位置、光の色、カメラの位置、カメラの寄り引き、部品の常時モーション、保持中のカメラワーク、効果音を場面の役割に合わせて設定する。
-設定を増やすためだけの演出は置かず、読み手の視線、場面の変化、立体感のいずれかに寄与するものだけを採用する。
+Use settings that are easy for the user to remove from the start.
+Configure the cover color, paper color, light position, light color, camera position, camera distance, resident motion, hold-time camera movement, and sound effects according to each scene's role.
+Do not add direction merely to increase the number of effects; every effect should support the reader's focus, a scene change, or a sense of depth.
 
-## 設計確定後の制作
+## Production after design approval
 
-設計書が確定したら、次の順で作業する。
+After the design sheet is confirmed, work in this order:
 
-1. 保存先を作り、設計書を `design.md` として保存する。
-2. 設計表から、表紙、見開き地面、空間背景、立体パーツ、効果音を素材一覧へ展開する。
-3. 画像生成では作品全体のテイスト、縮尺、色、光の方向を固定し、地面、空間背景、立体パーツを別プロンプトで生成する。人物・動物の立ち絵は見開きごとに固有プロンプトと固有ファイル名を割り当てる。
-4. 素材の透過、寸法、縦横比、容量、余白、人物・動物の見開き間重複を確認する。
-5. 開発サーバーを起動し、AIモードで素材をまとめて読み込む。
-6. AIモードでは、配置前に対象見開きのツリー項目を選択する。
-7. 地面、背景パネル、空間背景、立体パーツ、テキスト、パーティクルを見開きごとに配置する。背景パネルの `stow.stagger: 0` を設定し、その後に他の部品を背景の下端より上へ出さず、背景より手前へ配置する。名前、位置、寸法、レイヤー、表示状態を更新する。本文は所有ページへ固定印字し、テキスト要素へ演出トラックを追加しない。
-8. AIモードでは表紙、カメラ、光源、常時モーション、オーサードタイムライン、音声キューを標準モードと同じ作品データへ設定できる。見開き操作で見開きを追加・複製・並べ替えし、AIモードで対象、プロパティ、時刻、値を明示してキーを追加する。ビューポート下のタイムラインで再生、スクラブ、補間、時刻変更、削除を確認する。
-9. 保存またはエクスポート後に、完成した作品パッケージを指定保存先へ置く。
-10. [references/verification.md](references/verification.md) を読み、同梱の [scripts/run-repo-qa.mjs](scripts/run-repo-qa.mjs) から既存のtobidas確認用スクリプトを実行する。
+1. Create the save path and save the design sheet as `design.md`.
+2. Expand the design table into an asset list containing the cover, spread grounds, spatial backgrounds, 3D parts, and sound effects.
+3. In image generation, keep the overall style, scale, colors, and light direction consistent, and generate grounds, spatial backgrounds, and 3D parts with separate prompts. Assign a unique prompt and filename to each character or animal illustration on each spread.
+4. Check asset transparency, dimensions, aspect ratios, size, margins, and cross-spread duplication of character and animal art.
+5. Start the development server and import the assets together in AI mode.
+6. In AI mode, select the target spread in the tree before placing parts.
+7. Place the ground, background panel, spatial background, 3D parts, text, and particles for each spread. Set `stow.stagger: 0` on the background panel, then keep other parts no higher than the panel's lower edge and in front of the background. Update names, positions, dimensions, layers, and visibility. Fix body text to its owning page and do not add a directing track to text elements.
+8. In AI mode, configure the cover, camera, lights, resident motion, authored timeline, and audio cues in the same project data as standard mode. Add, duplicate, and reorder spreads with spread operations. Add keys by explicitly specifying the target, property, time, and value. Use the timeline below the viewport to check playback, scrubbing, interpolation, time changes, and deletion.
+9. After saving or exporting, place the completed work package in the requested save path.
+10. Read [references/verification.md](references/verification.md) and run the existing tobidas checks from [scripts/run-repo-qa.mjs](scripts/run-repo-qa.mjs).
 
-AIモードの入力値は、画面に表示された `min`、`max`、`step` を守る。
-AIモードの操作対象を探すときは、対象ツリーの `data-tobidas-kind` / `data-tobidas-id` を使う。
-現在状態の `data-tobidas-kind="ai-state"` は、素材本体を除く `book`、見開き一覧、全要素、全タイムラインキー、選択状態、検証結果を含むJSONである。
-まずこのJSONを取得してから、画面操作後に同じJSONを再取得し、IDと値の差分で反映を確認する。
-背景パネルの命名と配置を確定したら、`scripts/verify-stow-layout.mjs` を `--strict` 付きで実行する。
-初期値をそのまま送信せず、フォームの制約に合う値を入力してから更新する。
-見開き選択と直接配置の対象が一致していることを、配置後の選択部品名と見開き名で確認する。
-検証で失敗した箇所は、設計または定義へ戻って修正する。
+For AI-mode inputs, obey the `min`, `max`, and `step` displayed on the screen.
+When locating AI-mode targets, use `data-tobidas-kind` and `data-tobidas-id` on the target tree.
+The current `data-tobidas-kind="ai-state"` contains JSON for the `book`, spread list, all elements, all timeline keys, selection, and verification results, excluding the asset bodies.
+Fetch this JSON first, fetch it again after screen operations, and confirm changes by comparing IDs and values.
+After finalizing the background-panel name and placement, run `scripts/verify-stow-layout.mjs` with `--strict`.
+Do not submit initial values unchanged; enter values that satisfy the form constraints before updating.
+Confirm after placement that the selected spread and direct-placement target match by checking the selected part name and spread name.
+If verification fails, return to the design or definition and fix the cause.
 
-## 公開サンプルを作る場合
+## When creating a public sample
 
-ユーザーが公開サンプルへの追加を明示した場合だけ、リポジトリの制作規約へ切り替える。
-`scripts/samples/<work>.mjs` に構造を書き、素材を `scripts/samples/assets/<work>/` に置き、`scripts/generate-samples.mjs` へ登録する。
-地面画像、空間背景、立体パーツの役割を生成定義でも維持する。
-生成後に `npm run samples:generate`、`npm run samples:check`、保持とページ遷移のQAを実行する。
-生成済み `project.json` だけを修正して検証を通すことはしない。
+Switch to the repository's production rules only when the user explicitly asks to add a public sample.
+Write the structure in `scripts/samples/<work>.mjs`, put assets in `scripts/samples/assets/<work>/`, and register the work in `scripts/generate-samples.mjs`.
+Preserve the roles of ground image, spatial background, and 3D parts in the generated definition.
+After generation, run `npm run samples:generate`, `npm run samples:check`, and QA for holds and page transitions.
+Do not make only the generated `project.json` pass verification by editing it directly.
 
-## 完了報告
+## Completion report
 
-完了時は、作品フォルダ、設計書、素材数、見開き数、検証結果、未解決の制約を報告する。
-設計書に推定を残した場合は、推定であることを明示する。
-検証していない保持時刻、ページ遷移、音声、表紙、AIモード操作を検証済みとして報告しない。
+At completion, report the work folder, design sheet, asset count, spread count, verification results, and unresolved constraints.
+Clearly label any estimates left in the design sheet as estimates.
+Do not report hold times, page transitions, audio, cover, or AI-mode operations as verified if they were not checked.

@@ -1,5 +1,5 @@
-// 各見開きの保持中央 (と任意の追加時刻) を一括撮影する開発用スクリプト。
-// 使い方: node scripts/shoot-holds.mjs [projectId ...] [--out shots/dir] [--phases 0.5]
+// Development helper that captures the midpoint of each spread hold and any additional requested times.
+// Usage: node scripts/shoot-holds.mjs [projectId ...] [--out shots/dir] [--phases 0.5]
 import fs from 'node:fs'
 import path from 'node:path'
 import { createRequire } from 'node:module'
@@ -39,7 +39,7 @@ for (const projectPath of projects) {
   const book = JSON.parse(fs.readFileSync(path.join(projectPath, 'project.json'), 'utf8')).book
   const total = book.sequence.coverOpenSeconds
     + book.spreads.reduce((s, sp) => s + sp.sequence.holdSeconds + sp.sequence.turnSeconds, 0)
-  // 作品ごとに応答を差し替えるので、ページも作品ごとに開き直す
+  // Open a new page for each work because its response is replaced independently.
   const page = await browser.newPage({ viewport: { width, height } })
   page.on('pageerror', (e) => errors.push(`${e.message}`))
   page.on('console', (m) => { if (m.type() === 'error' && !isHmrNoise(m.text())) errors.push(m.text()) })
@@ -63,7 +63,7 @@ for (const projectPath of projects) {
       await page.waitForTimeout(450)
       const name = `${projectName}-turn${index + 1}.png`
       await page.screenshot({ path: path.join(outDir, name) })
-      console.log(`${name}  progress=${progress.toFixed(4)}  ページ送り`)
+      console.log(`${name}  progress=${progress.toFixed(4)}  page turn`)
     }
     cursor += spread.sequence.turnSeconds
   }
@@ -72,6 +72,6 @@ for (const projectPath of projects) {
 await browser.close()
 await server.close()
 if (errors.length) {
-  console.error(`ブラウザエラー ${errors.length} 件:\n` + [...new Set(errors)].join('\n'))
+  console.error(`${errors.length} browser error(s):\n` + [...new Set(errors)].join('\n'))
   process.exitCode = 1
 }

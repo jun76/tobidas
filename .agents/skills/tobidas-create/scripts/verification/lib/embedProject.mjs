@@ -1,35 +1,35 @@
-// 作品パッケージ (フォルダ) を、書き出し済みHTMLと同じ「埋め込み済み」の形へ組み立てる。
+// Assemble a work package folder into the same embedded form as exported HTML.
 //
-// 再生画面の受け取り口は埋め込みデータ1つだけで、開発用の読み込み経路は持たない
-// (src/player/PlayerApp.tsx)。自動化からは playwright でHTMLの応答を差し替え、
-// 配布物とまったく同じ経路で再生させる。組み立ての規則は src/package/assemble.ts と同じ:
-// SVG は文字列、それ以外は data URL。
+// The player accepts only one embedded data payload and has no development-only loading path
+// (src/player/PlayerApp.tsx). Automation replaces the HTML response through Playwright so the work
+// plays through exactly the same path as a distributed artifact. Assembly follows src/package/assemble.ts:
+// SVG assets remain strings and all other assets become data URLs.
 import fs from 'node:fs'
 import path from 'node:path'
 
-/** QA用に立てる dev サーバー。開発用の 5174 とぶつからないよう空き番号を取る */
+/** QA dev server. Use an available port to avoid colliding with development port 5174. */
 export const QA_SERVER = { port: 0 }
 
 /**
- * HMRのwebsocket失敗だけを落とすふるい。
+ * Filter only HMR WebSocket failures.
  *
- * 応答を差し替えたページは playwright が返すので、Chrome は dev サーバーと別の
- * アドレス空間として扱い、HMRのwebsocketがローカルネットワークアクセス制限で必ず失敗する。
- * 再生そのものには関係がないが、コンソールエラーを検査するスクリプトはこれで落ちる。
- * 書き出した単一HTMLにHMRは存在しないので、この行だけ無視してよい。
+ * Because Playwright serves the page whose response was replaced, Chrome treats it as a different
+ * address space from the dev server and the HMR WebSocket always fails under local-network access restrictions.
+ * This does not affect playback, but it would fail scripts that check console errors.
+ * Exported single-file HTML has no HMR, so this message alone may be ignored.
  */
 export function isHmrNoise(text) {
   return /\[vite\]|websocket connection to|failed to connect to websocket/i.test(text)
 }
 
-/** projects/<id>/ を読んで、アセット実体を抱えた BookProject にする */
+/** Read projects/<id>/ and build a BookProject containing the asset bodies. */
 export function embedProjectFolder(dir) {
   const projectJson = path.join(dir, 'project.json')
-  if (!fs.existsSync(projectJson)) throw new Error(`project.json がありません: ${projectJson}`)
+  if (!fs.existsSync(projectJson)) throw new Error(`project.json not found: ${projectJson}`)
   const project = JSON.parse(fs.readFileSync(projectJson, 'utf8'))
   project.assets = project.assets.map((meta) => {
     const file = path.join(dir, 'assets', meta.id)
-    if (!fs.existsSync(file)) throw new Error(`アセットの実体がありません: ${file}`)
+    if (!fs.existsSync(file)) throw new Error(`Asset file not found: ${file}`)
     const data = meta.type === 'svg'
       ? fs.readFileSync(file, 'utf8')
       : `data:${meta.mime};base64,${fs.readFileSync(file).toString('base64')}`
@@ -38,17 +38,17 @@ export function embedProjectFolder(dir) {
   return project
 }
 
-/** 再生画面のHTMLへ作品を注入する。置換先は siteExport.ts と同じ入れ物 */
+/** Inject a work into the player HTML using the same container as siteExport.ts. */
 export function injectProject(html, project) {
   const json = JSON.stringify(project).replace(/</g, '\\u003c')
   const placeholder = /(<script type="application\/json" id="tobidas-project">)[\s\S]*?(<\/script>)/
-  if (!placeholder.test(html)) throw new Error('tobidas-project の入れ物がHTMLにありません')
+  if (!placeholder.test(html)) throw new Error('The HTML does not contain the tobidas-project container')
   return html.replace(placeholder, (_match, open, close) => open + json + close)
 }
 
 /**
- * player.html の応答を、作品を埋め込んだものへ差し替える。
- * これを呼んでから goto すると、書き出した単一HTMLと同じ状態の再生画面が開く。
+ * Replace the player.html response with one containing the embedded work.
+ * After this function is called, goto opens the same player state as exported single-file HTML.
  */
 export async function servePlayerWithProject(page, dir) {
   const project = embedProjectFolder(dir)

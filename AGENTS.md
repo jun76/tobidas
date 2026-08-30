@@ -40,9 +40,11 @@ AIモードは、WebMCP対応の有無にかかわらず一つのユーザー向
 WebMCPが使える場合は構造化ツールを追加し、使えない場合は意味付きDOM、ARIA、フォーム操作へフォールバックします。
 WebMCPの有無で作品データ、編集規則、検証、undo、自動保存の経路を変えません。
 
-WebMCPはブラウザへ標準搭載されているだけでは有効になりません。
-2026年8月26日のローカル実測では、Chrome 151とEdge 151は通常起動で `modelContext` がなく、
-`--enable-experimental-web-platform-features --enable-blink-features=WebMCP` を付けると登録とツール実行が成功しました。
+公式公開版は、`https://tobidas.9rsgy78c9c.workers.dev` とブラウザ提供元に対応するWebMCP Origin Trialトークンをビルド時にHTMLへ組み込み、そのトークンに対応するChromeまたはEdgeで利用者側のブラウザ設定を不要にします。
+ローカルclone版では、Chrome、Edge、Firefoxを判定し、それぞれのWebMCP設定を有効にして再起動する手順を案内します。
+ブラウザAPIの有効化とは別に、ページのツールを発見・呼び出せるWebMCP対応AI環境が必要です。
+
+2026年8月26日のローカル実測では、Chrome 151とEdge 151は既定状態で `modelContext` がなく、各ブラウザ設定の「WebMCP for testing」を有効にすると登録とツール実行が成功しました。
 Firefox 154.0.1は通常起動でAPIがなく、`dom.modelcontext.enabled=true` と `dom.modelcontext.testing.enabled=true` を実験用に指定すると、
 `navigator.modelContext`へ19個のimperativeツールが登録され、`get-state`と`create-visual`の実行まで成功しました。
 Firefoxでは現行の実測でも `document.modelContext` はなく、宣言的フォームAPIの公開も確認していません。
@@ -54,6 +56,8 @@ WebMCPの利用可否は、次の順で扱います。
 2. 利用できる場合だけ、アプリ起動中に固定ツール集合を登録する
 3. アプリをアンマウントすると `AbortController` で登録を解除する
 4. 利用できない場合、登録処理を行わず既存のDOM操作経路を使う
+
+ツールバーのTipsは現在のブラウザを判定し、公式公開版のOrigin Trial、Chrome・Edge・Firefoxそれぞれの設定、対応AI環境、非対応時のAIモードを別項目として案内します。
 
 登録するimperativeツールは、状態取得、対象選択、プレビュー制御、編集、undo、redoです。
 配置、更新、再配置、タイムライン、BGM、見開き操作は、WebMCPから作品オブジェクトやDOMを直接変更せず、`src/builder/ai/commands.ts` の共通コマンドを呼びます。

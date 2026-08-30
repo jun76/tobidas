@@ -23,6 +23,7 @@ npm run dev          # ビルダー http://localhost:5174/（strictPort）
 npm run typecheck    # tsc --noEmit
 npm test             # vitest run（src/**/*.test.ts）
 npm run build        # プレイヤーを同梱してからビルダーを dist/ へ出力
+npm run build:public # Origin Trialトークン必須の公開WebMCPビルド
 ```
 
 単体テストは対象ファイルまたはテスト名を指定して実行できます。
@@ -229,6 +230,9 @@ WebMCPはAIモードと同じ作品操作へ接続する構造化ツール経路
 ユーザー向けのAIモードをWebMCPの有無で分割せず、`document.modelContext` または `navigator.modelContext` をfeature detectして、利用できる場合だけ登録します。
 アプリ起動中にWebMCPを登録し、アプリをアンマウントすると `AbortController` で登録を解除します。非対応ブラウザでは既存の意味付きDOM、ARIA、フォーム操作を使います。
 WebMCPの登録、実行、失敗時のフォールバックは `src/builder/ai/webmcp.ts` と `src/builder/ai/webmcpTypes.ts` に閉じ込めます。
+公式公開版は `WEBMCP_ORIGIN_TRIAL_TOKEN` を設定した `npm run build:public` で生成し、対象Origin用トークンを `dist/index.html` のmetaへ注入します。Chromeトークンはサブドメイン対象とThird-party matchingをOFFにして発行します。Edge用トークンは `WEBMCP_EDGE_ORIGIN_TRIAL_TOKEN` で追加できます。
+`build:public` はChrome用トークンがない場合に失敗させます。通常の `npm run build` とローカル開発ではトークンを要求せず、現在のブラウザに応じてChrome、Edge、FirefoxそれぞれのWebMCP設定を案内します。
+Tipsは `src/builder/ai/webmcpEnvironment.ts` で公式公開Origin、ローカルclone、別Originと、Chrome、Edge、Firefoxを区別しますが、WebMCPの利用判定には使いません。利用判定は常にAPIのfeature detectを正とします。
 ツールの編集処理は `src/builder/ai/commands.ts` の共通コマンドを通し、storeの `commit()`、検証、undo、自動保存を迂回させません。
 アセットのバイナリをWebMCP引数へ渡さず、アップロードはAIモードのファイル入力に残します。
 ブラウザ別の実測条件と公開するツールは `README.md` の「ブラウザ操作AIから使う」に記載します。

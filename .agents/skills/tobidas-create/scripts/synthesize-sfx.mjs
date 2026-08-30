@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 小さな場面効果音を、外部依存なしで再現可能なWAVとして生成する。
+// Generate small, reproducible scene sound effects as WAV files without external dependencies.
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -17,7 +17,7 @@ if (args.includes('--help')) {
 const output = get('out', '')
 const kind = get('kind', 'sparkle')
 const duration = Math.min(3, Math.max(0.08, Number(get('duration', kind === 'wind' ? 1.8 : 0.7))))
-if (!output) throw new Error('--out <file.wav> が必要です')
+if (!output) throw new Error('--out <file.wav> is required')
 
 const sampleRate = 44100
 const count = Math.floor(sampleRate * duration)
@@ -52,7 +52,7 @@ for (let i = 0; i < count; i += 1) {
     const tone = Math.sin(2 * Math.PI * 660 * t) + 0.45 * Math.sin(2 * Math.PI * 990 * t)
     value = tone * Math.exp(-3.2 * progress) * 0.22
   } else {
-    throw new Error(`未対応のkindです: ${kind}`)
+    throw new Error(`Unsupported kind: ${kind}`)
   }
 
   const envelope = Math.min(1, t * 90) * Math.min(1, (duration - t) * 35)
@@ -75,4 +75,4 @@ header.write('data', 36)
 header.writeUInt32LE(pcm.length, 40)
 fs.mkdirSync(path.dirname(path.resolve(output)), { recursive: true })
 fs.writeFileSync(output, Buffer.concat([header, pcm]))
-console.log(`効果音を生成しました: ${output} (${kind}, ${duration.toFixed(2)}s)`)
+console.log(`Generated sound effect: ${output} (${kind}, ${duration.toFixed(2)}s)`)

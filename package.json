@@ -17,6 +17,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build -c vite.player.config.ts && node scripts/embed-player.mjs && vite build",
+    "build:public": "vite build -c vite.player.config.ts && node scripts/embed-player.mjs && vite build --mode webmcp-public",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "samples:generate": "node scripts/generate-samples.mjs",

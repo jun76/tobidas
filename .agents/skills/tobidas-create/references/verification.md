@@ -1,10 +1,10 @@
-# 完成作品の検証
+# Verify the completed work
 
-検証は、生成物の機械検査、再生画面の目視、AIモードの操作検査に分ける。
+Divide verification into mechanical checks of generated output, visual inspection of playback, and AI-mode operation checks.
 
-## 機械検査
+## Mechanical checks
 
-リポジトリ内の公開サンプルなら、リポジトリルートで次を実行する。
+For a public sample in the repository, run the following from the repository root.
 
 ```powershell
 npm run samples:generate
@@ -13,79 +13,79 @@ node scripts/verify-builder-ai-mode.mjs
 npm run qa:holds -- <sample-id> --out shots/<sample-id>-holds --phases 0,0.5,1 --turns
 ```
 
-同梱ランナーからまとめて実行するときは次を使う。
+Use the following to run the checks together through the bundled runner.
 
 ```powershell
 node <skill-dir>/scripts/run-repo-qa.mjs --repo <repo-root> --project <sample-id> --out shots/<sample-id>-holds --phases 0,0.5,1
 ```
 
-単一の保持時刻を見るときは次を使う。
+Use the following to inspect one hold time.
 
 ```powershell
 node scripts/screenshot.mjs --project projects/<sample-id> --scroll 0.5 --out shots/<sample-id>-mid.png
 ```
 
-背景パネルの収納順と初期配置を機械検査するときは次を実行する。
+Run the following to mechanically check background-panel stowing order and initial placement.
 
 ```powershell
 node scripts/verify-stow-layout.mjs projects/<sample-id> --strict
 ```
 
-`--strict` なしでは既存作品を止めずに警告・エラーを一覧できる。
-背景パネルは名前またはアセットIDの `backdrop`、`background`、`背景`、`遠景` などから検出する。
-検査は最も早い `stow.stagger`、背景板より上に出る初期Y、背景板より奥へ入る初期Zを確認する。
+Without `--strict`, the command lists warnings and errors without stopping existing works.
+Background panels are detected from terms such as `backdrop` or `background` in their names or asset IDs.
+The check verifies the earliest `stow.stagger`, an initial Y that rises above the background board, and an initial Z that goes behind it.
 
-スタンドアロン作品では、作品フォルダを `--project` に絶対パスで渡して同じ再生経路を検査する。
-同梱ランナーはリポジトリの既存 `screenshot.mjs` を保持時刻ごとに呼び出す。
-リポジトリに依存する検査が必要な場合は、作品を公開サンプルへ移さず、検査用の一時作業フォルダを使う。
+For a standalone work, pass the absolute path of the work folder to `--project` to check the same playback path.
+The bundled runner calls the repository's existing `screenshot.mjs` for each hold time.
+When a repository-dependent check is needed, use a temporary QA workspace instead of moving the work into the public samples.
 
-## 素材検査
+## Asset checks
 
-- 画像がWebPである。
-- 立体パーツに透明な背景があり、チェッカーボードや白い塗りつぶしが残っていない。
-- 透明余白が大きく残っていない。
-- 地面画像へ建物、人物、道具などの主役が描き込まれていない。
-- 空間背景が淡く、立体パーツと同じ主役を競合させていない。
-- 人物・動物の立ち絵が見開き間で同じ画像ファイルを再利用していない（ユーザーが明示した例外を除く）。
-- 音声が1ファイル3MB以内である。
-- ページめくり音が同梱され、最後の見開き以外の遷移へ設定されている。
+- Images are WebP.
+- 3D parts have transparent backgrounds with no checkerboard or white fill left behind.
+- Large transparent margins have been removed.
+- Ground images do not contain prominent buildings, people, tools, or other subjects.
+- Spatial backgrounds are pale and do not compete with the same subject as a 3D part.
+- Character and animal art does not reuse the same image file across spreads, except for user-requested exceptions.
+- Each audio file is no larger than 3 MB.
+- The page-turn sound is included and assigned to every transition except after the final spread.
 
-## 再生画面の目視
+## Visual playback inspection
 
-保持時刻 `0`、`0.5`、`1` と、各ページ遷移の中央でスクリーンショットを撮る。
-次を見開きごとに確認する。
+Take screenshots at hold times `0`, `0.5`, and `1`, and at the midpoint of every page transition.
+Check the following for every spread.
 
-- テキストがページ端から切れない。
-- 本文が保持の開始・中間・終了で表示され、所有ページへ印字された状態で固定されている。
-- ページ遷移中央でも本文がページと一緒に折れ、空中へ飛び出したり、フェードアウトや表示切替で消えたりしない。
-- 本文要素にモーション、パーティクル、透明度、表示状態の演出トラックがない。
-- 本文の親、layer、回転、pivot、opacity、motion、clock、フォント、パーティクル設定が共有 `caption` 実装と一致している。
-- 部品が隣接ページへ一瞬でも貫通しない。
-- 部品同士が意図せず重ならない。
-- 背景、空間背景、立体パーツの役割が視覚的に分かれる。
-- 背景パネルが展開時に他の起立部品より遅れて起きない。
-- 他の部品の初期位置が背景パネルの下端より上へ出ず、背景パネルより奥側へ入り込んでいない。
-- 中央線付近の大きな部品が折れやすい構成になっていない。
-- カメラ移動と光源が主役を見失わせない。
-- 保持中のモーションが紙面外へ部品を出さない。
-- 効果音が場面の変化と一致し、停止中や逆再生で鳴らない。
+- Text is not clipped by a page edge.
+- Body text is visible at the beginning, middle, and end of the hold and remains fixed as printing on its owning page.
+- At the midpoint of a page transition, body text folds with the page and neither flies into the air nor disappears through a fade or visibility change.
+- Body-text elements have no motion, particle, opacity, or visibility directing tracks.
+- Body-text parent, layer, rotation, pivot, opacity, motion, clock, font, and particle settings match the shared `caption` implementation.
+- Parts never pass through an adjacent page, even briefly.
+- Parts do not overlap unintentionally.
+- The visual roles of ground, spatial background, and 3D parts are distinct.
+- Background panels do not rise later than other standing parts during unfolding.
+- Other parts do not start above the background panel's lower edge or behind the panel.
+- Large parts near the center fold are not arranged in a way that makes folding difficult.
+- Camera movement and lighting do not lose the subject.
+- Hold-time motion does not move parts outside the paper.
+- Sound effects match scene changes and do not play while stopped or during reverse playback.
 
-## AIモードの操作検査
+## AI-mode operation checks
 
-- 作品を新規作成してAIモードへ移れる。
-- 素材を一括読み込みできる。
-- `data-tobidas-kind="ai-state"` のJSONから、作品の `book`、見開き、要素、タイムライン、選択、検証結果を取得できる。
-- 見開きの追加、複製、前後移動、削除がAIモードの操作結果へ反映される。
-- 見開きのツリー選択後に、対象見開きへだけ部品を配置できる。
-- 配置後の名前、位置、寸法、レイヤー、表示状態が更新できる。
-- 不正なstep値を送信せず、更新結果を確認できる。
-- AIモードの見開き保持タイムラインで、対象、プロパティ、時刻、値を指定してキーを追加できる。
-- AIモードのタイムラインで、キーの再生、スクラブ、時刻変更、補間変更、キー・トラック削除ができる。
-- 位置、回転、拡縮、表示、不透明度、画像切替、環境、カメラ、音声キューの演出が標準モードと同じ作品データへ保存される。
-- 標準モードにある表紙、ページ、見開き、BOOK、光源、部品の全編集項目へAIモードから到達できる。
-- 操作後に `data-tobidas-kind="ai-operation-result"` から成功・失敗と検証件数を取得できる。
-- タイムラインのトラックとキーは `data-tobidas-kind="timeline-track"` / `timeline-key` と保存IDで特定できる。
-- 再生中に編集操作が無効になる。
-- 通常モードへ戻っても作品が失われない。
+- A new work can be created and switched to AI mode.
+- Assets can be imported in one batch.
+- JSON from `data-tobidas-kind="ai-state"` exposes the work's `book`, spreads, elements, timeline, selection, and verification results.
+- Adding, duplicating, moving forward or backward, and deleting spreads is reflected in AI-mode operation results.
+- After selecting a spread in the tree, parts can be placed only on that target spread.
+- Names, positions, dimensions, layers, and visibility can be updated after placement.
+- Updates can be confirmed without submitting invalid step values.
+- Keys can be added to the AI-mode spread hold timeline by specifying the target, property, time, and value.
+- Keys can be played and scrubbed, and their time and interpolation can be changed; keys and tracks can be deleted.
+- Position, rotation, scale, visibility, opacity, image switching, environment, camera, and audio-cue direction are saved to the same work data as standard mode.
+- Every editing field for the cover, pages, spreads, BOOK, lights, and parts that exists in standard mode can be reached from AI mode.
+- After an operation, success or failure and the verification count can be read from `data-tobidas-kind="ai-operation-result"`.
+- Timeline tracks and keys can be identified by `data-tobidas-kind="timeline-track"` / `timeline-key` and saved IDs.
+- Editing operations are disabled during playback.
+- The work is preserved after returning to standard mode.
 
-失敗時は、生成後の `project.json` を直接直すのではなく、設計、素材、生成定義、配置値の原因を切り分けて再生成する。
+On failure, isolate the cause in the design, assets, generation definition, or placement values and regenerate; do not directly edit the generated `project.json`.
