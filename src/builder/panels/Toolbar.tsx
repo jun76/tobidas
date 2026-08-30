@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Bot, ChevronDown, Pencil, Play, Redo2, Undo2 } from 'lucide-react'
+import { Bot, Check, ChevronDown, Copy as CopyIcon, Pencil, Play, Redo2, Undo2 } from 'lucide-react'
 import { LOCALES, useLocaleStore, useT, type Locale } from '../i18n'
 import { Icon, ICON } from '../../ui/Icon'
 import { createLocalizedBookProject, useBuilderStore } from '../store'
@@ -10,6 +10,7 @@ import { useDialogs } from '../ui/DialogProvider'
 import { requestElementDelete } from '../elementDelete'
 import st from '../builder.module.css'
 import { unlockVideoAudio } from '../../runtime/videoAudio'
+import { getWebMcpModelContext } from '../ai/webmcpTypes'
 
 export function Toolbar({ aiMode, onAiModeChange }: {
   aiMode: boolean
@@ -58,7 +59,7 @@ export function Toolbar({ aiMode, onAiModeChange }: {
         <button aria-label={t.toolbar.redo} title={t.toolbar.redoHint}
           onClick={store.redo} disabled={!store.redoStack.length}><Icon as={Redo2} size={ICON.bar} /></button>
         <span className={st.spacer} />
-        <AutosaveStatus />
+        <WebMcpHint />
         <AiModeButton aiMode={aiMode} onAiModeChange={onAiModeChange} />
         <LocalePicker />
         <ModeButton />
@@ -87,9 +88,9 @@ export function Toolbar({ aiMode, onAiModeChange }: {
             <LocalePicker />
           </section>
         </div>}</Dropdown>
+        <WebMcpHint />
         <AiModeButton aiMode={aiMode} onAiModeChange={onAiModeChange} />
         <ModeButton />
-        <AutosaveStatus />
       </div>
     </div>
     {confirmNew && (
@@ -113,6 +114,76 @@ function AiModeButton({ aiMode, onAiModeChange }: { aiMode: boolean; onAiModeCha
   </button>
 }
 
+function WebMcpHint() {
+  const t = useT()
+  const available = getWebMcpModelContext() !== null
+  const [open, setOpen] = useState(false)
+  const hideTimer = useRef<number | undefined>(undefined)
+  const show = () => {
+    if (hideTimer.current !== undefined) window.clearTimeout(hideTimer.current)
+    setOpen(true)
+  }
+  const hideLater = () => {
+    if (hideTimer.current !== undefined) window.clearTimeout(hideTimer.current)
+    hideTimer.current = window.setTimeout(() => setOpen(false), 300)
+  }
+  useEffect(() => () => {
+    if (hideTimer.current !== undefined) window.clearTimeout(hideTimer.current)
+  }, [])
+  return <div className={`${st.webMcpHint} ${available ? st.webMcpAvailable : st.webMcpUnavailable}`}
+    data-tobidas-kind="webmcp-hint" data-tobidas-webmcp={available ? 'available' : 'unavailable'}
+    onMouseEnter={show} onMouseLeave={hideLater}
+    onFocus={(event) => { if (event.currentTarget === event.target) show() }}
+    onBlur={(event) => {
+      if (!event.currentTarget.contains(event.relatedTarget as Node | null)) hideLater()
+    }}>
+    <span className={st.webMcpLabel} tabIndex={0} aria-label={t.toolbar.webMcpHint} title={t.toolbar.webMcpHint}>
+      {available ? t.toolbar.webMcpAvailable : t.toolbar.webMcpUnavailable}
+    </span>
+    <div className={`${st.webMcpPopover} ${open ? st.webMcpPopoverOpen : ''}`} role="dialog"
+      aria-label={t.toolbar.webMcpHint} onMouseEnter={show} onMouseLeave={hideLater}>
+      <p>{available ? t.toolbar.webMcpAvailableHint : t.toolbar.webMcpUnavailableHint}</p>
+      {!available && <>
+        <p>{t.toolbar.webMcpSetupHint}</p>
+        <dl>
+          <dt>{t.toolbar.webMcpChromium}</dt>
+          <dd><WebMcpCommand command={t.toolbar.webMcpChromiumOption} /></dd>
+          <dt>{t.toolbar.webMcpFirefox}</dt>
+          <dd><WebMcpCommand command={t.toolbar.webMcpFirefoxOption} /></dd>
+        </dl>
+      </>}
+    </div>
+  </div>
+}
+
+function WebMcpCommand({ command }: { command: string }) {
+  const t = useT()
+  const [copied, setCopied] = useState(false)
+  const resetTimer = useRef<number | undefined>(undefined)
+  useEffect(() => () => {
+    if (resetTimer.current !== undefined) window.clearTimeout(resetTimer.current)
+  }, [])
+  const copy = async () => {
+    if (!navigator.clipboard?.writeText) return
+    try {
+      await navigator.clipboard.writeText(command)
+      setCopied(true)
+      if (resetTimer.current !== undefined) window.clearTimeout(resetTimer.current)
+      resetTimer.current = window.setTimeout(() => setCopied(false), 1600)
+    } catch {
+      // 権限やブラウザ実装の都合でコピーできない場合は表示を変えない。
+    }
+  }
+  return <div className={st.webMcpCommand}>
+    <code>{command}</code>
+    <button type="button" className={st.webMcpCopyButton} onClick={() => void copy()}
+      aria-label={copied ? t.toolbar.webMcpCopied : t.toolbar.webMcpCopy}
+      title={copied ? t.toolbar.webMcpCopied : t.toolbar.webMcpCopy}>
+      <Icon as={copied ? Check : CopyIcon} size={ICON.row} />
+    </button>
+  </div>
+}
+
 function ModeButton() {
   const t = useT()
   const store = useBuilderStore()
@@ -124,18 +195,6 @@ function ModeButton() {
       ? <><Icon as={Play} size={ICON.bar} />{t.toolbar.play}</>
       : <><Icon as={Pencil} size={ICON.bar} />{t.toolbar.edit}</>}
   </button>
-}
-
-function AutosaveStatus() {
-  const t = useT()
-  const { saveStatus, saveError } = useBuilderStore()
-  if (saveStatus === 'idle') return null
-  return <span className={st.hintSmall} role="status" title={saveError}>
-    {saveStatus === 'saving' ? t.toolbar.autosaveSaving
-      : saveStatus === 'saved' ? t.toolbar.autosaveSaved
-        : saveStatus === 'quota-error' ? t.toolbar.autosaveQuota
-          : t.toolbar.autosaveFailed}
-  </span>
 }
 
 /** 表示言語の切り替え。作品データではなく編集セッションの設定なので、書き出しには入らない */
