@@ -22,8 +22,8 @@ page.on('pageerror', (error) => consoleErrors.push(String(error)))
 
 try {
   const url = new URL(baseUrl)
-  url.searchParams.set('ai', '1')
   await page.goto(url.href, { waitUntil: 'networkidle' })
+  await page.getByRole('button', { name: 'AIモード', exact: true }).click()
 
   const workspace = page.getByRole('main', { name: 'AIブラウザ操作ワークスペース' })
   const panel = page.getByRole('region', { name: 'AIブラウザ操作用' })
@@ -130,6 +130,7 @@ try {
   const narrowPage = await context.newPage()
   await narrowPage.setViewportSize({ width: 900, height: 900 })
   await narrowPage.goto(url.href, { waitUntil: 'networkidle' })
+  await narrowPage.getByRole('button', { name: 'AIモード', exact: true }).click()
   const narrowControl = await narrowPage.getByLabel('AI操作ペイン').boundingBox()
   const narrowViewport = await narrowPage.getByRole('region', { name: '作品ビューポート' }).boundingBox()
   if (!narrowControl || !narrowViewport) throw new Error('狭幅AIワークスペースの寸法を取得できません')
@@ -143,6 +144,7 @@ try {
   })
   samplePage.on('pageerror', (error) => consoleErrors.push(String(error)))
   await samplePage.goto(url.href, { waitUntil: 'networkidle' })
+  await samplePage.getByRole('button', { name: 'AIモード', exact: true }).click()
   await samplePage.evaluate(() => {
     const input = document.createElement('input')
     input.type = 'file'

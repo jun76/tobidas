@@ -51,8 +51,8 @@ Firefoxでは現行の実測でも `document.modelContext` はなく、宣言的
 WebMCPの利用可否は、次の順で扱います。
 
 1. `document.modelContext` または `navigator.modelContext` をfeature detectする
-2. 利用できる場合だけ、AIモードの表示期間中に固定ツール集合を登録する
-3. AIモードを閉じると `AbortController` で登録を解除する
+2. 利用できる場合だけ、アプリ起動中に固定ツール集合を登録する
+3. アプリをアンマウントすると `AbortController` で登録を解除する
 4. 利用できない場合、登録処理を行わず既存のDOM操作経路を使う
 
 登録するimperativeツールは、状態取得、対象選択、プレビュー制御、編集、undo、redoです。

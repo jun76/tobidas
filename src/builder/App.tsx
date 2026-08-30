@@ -17,6 +17,7 @@ import { Viewport, viewportGlRef } from './Viewport'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 import { SplitStack } from './ui/SplitStack'
 import { AiWorkspace } from './ai/AiWorkspace'
+import { AiWebMcpBridge } from './ai/webmcp'
 import { readAiMode, writeAiMode } from './ai/session'
 import st from './builder.module.css'
 
@@ -136,6 +137,7 @@ export default function App() {
 
   if (!booted) return <div className={st.app} style={{ alignItems: 'center', justifyContent: 'center' }}>{t.app.loading}</div>
   return <div className={st.app}>
+    <AiWebMcpBridge />
     {pendingElementDelete && <ConfirmDialog
       title={t.app.deleteElementTitle}
       body={t.app.deleteElementBody(pendingElementDelete.name, pendingElementDelete.descendantCount)}

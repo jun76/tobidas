@@ -25,13 +25,17 @@ await context.addInitScript(() => {
 const page = await context.newPage()
 try {
   const url = new URL(baseUrl)
-  url.searchParams.set('ai', '1')
   await page.goto(url.href, { waitUntil: 'networkidle' })
-  await page.getByRole('main', { name: 'AIブラウザ操作ワークスペース' }).waitFor()
   await page.waitForFunction((names) => {
     const context = document.modelContext
     return context && names.every((name) => context.getRegisteredNames().includes(name))
   }, expectedTools)
+
+  if (await page.getByRole('main', { name: 'AIブラウザ操作ワークスペース' }).count()) {
+    throw new Error('通常画面の初期表示がAIワークスペースになっています')
+  }
+  await page.getByRole('button', { name: 'AIモード', exact: true }).click()
+  await page.getByRole('main', { name: 'AIブラウザ操作ワークスペース' }).waitFor()
 
   const result = await page.evaluate(() => ({
     names: document.modelContext.getRegisteredNames(),
@@ -42,8 +46,8 @@ try {
   if (result.toolname !== 'tobidas-place-asset-form' || !result.tooldescription) throw new Error('宣言的フォーム属性がありません')
 
   await page.getByRole('button', { name: '通常モードへ戻る' }).click()
-  await page.waitForFunction(() => document.modelContext.getRegisteredNames().length === 0)
-  console.log(`WebMCP検査 OK: ${result.names.length} tools; AIモード終了時に解除 OK`)
+  await page.waitForFunction((count) => document.modelContext.getRegisteredNames().length === count, result.names.length)
+  console.log(`WebMCP検査 OK: ${result.names.length} tools; 通常画面のまま登録・AIモード切替後も維持 OK`)
 } finally {
   await context.close()
   await browser.close()

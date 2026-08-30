@@ -225,9 +225,9 @@ AIモードの有効状態、フォーム入力、操作結果は編集セッシ
 AIブラウザ操作モードの直接配置は、ブラウザ操作AIがCanvas座標を推定せずに済むための代替操作面です。
 プリセットID、ページ、既存アセット、正規化座標を明示し、通常のドラッグ配置と同じstoreアクションと初期姿勢を使います。
 
-WebMCPはAIモードに追加する構造化ツール経路です。
+WebMCPはAIモードと同じ作品操作へ接続する構造化ツール経路です。
 ユーザー向けのAIモードをWebMCPの有無で分割せず、`document.modelContext` または `navigator.modelContext` をfeature detectして、利用できる場合だけ登録します。
-AIモードを閉じると `AbortController` で登録を解除し、非対応ブラウザでは既存の意味付きDOM、ARIA、フォーム操作を使います。
+アプリ起動中にWebMCPを登録し、アプリをアンマウントすると `AbortController` で登録を解除します。非対応ブラウザでは既存の意味付きDOM、ARIA、フォーム操作を使います。
 WebMCPの登録、実行、失敗時のフォールバックは `src/builder/ai/webmcp.ts` と `src/builder/ai/webmcpTypes.ts` に閉じ込めます。
 ツールの編集処理は `src/builder/ai/commands.ts` の共通コマンドを通し、storeの `commit()`、検証、undo、自動保存を迂回させません。
 アセットのバイナリをWebMCP引数へ渡さず、アップロードはAIモードのファイル入力に残します。

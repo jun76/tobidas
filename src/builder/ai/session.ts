@@ -2,8 +2,6 @@ const STORAGE_KEY = 'tobidas.aiMode'
 
 export function readAiMode(): boolean {
   if (typeof window === 'undefined') return false
-  const query = new URLSearchParams(window.location.search)
-  if (query.has('ai')) return query.get('ai') === '1'
   try {
     return window.sessionStorage.getItem(STORAGE_KEY) === '1'
   } catch {

@@ -462,7 +462,7 @@ export async function registerTobidasWebMcpTools(
   return true
 }
 
-/** AIモードの表示中だけWebMCPを有効にする。非対応環境では何もしない。 */
+/** アプリ起動中はWebMCPを有効にする。非対応環境では何もしない。 */
 export function AiWebMcpBridge() {
   useEffect(() => {
     const controller = new AbortController()
