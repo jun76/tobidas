@@ -48,9 +48,14 @@ describe('WebMCP adapter', () => {
     expect(await registerTobidasWebMcpTools(context, controller.signal)).toBe(true)
     expect(registrations.map(({ tool: registered }) => registered.name)).toEqual([
       'tobidas-get-state', 'tobidas-get-spread', 'tobidas-get-element', 'tobidas-list-assets', 'tobidas-validate-book',
+      'tobidas-audit-layout',
       'tobidas-select-target', 'tobidas-set-preview', 'tobidas-enter-play', 'tobidas-enter-edit',
-      'tobidas-place-asset', 'tobidas-create-visual', 'tobidas-update-element', 'tobidas-move-element',
-      'tobidas-add-timeline-key', 'tobidas-assign-bgm', 'tobidas-clear-bgm', 'tobidas-add-spread',
+      'tobidas-place-asset', 'tobidas-set-page-background', 'tobidas-clear-page-background',
+      'tobidas-create-visual', 'tobidas-update-element', 'tobidas-move-element', 'tobidas-set-element-parent',
+      'tobidas-delete-element', 'tobidas-add-timeline-key', 'tobidas-list-timeline-keys',
+      'tobidas-update-timeline-key', 'tobidas-delete-timeline-key', 'tobidas-set-camera',
+      'tobidas-add-camera-key', 'tobidas-assign-bgm', 'tobidas-clear-bgm', 'tobidas-add-spread',
+      'tobidas-duplicate-spread', 'tobidas-reorder-spread', 'tobidas-delete-spread',
       'tobidas-undo', 'tobidas-redo',
     ])
     expect(registrations.every(({ signal }) => signal === controller.signal)).toBe(true)
@@ -69,6 +74,70 @@ describe('WebMCP adapter', () => {
     expect(result.after.id).toBe(result.target.id)
     expect(result.after.image).toBe('tree.webp')
     expect(useBuilderStore.getState().undoStack.length).toBe(beforeUndo + 1)
+  })
+
+  it('assigns full-page artwork without creating a flat element', async () => {
+    const spreadId = setup()
+    const setResult = payload(await invoke('tobidas-set-page-background', {
+      spreadId, side: 'left', assetId: 'tree.webp',
+    }))
+
+    expect(setResult.ok).toBe(true)
+    expect(useBuilderStore.getState().project.book.spreads[0].leftPage.backgroundAsset).toBe('tree.webp')
+    expect(useBuilderStore.getState().project.book.spreads[0].elements).toHaveLength(0)
+
+    const clearResult = payload(await invoke('tobidas-clear-page-background', { spreadId, side: 'left' }))
+    expect(clearResult.ok).toBe(true)
+    expect(useBuilderStore.getState().project.book.spreads[0].leftPage.backgroundAsset).toBeUndefined()
+  })
+
+  it('exposes explicit destructive and spread tools with confirmation', async () => {
+    const spreadId = setup()
+    const created = payload(await invoke('tobidas-create-visual', { spreadId, side: 'right', presetId: 'page-text' }))
+    const rejected = payload(await invoke('tobidas-delete-element', {
+      spreadId, elementId: created.target.id, confirm: false,
+    }))
+    expect(rejected.ok).toBe(false)
+    expect(useBuilderStore.getState().project.book.spreads[0].elements).toHaveLength(1)
+
+    expect(payload(await invoke('tobidas-delete-element', {
+      spreadId, elementId: created.target.id, confirm: true,
+    })).ok).toBe(true)
+    expect(useBuilderStore.getState().project.book.spreads[0].elements).toHaveLength(0)
+
+    const duplicate = payload(await invoke('tobidas-duplicate-spread', { spreadId }))
+    expect(duplicate.ok).toBe(true)
+    expect(useBuilderStore.getState().project.book.spreads).toHaveLength(2)
+    expect(payload(await invoke('tobidas-delete-spread', {
+      spreadId: duplicate.target.id, confirm: true,
+    })).ok).toBe(true)
+    expect(useBuilderStore.getState().project.book.spreads).toHaveLength(1)
+  })
+
+  it('lists, updates, and deletes typed timeline keys and complete camera keys', async () => {
+    const spreadId = setup()
+    expect(payload(await invoke('tobidas-add-camera-key', {
+      spreadId, time: 1, position: [0, 4, 10], target: [0, 0, 0], fov: 40,
+    })).ok).toBe(true)
+    const listed = payload(await invoke('tobidas-list-timeline-keys', { spreadId }))
+    expect(listed.after).toHaveLength(3)
+    const track = listed.after.find((item: any) => item.property === 'fov')
+    const key = track.keys[0]
+    expect(payload(await invoke('tobidas-update-timeline-key', {
+      spreadId, trackId: track.id, keyId: key.id, value: 55, ease: 'easeInOut',
+    })).ok).toBe(true)
+    expect(payload(await invoke('tobidas-delete-timeline-key', {
+      spreadId, trackId: track.id, keyId: key.id,
+    })).ok).toBe(true)
+    expect(useBuilderStore.getState().project.book.spreads[0].timeline.tracks.some((item) => item.property === 'fov')).toBe(false)
+  })
+
+  it('returns a structural layout audit separately from visual review', async () => {
+    const spreadId = setup()
+    const result = payload(await invoke('tobidas-audit-layout', { spreadId }))
+    expect(result.ok).toBe(true)
+    expect(result.after.spreads[0].spreadId).toBe(spreadId)
+    expect(result.after.visualReviewRequired).toBe(true)
   })
 
   it('rejects invalid IDs and edits in play mode without changing the project', async () => {

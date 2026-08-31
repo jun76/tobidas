@@ -48,7 +48,7 @@ When a repository-dependent check is needed, use a temporary QA workspace instea
 - Spatial backgrounds are pale and do not compete with the same subject as a 3D part.
 - Character and animal art does not reuse the same image file across spreads, except for user-requested exceptions.
 - Each audio file is no larger than 3 MB.
-- The page-turn sound is included and assigned to every transition except after the final spread.
+- The builder's preloaded `standard/page-turn.wav` asset is assigned to every story-spread transition except after the final spread, with no duplicate imported page-turn asset.
 
 ## Visual playback inspection
 

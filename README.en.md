@@ -75,7 +75,7 @@ WebMCP is an additional tool path, not a separate user-facing mode, and the AI m
 
 The tools accept stable target IDs, normalized coordinates, and typed timeline values directly.
 Tool results include the committed target, any placement or layout corrections, and validation counts.
-WebMCP does not upload asset binaries, fetch external URLs, delete content, save projects, or export files.
+WebMCP does not upload asset binaries, fetch external URLs, delete assets, save projects, or export files.
 Continue to use the existing AI-mode file input to import assets.
 
 WebMCP tools are not rendered in the AI-mode panel.
@@ -110,9 +110,9 @@ WebMCP availability differs by browser.
 
 | Browser | WebMCP access path | Confirmed behavior |
 | --- | --- | --- |
-| Chrome | Origin Trial for the public app; Chrome setting for a local clone | 19 imperative tools; declarative form tools are available where the browser supports them |
-| Edge | Edge Origin Trial or Edge setting | 19 imperative tools; declarative form tools are available where the browser supports them |
-| Firefox | Enable `dom.modelcontext.enabled` and `dom.modelcontext.testing.enabled` in `about:config` | 19 imperative tools through `navigator.modelContext`; `document.modelContext` and declarative form tools are not confirmed |
+| Chrome | Origin Trial for the public app; Chrome setting for a local clone | The imperative tools listed below; declarative form tools are available where the browser supports them |
+| Edge | Edge Origin Trial or Edge setting | The imperative tools listed below; declarative form tools are available where the browser supports them |
+| Firefox | Enable `dom.modelcontext.enabled` and `dom.modelcontext.testing.enabled` in `about:config` | The imperative tools listed below through `navigator.modelContext`; `document.modelContext` and declarative form tools are not confirmed |
 
 For a local clone, enable the setting for the current browser and restart it. Chrome uses `chrome://flags/#enable-webmcp-testing`; Edge uses `edge://flags/#enable-webmcp-testing`.
 The public web app embeds an Origin Trial token issued for its exact origin and browser provider, so matching Chrome or Edge users do not need to change browser settings. A token cannot be reused for another origin or browser provider.
@@ -133,20 +133,36 @@ When WebMCP is available, tobidas registers these imperative tools when the page
 | Read | `tobidas-get-element` | Read one element using its stable spread and element IDs. Pass IDs returned by tobidas-get-state or tobidas-get-spread. |
 | Read | `tobidas-list-assets` | List imported asset metadata and references for later placement or BGM assignment; never returns binary asset data or uploads files. |
 | Read | `tobidas-validate-book` | Read the latest tobidas validation errors and warnings. An optional spreadId limits the returned spread context. |
+| Read | `tobidas-audit-layout` | Audit paper containment, stow warnings, airborne-part counts, and page-background assignments for one spread or the whole book. Visual screenshot review remains separate. |
 | Session | `tobidas-select-target` | Select a book, light, cover, spread, page, or element for human-visible supervision. Use the corresponding ID fields for spread, page, and element targets. |
 | Session | `tobidas-set-preview` | Move the visible preview to a normalized book progress or a spread hold time. Provide progress, or provide spreadId with seconds within that spread hold interval. |
 | Session | `tobidas-enter-play` | Enter playback mode so the person can inspect the book. This changes only the visible editing session. |
 | Session | `tobidas-enter-edit` | Return to edit mode so structured book changes can be made. This changes only the visible editing session. |
 | Edit | `tobidas-place-asset` | Place an already imported image, SVG, or video with a tobidas visual preset and normalized page coordinates. The asset must already be imported through the AI-mode file input; placement is committed through normal validation and undo history. |
+| Edit | `tobidas-set-page-background` | Assign an imported image, SVG, or video directly to the page surface instead of creating an element. Use this, rather than a flat paper-stack element, for full-page artwork. |
+| Edit | `tobidas-clear-page-background` | Clear page-surface artwork and its background-video audio settings. |
 | Edit | `tobidas-create-visual` | Create a text or light-particle visual using an existing tobidas preset. The new element is committed through normal layout validation and undo history. |
 | Edit | `tobidas-update-element` | Update one tobidas element through layout normalization and validation. The input is a full typed update, not an arbitrary JSON patch; omitted fields keep their current values. |
 | Edit | `tobidas-move-element` | Reparent one tobidas element to a page or another element while preserving normal constraints. The move is committed through the common edit, validation, and undo path. |
+| Edit | `tobidas-set-element-parent` | Explicit, discoverable alias for `move-element` that changes the parent to a page or another element. |
+| Edit | `tobidas-delete-element` | Delete an element, its descendants, and their timeline tracks; requires `confirm=true`. |
 | Edit | `tobidas-add-timeline-key` | Add or replace one typed timeline key in a spread hold interval. The time and value are validated against the selected target property. |
+| Read | `tobidas-list-timeline-keys` | List tracks, keys, and stable IDs for a spread before an update or deletion. |
+| Edit | `tobidas-update-timeline-key` | Update an existing key's time, typed value, or easing. |
+| Edit | `tobidas-delete-timeline-key` | Delete an existing key and remove its track when it becomes empty. |
+| Edit | `tobidas-set-camera` | Set the default author camera used by spreads without camera keys. |
+| Edit | `tobidas-add-camera-key` | Save position, target, and field-of-view keys together at one spread hold time. |
 | Edit | `tobidas-assign-bgm` | Assign one already imported audio asset as the project BGM. The audio must be imported through the AI-mode file input before this tool is called. |
 | Edit | `tobidas-clear-bgm` | Clear the project BGM through the normal edit, validation, and undo path. |
-| Edit | `tobidas-add-spread` | Add, duplicate, or move a spread through the normal edit and undo path. Deletion is not exposed by WebMCP. |
+| Edit | `tobidas-add-spread` | Add, duplicate, or move a spread through the normal edit and undo path. The combined operation remains for compatibility. |
+| Edit | `tobidas-duplicate-spread` | Duplicate a spread while remapping element, track, and key IDs. |
+| Edit | `tobidas-reorder-spread` | Move a spread one position earlier or later. |
+| Edit | `tobidas-delete-spread` | Delete an entire spread with `confirm=true`; the last remaining spread cannot be deleted. |
 | Edit | `tobidas-undo` | Undo the last tobidas edit through the normal history. The result includes the current selection and preview state after undo. |
 | Edit | `tobidas-redo` | Redo the last undone tobidas edit through the normal history. The result includes the current selection and preview state after redo. |
+
+Asset import, opening projects, saving, and single-HTML or ZIP export remain user-managed file operations because they require browser file permissions and destination choices. Use the AI-mode file input and toolbar; WebMCP does not add a binary transport.
+For final visual review, use `tobidas-set-preview` to prepare the view and capture the viewport with the calling Browser or Computer Use environment. `tobidas-audit-layout` reports deterministic structural issues, but it does not judge composition or visible overlap from an image.
 
 The asset placement form also carries `tobidas-place-asset-form` for declarative API testing.
 It keeps the normal submit path and does not set `toolautosubmit`, so form automation does not skip user confirmation.

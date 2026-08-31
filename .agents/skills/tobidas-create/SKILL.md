@@ -104,8 +104,9 @@ Follow the size and total-work limits in `AGENTS.md`.
 
 ## Use sound and direction
 
-Always copy the skill-bundled [assets/page-turn.wav](assets/page-turn.wav) into the work and use it as the page-turn sound for each spread.
-Do not place a page-turn sound after the last spread.
+Use the builder's preloaded standard audio asset `standard/page-turn.wav` for page turns.
+Do not copy or import a separate page-turn file into the work.
+Keep the standard asset assigned to every spread that transitions to another story spread, and leave it unassigned after the final spread.
 
 Actively prepare sound effects for scene changes, entrances, magic, footsteps, water, wind, and sparkles when they fit the story.
 Use an audio-generation capability when available; otherwise generate short effects with [scripts/synthesize-sfx.mjs](scripts/synthesize-sfx.mjs).

@@ -235,6 +235,8 @@ WebMCPの登録、実行、失敗時のフォールバックは `src/builder/ai/
 Tipsは `src/builder/ai/webmcpEnvironment.ts` で公式公開Origin、ローカルclone、別Originと、Chrome、Edge、Firefoxを区別しますが、WebMCPの利用判定には使いません。利用判定は常にAPIのfeature detectを正とします。
 APIのfeature detectとツール登録成功はブラウザ側の状態だけを表し、呼び出し元AIによる一覧取得と実行の成功を保証しません。AIクライアントの種類、バージョン、選択モデルで対応が異なり得ることを一般条件として案内し、特定製品やモデルをtobidasの必須要件にしません。
 ツールの編集処理は `src/builder/ai/commands.ts` の共通コマンドを通し、storeの `commit()`、検証、undo、自動保存を迂回させません。
+ページ背景は通常部品の配置と区別し、`tobidas-set-page-background`で`Page.backgroundAsset`へ割り当てます。部品・見開き削除は`confirm=true`を必須とし、通常のremove操作とundo経路を使います。
+`tobidas-audit-layout`は既存の収納・紙面包含検査を返す構造QAであり、画像上の構図や重なりを判定したと表現しません。最終目視は呼び出し元のBrowser／Computer Useによるビューポート撮影を使います。
 アセットのバイナリをWebMCP引数へ渡さず、アップロードはAIモードのファイル入力に残します。
 ブラウザ別の実測条件と公開するツールは `README.md` の「ブラウザ操作AIから使う」に記載します。
 

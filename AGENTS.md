@@ -48,7 +48,7 @@ UIの「AIツール利用可能」はページへの登録完了だけを示す�
 
 2026年8月26日のローカル実測では、Chrome 151とEdge 151は既定状態で `modelContext` がなく、各ブラウザ設定の「WebMCP for testing」を有効にすると登録とツール実行が成功しました。
 Firefox 154.0.1は通常起動でAPIがなく、`dom.modelcontext.enabled=true` と `dom.modelcontext.testing.enabled=true` を実験用に指定すると、
-`navigator.modelContext`へ19個のimperativeツールが登録され、`get-state`と`create-visual`の実行まで成功しました。
+`navigator.modelContext`へimperativeツール集合が登録され、`get-state`と`create-visual`の実行まで成功しました。
 Firefoxでは現行の実測でも `document.modelContext` はなく、宣言的フォームAPIの公開も確認していません。
 詳細な条件と実測結果は[READMEのブラウザ操作AIの章](./README.md#ブラウザ操作aiから使う)に合わせます。
 
@@ -61,13 +61,16 @@ WebMCPの利用可否は、次の順で扱います。
 
 ツールバーのTipsは現在のブラウザを判定し、公式公開版のOrigin Trial、Chrome・Edge・Firefoxそれぞれの設定、対応AI環境、非対応時のAIモードを別項目として案内します。
 
-登録するimperativeツールは、状態取得、対象選択、プレビュー制御、編集、undo、redoです。
-配置、更新、再配置、タイムライン、BGM、見開き操作は、WebMCPから作品オブジェクトやDOMを直接変更せず、`src/builder/ai/commands.ts` の共通コマンドを呼びます。
+登録するimperativeツールは、状態取得、対象選択、プレビュー制御、ページ背景、部品、タイムライン、カメラ、BGM、見開き、構造レイアウト監査、undo、redoです。
+配置、更新、再配置、削除、タイムライン、カメラ、BGM、見開き操作は、WebMCPから作品オブジェクトやDOMを直接変更せず、`src/builder/ai/commands.ts` の共通コマンドを呼びます。
+全面ページ画像は平積み部品で代用せず、`tobidas-set-page-background` でページ面へ割り当てます。
+破壊的な部品・見開き削除は対象IDを先に読み、`confirm=true`を明示した呼び出しだけ受け付けます。
 配置フォームの宣言的APIは補助的に使いますが、`toolautosubmit`は付けません。
 
 アセットのアップロードは従来どおりAIモードのファイル入力で行います。
 WebMCPの引数と戻り値へdata URL、Blob、IndexedDBの内部構造、undoスタック全体を含めません。
-任意JSON置換、削除、外部URL取得、画像生成、保存、単一HTML出力、ZIP出力、外部MCPサーバーはWebMCPツールとして公開しません。
+任意JSON置換、アセット削除、外部URL取得、画像生成、保存、単一HTML出力、ZIP出力、外部MCPサーバーはWebMCPツールとして公開しません。
+アセット追加とファイル入出力は利用者のブラウザ権限を伴うためAIモードとツールバーに残し、WebMCPへdata URLやファイルハンドルを渡しません。
 
 ## 構図と紙工作
 
