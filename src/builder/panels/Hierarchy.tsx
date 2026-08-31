@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type DragEvent, type MouseEvent, type ReactNode } from 'react'
-import { ChevronDown, ChevronRight, ChevronUp, Copy, Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronRight, ChevronUp, Copy, Eye, EyeOff, Plus, SlidersHorizontal, Trash2 } from 'lucide-react'
 import { Icon } from '../../ui/Icon'
 import { assetAccept } from '../../package/model'
 import type { ParentSpace } from '../../schema/stageElement'
@@ -11,6 +11,7 @@ import { requestContainerElementsDelete, requestElementDelete, requestSpreadDele
 import { ELEMENT_DND_MIME, hiddenKey, useBuilderStore } from '../store'
 import type { BookSelection } from '../state/editorState'
 import { selectSelectedElement, selectSpreadById } from '../state/selectors'
+import { PrecisionPlacement } from './PrecisionPlacement'
 import st from '../builder.module.css'
 
 export function BookNavigator() {
@@ -95,6 +96,7 @@ export function PartPresets() {
     ? store.selection.side
     : undefined
   const bgmRef = useRef<HTMLInputElement>(null)
+  const [precisionOpen, setPrecisionOpen] = useState(false)
 
   const modeButton = (mode: PlacementMode, label: string, hint: string) => {
     const active = store.placement === mode
@@ -109,7 +111,15 @@ export function PartPresets() {
   }
 
   return <section className={st.panel}>
-      <div className={st.panelTitle}>{t.app.panelPresets}</div>
+      {precisionOpen && <PrecisionPlacement onClose={() => setPrecisionOpen(false)} />}
+      <div className={st.panelTitle}>{t.app.panelPresets}<button type="button" className={st.ghostBtn}
+        data-tobidas-action="open-precision-placement" aria-label={t.presets.precisionPlacement}
+        title={t.presets.precisionPlacementHint} onClick={() => setPrecisionOpen(true)}>
+        <Icon as={SlidersHorizontal} />
+      </button></div>
+      <button type="button" className={st.mobilePanelAction} data-tobidas-action="open-precision-placement"
+        aria-label={t.presets.precisionPlacement} title={t.presets.precisionPlacementHint}
+        onClick={() => setPrecisionOpen(true)}><Icon as={SlidersHorizontal} />{t.presets.precisionPlacement}</button>
 
       <div className={st.presetGroupTitle}>{t.presets.groupVisual}</div>
       <div className={st.presetGrid}>

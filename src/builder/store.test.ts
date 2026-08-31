@@ -22,6 +22,16 @@ describe('new project defaults', () => {
     expect(project.book.spreads[0].pageTurnSound).toBe('standard/page-turn.wav')
     expect(validateBookProject(project)).toMatchObject({ ok: true, errors: [], warnings: [] })
   })
+
+  it('clears the BGM when its audio asset is removed', () => {
+    useBuilderStore.getState().setProject(createLocalizedBookProject(), 'new')
+    useBuilderStore.getState().removeAsset('standard/bgm.mp3')
+
+    const project = useBuilderStore.getState().project
+    expect(project.assets.some((asset) => asset.id === 'standard/bgm.mp3')).toBe(false)
+    expect(project.audio).toBeUndefined()
+    expect(validateBookProject(project)).toMatchObject({ ok: true, errors: [] })
+  })
 })
 
 describe('builder playback start', () => {

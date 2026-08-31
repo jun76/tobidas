@@ -1,5 +1,5 @@
-import { Diamond, Eye, EyeOff, Trash2 } from 'lucide-react'
-import { useId, type ReactNode } from 'react'
+import { Diamond, Eye, EyeOff, Link } from 'lucide-react'
+import { useId, useState, type FormEvent, type ReactNode } from 'react'
 import { Icon } from '../../ui/Icon'
 import type { ParticleElement, StageElement, TextFont, VisualElement } from '../../schema/stageElement'
 import { DEFAULT_EMBEDDED_VIDEO_AUDIO, type EmbeddedVideoAudio } from '../../schema/audio'
@@ -9,6 +9,10 @@ import { useT } from '../i18n'
 import { TEXT_FONT_IDS } from '../../runtime/textStyle'
 import { hiddenKey, useBuilderStore } from '../store'
 import { selectActiveSpread, selectSelectedElement, selectSpreadById } from '../state/selectors'
+import { elementDescendantIds } from '../hierarchy'
+import { moveElementCommand, parentValue } from '../operations/commands'
+import { publishOperationResult } from '../operations/result'
+import { FormDialog } from '../ui/FormDialog'
 import st from '../builder.module.css'
 
 /** 書体の名前も表示言語に従う。runtime 側は書体の対応表だけを持つ */
@@ -126,32 +130,36 @@ function PropertySection({ title, embedded, children }: { title: string; embedde
   return embedded ? <>{children}</> : <Panel title={title}>{children}</Panel>
 }
 
-function InspectorGroup({ title, children }: { title: string; children: ReactNode }) {
+function InspectorGroup({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return <details className={st.inspectorGroup} open>
-    <summary>{title}</summary>
+    <summary><span>{title}</span>{action}</summary>
     {children}
   </details>
 }
 
 /**
- * BGM。割り当てはプリセットのBGMボタンから行い、
- * ここは確認と微調整、そして解除に絞る。
+ * BGMは背景素材と同じく、登録済みアセットから直接選ぶ。
+ * 未設定を選ぶとBGMだけを解除し、アセット自体は残す。
  */
 function BookAudio({ showTitle = true }: { showTitle?: boolean } = {}) {
   const t = useT()
   const store = useBuilderStore()
   const audio = store.project.audio
-  const asset = store.project.assets.find((item) => item.id === audio?.bgmAsset)
+  const audioAssets = store.project.assets.filter((asset) => asset.type === 'audio')
+  const selected = audioAssets.some((asset) => asset.id === audio?.bgmAsset) ? audio?.bgmAsset ?? '' : ''
   return <>
     {showTitle && <div className={st.subsectionTitle}>{t.properties.bgm}</div>}
-    {!audio && <div className={st.hintSmall}>{t.properties.noBgm}</div>}
+    <Select label={t.properties.bgmAsset} value={selected}
+      options={[
+        ['', t.properties.unset],
+        ...audioAssets.map((asset) => [asset.id, audioAssetLabel(asset)] as [string, string]),
+      ]}
+      onChange={(assetId) => {
+        if (!assetId) { store.clearBgm(); return }
+        const asset = audioAssets.find((item) => item.id === assetId)
+        if (asset) store.assignBgm(asset)
+      }} />
     {audio && <>
-      <div className={st.row}>
-        <span className={st.rowLabel}>{t.properties.bgmAsset}</span>
-        <span className={st.rowValue}>{asset?.name ?? audio.bgmAsset}</span>
-        <button className={`${st.ghostBtn} ${st.ghostDanger}`} aria-label={t.properties.clearBgm}
-          title={t.properties.clearBgm} onClick={() => store.clearBgm()}><Icon as={Trash2} /></button>
-      </div>
       <Num label={t.properties.bgmVolume} value={audio.volume}
         onChange={(value) => store.commit((project) => {
           if (project.audio) project.audio.volume = Math.min(1, Math.max(0, value))
@@ -247,11 +255,16 @@ function Element({ element, embedded = false }: { element: StageElement; embedde
   if (selection.type !== 'element') return null
   const update = (change: (item: StageElement) => void) => store.updateElement(selection.spreadId, element.id, change)
   const time = activeSpreadTime()
+  const [parentDialogOpen, setParentDialogOpen] = useState(false)
   const key = (property: TimelineProperty, value: TimelineValue) =>
     store.upsertTimelineKey(selection.spreadId, { type: 'element', elementId: element.id }, property, time, value)
 
   return <PropertySection title={t.properties.element(element.type === 'particle' ? t.presets['light-particles'] : element.type)} embedded={embedded}>
-    <InspectorGroup title={t.app.inspectorBasic}>
+    <InspectorGroup title={t.app.inspectorBasic} action={<button type="button" className={st.ghostBtn}
+      data-tobidas-action="change-element-parent" aria-label={t.properties.changeParent}
+      title={t.properties.changeParentHint} onClick={(event) => { event.preventDefault(); event.stopPropagation(); setParentDialogOpen(true) }}>
+      <Icon as={Link} />
+    </button>}>
       <Text label={t.properties.name} value={element.name} onChange={(value) => update((item) => { item.name = value })} />
       <Num label={t.properties.layer} value={element.layer} onChange={(value) => update((item) => { item.layer = Math.round(value) })} />
       <div className={st.row}><span className={st.rowLabel}>{t.properties.visible}</span><label>
@@ -285,7 +298,36 @@ function Element({ element, embedded = false }: { element: StageElement; embedde
           : []
       })} />
     </InspectorGroup>
+    {parentDialogOpen && <ParentChangeDialog spreadId={selection.spreadId} element={element}
+      onClose={() => setParentDialogOpen(false)} />}
   </PropertySection>
+}
+
+function ParentChangeDialog({ spreadId, element, onClose }: { spreadId: string; element: StageElement; onClose: () => void }) {
+  const t = useT()
+  const store = useBuilderStore()
+  const spread = store.project.book.spreads.find((item) => item.id === spreadId)
+  const descendants = spread ? elementDescendantIds(spread, element.id) : new Set<string>()
+  const candidates = spread?.elements.filter((item) => item.id !== element.id && !descendants.has(item.id)) ?? []
+  const [parent, setParent] = useState(parentValue(element.parent))
+  const [error, setError] = useState<string>()
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const next = parent === 'left-page' || parent === 'right-page'
+      ? { type: parent } as const
+      : { type: 'element' as const, elementId: parent.slice('element:'.length) }
+    const result = publishOperationResult(moveElementCommand(spreadId, element.id, next))
+    if (!result.ok) { setError(result.message); return }
+    onClose()
+  }
+  return <FormDialog title={t.properties.changeParent} submitLabel={t.properties.changeParent}
+    kind="element-parent-form" error={error} onSubmit={submit} onClose={onClose}>
+    <label className={st.dialogField}>{t.operations.parent}<select autoFocus value={parent} onChange={(event) => setParent(event.target.value)}>
+      <option value="left-page">{t.operations.leftPage}</option>
+      <option value="right-page">{t.operations.rightPage}</option>
+      {candidates.map((item) => <option key={item.id} value={`element:${item.id}`}>{item.name}</option>)}
+    </select></label>
+  </FormDialog>
 }
 
 /**
@@ -414,6 +456,11 @@ function VisualFields({ element, update, onKey }: {
     })} />
     <TextStyleFields element={element} update={update} />
   </>
+}
+
+function audioAssetLabel(asset: { id: string; name: string }): string {
+  const fileName = asset.id.split(/[\\/]/).at(-1) ?? asset.id
+  return /\.[^.]+$/.test(fileName) ? fileName : asset.name
 }
 
 function ParticleFields({ element, update, onKey }: {

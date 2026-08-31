@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createBookProject } from '../../schema/bookDefaults'
 import { useBuilderStore } from '../store'
-import { createTobidasWebMcpTools, registerTobidasWebMcpTools } from './webmcp'
-import type { WebMcpModelContext, WebMcpTool } from './webmcpTypes'
+import { createTobidasWebMcpTools, registerTobidasWebMcpTools } from './tools'
+import type { WebMcpModelContext, WebMcpTool } from './types'
 
 function setup() {
   const project = createBookProject('WebMCP test')

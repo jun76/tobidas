@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { createBookProject, createStageElement } from '../../schema/bookDefaults'
 import { useBuilderStore } from '../store'
-import { buildAiStateSummary } from './stateSummary'
+import { buildBuilderStateSummary } from './stateSummary'
 
-describe('AI state summary', () => {
+describe('builder state summary', () => {
   it('distinguishes same-name parts by their saved ids', () => {
     const project = createBookProject('AI summary')
     const spread = project.book.spreads[0]
@@ -15,7 +15,7 @@ describe('AI state summary', () => {
     useBuilderStore.getState().setProject(project, 'import')
     useBuilderStore.getState().select({ type: 'element', spreadId: spread.id, elementId: second.id })
 
-    const summary = buildAiStateSummary(useBuilderStore.getState())
+    const summary = buildBuilderStateSummary(useBuilderStore.getState())
     expect(summary.selection).toEqual({ kind: 'element', id: second.id, label: 'Tree' })
     expect(summary.selectedElement?.id).toBe(second.id)
     expect(summary.selectedElement?.parent).toEqual({ type: 'right-page' })
@@ -38,7 +38,7 @@ describe('AI state summary', () => {
     )
     useBuilderStore.getState().setProject(project, 'import')
 
-    const assets = buildAiStateSummary(useBuilderStore.getState()).assets
+    const assets = buildBuilderStateSummary(useBuilderStore.getState()).assets
     expect(assets.find((asset) => asset.id === 'image.webp')?.references).toBe(3)
     expect(assets.find((asset) => asset.id === 'sound.wav')?.references).toBe(1)
   })
@@ -59,7 +59,7 @@ describe('AI state summary', () => {
     })
     useBuilderStore.getState().setProject(project, 'import')
 
-    const summary = buildAiStateSummary(useBuilderStore.getState())
+    const summary = buildBuilderStateSummary(useBuilderStore.getState())
     expect(summary.spreads).toHaveLength(1)
     expect(summary.spreads[0]).toMatchObject({ id: first.id, name: 'Opening', holdSeconds: 4 })
     expect(summary.spreads[0].elements[0]).toMatchObject({ id: element.id, name: 'Train' })

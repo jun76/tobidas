@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createBookProject } from '../../schema/bookDefaults'
 import { useBuilderStore } from '../store'
-import { createAiVisual, placeAiAsset, updateAiElement } from './commands'
+import { createVisualCommand, placeAssetCommand, updateElementCommand } from './commands'
 
 function setup() {
   const project = createBookProject('AI commands')
@@ -22,7 +22,7 @@ describe('AI commands', () => {
   it('places an existing asset with spine-based normalized coordinates as one undo operation', () => {
     const spreadId = setup()
     const before = useBuilderStore.getState().undoStack.length
-    const result = placeAiAsset({
+    const result = placeAssetCommand({
       spreadId,
       side: 'left',
       assetId: 'tree.webp',
@@ -43,7 +43,7 @@ describe('AI commands', () => {
   it('rejects invalid normalized coordinates without changing the project', () => {
     const spreadId = setup()
     const before = useBuilderStore.getState().project
-    const result = placeAiAsset({
+    const result = placeAssetCommand({
       spreadId,
       side: 'right',
       assetId: 'tree.webp',
@@ -60,7 +60,7 @@ describe('AI commands', () => {
   it('creates an immediate text part in one undo operation', () => {
     const spreadId = setup()
     const before = useBuilderStore.getState().undoStack.length
-    const result = createAiVisual({ spreadId, side: 'right', presetId: 'page-text' })
+    const result = createVisualCommand({ spreadId, side: 'right', presetId: 'page-text' })
 
     expect(result.ok).toBe(true)
     const state = useBuilderStore.getState()
@@ -71,7 +71,7 @@ describe('AI commands', () => {
 
   it('creates an independent particle part without visual content fields', () => {
     const spreadId = setup()
-    const result = createAiVisual({ spreadId, side: 'right', presetId: 'light-particles' })
+    const result = createVisualCommand({ spreadId, side: 'right', presetId: 'light-particles' })
 
     expect(result.ok).toBe(true)
     const created = useBuilderStore.getState().project.book.spreads[0].elements[0]
@@ -84,9 +84,9 @@ describe('AI commands', () => {
 
   it('updates the camera-facing setting of an independent particle part', () => {
     const spreadId = setup()
-    const createdResult = createAiVisual({ spreadId, side: 'right', presetId: 'light-particles' })
+    const createdResult = createVisualCommand({ spreadId, side: 'right', presetId: 'light-particles' })
     if (!createdResult.ok || !createdResult.target) throw new Error('particle was not created')
-    const result = updateAiElement(spreadId, createdResult.target.id, {
+    const result = updateElementCommand(spreadId, createdResult.target.id, {
       name: 'Camera-facing particles',
       position: [0, 0, 0],
       rotation: [0, 0, 0],
@@ -108,7 +108,7 @@ describe('AI commands', () => {
 
   it('updates a part through the normal constraint and validation path', () => {
     const spreadId = setup()
-    const placed = placeAiAsset({
+    const placed = placeAssetCommand({
       spreadId,
       side: 'right',
       assetId: 'tree.webp',
@@ -117,7 +117,7 @@ describe('AI commands', () => {
       v: .5,
     })
     if (!placed.ok || !placed.target) throw new Error('part was not created')
-    const result = updateAiElement(spreadId, placed.target.id, {
+    const result = updateElementCommand(spreadId, placed.target.id, {
       name: 'Updated tree',
       position: [0, -5, 0],
       rotation: [0, 0, 0],

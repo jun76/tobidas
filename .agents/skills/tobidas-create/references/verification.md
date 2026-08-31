@@ -1,6 +1,6 @@
 # Verify the completed work
 
-Divide verification into mechanical checks of generated output, visual inspection of playback, and AI-mode operation checks.
+Divide verification into mechanical checks of generated output, visual inspection of playback, and standard-builder operation checks.
 
 ## Mechanical checks
 
@@ -9,7 +9,7 @@ For a public sample in the repository, run the following from the repository roo
 ```powershell
 npm run samples:generate
 npm run samples:check
-node scripts/verify-builder-ai-mode.mjs
+npm run qa:semantic
 npm run qa:holds -- <sample-id> --out shots/<sample-id>-holds --phases 0,0.5,1 --turns
 ```
 
@@ -70,22 +70,26 @@ Check the following for every spread.
 - Hold-time motion does not move parts outside the paper.
 - Sound effects match scene changes and do not play while stopped or during reverse playback.
 
-## AI-mode operation checks
+## Standard-builder operation checks
 
-- A new work can be created and switched to AI mode.
+- A new work opens directly in the standard builder without a separate mode switch.
 - Assets can be imported in one batch.
-- JSON from `data-tobidas-kind="ai-state"` exposes the work's `book`, spreads, elements, timeline, selection, and verification results.
-- Adding, duplicating, moving forward or backward, and deleting spreads is reflected in AI-mode operation results.
+- The standard workspace exposes the work ID, active spread ID, selection, preview progress, and state version through `data-tobidas-*` attributes.
+- When WebMCP is available, `tobidas-get-state` exposes the work's book, spreads, elements, timeline, selection, and verification results without asset bodies.
+- Adding, duplicating, moving forward or backward, and deleting spreads is reflected in the navigator and operation results.
 - After selecting a spread in the tree, parts can be placed only on that target spread.
 - Names, positions, dimensions, layers, and visibility can be updated after placement.
 - Updates can be confirmed without submitting invalid step values.
-- Keys can be added to the AI-mode spread hold timeline by specifying the target, property, time, and value.
+- Keys can be added to the spread hold timeline by specifying the target, property, time, value, and interpolation in the standard detail action or WebMCP.
 - Keys can be played and scrubbed, and their time and interpolation can be changed; keys and tracks can be deleted.
 - Position, rotation, scale, visibility, opacity, image switching, environment, camera, and audio-cue direction are saved to the same work data as standard mode.
-- Every editing field for the cover, pages, spreads, BOOK, lights, and parts that exists in standard mode can be reached from AI mode.
-- After an operation, success or failure and the verification count can be read from `data-tobidas-kind="ai-operation-result"`.
+- Every editing field for the cover, pages, spreads, BOOK, lights, and parts can be reached from the standard inspector and timeline.
+- Precise placement, asset metadata, parent changes, and explicit timeline-key creation can be reached through closed-by-default detail actions.
+- BGM can be selected from imported audio or cleared with **Not set** directly in the standard Sound section.
+- After a detail operation, success or failure and the verification count can be read from `data-tobidas-kind="operation-result"`.
 - Timeline tracks and keys can be identified by `data-tobidas-kind="timeline-track"` / `timeline-key` and saved IDs.
 - Editing operations are disabled during playback.
-- The work is preserved after returning to standard mode.
+- When WebMCP is available, registered `tobidas-*` tools change the same store and standard UI; when it is unavailable, semantic DOM and ARIA operations remain usable.
+- Closed detail actions leave no hidden focusable form controls in the tab order.
 
 On failure, isolate the cause in the design, assets, generation definition, or placement values and regenerate; do not directly edit the generated `project.json`.

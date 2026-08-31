@@ -5,7 +5,7 @@ import {
   getWebMcpPageEnvironment,
   originTrialProviderForBrowser,
   TOBIDAS_PUBLIC_ORIGIN,
-} from './webmcpEnvironment'
+} from './environment'
 
 describe('WebMCP page environment', () => {
   afterEach(() => vi.unstubAllGlobals())

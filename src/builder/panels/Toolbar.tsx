@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Bot, Check, ChevronDown, Copy as CopyIcon, Pencil, Play, Redo2, Undo2 } from 'lucide-react'
+import { Check, ChevronDown, Copy as CopyIcon, Pencil, Play, Redo2, Undo2 } from 'lucide-react'
 import { LOCALES, useLocaleStore, useT, type Locale } from '../i18n'
 import { Icon, ICON } from '../../ui/Icon'
 import { createLocalizedBookProject, useBuilderStore } from '../store'
@@ -10,17 +10,14 @@ import { useDialogs } from '../ui/DialogProvider'
 import { requestElementDelete } from '../elementDelete'
 import st from '../builder.module.css'
 import { unlockVideoAudio } from '../../runtime/videoAudio'
-import { getWebMcpModelContext } from '../ai/webmcpTypes'
+import { getWebMcpModelContext } from '../webmcp/types'
 import {
   getWebMcpPageEnvironment,
   type WebMcpBrowserKind,
   type WebMcpPageEnvironment,
-} from '../ai/webmcpEnvironment'
+} from '../webmcp/environment'
 
-export function Toolbar({ aiMode, onAiModeChange }: {
-  aiMode: boolean
-  onAiModeChange: (enabled: boolean) => void
-}) {
+export function Toolbar() {
   const t = useT()
   const store = useBuilderStore()
   const [confirmNew, setConfirmNew] = useState(false)
@@ -65,7 +62,6 @@ export function Toolbar({ aiMode, onAiModeChange }: {
           onClick={store.redo} disabled={!store.redoStack.length}><Icon as={Redo2} size={ICON.bar} /></button>
         <span className={st.spacer} />
         <WebMcpHint />
-        <AiModeButton aiMode={aiMode} onAiModeChange={onAiModeChange} />
         <LocalePicker />
         <ModeButton />
       </div>
@@ -94,7 +90,6 @@ export function Toolbar({ aiMode, onAiModeChange }: {
           </section>
         </div>}</Dropdown>
         <WebMcpHint />
-        <AiModeButton aiMode={aiMode} onAiModeChange={onAiModeChange} />
         <ModeButton />
       </div>
     </div>
@@ -108,15 +103,6 @@ export function Toolbar({ aiMode, onAiModeChange }: {
       />
     )}
   </>
-}
-
-function AiModeButton({ aiMode, onAiModeChange }: { aiMode: boolean; onAiModeChange: (enabled: boolean) => void }) {
-  const t = useT()
-  return <button type="button" className={aiMode ? st.active : ''} aria-pressed={aiMode}
-    aria-label={aiMode ? t.toolbar.aiModeExit : t.toolbar.aiMode}
-    title={aiMode ? t.toolbar.aiModeExit : t.toolbar.aiModeHint} onClick={() => onAiModeChange(!aiMode)}>
-    <Icon as={Bot} size={ICON.bar} />{aiMode ? t.toolbar.aiModeExit : t.toolbar.aiMode}
-  </button>
 }
 
 function WebMcpHint() {

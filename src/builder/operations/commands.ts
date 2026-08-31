@@ -4,7 +4,7 @@ import { elementDescendantIds } from '../hierarchy'
 import { t } from '../i18n'
 import type { VisualPresetId } from '../presets'
 import { useBuilderStore } from '../store'
-import type { AiCommandResult } from './types'
+import type { BuilderCommandResult } from './types'
 import { COLOR_PROPERTIES, DISCRETE_PROPERTIES, NUMBER_PROPERTIES, VEC3_PROPERTIES, type TimelineKey, type TimelineProperty, type TimelineTarget, type TimelineValue } from '../../schema/timeline'
 
 type AssetPreset = Extract<VisualPresetId, 'paper-stack' | 'bottom-upright' | 'depth-layer'>
@@ -27,14 +27,14 @@ export function timelinePropertiesForTarget(target: TimelineTarget): readonly Ti
   return ELEMENT_TIMELINE_PROPERTIES
 }
 
-const failure = (action: string, message: string, fieldErrors: Record<string, string> = {}): AiCommandResult => ({
+const failure = (action: string, message: string, fieldErrors: Record<string, string> = {}): BuilderCommandResult => ({
   ok: false,
   action,
   message,
   fieldErrors,
 })
 
-const success = (action: string, message: string, target?: { kind: string; id: string }, corrections: string[] = []): AiCommandResult => {
+const success = (action: string, message: string, target?: { kind: string; id: string }, corrections: string[] = []): BuilderCommandResult => {
   const issues = useBuilderStore.getState().issues
   return {
     ok: true,
@@ -46,54 +46,54 @@ const success = (action: string, message: string, target?: { kind: string; id: s
   }
 }
 
-export function placeAiAsset(input: {
+export function placeAssetCommand(input: {
   spreadId: string
   side: 'left' | 'right'
   assetId: string
   presetId: AssetPreset
   u: number
   v: number
-}): AiCommandResult {
+}): BuilderCommandResult {
   const action = 'place-asset'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const errors: Record<string, string> = {}
-  if (!state.project.book.spreads.some((spread) => spread.id === input.spreadId)) errors.spreadId = t().ai.notFound
+  if (!state.project.book.spreads.some((spread) => spread.id === input.spreadId)) errors.spreadId = t().operations.notFound
   const asset = state.project.assets.find((item) => item.id === input.assetId)
-  if (!asset || !['image', 'svg', 'video'].includes(asset.type)) errors.assetId = t().ai.notFound
-  if (!Number.isFinite(input.u) || input.u < 0 || input.u > 1) errors.u = t().ai.normalizedRange
-  if (!Number.isFinite(input.v) || input.v < 0 || input.v > 1) errors.v = t().ai.normalizedRange
-  if (Object.keys(errors).length) return failure(action, t().ai.invalidInput, errors)
+  if (!asset || !['image', 'svg', 'video'].includes(asset.type)) errors.assetId = t().operations.notFound
+  if (!Number.isFinite(input.u) || input.u < 0 || input.u > 1) errors.u = t().operations.normalizedRange
+  if (!Number.isFinite(input.v) || input.v < 0 || input.v > 1) errors.v = t().operations.normalizedRange
+  if (Object.keys(errors).length) return failure(action, t().operations.invalidInput, errors)
 
   // storeのpoint.xはページローカル左端が0。左面だけuの向きを反転し、両面でu=0を背表紙に揃える。
   const point = { x: input.side === 'left' ? 1 - input.u : input.u, y: input.v }
   const id = state.placeAssetWithPreset(input.spreadId, input.side, input.assetId, input.presetId, point)
-  if (!id) return failure(action, t().ai.commandFailed)
+  if (!id) return failure(action, t().operations.commandFailed)
   const created = useBuilderStore.getState().project.book.spreads
     .find((spread) => spread.id === input.spreadId)?.elements.find((element) => element.id === id)
   const corrections = created && created.parent.type !== `${input.side}-page`
-    ? [t().ai.pageCorrected(created.parent.type)]
+    ? [t().operations.pageCorrected(created.parent.type)]
     : []
-  return success(action, t().ai.placed(created?.name ?? id), { kind: 'element', id }, corrections)
+  return success(action, t().operations.placed(created?.name ?? id), { kind: 'element', id }, corrections)
 }
 
-export function createAiVisual(input: {
+export function createVisualCommand(input: {
   spreadId: string
   side: 'left' | 'right'
   presetId: Extract<VisualPresetId, 'light-particles' | 'page-text'>
-}): AiCommandResult {
+}): BuilderCommandResult {
   const action = 'create-visual'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   if (!state.project.book.spreads.some((spread) => spread.id === input.spreadId)) {
-    return failure(action, t().ai.invalidInput, { spreadId: t().ai.notFound })
+    return failure(action, t().operations.invalidInput, { spreadId: t().operations.notFound })
   }
   const id = state.addPresetVisual(input.spreadId, input.side, input.presetId)
-  if (!id) return failure(action, t().ai.commandFailed)
-  return success(action, t().ai.created(id), { kind: 'element', id })
+  if (!id) return failure(action, t().operations.commandFailed)
+  return success(action, t().operations.created(id), { kind: 'element', id })
 }
 
-export interface AiElementUpdate {
+export interface ElementUpdateInput {
   name: string
   position: [number, number, number]
   rotation: [number, number, number]
@@ -122,35 +122,35 @@ export interface AiElementUpdate {
   backVideoAudio?: EmbeddedVideoAudio | null
 }
 
-export function updateAiElement(spreadId: string, elementId: string, input: AiElementUpdate): AiCommandResult {
+export function updateElementCommand(spreadId: string, elementId: string, input: ElementUpdateInput): BuilderCommandResult {
   const action = 'update-element'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const element = state.project.book.spreads.find((spread) => spread.id === spreadId)?.elements.find((item) => item.id === elementId)
-  if (!element) return failure(action, t().ai.notFound)
+  if (!element) return failure(action, t().operations.notFound)
   const errors: Record<string, string> = {}
-  if (!input.name.trim()) errors.name = t().ai.required
+  if (!input.name.trim()) errors.name = t().operations.required
   for (const [group, values] of Object.entries({ position: input.position, rotation: input.rotation, scale: input.scale })) {
-    values.forEach((value, index) => { if (!Number.isFinite(value)) errors[`${group}.${index}`] = t().ai.finiteNumber })
+    values.forEach((value, index) => { if (!Number.isFinite(value)) errors[`${group}.${index}`] = t().operations.finiteNumber })
   }
-  if (!Number.isFinite(input.layer)) errors.layer = t().ai.finiteNumber
-  if (!Number.isFinite(input.opacity)) errors.opacity = t().ai.finiteNumber
-  if (input.pivot && input.pivot.some((value) => !Number.isFinite(value))) errors.pivot = t().ai.finiteNumber
-  if (input.width !== undefined && (!Number.isFinite(input.width) || input.width <= 0)) errors.width = t().ai.positiveNumber
-  if (input.height !== undefined && (!Number.isFinite(input.height) || input.height <= 0)) errors.height = t().ai.positiveNumber
-  if (input.fontSize !== undefined && (!Number.isFinite(input.fontSize) || input.fontSize <= 0)) errors.fontSize = t().ai.positiveNumber
+  if (!Number.isFinite(input.layer)) errors.layer = t().operations.finiteNumber
+  if (!Number.isFinite(input.opacity)) errors.opacity = t().operations.finiteNumber
+  if (input.pivot && input.pivot.some((value) => !Number.isFinite(value))) errors.pivot = t().operations.finiteNumber
+  if (input.width !== undefined && (!Number.isFinite(input.width) || input.width <= 0)) errors.width = t().operations.positiveNumber
+  if (input.height !== undefined && (!Number.isFinite(input.height) || input.height <= 0)) errors.height = t().operations.positiveNumber
+  if (input.fontSize !== undefined && (!Number.isFinite(input.fontSize) || input.fontSize <= 0)) errors.fontSize = t().operations.positiveNumber
   if (input.particles) {
     if (!Number.isInteger(input.particles.count) || input.particles.count < 1 || input.particles.count > 200) {
-      errors.particleCount = t().ai.invalidInput
+      errors.particleCount = t().operations.invalidInput
     }
-    if (!Number.isFinite(input.particles.size) || input.particles.size <= 0) errors.particleSize = t().ai.positiveNumber
-    if (!Number.isFinite(input.particles.drift) || input.particles.drift < 0) errors.particleDrift = t().ai.invalidInput
-    if (!Number.isFinite(input.particles.period) || input.particles.period <= 0) errors.particlePeriod = t().ai.positiveNumber
+    if (!Number.isFinite(input.particles.size) || input.particles.size <= 0) errors.particleSize = t().operations.positiveNumber
+    if (!Number.isFinite(input.particles.drift) || input.particles.drift < 0) errors.particleDrift = t().operations.invalidInput
+    if (!Number.isFinite(input.particles.period) || input.particles.period <= 0) errors.particlePeriod = t().operations.positiveNumber
   }
   for (const [field, value] of [['videoAudio', input.videoAudio], ['backVideoAudio', input.backVideoAudio]] as const) {
-    if (value && !embeddedVideoAudioSchema.safeParse(value).success) errors[field] = t().ai.invalidInput
+    if (value && !embeddedVideoAudioSchema.safeParse(value).success) errors[field] = t().operations.invalidInput
   }
-  if (Object.keys(errors).length) return failure(action, t().ai.invalidInput, errors)
+  if (Object.keys(errors).length) return failure(action, t().operations.invalidInput, errors)
 
   state.updateElement(spreadId, elementId, (target) => {
     target.name = input.name.trim()
@@ -199,35 +199,35 @@ export function updateAiElement(spreadId: string, elementId: string, input: AiEl
     ?.elements.find((item) => item.id === elementId)
   const requested = input.position.join(',')
   const actual = after?.baseTransform.position.join(',')
-  const corrections = actual && actual !== requested ? [t().ai.positionCorrected(requested, actual)] : []
-  return success(action, t().ai.updated(after?.name ?? elementId), { kind: 'element', id: elementId }, corrections)
+  const corrections = actual && actual !== requested ? [t().operations.positionCorrected(requested, actual)] : []
+  return success(action, t().operations.updated(after?.name ?? elementId), { kind: 'element', id: elementId }, corrections)
 }
 
-export function moveAiElement(spreadId: string, elementId: string, parent: ParentSpace): AiCommandResult {
+export function moveElementCommand(spreadId: string, elementId: string, parent: ParentSpace): BuilderCommandResult {
   const action = 'move-element'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const spread = state.project.book.spreads.find((item) => item.id === spreadId)
   const element = spread?.elements.find((item) => item.id === elementId)
-  if (!spread || !element) return failure(action, t().ai.notFound)
+  if (!spread || !element) return failure(action, t().operations.notFound)
   if (parent.type === 'element') {
     const descendants = elementDescendantIds(spread, elementId)
-    if (parent.elementId === elementId || descendants.has(parent.elementId)) return failure(action, t().ai.invalidParent)
-    if (!spread.elements.some((item) => item.id === parent.elementId)) return failure(action, t().ai.notFound)
+    if (parent.elementId === elementId || descendants.has(parent.elementId)) return failure(action, t().operations.invalidParent)
+    if (!spread.elements.some((item) => item.id === parent.elementId)) return failure(action, t().operations.notFound)
   }
   state.moveElement(spreadId, elementId, parent)
-  return success(action, t().ai.moved(element.name), { kind: 'element', id: elementId })
+  return success(action, t().operations.moved(element.name), { kind: 'element', id: elementId })
 }
 
-export function setAiPageBackground(spreadId: string, side: 'left' | 'right', assetId: string): AiCommandResult {
+export function setPageBackgroundCommand(spreadId: string, side: 'left' | 'right', assetId: string): BuilderCommandResult {
   const action = 'set-page-background'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const spread = state.project.book.spreads.find((item) => item.id === spreadId)
-  if (!spread) return failure(action, t().ai.notFound, { spreadId: t().ai.notFound })
+  if (!spread) return failure(action, t().operations.notFound, { spreadId: t().operations.notFound })
   const asset = state.project.assets.find((item) => item.id === assetId)
   if (!asset || !['image', 'svg', 'video'].includes(asset.type)) {
-    return failure(action, t().ai.notFound, { assetId: t().ai.notFound })
+    return failure(action, t().operations.notFound, { assetId: t().operations.notFound })
   }
   state.commit((project) => {
     const target = project.book.spreads.find((item) => item.id === spreadId)
@@ -235,15 +235,15 @@ export function setAiPageBackground(spreadId: string, side: 'left' | 'right', as
     target[side === 'left' ? 'leftPage' : 'rightPage'].backgroundAsset = assetId
   })
   state.select({ type: 'page', spreadId, side })
-  return success(action, t().ai.pageBackgroundSet, { kind: 'page', id: `${spreadId}:${side}` })
+  return success(action, t().operations.pageBackgroundSet, { kind: 'page', id: `${spreadId}:${side}` })
 }
 
-export function clearAiPageBackground(spreadId: string, side: 'left' | 'right'): AiCommandResult {
+export function clearPageBackgroundCommand(spreadId: string, side: 'left' | 'right'): BuilderCommandResult {
   const action = 'clear-page-background'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const spread = state.project.book.spreads.find((item) => item.id === spreadId)
-  if (!spread) return failure(action, t().ai.notFound, { spreadId: t().ai.notFound })
+  if (!spread) return failure(action, t().operations.notFound, { spreadId: t().operations.notFound })
   state.commit((project) => {
     const target = project.book.spreads.find((item) => item.id === spreadId)
     if (!target) return
@@ -252,80 +252,88 @@ export function clearAiPageBackground(spreadId: string, side: 'left' | 'right'):
     page.backgroundVideoAudio = undefined
   })
   state.select({ type: 'page', spreadId, side })
-  return success(action, t().ai.pageBackgroundCleared, { kind: 'page', id: `${spreadId}:${side}` })
+  return success(action, t().operations.pageBackgroundCleared, { kind: 'page', id: `${spreadId}:${side}` })
 }
 
-export function deleteAiElement(spreadId: string, elementId: string): AiCommandResult {
+export function deleteElementCommand(spreadId: string, elementId: string): BuilderCommandResult {
   const action = 'delete-element'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const spread = state.project.book.spreads.find((item) => item.id === spreadId)
   const element = spread?.elements.find((item) => item.id === elementId)
-  if (!spread || !element) return failure(action, t().ai.notFound, { elementId: t().ai.notFound })
+  if (!spread || !element) return failure(action, t().operations.notFound, { elementId: t().operations.notFound })
   state.removeElement(spreadId, elementId)
-  return success(action, t().ai.elementDeleted, { kind: 'spread', id: spreadId })
+  return success(action, t().operations.elementDeleted, { kind: 'spread', id: spreadId })
 }
 
-export function addAiTimelineKey(input: {
+export function addTimelineKeyCommand(input: {
   spreadId: string
   target: TimelineTarget
   property: TimelineProperty
   time: number
   value: TimelineValue
-}): AiCommandResult {
+  ease?: TimelineKey['ease']
+}): BuilderCommandResult {
   const action = 'add-timeline-key'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const spread = state.project.book.spreads.find((item) => item.id === input.spreadId)
-  if (!spread) return failure(action, t().ai.notFound, { spreadId: t().ai.notFound })
+  if (!spread) return failure(action, t().operations.notFound, { spreadId: t().operations.notFound })
   const errors: Record<string, string> = {}
   if (!Number.isFinite(input.time) || input.time < 0 || input.time > spread.sequence.holdSeconds) {
-    errors.time = t().ai.timelineTimeRange
+    errors.time = t().operations.timelineTimeRange
   }
-  if (!timelinePropertiesForTarget(input.target).includes(input.property)) errors.property = t().ai.invalidInput
+  if (!timelinePropertiesForTarget(input.target).includes(input.property)) errors.property = t().operations.invalidInput
   if (input.target.type === 'element') {
     const elementId = input.target.elementId
-    if (!spread.elements.some((element) => element.id === elementId)) errors.target = t().ai.notFound
+    if (!spread.elements.some((element) => element.id === elementId)) errors.target = t().operations.notFound
   }
   if (input.target.type === 'sound') {
     const assetId = input.target.assetId
-    if (!state.project.assets.some((asset) => asset.id === assetId && asset.type === 'audio')) errors.target = t().ai.notFound
+    if (!state.project.assets.some((asset) => asset.id === assetId && asset.type === 'audio')) errors.target = t().operations.notFound
   }
   const valueError = timelineValueError(input.property, input.value, state.project.assets)
   if (valueError) errors.value = valueError
-  if (Object.keys(errors).length) return failure(action, t().ai.invalidInput, errors)
+  if (Object.keys(errors).length) return failure(action, t().operations.invalidInput, errors)
 
   state.upsertTimelineKey(input.spreadId, input.target, input.property, input.time, input.value)
-  return success(action, t().ai.timelineKeyAdded, {
+  if (input.ease) {
+    const current = useBuilderStore.getState()
+    const track = current.project.book.spreads.find((item) => item.id === input.spreadId)?.timeline.tracks
+      .find((item) => JSON.stringify(item.target) === JSON.stringify(input.target) && item.property === input.property)
+    const key = track?.keys.find((item) => Math.abs(item.time - input.time) < .001)
+    if (track && key) current.setTimelineKeyEase(input.spreadId, track.id, key.id, input.ease)
+  }
+  return success(action, t().operations.timelineKeyAdded, {
     kind: 'timeline',
     id: `${timelineTargetValue(input.target)}:${input.property}:${input.time}`,
   })
 }
 
-export function updateAiTimelineKey(input: {
+export function updateTimelineKeyCommand(input: {
   spreadId: string
   trackId: string
   keyId: string
   time?: number
   value?: TimelineValue
   ease?: TimelineKey['ease']
-}): AiCommandResult {
+}): BuilderCommandResult {
   const action = 'update-timeline-key'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const spread = state.project.book.spreads.find((item) => item.id === input.spreadId)
   const track = spread?.timeline.tracks.find((item) => item.id === input.trackId)
   const key = track?.keys.find((item) => item.id === input.keyId)
-  if (!spread || !track || !key) return failure(action, t().ai.notFound)
+  if (!spread || !track || !key) return failure(action, t().operations.notFound)
   const errors: Record<string, string> = {}
   if (input.time !== undefined && (!Number.isFinite(input.time) || input.time < 0 || input.time > spread.sequence.holdSeconds)) {
-    errors.time = t().ai.timelineTimeRange
+    errors.time = t().operations.timelineTimeRange
   }
   if (input.value !== undefined) {
     const valueError = timelineValueError(track.property, input.value, state.project.assets)
     if (valueError) errors.value = valueError
   }
-  if (Object.keys(errors).length) return failure(action, t().ai.invalidInput, errors)
+  if (Object.keys(errors).length) return failure(action, t().operations.invalidInput, errors)
   state.commit((project) => {
     const targetSpread = project.book.spreads.find((item) => item.id === input.spreadId)
     const targetTrack = targetSpread?.timeline.tracks.find((item) => item.id === input.trackId)
@@ -339,130 +347,130 @@ export function updateAiTimelineKey(input: {
       targetTrack.keys.sort((a, b) => a.time - b.time)
     }
   })
-  return success(action, t().ai.timelineKeyUpdated, { kind: 'timeline', id: input.keyId })
+  return success(action, t().operations.timelineKeyUpdated, { kind: 'timeline', id: input.keyId })
 }
 
-export function deleteAiTimelineKey(spreadId: string, trackId: string, keyId: string): AiCommandResult {
+export function deleteTimelineKeyCommand(spreadId: string, trackId: string, keyId: string): BuilderCommandResult {
   const action = 'delete-timeline-key'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const track = state.project.book.spreads.find((item) => item.id === spreadId)
     ?.timeline.tracks.find((item) => item.id === trackId)
-  if (!track?.keys.some((item) => item.id === keyId)) return failure(action, t().ai.notFound)
+  if (!track?.keys.some((item) => item.id === keyId)) return failure(action, t().operations.notFound)
   state.removeTimelineKey(spreadId, trackId, keyId)
-  return success(action, t().ai.timelineKeyDeleted, { kind: 'spread', id: spreadId })
+  return success(action, t().operations.timelineKeyDeleted, { kind: 'spread', id: spreadId })
 }
 
-export function setAiCamera(input: {
+export function setCameraCommand(input: {
   position: [number, number, number]
   target: [number, number, number]
   fov: number
-}): AiCommandResult {
+}): BuilderCommandResult {
   const action = 'set-camera'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const errors = cameraErrors(input)
-  if (Object.keys(errors).length) return failure(action, t().ai.invalidInput, errors)
+  if (Object.keys(errors).length) return failure(action, t().operations.invalidInput, errors)
   state.commit((project) => { project.book.camera = structuredClone(input) })
   state.select({ type: 'book' })
-  return success(action, t().ai.cameraUpdated, { kind: 'camera', id: 'camera' })
+  return success(action, t().operations.cameraUpdated, { kind: 'camera', id: 'camera' })
 }
 
-export function addAiCameraKey(input: {
+export function addCameraKeyCommand(input: {
   spreadId: string
   time: number
   position: [number, number, number]
   target: [number, number, number]
   fov: number
-}): AiCommandResult {
+}): BuilderCommandResult {
   const action = 'add-camera-key'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const spread = state.project.book.spreads.find((item) => item.id === input.spreadId)
   const errors = cameraErrors(input)
-  if (!spread) errors.spreadId = t().ai.notFound
-  else if (!Number.isFinite(input.time) || input.time < 0 || input.time > spread.sequence.holdSeconds) errors.time = t().ai.timelineTimeRange
-  if (Object.keys(errors).length) return failure(action, t().ai.invalidInput, errors)
+  if (!spread) errors.spreadId = t().operations.notFound
+  else if (!Number.isFinite(input.time) || input.time < 0 || input.time > spread.sequence.holdSeconds) errors.time = t().operations.timelineTimeRange
+  if (Object.keys(errors).length) return failure(action, t().operations.invalidInput, errors)
   state.upsertCameraKeys(input.spreadId, input.time, {
     position: input.position,
     target: input.target,
     fov: input.fov,
   })
-  return success(action, t().ai.cameraKeyAdded, { kind: 'timeline', id: `${input.spreadId}:camera:${input.time}` })
+  return success(action, t().operations.cameraKeyAdded, { kind: 'timeline', id: `${input.spreadId}:camera:${input.time}` })
 }
 
-export function assignAiBgm(assetId: string): AiCommandResult {
+export function assignBgmCommand(assetId: string): BuilderCommandResult {
   const action = 'assign-bgm'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const asset = state.project.assets.find((item) => item.id === assetId)
-  if (!asset || asset.type !== 'audio') return failure(action, t().ai.notFound, { asset: t().ai.notFound })
+  if (!asset || asset.type !== 'audio') return failure(action, t().operations.notFound, { asset: t().operations.notFound })
   state.assignBgm(asset)
-  return success(action, t().ai.bgmAssigned, { kind: 'bgm', id: asset.id })
+  return success(action, t().operations.bgmAssigned, { kind: 'bgm', id: asset.id })
 }
 
-export function clearAiBgm(): AiCommandResult {
+export function clearBgmCommand(): BuilderCommandResult {
   const action = 'clear-bgm'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   state.clearBgm()
-  return success(action, t().ai.bgmCleared)
+  return success(action, t().operations.bgmCleared)
 }
 
-export function addAiSpread(): AiCommandResult {
+export function addSpreadCommand(): BuilderCommandResult {
   const action = 'add-spread'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   state.addSpread()
-  return success(action, t().ai.spreadAdded, { kind: 'spread', id: useBuilderStore.getState().activeSpreadId })
+  return success(action, t().operations.spreadAdded, { kind: 'spread', id: useBuilderStore.getState().activeSpreadId })
 }
 
-export function duplicateAiSpread(spreadId: string): AiCommandResult {
+export function duplicateSpreadCommand(spreadId: string): BuilderCommandResult {
   const action = 'duplicate-spread'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
-  if (!state.project.book.spreads.some((spread) => spread.id === spreadId)) return failure(action, t().ai.notFound)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
+  if (!state.project.book.spreads.some((spread) => spread.id === spreadId)) return failure(action, t().operations.notFound)
   state.duplicateSpread(spreadId)
-  return success(action, t().ai.spreadDuplicated, { kind: 'spread', id: useBuilderStore.getState().activeSpreadId })
+  return success(action, t().operations.spreadDuplicated, { kind: 'spread', id: useBuilderStore.getState().activeSpreadId })
 }
 
-export function moveAiSpread(spreadId: string, direction: -1 | 1): AiCommandResult {
+export function moveSpreadCommand(spreadId: string, direction: -1 | 1): BuilderCommandResult {
   const action = direction < 0 ? 'move-spread-earlier' : 'move-spread-later'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
-  if (!state.project.book.spreads.some((spread) => spread.id === spreadId)) return failure(action, t().ai.notFound)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
+  if (!state.project.book.spreads.some((spread) => spread.id === spreadId)) return failure(action, t().operations.notFound)
   const index = state.project.book.spreads.findIndex((spread) => spread.id === spreadId)
   if (index + direction < 0 || index + direction >= state.project.book.spreads.length) {
-    return failure(action, t().ai.invalidInput, { direction: t().ai.invalidInput })
+    return failure(action, t().operations.invalidInput, { direction: t().operations.invalidInput })
   }
   state.moveSpread(spreadId, direction)
-  return success(action, direction < 0 ? t().ai.spreadMovedEarlier : t().ai.spreadMovedLater, { kind: 'spread', id: spreadId })
+  return success(action, direction < 0 ? t().operations.spreadMovedEarlier : t().operations.spreadMovedLater, { kind: 'spread', id: spreadId })
 }
 
-export function deleteAiSpread(spreadId: string): AiCommandResult {
+export function deleteSpreadCommand(spreadId: string): BuilderCommandResult {
   const action = 'delete-spread'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
-  if (!state.project.book.spreads.some((spread) => spread.id === spreadId)) return failure(action, t().ai.notFound)
-  if (state.project.book.spreads.length < 2) return failure(action, t().ai.lastSpread)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
+  if (!state.project.book.spreads.some((spread) => spread.id === spreadId)) return failure(action, t().operations.notFound)
+  if (state.project.book.spreads.length < 2) return failure(action, t().operations.lastSpread)
   state.removeSpread(spreadId)
-  return success(action, t().ai.spreadDeleted, { kind: 'spread', id: useBuilderStore.getState().activeSpreadId })
+  return success(action, t().operations.spreadDeleted, { kind: 'spread', id: useBuilderStore.getState().activeSpreadId })
 }
 
-export function undoAi(): AiCommandResult {
+export function undoCommand(): BuilderCommandResult {
   const action = 'undo'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
-  if (!state.undoStack.length) return failure(action, t().ai.commandFailed)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
+  if (!state.undoStack.length) return failure(action, t().operations.commandFailed)
   state.undo()
   return success(action, 'Undid the last edit')
 }
 
-export function redoAi(): AiCommandResult {
+export function redoCommand(): BuilderCommandResult {
   const action = 'redo'
   const state = useBuilderStore.getState()
-  if (state.mode !== 'edit') return failure(action, t().ai.readOnly)
-  if (!state.redoStack.length) return failure(action, t().ai.commandFailed)
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
+  if (!state.redoStack.length) return failure(action, t().operations.commandFailed)
   state.redo()
   return success(action, 'Redid the last edit')
 }
@@ -474,21 +482,21 @@ function timelineTargetValue(target: TimelineTarget): string {
 }
 
 function timelineValueError(property: TimelineProperty, value: TimelineValue, assets: ReturnType<typeof useBuilderStore.getState>['project']['assets']): string | undefined {
-  if (NUMBER_PROPERTIES.has(property) && typeof value !== 'number') return t().ai.invalidInput
-  if (COLOR_PROPERTIES.has(property) && typeof value !== 'string') return t().ai.invalidInput
-  if (DISCRETE_PROPERTIES.has(property) && typeof value !== 'boolean' && property !== 'visual.image') return t().ai.invalidInput
+  if (NUMBER_PROPERTIES.has(property) && typeof value !== 'number') return t().operations.invalidInput
+  if (COLOR_PROPERTIES.has(property) && typeof value !== 'string') return t().operations.invalidInput
+  if (DISCRETE_PROPERTIES.has(property) && typeof value !== 'boolean' && property !== 'visual.image') return t().operations.invalidInput
   if (VEC3_PROPERTIES.has(property) && (!Array.isArray(value) || value.length !== 3
-    || value.some((item) => !Number.isFinite(item)))) return t().ai.invalidInput
+    || value.some((item) => !Number.isFinite(item)))) return t().operations.invalidInput
   if (property === 'visual.image' && (typeof value !== 'string'
-    || !assets.some((asset) => asset.id === value && ['image', 'svg', 'video'].includes(asset.type)))) return t().ai.notFound
+    || !assets.some((asset) => asset.id === value && ['image', 'svg', 'video'].includes(asset.type)))) return t().operations.notFound
   return undefined
 }
 
 function cameraErrors(input: { position: [number, number, number]; target: [number, number, number]; fov: number }): Record<string, string> {
   const errors: Record<string, string> = {}
-  if (input.position.some((value) => !Number.isFinite(value))) errors.position = t().ai.finiteNumber
-  if (input.target.some((value) => !Number.isFinite(value))) errors.target = t().ai.finiteNumber
-  if (!Number.isFinite(input.fov) || input.fov <= 0 || input.fov >= 180) errors.fov = t().ai.invalidInput
+  if (input.position.some((value) => !Number.isFinite(value))) errors.position = t().operations.finiteNumber
+  if (input.target.some((value) => !Number.isFinite(value))) errors.target = t().operations.finiteNumber
+  if (!Number.isFinite(input.fov) || input.fov <= 0 || input.fov >= 180) errors.fov = t().operations.invalidInput
   return errors
 }
 

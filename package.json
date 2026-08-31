@@ -24,6 +24,7 @@
     "samples:check": "vitest run src/schema/bookPackage.test.ts",
     "samples:trim": "node scripts/trim-assets.mjs",
     "qa:visual": "node scripts/capture-visual-evidence.mjs",
+    "qa:semantic": "node scripts/verify-builder-semantic-ui.mjs",
     "qa:webmcp": "node scripts/verify-builder-webmcp.mjs",
     "qa:holds": "node scripts/shoot-holds.mjs",
     "qa:stow": "node scripts/verify-stow-layout.mjs"

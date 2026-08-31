@@ -57,7 +57,7 @@ if (isPublicProject) {
   const id = path.relative(publicRoot, absoluteProject).replaceAll(path.sep, '/')
   await run(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'samples:generate'], repo)
   await run(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'samples:check'], repo)
-  await run(process.execPath, ['scripts/verify-builder-ai-mode.mjs'], repo)
+  await run(process.execPath, ['scripts/verify-builder-semantic-ui.mjs'], repo)
   await runStowLayoutCheck()
   await run(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'qa:holds', '--', id, '--out', out, '--phases', phases, '--turns'], repo)
 } else {

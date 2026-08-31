@@ -16,9 +16,9 @@ import { Inspector } from './panels/Properties'
 import { Viewport, viewportGlRef } from './Viewport'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 import { SplitStack } from './ui/SplitStack'
-import { AiWorkspace } from './ai/AiWorkspace'
-import { AiWebMcpBridge } from './ai/webmcp'
-import { readAiMode, writeAiMode } from './ai/session'
+import { WebMcpBridge } from './webmcp/WebMcpBridge'
+import { useOperationResultStore } from './operations/result'
+import type { BookSelection } from './state/editorState'
 import st from './builder.module.css'
 
 const RIGHT_PANEL_DEFAULT = 340
@@ -47,7 +47,13 @@ export default function App() {
   const setProject = useBuilderStore((state) => state.setProject)
   const projectSession = useBuilderStore((state) => state.projectSession)
   const mode = useBuilderStore((state) => state.mode)
+  const projectId = useBuilderStore((state) => state.project.id)
+  const activeSpreadId = useBuilderStore((state) => state.activeSpreadId)
+  const selection = useBuilderStore((state) => state.selection)
+  const previewProgress = useBuilderStore((state) => state.previewProgress)
+  const operationResult = useOperationResultStore((state) => state.result)
   const [booted, setBooted] = useState(false)
+  const [stateVersion, setStateVersion] = useState(0)
   const [pendingElementDelete, setPendingElementDelete] = useState<{
     spreadId: string
     elementId: string
@@ -66,15 +72,9 @@ export default function App() {
   } | null>(null)
   const [leftWidth, setLeftWidth] = useState(() => loadPanelWidth('left', 280))
   const [rightWidth, setRightWidth] = useState(loadRightPanelWidth)
-  const [aiMode, setAiModeState] = useState(readAiMode)
-
-  const setAiMode = (enabled: boolean) => {
-    setAiModeState(enabled)
-    writeAiMode(enabled)
-  }
-
   useEffect(() => { savePanelWidth('left', leftWidth) }, [leftWidth])
   useEffect(() => { savePanelWidth('right', rightWidth) }, [rightWidth])
+  useEffect(() => useBuilderStore.subscribe(() => setStateVersion((value) => value + 1)), [])
   useEffect(() => {
     setPendingElementDelete(null)
     setPendingSpreadDelete(null)
@@ -137,7 +137,9 @@ export default function App() {
 
   if (!booted) return <div className={st.app} style={{ alignItems: 'center', justifyContent: 'center' }}>{t.app.loading}</div>
   return <div className={st.app}>
-    <AiWebMcpBridge />
+    <WebMcpBridge />
+    <output className={st.visuallyHidden} data-tobidas-kind="operation-result"
+      aria-live="polite" aria-atomic="true">{operationResult ? JSON.stringify(operationResult) : ''}</output>
     {pendingElementDelete && <ConfirmDialog
       title={t.app.deleteElementTitle}
       body={t.app.deleteElementBody(pendingElementDelete.name, pendingElementDelete.descendantCount)}
@@ -159,8 +161,16 @@ export default function App() {
       onOk={() => useBuilderStore.getState().clearContainerElements(pendingContainerDelete.spreadId, pendingContainerDelete.parentType)}
       onClose={() => setPendingContainerDelete(null)}
     />}
-    <Toolbar key={`toolbar-${projectSession}`} aiMode={aiMode} onAiModeChange={setAiMode} />
-    {aiMode ? <AiWorkspace key={`ai-workspace-${projectSession}`} onScreenshot={screenshot} /> : <div className={`${st.main} ${mode === 'edit' ? st.mainEdit : st.mainPlay}`} key={`workspace-${projectSession}`}>
+    <Toolbar key={`toolbar-${projectSession}`} />
+    <div className={`${st.main} ${mode === 'edit' ? st.mainEdit : st.mainPlay}`} key={`workspace-${projectSession}`}
+      data-tobidas-kind="builder-workspace"
+      data-tobidas-project-id={projectId}
+      data-tobidas-mode={mode}
+      data-tobidas-active-spread-id={activeSpreadId}
+      data-tobidas-selection-kind={selection.type}
+      data-tobidas-selection-id={selectionId(selection, projectId)}
+      data-tobidas-preview-progress={String(previewProgress)}
+      data-tobidas-state-version={String(stateVersion)}>
       {mode === 'edit' && <aside className={st.left} style={{ '--panel-width': `${leftWidth}px` } as CSSProperties}>
         <SplitStack storageKey="left" initial={[280, 210]} mobileAccordion panes={[
           { key: 'navigator', label: t.app.panelNavigator, node: <BookNavigator /> },
@@ -176,17 +186,39 @@ export default function App() {
           { key: 'inspector', label: t.app.panelInspector, node: <Inspector /> },
         ]} />
       </aside>}
-    </div>}
+    </div>
     <StatusBar key={`status-${projectSession}`} />
   </div>
+}
+
+function selectionId(selection: BookSelection, projectId: string): string {
+  if (selection.type === 'book') return projectId
+  if (selection.type === 'light') return 'directional-light'
+  if (selection.type === 'cover') return selection.side
+  if (selection.type === 'spread') return selection.spreadId
+  if (selection.type === 'page') return `${selection.spreadId}:${selection.side}`
+  return selection.elementId
 }
 
 function StatusBar() {
   const t = useT()
   const { project, source, issues } = useBuilderStore()
   const [open, setOpen] = useState(false)
+  const issueListRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const timeout = window.setTimeout(() => setOpen(false), 4000)
+    const closeOutside = (event: PointerEvent) => {
+      if (!issueListRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', closeOutside, true)
+    return () => {
+      window.clearTimeout(timeout)
+      document.removeEventListener('pointerdown', closeOutside, true)
+    }
+  }, [open])
   return <>
-    {open && <div className={st.issueList} onClick={() => setOpen(false)}>
+    {open && <div ref={issueListRef} className={st.issueList} data-tobidas-kind="validation-issues">
       {issues.errors.map((issue, index) => <div className={st.err} key={`e${index}`}><Icon as={CircleAlert} />{issue}</div>)}
       {issues.warnings.map((issue, index) => <div className={st.warn} key={`w${index}`}><Icon as={TriangleAlert} />{issue}</div>)}
       {!issues.errors.length && !issues.warnings.length && <div className={st.ok}>{t.app.noIssues}</div>}
@@ -195,10 +227,11 @@ function StatusBar() {
       <span>{project.name}</span><span>tobidas v{packageJson.version}</span>
       <span>{source === 'import' ? t.app.sourceImport : source === 'idb' ? t.app.sourceRestored : t.app.sourceNew}</span>
       <span className={st.spacer} />
-      <span className={issues.errors.length ? st.err : issues.warnings.length ? st.warn : st.ok} onClick={() => setOpen(!open)}>
+      <button type="button" className={`${st.statusIssueButton} ${issues.errors.length ? st.err : issues.warnings.length ? st.warn : st.ok}`}
+        aria-expanded={open} onClick={() => setOpen(!open)}>
         {issues.errors.length ? t.app.errorCount(issues.errors.length)
           : issues.warnings.length ? t.app.warningCount(issues.warnings.length) : t.app.validationOk}
-      </span>
+      </button>
     </div>
   </>
 }

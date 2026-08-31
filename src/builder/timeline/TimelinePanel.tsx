@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { Diamond, Pause, Play, Trash2 } from 'lucide-react'
+import { Diamond, Pause, Play, Plus, Trash2 } from 'lucide-react'
 import { Icon, ICON } from '../../ui/Icon'
 import { evaluateBookSignals } from '../../runtime/signals'
 import { type TimelineKey, type TimelineTrack } from '../../schema/timeline'
 import { useT } from '../i18n'
 import { useBuilderStore } from '../store'
 import { collectTimelineLanes, type TimelineLane } from './lanes'
+import { TimelineKeyDialog } from './TimelineKeyDialog'
 import st from '../builder.module.css'
 
 /** 1行の高さ: .timelineRow の min-height + 行間 */
@@ -43,6 +44,7 @@ export function TimelinePanel() {
   const [playing, setPlaying] = useState(false)
   const [height, setHeight] = useState(storedHeight)
   const [labelWidth, setLabelWidth] = useState(storedLabelWidth)
+  const [keyDialogOpen, setKeyDialogOpen] = useState(false)
   const playStart = useRef({ clock: 0, time: 0 })
   const sectionRef = useRef<HTMLElement>(null)
   const spread = store.project.book.spreads.find((item) => item.id === store.activeSpreadId)
@@ -109,6 +111,7 @@ export function TimelinePanel() {
     style={{ height, '--timelineLabelWidth': `${labelWidth}px` } as CSSProperties}
     onPointerDown={(event) => event.stopPropagation()}>
     <ResizeHandle onDelta={resize} />
+    {keyDialogOpen && <TimelineKeyDialog spreadId={spread.id} initialTime={time} onClose={() => setKeyDialogOpen(false)} />}
     <div className={st.timelineScrubberRow}>
       <button type="button" className={st.playbackToggle} data-tobidas-action={playing ? 'pause-timeline' : 'play-timeline'}
         aria-label={playing ? t.timeline.pause : t.timeline.playSpread} title={playing ? t.timeline.pause : t.timeline.playSpreadHint}
@@ -120,6 +123,9 @@ export function TimelinePanel() {
         max={spread.sequence.holdSeconds} step={0.01} value={time}
         onChange={(event) => store.setSpreadTime(spread.id, Number(event.target.value))} />
       <span className={st.timelineTime}>{t.timeline.seconds(time.toFixed(2), spread.sequence.holdSeconds.toFixed(2))}</span>
+      <button type="button" className={st.timelineAddKey} data-tobidas-action="open-timeline-key-form"
+        aria-label={t.timeline.addKeyExplicit} title={t.timeline.addKeyExplicitHint}
+        onClick={() => setKeyDialogOpen(true)}><Icon as={Plus} /></button>
     </div>
     <div className={st.timelineBody}>
       <div className={st.timelineRows}>

@@ -165,6 +165,10 @@
   list-style: none;
 }
 
+.inspectorGroup > summary > span {
+  flex: 1;
+}
+
 .inspectorGroup > summary::-webkit-details-marker {
   display: none;
 }
@@ -815,6 +819,14 @@
   align-items: center;
 }
 
+.statusIssueButton {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
 /* 一覧の各行はアイコン + 本文。ステータスバーの文字色としても使う */
 .issueList .err,
 .issueList .warn {
@@ -1086,7 +1098,7 @@
 .timelineScrubberRow {
   flex: none;
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: 34px minmax(0, 1fr) auto 28px;
   align-items: center;
   gap: 10px;
   padding: 9px;
@@ -1259,6 +1271,17 @@
   line-height: 1.55;
 }
 
+.timelineScrubberRow .timelineAddKey {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* WebMCPの接続状況は、通常画面を保ったままAI操作の入口を知らせる */
 .webMcpHint {
   position: relative;
@@ -1386,241 +1409,8 @@
   margin-left: 6px;
 }
 
-/* ブラウザ操作AI専用ワークスペース。通常の左右ペインとは同時に表示しない。 */
-.aiWorkspace {
-  display: grid;
-  grid-template-columns: clamp(360px, 33.333vw, 520px) minmax(0, 1fr);
-  flex: 1;
-  min-height: 0;
-  background: #17171c;
-}
-
-.aiWorkspacePlayback {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.aiWorkspacePlayback .aiControlPane {
+.mobilePanelAction {
   display: none;
-}
-
-.aiControlPane {
-  min-width: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  border-right: 1px solid #41414d;
-  background: linear-gradient(180deg, #292932 0, #222228 180px);
-  scrollbar-color: #535363 #222228;
-}
-
-.aiViewportPane {
-  display: flex;
-  min-width: 0;
-  min-height: 0;
-  position: relative;
-  background: #111116;
-}
-
-.aiViewportPane > .viewport {
-  flex: 1;
-  min-height: 0;
-}
-
-.aiPanel {
-  min-height: 100%;
-  padding: 18px;
-  border-bottom: 0;
-  box-sizing: border-box;
-  font-size: 13px;
-}
-
-.aiPanel > .panelTitle {
-  position: sticky;
-  z-index: 4;
-  top: -18px;
-  margin: -18px -18px 14px;
-  padding: 16px 18px 13px;
-  border-bottom-color: #4a4a58;
-  background: #292932f2;
-  backdrop-filter: blur(10px);
-  font-size: 15px;
-  letter-spacing: 0.04em;
-}
-
-.aiPanel button,
-.aiPanel input,
-.aiPanel select,
-.aiPanel textarea {
-  font-size: 13px;
-}
-
-.aiPanel .rowLabel {
-  font-size: 12px;
-}
-
-.aiPanel .hintSmall {
-  font-size: 11.5px;
-}
-
-.aiPanel details {
-  margin: 0 0 12px;
-  border: 1px solid #3d3d49;
-  border-radius: 8px;
-  padding: 10px 12px 12px;
-  background: #1d1d24cc;
-  box-shadow: 0 5px 18px rgb(0 0 0 / 10%);
-}
-
-.aiPanel summary {
-  cursor: pointer;
-  color: #dddde6;
-  font-weight: 700;
-  margin: -2px 0 8px;
-  padding: 4px 0;
-  font-size: 12px;
-}
-
-.aiPanel fieldset {
-  border: 0;
-  padding: 0;
-  margin: 0;
-  min-width: 0;
-}
-
-.aiPanel fieldset:disabled {
-  opacity: 0.62;
-}
-
-.aiPanel form > button[type='submit'],
-.aiPanel fieldset > button.ghostDanger {
-  width: 100%;
-  margin-top: 8px;
-}
-
-.aiPanel .aiFieldGroup {
-  min-width: 0;
-  margin: 10px 0;
-  padding: 8px 10px 6px;
-  border: 1px solid #363642;
-  border-radius: 6px;
-  background: #202027;
-}
-
-.aiFieldGroup legend {
-  padding: 0 6px;
-  color: #aeb8ff;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.aiVectorGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.aiVectorGrid .row {
-  display: block;
-  margin: 4px 0 7px;
-}
-
-.aiVectorGrid .rowLabel {
-  display: block;
-  width: auto;
-  min-width: 0;
-  margin-bottom: 4px;
-  color: #b9b9c5;
-}
-
-.aiAssetLoad {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 4px 0 10px;
-  padding: 9px;
-  border-radius: 6px;
-  background: #292933;
-}
-
-.aiAssetLoad span {
-  color: #8f8f9b;
-  font-size: 10px;
-  line-height: 1.35;
-}
-
-.aiSummary {
-  display: grid;
-  grid-template-columns: minmax(80px, auto) minmax(0, 1fr);
-  gap: 4px 8px;
-  margin: 8px 0;
-}
-
-.aiSummary dt {
-  color: #9292a0;
-}
-
-.aiSummary dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
-.aiButtonRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 8px 0;
-}
-
-.aiTargetList {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  max-height: 280px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.aiTargetList [role='group'] {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-left: 10px;
-}
-
-.aiTargetList button {
-  text-align: left;
-  overflow-wrap: anywhere;
-}
-
-.aiTargetList button[aria-selected='true'] {
-  background: #5260bd;
-  border-color: #8290f5;
-}
-
-.aiCode {
-  color: #aeb8ff;
-  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 10px;
-  overflow-wrap: anywhere;
-}
-
-.aiTableWrap {
-  overflow-x: auto;
-}
-
-.aiTable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 11px;
-}
-
-.aiTable th,
-.aiTable td {
-  border: 1px solid #3a3a46;
-  padding: 5px;
-  text-align: left;
-  vertical-align: top;
 }
 
 @media (max-width: 959px) {
@@ -1727,6 +1517,13 @@
     right: 8px;
     left: 8px;
     width: auto;
+  }
+
+  .panel .mobilePanelAction {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0 0 10px;
   }
 
   .main {
@@ -1908,62 +1705,6 @@
     min-height: 30px;
   }
 
-  .aiWorkspace {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(280px, 44dvh) minmax(300px, 1fr);
-    overflow-y: auto;
-  }
-
-  .aiControlPane {
-    border-right: 0;
-    border-bottom: 1px solid #41414d;
-  }
-
-  .aiViewportPane {
-    min-height: 300px;
-  }
-
-  .aiPanel {
-    padding: 12px;
-  }
-
-  .aiPanel > .panelTitle {
-    top: -12px;
-    margin: -12px -12px 12px;
-    padding: 12px;
-  }
-
-  .aiPanel button,
-  .aiPanel select,
-  .aiPanel input {
-    min-height: 40px;
-  }
-
-  .aiVectorGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .aiAssetLoad {
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .aiAssetLoad button {
-    flex: 1 1 140px;
-  }
-
-  .aiAssetLoad span {
-    flex: 1 1 100%;
-  }
-
-  .aiButtonRow > button {
-    flex: 1 1 140px;
-  }
-
-  .aiTargetList {
-    max-height: 220px;
-  }
 }
 
 /* 配置先の行: テキストとボタンを離し、ボタンは右寄せ */
@@ -1982,6 +1723,18 @@
 }
 
 /* --- modal (ブラウザダイアログの代替) --- */
+.visuallyHidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -2015,6 +1768,59 @@
   white-space: pre-wrap;
 }
 
+.dialogField {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+  color: #b8b8c2;
+  font-size: 12px;
+}
+
+.dialogField input,
+.dialogField select {
+  min-width: 0;
+  color: #e5e5ec;
+  background: #1b1b22;
+  border: 1px solid #454552;
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+.dialogCheck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  color: #b8b8c2;
+  font-size: 12px;
+}
+
+.formError {
+  margin: 0 0 12px;
+  color: #ff9a9a;
+  font-size: 12px;
+}
+
+.detailsList {
+  display: grid;
+  grid-template-columns: minmax(90px, auto) minmax(0, 1fr);
+  gap: 6px 12px;
+  margin: 0;
+}
+
+.detailsList dt {
+  color: #9292a0;
+}
+
+.detailsList dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #e0e0e8;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
 .modalActions {
   display: flex;
   justify-content: flex-end;
@@ -2043,6 +1849,25 @@
 
 .modal button.modalDanger:hover {
   background: #b85050;
+}
+
+@media (max-width: 520px) {
+  .modalOverlay {
+    align-items: flex-start;
+    padding: max(12px, env(safe-area-inset-top)) 10px 12px;
+    overflow-y: auto;
+  }
+
+  .modal {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dialogField {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
 }
 
 /* サイドバー境界のリサイズハンドル */

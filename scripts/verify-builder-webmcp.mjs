@@ -3,9 +3,12 @@ import { chromium } from 'playwright'
 const baseUrl = process.argv[2] ?? 'http://localhost:5174/'
 const expectedTools = [
   'tobidas-get-state', 'tobidas-get-spread', 'tobidas-get-element', 'tobidas-list-assets', 'tobidas-validate-book',
-  'tobidas-select-target', 'tobidas-set-preview', 'tobidas-enter-play', 'tobidas-enter-edit',
-  'tobidas-place-asset', 'tobidas-create-visual', 'tobidas-update-element', 'tobidas-move-element',
-  'tobidas-add-timeline-key', 'tobidas-assign-bgm', 'tobidas-clear-bgm', 'tobidas-add-spread',
+  'tobidas-audit-layout', 'tobidas-select-target', 'tobidas-set-preview', 'tobidas-enter-play', 'tobidas-enter-edit',
+  'tobidas-place-asset', 'tobidas-set-page-background', 'tobidas-clear-page-background', 'tobidas-create-visual',
+  'tobidas-update-element', 'tobidas-move-element', 'tobidas-set-element-parent', 'tobidas-delete-element',
+  'tobidas-add-timeline-key', 'tobidas-list-timeline-keys', 'tobidas-update-timeline-key', 'tobidas-delete-timeline-key',
+  'tobidas-set-camera', 'tobidas-add-camera-key', 'tobidas-assign-bgm', 'tobidas-clear-bgm', 'tobidas-add-spread',
+  'tobidas-duplicate-spread', 'tobidas-reorder-spread', 'tobidas-delete-spread',
   'tobidas-undo', 'tobidas-redo',
 ]
 
@@ -34,7 +37,7 @@ const browser = await chromium.launch({ headless: true })
 try {
   const registeredToolCount = await verifyToolRegistration(browser)
   for (const testCase of browserHintCases) await verifyBrowserHint(browser, testCase)
-  console.log(`WebMCP検査 OK: ${registeredToolCount} tools; 通常画面のまま登録・AIモード切替後も維持; ブラウザ別Tips ${browserHintCases.length}種 OK`)
+  console.log(`WebMCP検査 OK: ${registeredToolCount} tools; 標準画面で登録・状態変更後も維持; ブラウザ別Tips ${browserHintCases.length}種 OK`)
 } finally {
   await browser.close()
 }
@@ -49,6 +52,7 @@ async function verifyToolRegistration(browser) {
         options.signal?.addEventListener('abort', () => registered.delete(tool.name), { once: true })
       },
       getRegisteredNames: () => [...registered.keys()],
+      getTool: (name) => registered.get(name),
     }
     Object.defineProperty(Document.prototype, 'modelContext', { configurable: true, get: () => modelContext })
   })
@@ -61,21 +65,24 @@ async function verifyToolRegistration(browser) {
       return context && names.every((name) => context.getRegisteredNames().includes(name))
     }, expectedTools)
 
-    if (await page.getByRole('main', { name: 'AIブラウザ操作ワークスペース' }).count()) {
-      throw new Error('通常画面の初期表示がAIワークスペースになっています')
-    }
-    await page.getByRole('button', { name: 'AIモード', exact: true }).click()
-    await page.getByRole('main', { name: 'AIブラウザ操作ワークスペース' }).waitFor()
+    await page.locator('[data-tobidas-kind="builder-workspace"]').waitFor()
+    if (await page.getByRole('button', { name: 'AIモード', exact: true }).count()) throw new Error('AIモード切り替えが残っています')
+    await page.getByRole('button', { name: '詳細配置' }).click()
+    await page.locator('[data-tobidas-kind="precision-placement-form"]').waitFor()
 
-    const result = await page.evaluate(() => ({
+    const result = await page.evaluate(async () => ({
       names: document.modelContext.getRegisteredNames(),
-      toolname: document.querySelector('[data-tobidas-kind="place-asset-form"]')?.getAttribute('toolname'),
-      tooldescription: document.querySelector('[data-tobidas-kind="place-asset-form"]')?.getAttribute('tooldescription'),
+      toolname: document.querySelector('[data-tobidas-kind="precision-placement-form"]')?.getAttribute('toolname'),
+      tooldescription: document.querySelector('[data-tobidas-kind="precision-placement-form"]')?.getAttribute('tooldescription'),
+      state: await document.modelContext.getTool('tobidas-get-state').execute({}),
     }))
     if (result.names.length !== expectedTools.length) throw new Error(`登録ツール数が一致しません: ${result.names.length}`)
     if (result.toolname !== 'tobidas-place-asset-form' || !result.tooldescription) throw new Error('宣言的フォーム属性がありません')
 
-    await page.getByRole('button', { name: '通常モードへ戻る' }).click()
+    if (!JSON.stringify(result.state).includes('activeSpread')) throw new Error('tobidas-get-stateが標準状態要約を返していません')
+    await page.getByRole('button', { name: 'キャンセル' }).click()
+    await page.getByRole('button', { name: '再生', exact: true }).click()
+    await page.getByRole('button', { name: '編集', exact: true }).waitFor()
     await page.waitForFunction((count) => document.modelContext.getRegisteredNames().length === count, result.names.length)
     return result.names.length
   } finally {

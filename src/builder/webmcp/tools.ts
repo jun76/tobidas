@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { z } from 'zod'
 import { contentMotionSchema, parentSpaceSchema, type ParentSpace } from '../../schema/stageElement'
 import { embeddedVideoAudioSchema } from '../../schema/audio'
@@ -8,34 +7,35 @@ import { analyzeBookContainment, analyzeSpreadContainment } from '../../runtime/
 import { useBuilderStore } from '../store'
 import { t } from '../i18n'
 import {
-  addAiSpread,
-  addAiTimelineKey,
-  assignAiBgm,
-  clearAiBgm,
-  clearAiPageBackground,
-  createAiVisual,
-  deleteAiElement,
-  deleteAiSpread,
-  deleteAiTimelineKey,
-  duplicateAiSpread,
-  addAiCameraKey,
-  moveAiElement,
-  moveAiSpread,
+  addSpreadCommand,
+  addTimelineKeyCommand,
+  assignBgmCommand,
+  clearBgmCommand,
+  clearPageBackgroundCommand,
+  createVisualCommand,
+  deleteElementCommand,
+  deleteSpreadCommand,
+  deleteTimelineKeyCommand,
+  duplicateSpreadCommand,
+  addCameraKeyCommand,
+  moveElementCommand,
+  moveSpreadCommand,
   parseParent,
-  placeAiAsset,
-  redoAi,
-  setAiCamera,
-  setAiPageBackground,
-  undoAi,
-  updateAiTimelineKey,
-  updateAiElement,
-} from './commands'
-import type { AiElementUpdate } from './commands'
-import { buildAiStateSummary } from './stateSummary'
-import type { AiCommandResult, AiElementSummary, AiSpreadSummary, AiStateSummary } from './types'
-import { getWebMcpModelContext, type WebMcpModelContext, type WebMcpTool } from './webmcpTypes'
+  placeAssetCommand,
+  redoCommand,
+  setCameraCommand,
+  setPageBackgroundCommand,
+  undoCommand,
+  updateTimelineKeyCommand,
+  updateElementCommand,
+} from '../operations/commands'
+import type { ElementUpdateInput } from '../operations/commands'
+import { buildBuilderStateSummary } from '../operations/stateSummary'
+import type { BuilderCommandResult, BuilderStateSummary, ElementSummary, SpreadSummary } from '../operations/types'
+import { publishOperationResult } from '../operations/result'
+import type { WebMcpModelContext, WebMcpTool } from './types'
 
-const aiElementUpdateSchema = z.object({
+const elementUpdateSchema = z.object({
   name: z.string(),
   position: vec3Schema,
   rotation: vec3Schema,
@@ -171,19 +171,19 @@ const updateTimelineKeySchema = timelineKeyRefSchema.extend({
   message: 'time, value, or ease is required',
 })
 
-const selectFailure = (action: string, message = t().ai.invalidInput, fieldErrors: Record<string, string> = {}): AiCommandResult => ({
+const selectFailure = (action: string, message = t().operations.invalidInput, fieldErrors: Record<string, string> = {}): BuilderCommandResult => ({
   ok: false,
   action,
   message,
   fieldErrors,
 })
 
-function parseInput<T>(schema: z.ZodTypeAny, input: Record<string, unknown>, action: string): T | AiCommandResult {
+function parseInput<T>(schema: z.ZodTypeAny, input: Record<string, unknown>, action: string): T | BuilderCommandResult {
   const parsed = schema.safeParse(input)
   if (parsed.success) return parsed.data
   const fieldErrors: Record<string, string> = {}
-  for (const issue of parsed.error.issues) fieldErrors[issue.path.join('.') || 'input'] = t().ai.invalidInput
-  return selectFailure(action, t().ai.invalidInput, fieldErrors)
+  for (const issue of parsed.error.issues) fieldErrors[issue.path.join('.') || 'input'] = t().operations.invalidInput
+  return selectFailure(action, t().operations.invalidInput, fieldErrors)
 }
 
 function checkAborted(signal?: AbortSignal) {
@@ -191,12 +191,13 @@ function checkAborted(signal?: AbortSignal) {
   throw signal.reason ?? new DOMException('WebMCP tool execution was cancelled', 'AbortError')
 }
 
-function summary(): AiStateSummary {
-  return buildAiStateSummary(useBuilderStore.getState())
+function summary(): BuilderStateSummary {
+  return buildBuilderStateSummary(useBuilderStore.getState())
 }
 
-function commandResponse(result: AiCommandResult, after?: unknown) {
-  const payload = after === undefined ? result : { ...result, after }
+function commandResponse(result: BuilderCommandResult, after?: unknown) {
+  const published = publishOperationResult(result)
+  const payload = after === undefined ? published : { ...published, after }
   return { content: [{ type: 'text', text: JSON.stringify(payload) }] }
 }
 
@@ -213,15 +214,15 @@ function readResponse(action: string, data: unknown) {
   }, data)
 }
 
-function findElement(state: AiStateSummary, spreadId: string, elementId: string): AiElementSummary | undefined {
+function findElement(state: BuilderStateSummary, spreadId: string, elementId: string): ElementSummary | undefined {
   return state.spreads.find((spread) => spread.id === spreadId)?.elements.find((element) => element.id === elementId)
 }
 
-function findSpread(state: AiStateSummary, spreadId: string): AiSpreadSummary | undefined {
+function findSpread(state: BuilderStateSummary, spreadId: string): SpreadSummary | undefined {
   return state.spreads.find((spread) => spread.id === spreadId)
 }
 
-function afterForCommand(result: AiCommandResult): unknown {
+function afterForCommand(result: BuilderCommandResult): unknown {
   if (!result.ok) return undefined
   const state = summary()
   if (result.target?.kind === 'element') {
@@ -251,27 +252,27 @@ function afterForCommand(result: AiCommandResult): unknown {
   }
 }
 
-function resultFromCommand(result: AiCommandResult) {
+function resultFromCommand(result: BuilderCommandResult) {
   return commandResponse(result, afterForCommand(result))
 }
 
-function targetToSelection(input: z.infer<typeof selectTargetSchema>): Parameters<ReturnType<typeof useBuilderStore.getState>['select']>[0] | AiCommandResult {
+function targetToSelection(input: z.infer<typeof selectTargetSchema>): Parameters<ReturnType<typeof useBuilderStore.getState>['select']>[0] | BuilderCommandResult {
   if (input.type === 'book') return { type: 'book' }
   if (input.type === 'light') return { type: 'light' }
   if (input.type === 'cover') {
     const side = input.side ?? input.id
-    if (side !== 'front' && side !== 'back') return selectFailure('select-target', t().ai.invalidInput, { side: t().ai.invalidInput })
+    if (side !== 'front' && side !== 'back') return selectFailure('select-target', t().operations.invalidInput, { side: t().operations.invalidInput })
     return { type: 'cover', side }
   }
   const spreadId = input.spreadId ?? (input.type === 'spread' ? input.id : undefined)
-  if (!spreadId) return selectFailure('select-target', t().ai.invalidInput, { spreadId: t().ai.notFound })
+  if (!spreadId) return selectFailure('select-target', t().operations.invalidInput, { spreadId: t().operations.notFound })
   if (input.type === 'spread') return { type: 'spread', spreadId }
   if (input.type === 'page') {
-    if (input.side !== 'left' && input.side !== 'right') return selectFailure('select-target', t().ai.invalidInput, { side: t().ai.invalidInput })
+    if (input.side !== 'left' && input.side !== 'right') return selectFailure('select-target', t().operations.invalidInput, { side: t().operations.invalidInput })
     return { type: 'page', spreadId, side: input.side }
   }
   const elementId = input.elementId ?? input.id
-  if (!elementId) return selectFailure('select-target', t().ai.invalidInput, { elementId: t().ai.notFound })
+  if (!elementId) return selectFailure('select-target', t().operations.invalidInput, { elementId: t().operations.notFound })
   return { type: 'element', spreadId, elementId }
 }
 
@@ -306,7 +307,7 @@ function makeTools(): WebMcpTool[] {
         const spreadId = typeof input.spreadId === 'string' ? input.spreadId : ''
         const state = summary()
         const spread = findSpread(state, spreadId)
-        return spread ? readResponse('get-spread', spread) : commandResponse(selectFailure('get-spread', t().ai.notFound, { spreadId: t().ai.notFound }))
+        return spread ? readResponse('get-spread', spread) : commandResponse(selectFailure('get-spread', t().operations.notFound, { spreadId: t().operations.notFound }))
       },
     },
     {
@@ -320,7 +321,7 @@ function makeTools(): WebMcpTool[] {
         const spreadId = typeof input.spreadId === 'string' ? input.spreadId : ''
         const elementId = typeof input.elementId === 'string' ? input.elementId : ''
         const element = findElement(summary(), spreadId, elementId)
-        return element ? readResponse('get-element', element) : commandResponse(selectFailure('get-element', t().ai.notFound, { elementId: t().ai.notFound }))
+        return element ? readResponse('get-element', element) : commandResponse(selectFailure('get-element', t().operations.notFound, { elementId: t().operations.notFound }))
       },
     },
     {
@@ -346,7 +347,7 @@ function makeTools(): WebMcpTool[] {
         const state = summary()
         const requestedSpreadId = typeof input.spreadId === 'string' ? input.spreadId : undefined
         const spread = requestedSpreadId ? findSpread(state, requestedSpreadId) : undefined
-        if (requestedSpreadId && !spread) return commandResponse(selectFailure('validate-book', t().ai.notFound, { spreadId: t().ai.notFound }))
+        if (requestedSpreadId && !spread) return commandResponse(selectFailure('validate-book', t().operations.notFound, { spreadId: t().operations.notFound }))
         return readResponse('validate-book', { validation: state.validation, spread })
       },
     },
@@ -361,7 +362,7 @@ function makeTools(): WebMcpTool[] {
         const state = useBuilderStore.getState()
         const spreadId = typeof input.spreadId === 'string' ? input.spreadId : undefined
         const spread = spreadId ? state.project.book.spreads.find((item) => item.id === spreadId) : undefined
-        if (spreadId && !spread) return commandResponse(selectFailure('audit-layout', t().ai.notFound, { spreadId: t().ai.notFound }))
+        if (spreadId && !spread) return commandResponse(selectFailure('audit-layout', t().operations.notFound, { spreadId: t().operations.notFound }))
         const report = spread ? analyzeSpreadContainment(state.project.book, spread) : analyzeBookContainment(state.project.book)
         const spreads = (spread ? [spread] : state.project.book.spreads).map((item) => ({
           spreadId: item.id,
@@ -394,14 +395,14 @@ function makeTools(): WebMcpTool[] {
           if (isCommandResult(selection)) return commandResponse(selection)
           const state = useBuilderStore.getState()
           if (selection.type === 'spread' && !state.project.book.spreads.some((spread) => spread.id === selection.spreadId)) {
-            return commandResponse(selectFailure('select-target', t().ai.notFound, { spreadId: t().ai.notFound }))
+            return commandResponse(selectFailure('select-target', t().operations.notFound, { spreadId: t().operations.notFound }))
           }
           if (selection.type === 'element') {
             const spread = state.project.book.spreads.find((item) => item.id === selection.spreadId)
-            if (!spread?.elements.some((element) => element.id === selection.elementId)) return commandResponse(selectFailure('select-target', t().ai.notFound, { elementId: t().ai.notFound }))
+            if (!spread?.elements.some((element) => element.id === selection.elementId)) return commandResponse(selectFailure('select-target', t().operations.notFound, { elementId: t().operations.notFound }))
           }
           if (selection.type === 'page' && !state.project.book.spreads.some((spread) => spread.id === selection.spreadId)) {
-            return commandResponse(selectFailure('select-target', t().ai.notFound, { spreadId: t().ai.notFound }))
+            return commandResponse(selectFailure('select-target', t().operations.notFound, { spreadId: t().operations.notFound }))
           }
           state.select(selection)
           return readResponse('select-target', { selection: summary().selection })
@@ -420,13 +421,13 @@ function makeTools(): WebMcpTool[] {
         if (isCommandResult(parsed)) return commandResponse(parsed)
         const state = useBuilderStore.getState()
         if (parsed.progress !== undefined) {
-          if (parsed.progress < 0 || parsed.progress > 1) return commandResponse(selectFailure('set-preview', t().ai.invalidInput, { progress: t().ai.normalizedRange }))
+          if (parsed.progress < 0 || parsed.progress > 1) return commandResponse(selectFailure('set-preview', t().operations.invalidInput, { progress: t().operations.normalizedRange }))
           state.setPreviewProgress(parsed.progress)
         } else {
           const spread = state.project.book.spreads.find((item) => item.id === parsed.spreadId)
-          if (!spread) return commandResponse(selectFailure('set-preview', t().ai.notFound, { spreadId: t().ai.notFound }))
+          if (!spread) return commandResponse(selectFailure('set-preview', t().operations.notFound, { spreadId: t().operations.notFound }))
           if (parsed.seconds === undefined || parsed.seconds < 0 || parsed.seconds > spread.sequence.holdSeconds) {
-            return commandResponse(selectFailure('set-preview', t().ai.timelineTimeRange, { seconds: t().ai.timelineTimeRange }))
+            return commandResponse(selectFailure('set-preview', t().operations.timelineTimeRange, { seconds: t().operations.timelineTimeRange }))
           }
           state.setSpreadTime(spread.id, parsed.seconds)
         }
@@ -445,7 +446,7 @@ function makeTools(): WebMcpTool[] {
     },
     {
       name: 'tobidas-place-asset', title: 'Place tobidas asset',
-      description: 'Place an already imported image, SVG, or video with a tobidas visual preset and normalized page coordinates. The asset must already be imported through the AI-mode file input; placement is committed through normal validation and undo history.',
+      description: 'Place an already imported image, SVG, or video with a tobidas visual preset and normalized page coordinates. The asset must already be imported through the standard Assets panel; placement is committed through normal validation and undo history.',
       inputSchema: { type: 'object', properties: {
         spreadId: { type: 'string', description: 'Stable ID of the spread receiving the asset.' },
         side: { type: 'string', enum: ['left', 'right'], description: 'Page side where the asset is placed.' },
@@ -454,7 +455,7 @@ function makeTools(): WebMcpTool[] {
         u: { type: 'number', minimum: 0, maximum: 1, description: 'Normalized horizontal page coordinate from 0 at the spine to 1 at the outer edge.' },
         v: { type: 'number', minimum: 0, maximum: 1, description: 'Normalized vertical page coordinate from 0 at the back to 1 at the front.' },
       }, required: ['spreadId', 'side', 'assetId', 'presetId', 'u', 'v'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof placeAssetSchema>>(placeAssetSchema, input, 'place-asset'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(placeAiAsset(parsed)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof placeAssetSchema>>(placeAssetSchema, input, 'place-asset'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(placeAssetCommand(parsed)) },
     },
     {
       name: 'tobidas-set-page-background', title: 'Set tobidas page background',
@@ -464,7 +465,7 @@ function makeTools(): WebMcpTool[] {
         side: { type: 'string', enum: ['left', 'right'], description: 'Page side receiving the background.' },
         assetId: { type: 'string', description: 'ID of an already imported image, SVG, or video asset.' },
       }, required: ['spreadId', 'side', 'assetId'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof pageBackgroundSchema>>(pageBackgroundSchema, input, 'set-page-background'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(setAiPageBackground(parsed.spreadId, parsed.side, parsed.assetId)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof pageBackgroundSchema>>(pageBackgroundSchema, input, 'set-page-background'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(setPageBackgroundCommand(parsed.spreadId, parsed.side, parsed.assetId)) },
     },
     {
       name: 'tobidas-clear-page-background', title: 'Clear tobidas page background',
@@ -473,13 +474,13 @@ function makeTools(): WebMcpTool[] {
         spreadId: { type: 'string', description: 'Stable ID of the spread containing the page.' },
         side: { type: 'string', enum: ['left', 'right'], description: 'Page side whose background is cleared.' },
       }, required: ['spreadId', 'side'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof pageRefSchema>>(pageRefSchema, input, 'clear-page-background'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(clearAiPageBackground(parsed.spreadId, parsed.side)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof pageRefSchema>>(pageRefSchema, input, 'clear-page-background'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(clearPageBackgroundCommand(parsed.spreadId, parsed.side)) },
     },
     {
       name: 'tobidas-create-visual', title: 'Create tobidas visual',
       description: 'Create a text visual or an independent light-particle part using an existing tobidas preset. A particle part has no image or text and is committed through normal layout validation and undo history.',
       inputSchema: { type: 'object', properties: { spreadId: { type: 'string', description: 'Stable ID of the spread receiving the new part.' }, side: { type: 'string', enum: ['left', 'right'], description: 'Page side where the new part is created.' }, presetId: { type: 'string', enum: ['light-particles', 'page-text'], description: 'Preset: page-text creates a text visual, and light-particles creates an independent particle part without image or text.' } }, required: ['spreadId', 'side', 'presetId'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof createVisualSchema>>(createVisualSchema, input, 'create-visual'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(createAiVisual(parsed)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof createVisualSchema>>(createVisualSchema, input, 'create-visual'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(createVisualCommand(parsed)) },
     },
     {
       name: 'tobidas-update-element', title: 'Update tobidas element',
@@ -493,8 +494,8 @@ function makeTools(): WebMcpTool[] {
         checkAborted(options?.signal)
         const spreadId = typeof input.spreadId === 'string' ? input.spreadId : ''
         const elementId = typeof input.elementId === 'string' ? input.elementId : ''
-        const parsed = parseInput<AiElementUpdate>(aiElementUpdateSchema, isRecord(input.input) ? input.input : {}, 'update-element')
-        return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(updateAiElement(spreadId, elementId, parsed))
+        const parsed = parseInput<ElementUpdateInput>(elementUpdateSchema, isRecord(input.input) ? input.input : {}, 'update-element')
+        return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(updateElementCommand(spreadId, elementId, parsed))
       },
     },
     {
@@ -506,7 +507,7 @@ function makeTools(): WebMcpTool[] {
         const spreadId = typeof input.spreadId === 'string' ? input.spreadId : ''
         const elementId = typeof input.elementId === 'string' ? input.elementId : ''
         const parsed = parseInput<ParentSpace>(parentSpaceSchema, isRecord(input.parent) ? input.parent : {}, 'move-element')
-        return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(moveAiElement(spreadId, elementId, parsed))
+        return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(moveElementCommand(spreadId, elementId, parsed))
       },
     },
     {
@@ -517,7 +518,7 @@ function makeTools(): WebMcpTool[] {
         elementId: { type: 'string', description: 'Stable ID of the element whose parent changes.' },
         parent: { type: 'object', description: 'Typed page or element parent reference.' },
       }, required: ['spreadId', 'elementId', 'parent'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof elementParentSchema>>(elementParentSchema, input, 'set-element-parent'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(moveAiElement(parsed.spreadId, parsed.elementId, parsed.parent)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof elementParentSchema>>(elementParentSchema, input, 'set-element-parent'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(moveElementCommand(parsed.spreadId, parsed.elementId, parsed.parent)) },
     },
     {
       name: 'tobidas-delete-element', title: 'Delete tobidas element',
@@ -527,13 +528,13 @@ function makeTools(): WebMcpTool[] {
         elementId: { type: 'string', description: 'Stable ID of the element to delete.' },
         confirm: { type: 'boolean', description: 'Must be true to acknowledge descendant and timeline-track deletion.' },
       }, required: ['spreadId', 'elementId', 'confirm'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof confirmedElementSchema>>(confirmedElementSchema, input, 'delete-element'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(deleteAiElement(parsed.spreadId, parsed.elementId)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof confirmedElementSchema>>(confirmedElementSchema, input, 'delete-element'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(deleteElementCommand(parsed.spreadId, parsed.elementId)) },
     },
     {
       name: 'tobidas-add-timeline-key', title: 'Add tobidas timeline key',
       description: 'Add or replace one typed timeline key in a spread hold interval. The time and value are validated against the selected target property.',
       inputSchema: { type: 'object', properties: { spreadId: { type: 'string', description: 'Stable ID of the spread whose hold timeline is edited.' }, target: { type: 'object', description: 'Typed target reference for the element, background, light, or camera track.' }, property: { type: 'string', description: 'Timeline property supported by the selected target.' }, time: { type: 'number', description: 'Time in seconds within the spread hold interval.' }, value: { description: 'Typed value matching the selected timeline property.' } }, required: ['spreadId', 'target', 'property', 'time', 'value'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof timelineSchema>>(timelineSchema, input, 'add-timeline-key'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(addAiTimelineKey(parsed)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof timelineSchema>>(timelineSchema, input, 'add-timeline-key'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(addTimelineKeyCommand(parsed)) },
     },
     {
       name: 'tobidas-list-timeline-keys', title: 'List tobidas timeline keys',
@@ -544,7 +545,7 @@ function makeTools(): WebMcpTool[] {
         checkAborted(options?.signal)
         const spreadId = typeof input.spreadId === 'string' ? input.spreadId : ''
         const spread = findSpread(summary(), spreadId)
-        return spread ? readResponse('list-timeline-keys', spread.timeline) : commandResponse(selectFailure('list-timeline-keys', t().ai.notFound, { spreadId: t().ai.notFound }))
+        return spread ? readResponse('list-timeline-keys', spread.timeline) : commandResponse(selectFailure('list-timeline-keys', t().operations.notFound, { spreadId: t().operations.notFound }))
       },
     },
     {
@@ -556,36 +557,36 @@ function makeTools(): WebMcpTool[] {
         value: { description: 'Optional typed replacement value matching the track property.' },
         ease: { type: 'string', enum: ['linear', 'easeInOut', 'hold'], description: 'Optional replacement easing.' },
       }, required: ['spreadId', 'trackId', 'keyId'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof updateTimelineKeySchema>>(updateTimelineKeySchema, input, 'update-timeline-key'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(updateAiTimelineKey(parsed)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof updateTimelineKeySchema>>(updateTimelineKeySchema, input, 'update-timeline-key'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(updateTimelineKeyCommand(parsed)) },
     },
     {
       name: 'tobidas-delete-timeline-key', title: 'Delete tobidas timeline key',
       description: 'Delete one existing timeline key. If it is the last key, its empty track is removed as well.',
       inputSchema: { type: 'object', properties: { spreadId: { type: 'string' }, trackId: { type: 'string' }, keyId: { type: 'string' } }, required: ['spreadId', 'trackId', 'keyId'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof timelineKeyRefSchema>>(timelineKeyRefSchema, input, 'delete-timeline-key'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(deleteAiTimelineKey(parsed.spreadId, parsed.trackId, parsed.keyId)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof timelineKeyRefSchema>>(timelineKeyRefSchema, input, 'delete-timeline-key'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(deleteTimelineKeyCommand(parsed.spreadId, parsed.trackId, parsed.keyId)) },
     },
     {
       name: 'tobidas-set-camera', title: 'Set tobidas default camera',
       description: 'Set the project default author camera position, target, and field of view. Spreads without camera timeline keys use this pose.',
       inputSchema: { type: 'object', properties: { position: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 }, target: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 }, fov: { type: 'number', exclusiveMinimum: 0, exclusiveMaximum: 180 } }, required: ['position', 'target', 'fov'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof cameraPoseSchema>>(cameraPoseSchema, input, 'set-camera'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(setAiCamera(parsed)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof cameraPoseSchema>>(cameraPoseSchema, input, 'set-camera'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(setCameraCommand(parsed)) },
     },
     {
       name: 'tobidas-add-camera-key', title: 'Add tobidas camera key',
       description: 'Save a complete camera pose at one spread hold time by updating the position, target, and fov camera tracks together.',
       inputSchema: { type: 'object', properties: { spreadId: { type: 'string' }, time: { type: 'number' }, position: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 }, target: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 }, fov: { type: 'number', exclusiveMinimum: 0, exclusiveMaximum: 180 } }, required: ['spreadId', 'time', 'position', 'target', 'fov'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof cameraKeySchema>>(cameraKeySchema, input, 'add-camera-key'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(addAiCameraKey(parsed)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof cameraKeySchema>>(cameraKeySchema, input, 'add-camera-key'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(addCameraKeyCommand(parsed)) },
     },
     {
       name: 'tobidas-assign-bgm', title: 'Assign tobidas BGM',
-      description: 'Assign one already imported audio asset as the project BGM. The audio must be imported through the AI-mode file input before this tool is called.',
+      description: 'Assign one already imported audio asset as the project BGM. The audio must be imported through the standard Assets panel before this tool is called.',
       inputSchema: { type: 'object', properties: { assetId: { type: 'string', description: 'ID of an already imported audio asset.' } }, required: ['assetId'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const assetId = typeof input.assetId === 'string' ? input.assetId : ''; return resultFromCommand(assignAiBgm(assetId)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const assetId = typeof input.assetId === 'string' ? input.assetId : ''; return resultFromCommand(assignBgmCommand(assetId)) },
     },
     {
       name: 'tobidas-clear-bgm', title: 'Clear tobidas BGM',
       description: 'Clear the project BGM through the normal edit, validation, and undo path.', inputSchema: { type: 'object', properties: {} },
-      execute: async (_input, options) => { checkAborted(options?.signal); return resultFromCommand(clearAiBgm()) },
+      execute: async (_input, options) => { checkAborted(options?.signal); return resultFromCommand(clearBgmCommand()) },
     },
     {
       name: 'tobidas-add-spread', title: 'Change tobidas spreads',
@@ -595,18 +596,18 @@ function makeTools(): WebMcpTool[] {
         checkAborted(options?.signal)
         const parsed = parseInput<z.infer<typeof spreadSchema>>(spreadSchema, input, 'add-spread')
         if (isCommandResult(parsed)) return commandResponse(parsed)
-        if (parsed.operation === 'add') return resultFromCommand(addAiSpread())
-        if (!parsed.spreadId) return commandResponse(selectFailure('add-spread', t().ai.invalidInput, { spreadId: t().ai.notFound }))
-        if (parsed.operation === 'duplicate') return resultFromCommand(duplicateAiSpread(parsed.spreadId))
-        if (parsed.direction !== -1 && parsed.direction !== 1) return commandResponse(selectFailure('add-spread', t().ai.invalidInput, { direction: t().ai.invalidInput }))
-        return resultFromCommand(moveAiSpread(parsed.spreadId, parsed.direction))
+        if (parsed.operation === 'add') return resultFromCommand(addSpreadCommand())
+        if (!parsed.spreadId) return commandResponse(selectFailure('add-spread', t().operations.invalidInput, { spreadId: t().operations.notFound }))
+        if (parsed.operation === 'duplicate') return resultFromCommand(duplicateSpreadCommand(parsed.spreadId))
+        if (parsed.direction !== -1 && parsed.direction !== 1) return commandResponse(selectFailure('add-spread', t().operations.invalidInput, { direction: t().operations.invalidInput }))
+        return resultFromCommand(moveSpreadCommand(parsed.spreadId, parsed.direction))
       },
     },
     {
       name: 'tobidas-duplicate-spread', title: 'Duplicate tobidas spread',
       description: 'Duplicate one spread, remapping element, track, and key IDs, then select the copy.',
       inputSchema: { type: 'object', properties: { spreadId: { type: 'string' } }, required: ['spreadId'] },
-      execute: async (input, options) => { checkAborted(options?.signal); return resultFromCommand(duplicateAiSpread(typeof input.spreadId === 'string' ? input.spreadId : '')) },
+      execute: async (input, options) => { checkAborted(options?.signal); return resultFromCommand(duplicateSpreadCommand(typeof input.spreadId === 'string' ? input.spreadId : '')) },
     },
     {
       name: 'tobidas-reorder-spread', title: 'Reorder tobidas spread',
@@ -616,22 +617,22 @@ function makeTools(): WebMcpTool[] {
         checkAborted(options?.signal)
         const spreadId = typeof input.spreadId === 'string' ? input.spreadId : ''
         const direction = input.direction === -1 || input.direction === 1 ? input.direction : undefined
-        return direction ? resultFromCommand(moveAiSpread(spreadId, direction)) : commandResponse(selectFailure('reorder-spread', t().ai.invalidInput, { direction: t().ai.invalidInput }))
+        return direction ? resultFromCommand(moveSpreadCommand(spreadId, direction)) : commandResponse(selectFailure('reorder-spread', t().operations.invalidInput, { direction: t().operations.invalidInput }))
       },
     },
     {
       name: 'tobidas-delete-spread', title: 'Delete tobidas spread',
       description: 'Delete one spread and its elements and timeline. At least one spread remains. Pass confirm=true after inspecting the spread.',
       inputSchema: { type: 'object', properties: { spreadId: { type: 'string' }, confirm: { type: 'boolean', description: 'Must be true to acknowledge deletion of all spread content.' } }, required: ['spreadId', 'confirm'] },
-      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof confirmedSpreadSchema>>(confirmedSpreadSchema, input, 'delete-spread'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(deleteAiSpread(parsed.spreadId)) },
+      execute: async (input, options) => { checkAborted(options?.signal); const parsed = parseInput<z.infer<typeof confirmedSpreadSchema>>(confirmedSpreadSchema, input, 'delete-spread'); return isCommandResult(parsed) ? commandResponse(parsed) : resultFromCommand(deleteSpreadCommand(parsed.spreadId)) },
     },
     {
       name: 'tobidas-undo', title: 'Undo tobidas edit', description: 'Undo the last tobidas edit through the normal history. The result includes the current selection and preview state after undo.', inputSchema: { type: 'object', properties: {} },
-      execute: async (_input, options) => { checkAborted(options?.signal); return resultFromCommand(undoAi()) },
+      execute: async (_input, options) => { checkAborted(options?.signal); return resultFromCommand(undoCommand()) },
     },
     {
       name: 'tobidas-redo', title: 'Redo tobidas edit', description: 'Redo the last undone tobidas edit through the normal history. The result includes the current selection and preview state after redo.', inputSchema: { type: 'object', properties: {} },
-      execute: async (_input, options) => { checkAborted(options?.signal); return resultFromCommand(redoAi()) },
+      execute: async (_input, options) => { checkAborted(options?.signal); return resultFromCommand(redoCommand()) },
     },
   ]
 }
@@ -640,7 +641,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function isCommandResult(value: unknown): value is AiCommandResult {
+function isCommandResult(value: unknown): value is BuilderCommandResult {
   return isRecord(value) && typeof value.ok === 'boolean' && typeof value.action === 'string'
 }
 
@@ -658,17 +659,4 @@ export async function registerTobidasWebMcpTools(
     await context.registerTool(tool, { signal })
   }
   return true
-}
-
-/** アプリ起動中はWebMCPを有効にする。非対応環境では何もしない。 */
-export function AiWebMcpBridge() {
-  useEffect(() => {
-    const controller = new AbortController()
-    void registerTobidasWebMcpTools(getWebMcpModelContext(), controller.signal).catch(() => {
-      // API未実装、権限ポリシー拒否、登録競合のいずれでもDOM経路を使い続ける。
-      controller.abort()
-    })
-    return () => controller.abort()
-  }, [])
-  return null
 }

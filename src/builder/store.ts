@@ -437,7 +437,10 @@ export const useBuilderStore = create<EditorState>((set, get) => {
       const index = project.assets.findIndex((item) => item.id === id)
       if (index >= 0) project.assets[index] = { ...asset, id }
     }),
-    removeAsset: (id) => commit((project) => { project.assets = project.assets.filter((asset) => asset.id !== id) }),
+    removeAsset: (id) => commit((project) => {
+      project.assets = project.assets.filter((asset) => asset.id !== id)
+      if (project.audio?.bgmAsset === id) project.audio = undefined
+    }),
   }
 })
 

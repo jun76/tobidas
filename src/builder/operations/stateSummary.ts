@@ -2,9 +2,9 @@ import { evaluateBookSignals } from '../../runtime/signals'
 import type { BookProject } from '../../schema/bookPackage'
 import type { EditorState } from '../state/editorState'
 import type { StageElement } from '../../schema/stageElement'
-import type { AiElementSummary, AiStateSummary, AiTargetSummary } from './types'
+import type { BuilderStateSummary, ElementSummary, TargetSummary } from './types'
 
-function selectionSummary(state: EditorState): AiTargetSummary {
+function selectionSummary(state: EditorState): TargetSummary {
   const selection = state.selection
   if (selection.type === 'book') return { kind: 'book', id: state.project.id, label: state.project.name }
   if (selection.type === 'light') return { kind: 'light', label: 'directional-light' }
@@ -15,7 +15,7 @@ function selectionSummary(state: EditorState): AiTargetSummary {
   const element = spread?.elements.find((item) => item.id === selection.elementId)
   return { kind: 'element', id: selection.elementId, label: element?.name ?? selection.elementId }
 }
-function assetReferences(project: BookProject): Map<string, number> {
+export function countAssetReferences(project: BookProject): Map<string, number> {
   const counts = new Map<string, number>()
   const use = (id: string | undefined) => {
     if (id) counts.set(id, (counts.get(id) ?? 0) + 1)
@@ -47,7 +47,7 @@ function assetReferences(project: BookProject): Map<string, number> {
   return counts
 }
 
-function elementSummary(element: StageElement, spreadId: string, trackIds: string[]): AiElementSummary {
+function elementSummary(element: StageElement, spreadId: string, trackIds: string[]): ElementSummary {
   return {
     id: element.id,
     name: element.name,
@@ -84,7 +84,7 @@ function elementSummary(element: StageElement, spreadId: string, trackIds: strin
   }
 }
 
-export function buildAiStateSummary(state: EditorState): AiStateSummary {
+export function buildBuilderStateSummary(state: EditorState): BuilderStateSummary {
   const spreadIndex = state.project.book.spreads.findIndex((item) => item.id === state.activeSpreadId)
   const spread = state.project.book.spreads[spreadIndex]
   const signals = evaluateBookSignals(state.project.book, state.previewProgress)
@@ -95,7 +95,7 @@ export function buildAiStateSummary(state: EditorState): AiStateSummary {
   const selectedSpread = selection.type === 'element'
     ? state.project.book.spreads.find((item) => item.id === selection.spreadId)
     : spread
-  const references = assetReferences(state.project)
+  const references = countAssetReferences(state.project)
   const spreads = state.project.book.spreads.map((item, index) => ({
     id: item.id,
     name: item.name,

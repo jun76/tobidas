@@ -188,9 +188,9 @@ pageThickness / 4 <= SURFACE_Y + layer × LAYER_LIFT < pageThickness / 2
 DBは `tobidas` の単一スロットです。
 検証結果はステータスバーへ表示し、エラーのあるパッケージはインポートを拒否します。
 
-AIブラウザ操作モードも `builder/store.ts` のアクションと `commit()` を使います。
-DOMから作品オブジェクトを直接変更したり、検証、undo、レイアウト正規化、自動保存を迂回するAI専用経路を作ったりしません。
-AIモードの有効状態、フォーム入力、操作結果は編集セッションの状態であり、作品データと公開用書き出しへ含めません。
+標準UIとWebMCPは、どちらも `builder/store.ts` のアクションと `commit()` を使います。
+DOMやWebMCPから作品オブジェクトを直接変更したり、検証、undo、レイアウト正規化、自動保存を迂回する専用経路を作ったりしません。
+詳細操作のフォーム入力と操作結果は編集セッションの状態であり、作品データと公開用書き出しへ含めません。
 
 ギズモ操作の保存先は `applyGizmoTransform` が軸ごとに決めます。
 トラックが支配する軸はキーへ、それ以外は `baseTransform` へ書きます。
@@ -223,21 +223,26 @@ AIモードの有効状態、フォーム入力、操作結果は編集セッシ
 画像5種類と効果音はドラッグを待つトグル、BGM、パーティクル、テキストは押した時点で処理します。
 選択中のプリセットがアセット一覧とドロップ先を決め、未選択では配置できません。
 
-AIブラウザ操作モードの直接配置は、ブラウザ操作AIがCanvas座標を推定せずに済むための代替操作面です。
+標準ビルダーの詳細配置は、利用者とブラウザ操作AIがCanvas座標を推定せずに済むための代替操作面です。
 プリセットID、ページ、既存アセット、正規化座標を明示し、通常のドラッグ配置と同じstoreアクションと初期姿勢を使います。
+このほか、アセット詳細、親変更、型付きタイムラインキー追加を、既定で閉じた詳細操作として標準UIへ置きます。
+BGMは背景素材と同じ常設プルダウンで選び、「未設定」で解除します。選択中の音声アセットを削除した場合もBGM参照を解除します。
+閉じた詳細操作はDOMへフォーカス可能な入力を残さず、開いたときだけ利用者とアクセシビリティツリーへ公開します。
 
-WebMCPはAIモードと同じ作品操作へ接続する構造化ツール経路です。
-ユーザー向けのAIモードをWebMCPの有無で分割せず、`document.modelContext` または `navigator.modelContext` をfeature detectして、利用できる場合だけ登録します。
-アプリ起動中にWebMCPを登録し、アプリをアンマウントすると `AbortController` で登録を解除します。非対応ブラウザでは既存の意味付きDOM、ARIA、フォーム操作を使います。
-WebMCPの登録、実行、失敗時のフォールバックは `src/builder/ai/webmcp.ts` と `src/builder/ai/webmcpTypes.ts` に閉じ込めます。
+WebMCPは標準UIと同じ作品操作へ接続する構造化ツール経路です。
+`document.modelContext` または `navigator.modelContext` をfeature detectし、利用できる場合だけ登録します。
+アプリ起動中にWebMCPを登録し、アプリをアンマウントすると `AbortController` で登録を解除します。非対応ブラウザでは標準UIの意味付きDOM、ARIA、詳細操作を使います。
+WebMCPの登録と実行は `src/builder/webmcp/tools.ts` と `src/builder/webmcp/types.ts` に閉じ込めます。
 公式公開版は `WEBMCP_ORIGIN_TRIAL_TOKEN` を設定した `npm run build:public` で生成し、対象Origin用トークンを `dist/index.html` のmetaへ注入します。Chromeトークンはサブドメイン対象とThird-party matchingをOFFにして発行します。Edge用トークンは `WEBMCP_EDGE_ORIGIN_TRIAL_TOKEN` で追加できます。
 `build:public` はChrome用トークンがない場合に失敗させます。通常の `npm run build` とローカル開発ではトークンを要求せず、現在のブラウザに応じてChrome、Edge、FirefoxそれぞれのWebMCP設定を案内します。
-Tipsは `src/builder/ai/webmcpEnvironment.ts` で公式公開Origin、ローカルclone、別Originと、Chrome、Edge、Firefoxを区別しますが、WebMCPの利用判定には使いません。利用判定は常にAPIのfeature detectを正とします。
+Tipsは `src/builder/webmcp/environment.ts` で公式公開Origin、ローカルclone、別Originと、Chrome、Edge、Firefoxを区別しますが、WebMCPの利用判定には使いません。利用判定は常にAPIのfeature detectを正とします。
 APIのfeature detectとツール登録成功はブラウザ側の状態だけを表し、呼び出し元AIによる一覧取得と実行の成功を保証しません。AIクライアントの種類、バージョン、選択モデルで対応が異なり得ることを一般条件として案内し、特定製品やモデルをtobidasの必須要件にしません。
-ツールの編集処理は `src/builder/ai/commands.ts` の共通コマンドを通し、storeの `commit()`、検証、undo、自動保存を迂回させません。
+ツールと標準UIの詳細操作は `src/builder/operations/commands.ts` の共通コマンドを通し、storeの `commit()`、検証、undo、自動保存を迂回させません。
+状態要約は `src/builder/operations/stateSummary.ts`、型は `src/builder/operations/types.ts` を正本とします。
+標準ワークスペースのセッション状態は `src/builder/App.tsx` の `data-tobidas-*` 属性へ、直前の操作結果は `data-tobidas-kind="operation-result"` の視覚的に隠したライブ領域へ公開します。
 ページ背景は通常部品の配置と区別し、`tobidas-set-page-background`で`Page.backgroundAsset`へ割り当てます。部品・見開き削除は`confirm=true`を必須とし、通常のremove操作とundo経路を使います。
 `tobidas-audit-layout`は既存の収納・紙面包含検査を返す構造QAであり、画像上の構図や重なりを判定したと表現しません。最終目視は呼び出し元のBrowser／Computer Useによるビューポート撮影を使います。
-アセットのバイナリをWebMCP引数へ渡さず、アップロードはAIモードのファイル入力に残します。
+アセットのバイナリをWebMCP引数へ渡さず、アップロードは標準のアセットパネルに残します。
 ブラウザ別の実測条件と公開するツールは `README.md` の「ブラウザ操作AIから使う」に記載します。
 
 音声は作品に1つのBGMと、音声トラック上の効果音キューで構成します。

@@ -53,32 +53,34 @@ Desktop Chrome or Edge is recommended because folder access uses the File System
 
 ## Use with browser-use AI
 
-Enable **AI mode** in the toolbar to expose the current project, spread, selected part, asset IDs, and validation results as semantic DOM.
-AI mode switches to a dedicated workspace with a control pane on the left and a viewport on the right at roughly a 1:2 ratio.
-The standard editing panes and timeline are not duplicated, so you can keep watching the viewport while browser-use AI selects and edits the project.
+Browser-use AI and people operate the same standard builder.
+The BOOK navigator, assets, inspector, and timeline expose ARIA and stable `data-tobidas-*` identifiers.
+Project, selection, active-spread, and preview state are available on the standard workspace element.
 
-The control pane brings together a target tree with stable IDs, asset loading, direct image placement, text and particle creation, selected-part editing, undo and redo, playback, and validation results.
-Images can be placed by page and normalized coordinates without dragging on the Canvas.
-When page constraints correct a requested position or page assignment, the operation result exposes both the requested and accepted values.
-Every control has a semantic name and role, so browser-use AI does not need to depend on visual order or CSS classes.
+Use **Precise placement** in the Part presets header when placement must avoid Canvas coordinates.
+It accepts the page side, preset, imported asset, and normalized page coordinates.
+The information button on an asset row reveals its stable ID, MIME type, exact byte size, and reference count.
+BGM can be selected from imported audio, or cleared with **Not set**, directly in the Sound section.
+Changing a parent and adding a timeline key with an explicit value and time are available as standard detail actions.
+These detail forms are closed by default, so they do not add permanent fields or change the normal pane layout.
 
-WebMCP-capable browsers can discover the page tools as soon as the page loads, without a special query parameter.
-Open the AI mode workspace from the same toolbar button when it is useful, including as the fallback in environments without WebMCP.
-The **AI operation tips** badge distinguishes the public Origin Trial, browser-specific settings for Chrome, Edge, and Firefox, compatible AI clients, and the fallback path.
-The mode does not add an AI service or external communication, so projects and assets remain in the browser.
-Its enabled state and operation results are not stored in project data.
+WebMCP-capable browsers can discover structured tools as soon as the page loads, without a special query parameter.
+Environments without WebMCP fall back to the same standard UI's semantic DOM, ARIA, and detail actions.
+The **AI operation tips** badge distinguishes tool registration, the public Origin Trial, browser-specific settings for Chrome, Edge, and Firefox, and compatible AI clients.
+tobidas does not add an AI service or external communication, so projects and assets remain in the browser.
+Temporary detail-form values and operation results are not stored in project data.
 
 ### Use WebMCP
 
 When the browser exposes WebMCP, tobidas registers structured tools when the page starts.
-WebMCP is an additional tool path, not a separate user-facing mode, and the AI mode workspace does not need to be open for tool discovery.
+WebMCP is an additional capability connected to the same operations as the standard UI, not a separate screen or mode.
 
 The tools accept stable target IDs, normalized coordinates, and typed timeline values directly.
 Tool results include the committed target, any placement or layout corrections, and validation counts.
 WebMCP does not upload asset binaries, fetch external URLs, delete assets, save projects, or export files.
-Continue to use the existing AI-mode file input to import assets.
+Continue to use **Load** in the standard Assets panel to import assets.
 
-WebMCP tools are not rendered in the AI-mode panel.
+WebMCP tools are not rendered as an on-screen list of buttons.
 A WebMCP-capable AI or a Model Context Tool Inspector can discover them after opening the page.
 To inspect them from the browser console, run:
 
@@ -94,7 +96,7 @@ tools.map((tool) => tool.name)
 | --- | --- | --- |
 | [Public web app](https://tobidas.9rsgy78c9c.workers.dev/) | Embed a WebMCP Origin Trial token issued for the target origin and browser in the served HTML | Chrome or Edge needs no setting when its matching token is embedded; Firefox uses its browser setting |
 | Local clone | Enable the browser-specific WebMCP setting listed below in Chrome, Edge, or Firefox | Restart the browser and open `http://localhost:5174/` |
-| Browser or AI environment without WebMCP | Do not use WebMCP | Use the same AI mode for the existing semantic DOM, ARIA, and form controls |
+| Browser or AI environment without WebMCP | Do not use WebMCP | Use the standard builder's semantic DOM, ARIA, and detail actions |
 
 Enabling the browser API through an Origin Trial or browser-specific setting is separate from using an AI environment that can discover and call page-defined tools.
 Both conditions are required for the structured WebMCP tools.
@@ -119,12 +121,12 @@ The public web app embeds an Origin Trial token issued for its exact origin and 
 Firefox's `dom.modelcontext.*` preferences are experimental testing controls. Firefox currently uses the older `navigator.modelContext` surface for imperative tools.
 See the [WebMCP implementation status](https://github.com/webmachinelearning/webmcp/blob/main/implementation-status.md) for the broader browser status.
 
-When WebMCP is unavailable, the AI mode continues to use its semantic DOM, ARIA, and form controls.
+When WebMCP is unavailable, browser automation uses the standard builder's DOM, ARIA, and closed-by-default detail actions.
 Availability is determined by the combination of browser support or Origin Trial enablement and the calling AI's ability to list and invoke page tools.
 
 #### Available tools
 
-When WebMCP is available, tobidas registers these imperative tools when the page starts. AI mode does not need to be visible:
+When WebMCP is available, tobidas registers these imperative tools when the page starts:
 
 | Group | Tool | Purpose |
 | --- | --- | --- |
@@ -138,7 +140,7 @@ When WebMCP is available, tobidas registers these imperative tools when the page
 | Session | `tobidas-set-preview` | Move the visible preview to a normalized book progress or a spread hold time. Provide progress, or provide spreadId with seconds within that spread hold interval. |
 | Session | `tobidas-enter-play` | Enter playback mode so the person can inspect the book. This changes only the visible editing session. |
 | Session | `tobidas-enter-edit` | Return to edit mode so structured book changes can be made. This changes only the visible editing session. |
-| Edit | `tobidas-place-asset` | Place an already imported image, SVG, or video with a tobidas visual preset and normalized page coordinates. The asset must already be imported through the AI-mode file input; placement is committed through normal validation and undo history. |
+| Edit | `tobidas-place-asset` | Place an already imported image, SVG, or video with a tobidas visual preset and normalized page coordinates. Import the asset through the standard Assets panel first; placement is committed through normal validation and undo history. |
 | Edit | `tobidas-set-page-background` | Assign an imported image, SVG, or video directly to the page surface instead of creating an element. Use this, rather than a flat paper-stack element, for full-page artwork. |
 | Edit | `tobidas-clear-page-background` | Clear page-surface artwork and its background-video audio settings. |
 | Edit | `tobidas-create-visual` | Create a text or light-particle visual using an existing tobidas preset. The new element is committed through normal layout validation and undo history. |
@@ -152,7 +154,7 @@ When WebMCP is available, tobidas registers these imperative tools when the page
 | Edit | `tobidas-delete-timeline-key` | Delete an existing key and remove its track when it becomes empty. |
 | Edit | `tobidas-set-camera` | Set the default author camera used by spreads without camera keys. |
 | Edit | `tobidas-add-camera-key` | Save position, target, and field-of-view keys together at one spread hold time. |
-| Edit | `tobidas-assign-bgm` | Assign one already imported audio asset as the project BGM. The audio must be imported through the AI-mode file input before this tool is called. |
+| Edit | `tobidas-assign-bgm` | Assign one already imported audio asset as the project BGM. Import the audio through the standard Assets panel before calling this tool. |
 | Edit | `tobidas-clear-bgm` | Clear the project BGM through the normal edit, validation, and undo path. |
 | Edit | `tobidas-add-spread` | Add, duplicate, or move a spread through the normal edit and undo path. The combined operation remains for compatibility. |
 | Edit | `tobidas-duplicate-spread` | Duplicate a spread while remapping element, track, and key IDs. |
@@ -161,7 +163,7 @@ When WebMCP is available, tobidas registers these imperative tools when the page
 | Edit | `tobidas-undo` | Undo the last tobidas edit through the normal history. The result includes the current selection and preview state after undo. |
 | Edit | `tobidas-redo` | Redo the last undone tobidas edit through the normal history. The result includes the current selection and preview state after redo. |
 
-Asset import, opening projects, saving, and single-HTML or ZIP export remain user-managed file operations because they require browser file permissions and destination choices. Use the AI-mode file input and toolbar; WebMCP does not add a binary transport.
+Asset import, opening projects, saving, and single-HTML or ZIP export remain user-managed file operations because they require browser file permissions and destination choices. Use the standard Assets panel and toolbar; WebMCP does not add a binary transport.
 For final visual review, use `tobidas-set-preview` to prepare the view and capture the viewport with the calling Browser or Computer Use environment. `tobidas-audit-layout` reports deterministic structural issues, but it does not judge composition or visible overlap from an image.
 
 The asset placement form also carries `tobidas-place-asset-form` for declarative API testing.
@@ -217,7 +219,7 @@ npm run dev
 
 Open `http://localhost:5174/`.
 
-The repository also includes the [`tobidas-create` skill](./.agents/skills/tobidas-create/SKILL.md), which helps plan a book from a prompt, prepare assets, build it through AI mode, and verify the result. It can be used from Codex or another agent environment that supports repository skills.
+The repository also includes the [`tobidas-create` skill](./.agents/skills/tobidas-create/SKILL.md), which helps plan a book from a prompt, prepare assets, build it through the standard builder and WebMCP, and verify the result. It can be used from Codex or another agent environment that supports repository skills.
 
 ## Self-host
 
@@ -271,7 +273,7 @@ In the tested environment, the page-side WebMCP API and **AI tools available** s
 
 Because the error occurs inside the Codex App before `tobidas-get-state` is invoked, it does not indicate a failure in tobidas's WebMCP registration, Origin Trial token, or browser setting. OpenAI's public documentation does not explicitly state that gpt-5.6-luna is unsupported for the Codex App's `webmcp_list_tools` command, and no exact matching official issue has been identified. The official tracker does, however, contain open bug reports about [Browser plugin availability changing by model](https://github.com/openai/codex/issues/33592) and [missing tool injection for gpt-5.6-terra/luna](https://github.com/openai/codex/issues/33250).
 
-For now, use gpt-5.6-sol or gpt-5.6-terra, or fall back to the same **AI mode** and its semantic DOM, ARIA, and form controls. AI-client and model support can change, so tobidas does not require a particular Codex model.
+For now, use gpt-5.6-sol or gpt-5.6-terra, or fall back to the standard builder's semantic DOM, ARIA, and detail actions. AI-client and model support can change, so tobidas does not require a particular Codex model.
 
 ## Privacy
 

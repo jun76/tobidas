@@ -3,13 +3,13 @@ import type { EmbeddedVideoAudio } from '../../schema/audio'
 import type { TimelineProperty, TimelineTarget, TimelineValue } from '../../schema/timeline'
 import type { BookSelection, EditorMode, ProjectSource } from '../state/editorState'
 
-export interface AiTargetSummary {
+export interface TargetSummary {
   kind: BookSelection['type']
   id?: string
   label: string
 }
 
-export interface AiElementSummary {
+export interface ElementSummary {
   id: string
   name: string
   type: string
@@ -36,21 +36,21 @@ export interface AiElementSummary {
   trackIds: string[]
 }
 
-export interface AiTimelineKeySummary {
+export interface TimelineKeySummary {
   id: string
   time: number
   value: TimelineValue
   ease: 'linear' | 'easeInOut' | 'hold'
 }
 
-export interface AiTimelineTrackSummary {
+export interface TimelineTrackSummary {
   id: string
   target: TimelineTarget
   property: TimelineProperty
-  keys: AiTimelineKeySummary[]
+  keys: TimelineKeySummary[]
 }
 
-export interface AiSpreadSummary {
+export interface SpreadSummary {
   id: string
   name: string
   index: number
@@ -58,11 +58,11 @@ export interface AiSpreadSummary {
   turnSeconds: number
   leftPage: { backgroundAsset?: string }
   rightPage: { backgroundAsset?: string }
-  elements: AiElementSummary[]
-  timeline: AiTimelineTrackSummary[]
+  elements: ElementSummary[]
+  timeline: TimelineTrackSummary[]
 }
 
-export interface AiAssetSummary {
+export interface AssetSummary {
   id: string
   name: string
   type: string
@@ -74,25 +74,25 @@ export interface AiAssetSummary {
   references: number
 }
 
-export interface AiStateSummary {
+export interface BuilderStateSummary {
   project: { id: string; name: string; source: ProjectSource }
   /** 素材本体を除く作品データ。AIがフォームを再走査せず現在値を照合できるようにする。 */
   book: import('../../schema/bookPackage').BookProject['book']
   audio?: import('../../schema/bookPackage').BookProject['audio']
   mode: EditorMode
   activeSpread?: { id: string; name: string; index: number; holdSeconds: number; turnSeconds: number }
-  spreads: AiSpreadSummary[]
-  selection: AiTargetSummary
-  selectedElement?: AiElementSummary
+  spreads: SpreadSummary[]
+  selection: TargetSummary
+  selectedElement?: ElementSummary
   previewProgress: number
   spreadTime: number
   canUndo: boolean
   canRedo: boolean
   validation: { errors: string[]; warnings: string[] }
-  assets: AiAssetSummary[]
+  assets: AssetSummary[]
 }
 
-export type AiCommandResult =
+export type BuilderCommandResult =
   | {
     ok: true
     action: string

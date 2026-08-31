@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Plus, RefreshCw, Square, Trash2, Volume2 } from 'lucide-react'
+import { Info, Plus, RefreshCw, Square, Trash2, Volume2 } from 'lucide-react'
 import { Icon } from '../../ui/Icon'
 import type { Asset } from '../../schema/assets'
 import { useT, t } from '../i18n'
@@ -11,6 +11,8 @@ import { assetKindForMode } from '../presets'
 import { useBuilderStore } from '../store'
 import { fileToAsset } from '../assets/ingest'
 import { useDialogs } from '../ui/DialogProvider'
+import { DetailsDialog } from '../ui/DetailsDialog'
+import { countAssetReferences } from '../operations/stateSummary'
 import st from '../builder.module.css'
 
 export function AssetsPanel() {
@@ -21,6 +23,7 @@ export function AssetsPanel() {
   const [replacing, setReplacing] = useState<Asset | null>(null)
   const [dragging, setDragging] = useState(false)
   const [previewing, setPreviewing] = useState<string | null>(null)
+  const [details, setDetails] = useState<Asset | null>(null)
   const replaceRef = useRef<HTMLInputElement>(null)
   const existing = () => new Set(store.project.assets.map((asset) => asset.id))
 
@@ -99,6 +102,9 @@ export function AssetsPanel() {
         <div>{asset.name}</div>
         <div className={st.hintSmall}>{asset.type} · {metadata(asset)}</div>
       </div>
+      <button className={st.ghostBtn} data-tobidas-action="show-asset-details"
+        aria-label={t.assets.details(asset.name)} title={t.assets.detailsHint}
+        onClick={() => setDetails(asset)}><Icon as={Info} /></button>
       <button className={`${st.ghostBtn} ${st.ghostOn}`}
         aria-label={t.assets.replace(asset.name)} title={t.assets.replaceHint}
         onClick={() => { setReplacing(asset); setTimeout(() => replaceRef.current?.click()) }}><Icon as={RefreshCw} /></button>
@@ -137,8 +143,40 @@ export function AssetsPanel() {
           : assetAccept('svg', 'image')}
       onChange={(event) => { void replace(event.target.files?.[0]); event.target.value = '' }} />
     </section>
+    {details && <AssetDetails asset={details}
+      references={countAssetReferences(store.project).get(details.id) ?? 0}
+      onClose={() => setDetails(null)} />}
     {dragging && createPortal(<div className={st.assetDragShield} aria-hidden="true" />, document.body)}
   </>
+}
+
+function AssetDetails({ asset, references, onClose }: { asset: Asset; references: number; onClose: () => void }) {
+  const t = useT()
+  const [duration, setDuration] = useState(asset.duration)
+  useEffect(() => {
+    if (duration !== undefined || (asset.type !== 'audio' && asset.type !== 'video')) return
+    const media = document.createElement(asset.type === 'audio' ? 'audio' : 'video')
+    const src = asset.data instanceof Blob ? URL.createObjectURL(asset.data) : asset.data
+    media.preload = 'metadata'
+    media.src = src
+    const loaded = () => { if (Number.isFinite(media.duration)) setDuration(media.duration) }
+    media.addEventListener('loadedmetadata', loaded)
+    return () => {
+      media.removeEventListener('loadedmetadata', loaded)
+      media.src = ''
+      if (asset.data instanceof Blob) URL.revokeObjectURL(src)
+    }
+  }, [asset, duration])
+  const bytes = asset.bytes ?? (asset.data instanceof Blob ? asset.data.size : undefined)
+  return <DetailsDialog title={t.assets.details(asset.name)} kind="asset-details" onClose={onClose}>
+    <dl className={st.detailsList} data-tobidas-id={asset.id}>
+      <dt>{t.assets.assetId}</dt><dd>{asset.id}</dd>
+      <dt>{t.assets.mime}</dt><dd>{asset.mime}</dd>
+      <dt>{t.assets.bytes}</dt><dd>{bytes ?? '—'}</dd>
+      <dt>{t.assets.references}</dt><dd>{references}</dd>
+      <dt>{t.assets.duration}</dt><dd>{duration === undefined ? '—' : t.assets.seconds(duration.toFixed(2))}</dd>
+    </dl>
+  </DetailsDialog>
 }
 
 function AssetThumbnail({ asset }: { asset: Asset }) {

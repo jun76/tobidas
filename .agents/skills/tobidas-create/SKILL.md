@@ -1,6 +1,6 @@
 ---
 name: tobidas-create
-description: Design a tobidas picture book from a prompt, generate assets, build it in AI mode, configure its direction, and verify the result. Use this for creating new tobidas works or reproducing a production workflow from a design document.
+description: Design a tobidas picture book from a prompt, generate assets, build it in the standard builder through WebMCP or semantic UI, configure its direction, and verify the result. Use this for creating new tobidas works or reproducing a production workflow from a design document.
 metadata:
   short-description: Design, build, and verify tobidas picture books
 ---
@@ -126,17 +126,19 @@ After the design sheet is confirmed, work in this order:
 2. Expand the design table into an asset list containing the cover, spread grounds, spatial backgrounds, 3D parts, and sound effects.
 3. In image generation, keep the overall style, scale, colors, and light direction consistent, and generate grounds, spatial backgrounds, and 3D parts with separate prompts. Assign a unique prompt and filename to each character or animal illustration on each spread.
 4. Check asset transparency, dimensions, aspect ratios, size, margins, and cross-spread duplication of character and animal art.
-5. Start the development server and import the assets together in AI mode.
-6. In AI mode, select the target spread in the tree before placing parts.
+5. Start the development server and import the assets together from the standard Assets panel.
+6. In the standard BOOK navigator, select the target spread before placing parts.
 7. Place the ground, background panel, spatial background, 3D parts, text, and particles for each spread. Set `stow.stagger: 0` on the background panel, then keep other parts no higher than the panel's lower edge and in front of the background. Update names, positions, dimensions, layers, and visibility. Fix body text to its owning page and do not add a directing track to text elements.
-8. In AI mode, configure the cover, camera, lights, resident motion, authored timeline, and audio cues in the same project data as standard mode. Add, duplicate, and reorder spreads with spread operations. Add keys by explicitly specifying the target, property, time, and value. Use the timeline below the viewport to check playback, scrubbing, interpolation, time changes, and deletion.
+8. Configure the cover, camera, lights, resident motion, authored timeline, and audio cues through the standard inspector and timeline, or through WebMCP when it is available. Add, duplicate, and reorder spreads with spread operations. Add keys by explicitly specifying the target, property, time, and value. Use the timeline below the viewport to check playback, scrubbing, interpolation, time changes, and deletion.
 9. After saving or exporting, place the completed work package in the requested save path.
 10. Read [references/verification.md](references/verification.md) and run the existing tobidas checks from [scripts/run-repo-qa.mjs](scripts/run-repo-qa.mjs).
 
-For AI-mode inputs, obey the `min`, `max`, and `step` displayed on the screen.
-When locating AI-mode targets, use `data-tobidas-kind` and `data-tobidas-id` on the target tree.
-The current `data-tobidas-kind="ai-state"` contains JSON for the `book`, spread list, all elements, all timeline keys, selection, and verification results, excluding the asset bodies.
-Fetch this JSON first, fetch it again after screen operations, and confirm changes by comparing IDs and values.
+For standard-builder inputs, obey the `min`, `max`, and `step` displayed on the screen.
+When locating targets, use `data-tobidas-kind` and `data-tobidas-id` in the BOOK navigator, Assets panel, inspector, and timeline.
+Read the workspace's `data-tobidas-project-id`, `data-tobidas-active-spread-id`, `data-tobidas-selection-kind`, `data-tobidas-selection-id`, and `data-tobidas-preview-progress` attributes before editing and again after screen operations.
+When WebMCP is available, call `tobidas-get-state` first and confirm later changes by comparing stable IDs and values.
+When WebMCP is unavailable, use the standard UI's semantic DOM and ARIA labels. Use closed-by-default detail actions for precise placement, asset metadata, parent changes, and explicit timeline-key creation; select BGM directly from the Sound section.
+Read the result of a detail action from `data-tobidas-kind="operation-result"`; it contains no asset bodies and is not saved with the work.
 After finalizing the background-panel name and placement, run `scripts/verify-stow-layout.mjs` with `--strict`.
 Do not submit initial values unchanged; enter values that satisfy the form constraints before updating.
 Confirm after placement that the selected spread and direct-placement target match by checking the selected part name and spread name.
@@ -154,4 +156,4 @@ Do not make only the generated `project.json` pass verification by editing it di
 
 At completion, report the work folder, design sheet, asset count, spread count, verification results, and unresolved constraints.
 Clearly label any estimates left in the design sheet as estimates.
-Do not report hold times, page transitions, audio, cover, or AI-mode operations as verified if they were not checked.
+Do not report hold times, page transitions, audio, cover, standard-builder operations, or WebMCP operations as verified if they were not checked.
