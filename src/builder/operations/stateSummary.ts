@@ -3,6 +3,7 @@ import type { BookProject } from '../../schema/bookPackage'
 import type { EditorState } from '../state/editorState'
 import type { StageElement } from '../../schema/stageElement'
 import type { BuilderStateSummary, ElementSummary, TargetSummary } from './types'
+import { AUTHORING_GUIDE_KEYS } from '../../schema/authoringGuide'
 
 function selectionSummary(state: EditorState): TargetSummary {
   const selection = state.selection
@@ -117,6 +118,13 @@ export function buildBuilderStateSummary(state: EditorState): BuilderStateSummar
 
   return {
     project: { id: state.project.id, name: state.project.name, source: state.source },
+    authoringGuide: {
+      available: true,
+      locales: ['ja', 'en'] as const,
+      readTool: 'tobidas-get-authoring-guide',
+      updateTool: 'tobidas-update-authoring-guide',
+      itemCount: AUTHORING_GUIDE_KEYS.length,
+    },
     book: state.project.book,
     audio: state.project.audio,
     mode: state.mode,

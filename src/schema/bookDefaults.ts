@@ -1,4 +1,5 @@
 import { DEFAULT_BOOK_LIGHTS, type Book, type Page, type Spread } from './book'
+import { createDefaultAuthoringGuide } from './authoringGuide'
 import type { BookProject } from './bookPackage'
 import type { ParentSpace, StageElement, StageElementType } from './stageElement'
 
@@ -28,7 +29,7 @@ export function createBook(partial: Partial<Book> = {}): Book {
   }
 }
 export function createBookProject(name = 'New pop-up book'): BookProject {
-  return { id: bookId('book'), name, book: createBook(), assets: [], updatedAt: new Date().toISOString() }
+  return { id: bookId('book'), name, authoringGuide: createDefaultAuthoringGuide(), book: createBook(), assets: [], updatedAt: new Date().toISOString() }
 }
 
 export function createStageElement(

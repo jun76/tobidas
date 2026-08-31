@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createBookProject } from '../../schema/bookDefaults'
 import { useBuilderStore } from '../store'
-import { createVisualCommand, placeAssetCommand, updateElementCommand } from './commands'
+import { createVisualCommand, placeAssetCommand, updateAuthoringGuideCommand, updateElementCommand } from './commands'
 
 function setup() {
   const project = createBookProject('AI commands')
@@ -157,5 +157,16 @@ describe('AI commands', () => {
     expect(updated.type === 'visual' && updated.particles.count).toBe(12)
     expect(updated.motion[0]?.type).toBe('spin')
     expect(useBuilderStore.getState().issues.ok).toBe(true)
+  })
+
+  it('updates authoring-guide text through the normal undo path', () => {
+    setup()
+    const before = useBuilderStore.getState().undoStack.length
+    const result = updateAuthoringGuideCommand('en', { spreadGround: 'Use the page image as the ground.' })
+
+    expect(result.ok).toBe(true)
+    expect(useBuilderStore.getState().project.authoringGuide.en.spreadGround)
+      .toBe('Use the page image as the ground.')
+    expect(useBuilderStore.getState().undoStack.length).toBe(before + 1)
   })
 })

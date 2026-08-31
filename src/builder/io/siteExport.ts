@@ -1,7 +1,7 @@
 import JSZip from 'jszip'
 import { t } from '../i18n'
 import { SITE_EXT } from '../../package/model'
-import { externalizeAssets, inlineAssetBodies } from '../../package/serialize'
+import { externalizeAssets, inlineAssetBodies, type PublishedBookProject } from '../../package/serialize'
 import type { BookProject } from '../../schema/bookPackage'
 import { safeFileName, saveBlobAs } from './browserFiles'
 
@@ -85,7 +85,7 @@ const README = [
   '',
 ].join('\n')
 
-export function injectProjectJson(html: string, project: BookProject): string {
+export function injectProjectJson(html: string, project: BookProject | PublishedBookProject): string {
   const json = JSON.stringify(project).replace(/</g, '\\u003c')
   const placeholder = /(<script type="application\/json" id="tobidas-project">)[\s\S]*?(<\/script>)/
   if (!placeholder.test(html)) {

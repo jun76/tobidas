@@ -6,6 +6,7 @@ import type { VisualPresetId } from '../presets'
 import { useBuilderStore } from '../store'
 import type { BuilderCommandResult } from './types'
 import { COLOR_PROPERTIES, DISCRETE_PROPERTIES, NUMBER_PROPERTIES, VEC3_PROPERTIES, type TimelineKey, type TimelineProperty, type TimelineTarget, type TimelineValue } from '../../schema/timeline'
+import { AUTHORING_GUIDE_KEYS, authoringGuideLocaleSchema, type AuthoringGuideLocale, type AuthoringGuideKey } from '../../schema/authoringGuide'
 
 type AssetPreset = Extract<VisualPresetId, 'paper-stack' | 'bottom-upright' | 'depth-layer'>
 
@@ -91,6 +92,33 @@ export function createVisualCommand(input: {
   const id = state.addPresetVisual(input.spreadId, input.side, input.presetId)
   if (!id) return failure(action, t().operations.commandFailed)
   return success(action, t().operations.created(id), { kind: 'element', id })
+}
+
+export function updateAuthoringGuideCommand(locale: 'ja' | 'en', changes: Partial<AuthoringGuideLocale>): BuilderCommandResult {
+  const action = 'update-authoring-guide'
+  const state = useBuilderStore.getState()
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
+  const entries = Object.entries(changes) as [string, string][]
+  const fieldErrors: Record<string, string> = {}
+  for (const [key, value] of entries) {
+    if (!(AUTHORING_GUIDE_KEYS as readonly string[]).includes(key)) fieldErrors[key] = t().operations.invalidInput
+    else if (typeof value !== 'string') fieldErrors[key] = t().operations.invalidInput
+  }
+  if (!entries.length) return failure(action, t().operations.invalidInput, { changes: t().operations.required })
+  if (Object.keys(fieldErrors).length) return failure(action, t().operations.invalidInput, fieldErrors)
+  const nextGuide = { ...state.project.authoringGuide[locale], ...changes }
+  const parsed = authoringGuideLocaleSchema.safeParse(nextGuide)
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0]
+      if (typeof key === 'string') fieldErrors[key] = t().operations.invalidInput
+    }
+    return failure(action, t().operations.invalidInput, fieldErrors)
+  }
+  state.commit((project) => {
+    for (const [key, value] of entries) project.authoringGuide[locale][key as AuthoringGuideKey] = value
+  })
+  return success(action, t().operations.authoringGuideUpdated, { kind: 'authoring-guide', id: locale })
 }
 
 export interface ElementUpdateInput {

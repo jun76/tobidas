@@ -70,6 +70,9 @@ The **AI operation tips** badge distinguishes tool registration, the public Orig
 tobidas does not add an AI service or external communication, so projects and assets remain in the browser.
 Temporary detail-form values and operation results are not stored in project data.
 
+Project-specific production guidance is available and editable per language in the **Authoring guide** pane below the Inspector.
+This setting is the source of truth for picture-book know-how. WebMCP clients read the selected language with `tobidas-get-authoring-guide` and update it with `tobidas-update-authoring-guide` only when the user explicitly requests a change.
+
 ### Use WebMCP
 
 When the browser exposes WebMCP, tobidas registers structured tools when the page starts.
@@ -131,6 +134,8 @@ When WebMCP is available, tobidas registers these imperative tools when the page
 | Group | Tool | Purpose |
 | --- | --- | --- |
 | Read | `tobidas-get-state` | Read the current tobidas project state without asset binary data. Use this first to obtain stable spread and element IDs; scope defaults to full and can be active-spread or selection. |
+| Read | `tobidas-get-authoring-guide` | Read the current work's authoring guide in the selected language, including labels, short descriptions, and saved text. Use it before design, asset preparation, placement, or verification. |
+| Edit | `tobidas-update-authoring-guide` | Update selected authoring-guide keys in the selected language. Use only when the user explicitly requests a change; normal validation, undo, and autosave still apply. |
 | Read | `tobidas-get-spread` | Read one spread including its pages, elements, and timeline. Pass a spreadId returned by tobidas-get-state. |
 | Read | `tobidas-get-element` | Read one element using its stable spread and element IDs. Pass IDs returned by tobidas-get-state or tobidas-get-spread. |
 | Read | `tobidas-list-assets` | List imported asset metadata and references for later placement or BGM assignment; never returns binary asset data or uploads files. |
@@ -219,7 +224,7 @@ npm run dev
 
 Open `http://localhost:5174/`.
 
-The repository also includes the [`tobidas-create` skill](./.agents/skills/tobidas-create/SKILL.md), which helps plan a book from a prompt, prepare assets, build it through the standard builder and WebMCP, and verify the result. It can be used from Codex or another agent environment that supports repository skills.
+The repository also includes the [`tobidas-create` skill](./.agents/skills/tobidas-create/SKILL.md), which supports questions, design sheets, asset preparation, standard-builder/WebMCP construction, and verification. Work-specific production guidance and defaults are read from the work's **Authoring guide**. It can be used from Codex or another agent environment that supports repository skills.
 
 ## Self-host
 

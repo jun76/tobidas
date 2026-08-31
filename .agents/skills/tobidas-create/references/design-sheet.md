@@ -1,79 +1,65 @@
 # Design sheet format
 
-In `design.md`, record decisions derived from the initial prompt separately from items that require user confirmation.
-Confirm unresolved items before proceeding to asset generation or placement.
+Use the work's **Authoring guide** as the source of defaults and production constraints.
+This document defines only the record format; it does not prescribe a title language, spread count, art style, part count, or asset-reuse policy.
+
+In `design.md`, separate decisions derived from the user's prompt, decisions read from the authoring guide, and items that require confirmation.
+Confirm unresolved items before asset generation or placement.
 
 ## Opening metadata
 
 ```yaml
-title: "English title"
-slug: "english-kebab-case-slug"
-text_language: "English"
-story_spreads: 5
-parts_per_spread: 4
-visual_style: "hand-drawn picture-book"
-text_treatment: "fixed page-printed (shared caption settings)"
-character_asset_policy: "unique-per-spread"
-save_path: "<Documents>/tobidas/projects/<slug>"
+title: "<title>"
+slug: "<kebab-case-slug>"
+text_language: "<language>"
+story_spreads: "<count or guide value>"
+save_path: "<requested path>"
 status: "draft"
 ```
 
-`story_spreads` is the number of story spreads excluding the cover.
-`parts_per_spread` is the minimum number including the ground background; do not set it below the number of parts the scene requires.
-
-## Confirmation items
+Record the source of each default when it matters:
 
 ```markdown
-## Estimated items
+## Guide-derived decisions
 
-- Title: ...
-- Text language: ...
-- Image style: ...
-- Number of spreads: ...
-- Save path: ...
+- [guide key] ...
 
-## Additional questions
+## User decisions
 
-1. Reader age and whether the work is intended for reading aloud: if unspecified, may it target preschool through early elementary readers?
-2. Constraints on tone or ending: if unspecified, may it have a reassuring ending?
-3. Specific character settings, content to avoid, or constraints on audio and sound effects: apply any that are provided.
+- ...
 
-May I proceed with the estimates and defaults above?
+## Open questions
+
+1. ...
+
+May I proceed with the decisions above?
 ```
-
-Do not stop at questions for items that defaults can resolve; put values in the draft and ask for confirmation.
-When the user accepts the defaults, change the metadata to `status: confirmed`.
 
 ## Spread table
 
-Create the following table for every spread.
+Create one row or section for every spread.
 
 | Item | Content |
 | --- | --- |
 | Scene | What happens on the spread |
-| In-story text | Short body text in the chosen language |
-| Body-text treatment | Shared `caption` settings (owning page, layer 9, baseline v 0.92). No direction during holds or page transitions |
-| Spread ground | Ground, floor, water surface, path, and similar surfaces. Do not draw major buildings or people |
-| Spatial background | A pale distant view separate from the ground. Do not feature the same subject as the 3D parts |
-| Background-panel rise order | Background-panel part name and asset ID; `stow.stagger: 0` |
-| Initial placement of each part | Keep parts no higher than the background panel's lower edge and at a `z` in front of the panel. Record the reason for intentional floating parts |
-| 3D parts | At least three besides the ground, such as people, buildings, animals, and tools |
-| Camera | Camera distance during the hold, guidance of the reader's gaze, and relationship to page transitions |
-| Lights | Position, color, intensity, and time of day for the scene |
-| Sound effects | Type of sound, trigger condition, and time |
-| Color palette | Paper, cover, text, and light colors |
-| Verification risks | Center fold, adjacent pages, background-panel intersections, initial vertical/depth relationships, overlap, clipping, and duplicate sounds |
+| In-story text | Text and its language |
+| Ground and page background | Which image is assigned to the page surface |
+| Spatial background | Any separate depth/background asset |
+| Parts | Asset, role, parent, placement, and layer |
+| Camera and lights | Intended view and lighting |
+| Sound | BGM, page-turn, cues, and timing |
+| Palette and style | Decisions that apply to this spread |
+| Verification risks | Structural and visual risks |
 
-## Divide asset prompts by role
+Treat cover exterior, cover interior, and back cover separately when they exist.
+Record asset IDs and filenames so that placement can be reproduced.
 
-Divide image-generation instructions into these four types:
+## Asset list
 
-1. Cover: generate it without text when the title will be baked in during post-processing.
-2. Spread ground: limit it to subtle texture and surface-contact treatment.
-3. Spatial background: limit it to a low-contrast distant view and do not draw the subject of a 3D part.
-4. 3D parts: specify a transparent background, a ground-contact line, an isolated silhouette, and no unwanted checkerboard.
+For each asset, record:
 
-Do not draw the same building or person in more than one of the ground, spatial background, and 3D parts.
-Use a separate asset and filename for character and animal art on each spread; do not reuse the same illustration across pages.
-For returning characters and animals, create scene-specific new art while preserving the same art style and character design.
-After generation, display the asset list and confirm that the story's subject has not slipped into a background.
+| Asset | Role | Filename or ID | Source | Transparency/format check | Used by |
+| --- | --- | --- | --- | --- | --- |
+| ... | ... | ... | ... | ... | ... |
+
+Keep prompts and files separated by their intended role. Check generated assets before importing them into the builder.

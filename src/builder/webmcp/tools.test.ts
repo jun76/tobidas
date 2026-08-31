@@ -47,7 +47,8 @@ describe('WebMCP adapter', () => {
     const controller = new AbortController()
     expect(await registerTobidasWebMcpTools(context, controller.signal)).toBe(true)
     expect(registrations.map(({ tool: registered }) => registered.name)).toEqual([
-      'tobidas-get-state', 'tobidas-get-spread', 'tobidas-get-element', 'tobidas-list-assets', 'tobidas-validate-book',
+      'tobidas-get-state', 'tobidas-get-authoring-guide', 'tobidas-update-authoring-guide',
+      'tobidas-get-spread', 'tobidas-get-element', 'tobidas-list-assets', 'tobidas-validate-book',
       'tobidas-audit-layout',
       'tobidas-select-target', 'tobidas-set-preview', 'tobidas-enter-play', 'tobidas-enter-edit',
       'tobidas-place-asset', 'tobidas-set-page-background', 'tobidas-clear-page-background',
@@ -74,6 +75,39 @@ describe('WebMCP adapter', () => {
     expect(result.after.id).toBe(result.target.id)
     expect(result.after.image).toBe('tree.webp')
     expect(useBuilderStore.getState().undoStack.length).toBe(beforeUndo + 1)
+  })
+
+  it('reads and updates the current work authoring guide', async () => {
+    setup()
+    const guide = payload(await invoke('tobidas-get-authoring-guide', { locale: 'en', keys: ['spreadGround'] }))
+    expect(guide.after.locale).toBe('en')
+    expect(guide.after.items).toEqual([expect.objectContaining({
+      key: 'spreadGround',
+      label: 'Spread ground',
+      text: expect.stringContaining('ground surfaces'),
+    })])
+
+    const updated = payload(await invoke('tobidas-update-authoring-guide', {
+      locale: 'en', changes: { spreadGround: 'Use a painted floor as the scene ground.' },
+    }))
+    expect(updated.ok).toBe(true)
+    expect(updated.after.items).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: 'spreadGround', text: 'Use a painted floor as the scene ground.' }),
+    ]))
+    expect(useBuilderStore.getState().project.authoringGuide.en.spreadGround)
+      .toBe('Use a painted floor as the scene ground.')
+    expect(useBuilderStore.getState().project.authoringGuide.ja.spreadGround)
+      .not.toBe('Use a painted floor as the scene ground.')
+  })
+
+  it('rejects unknown authoring-guide keys', async () => {
+    setup()
+    const before = useBuilderStore.getState().project.authoringGuide.en.spreadGround
+    const result = payload(await invoke('tobidas-update-authoring-guide', {
+      changes: { unknownRule: 'do not accept this' },
+    }))
+    expect(result.ok).toBe(false)
+    expect(useBuilderStore.getState().project.authoringGuide.en.spreadGround).toBe(before)
   })
 
   it('assigns full-page artwork without creating a flat element', async () => {

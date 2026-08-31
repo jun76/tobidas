@@ -1,6 +1,9 @@
 import { externalAssetUrl, type Asset, type AssetData } from '../schema/assets'
 import type { BookProject, BookProjectFile } from '../schema/bookPackage'
 
+/** 公開プレイヤーへ渡す作品。制作時だけ使うガイドは配布物へ含めない。 */
+export type PublishedBookProject = Omit<BookProject, 'authoringGuide'>
+
 export function stripAssetData(project: BookProject): BookProjectFile {
   return { ...project, assets: project.assets.map(({ data: _data, ...metadata }) => metadata) }
 }
@@ -9,9 +12,14 @@ export function projectFileJson(project: BookProject): string {
   return JSON.stringify(stripAssetData(project), null, 2)
 }
 
+export function stripAuthoringGuide(project: BookProject): PublishedBookProject {
+  const { authoringGuide: _authoringGuide, ...published } = project
+  return published
+}
+
 export interface ExternalizedAssets {
   /** 実体を相対URLへ差し替えた作品。埋め込み用 */
-  project: BookProject
+  project: PublishedBookProject
   /** 書き出し先へ置くファイル。パスは `assets/` からの相対 */
   files: { path: string; bytes: AssetBytes; mime: string }[]
 }
@@ -32,7 +40,7 @@ export function externalizeAssets(project: BookProject): ExternalizedAssets {
   }))
   return {
     project: {
-      ...project,
+      ...stripAuthoringGuide(project),
       assets: project.assets.map((asset) => ({ ...asset, data: externalAssetUrl(asset.id) })),
     },
     files,
@@ -48,9 +56,9 @@ export function assetDataToBytes(asset: Asset): AssetBytes {
 }
 
 /** Blob を含む編集中の作品を、単一HTMLへ埋め込める data URL 表現へ変換する。 */
-export async function inlineAssetBodies(project: BookProject): Promise<BookProject> {
+export async function inlineAssetBodies(project: BookProject): Promise<PublishedBookProject> {
   return {
-    ...project,
+    ...stripAuthoringGuide(project),
     assets: await Promise.all(project.assets.map(async (asset) => ({
       ...asset,
       data: asset.data instanceof Blob ? await blobToDataUrl(asset.data) : asset.data,

@@ -76,6 +76,7 @@ export interface AssetSummary {
 
 export interface BuilderStateSummary {
   project: { id: string; name: string; source: ProjectSource }
+  authoringGuide: { available: true; locales: readonly ['ja', 'en']; readTool: 'tobidas-get-authoring-guide'; updateTool: 'tobidas-update-authoring-guide'; itemCount: number }
   /** 素材本体を除く作品データ。AIがフォームを再走査せず現在値を照合できるようにする。 */
   book: import('../../schema/bookPackage').BookProject['book']
   audio?: import('../../schema/bookPackage').BookProject['audio']

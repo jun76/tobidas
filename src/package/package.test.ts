@@ -27,6 +27,26 @@ describe('package ownership boundaries', () => {
     expect(parsed.book.spreads[0].elements[0].stow).toEqual({ fallDirection: 'auto', stagger: 0 })
   })
 
+  it('fills the default authoring guide when opening an older project', () => {
+    const legacy = createBookProject('without guide') as unknown as Record<string, any>
+    delete legacy.authoringGuide
+    const parsed = bookProjectSchema.parse(legacy)
+    expect(parsed.authoringGuide.en.storyStructure).toContain('five story spreads')
+    expect(parsed.authoringGuide.ja.storyStructure).toContain('見開き')
+    expect(parsed.authoringGuide.en.additionalInstructions).toBe('')
+  })
+
+  it('localizes the previous single-language default during migration', () => {
+    const legacy = createBookProject('legacy guide') as unknown as Record<string, any>
+    legacy.authoringGuide = {
+      ...legacy.authoringGuide.en,
+      creativeIntent: 'Define the intended reader, emotional arc, and the one experience each spread should support.',
+    }
+    const parsed = bookProjectSchema.parse(legacy)
+    expect(parsed.authoringGuide.ja.creativeIntent).toBe('子どもから大人まで楽しめる、優しい表現。')
+    expect(parsed.authoringGuide.en.creativeIntent).toContain('gentle')
+  })
+
   it('round-trips project metadata and asset bodies', async () => {
     const project = createBookProject('package')
     project.assets.push({
@@ -181,6 +201,7 @@ describe('package ownership boundaries', () => {
     expect(JSON.stringify(published)).not.toContain('base64,')
     // 元の作品は触らない (書き出しは編集中の状態を壊さない)
     expect(project.assets[0].data).toBe('<svg/>')
+    expect('authoringGuide' in published).toBe(false)
   })
 
   it('escapes script-closing project text in a published site', () => {

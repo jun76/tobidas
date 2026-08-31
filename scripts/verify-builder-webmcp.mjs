@@ -2,7 +2,7 @@ import { chromium } from 'playwright'
 
 const baseUrl = process.argv[2] ?? 'http://localhost:5174/'
 const expectedTools = [
-  'tobidas-get-state', 'tobidas-get-spread', 'tobidas-get-element', 'tobidas-list-assets', 'tobidas-validate-book',
+  'tobidas-get-state', 'tobidas-get-authoring-guide', 'tobidas-update-authoring-guide', 'tobidas-get-spread', 'tobidas-get-element', 'tobidas-list-assets', 'tobidas-validate-book',
   'tobidas-audit-layout', 'tobidas-select-target', 'tobidas-set-preview', 'tobidas-enter-play', 'tobidas-enter-edit',
   'tobidas-place-asset', 'tobidas-set-page-background', 'tobidas-clear-page-background', 'tobidas-create-visual',
   'tobidas-update-element', 'tobidas-move-element', 'tobidas-set-element-parent', 'tobidas-delete-element',

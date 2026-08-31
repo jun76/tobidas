@@ -1,11 +1,12 @@
 import { Diamond, Eye, EyeOff, Link } from 'lucide-react'
-import { useId, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useId, useState, type FormEvent, type HTMLAttributes, type ReactNode } from 'react'
 import { Icon } from '../../ui/Icon'
 import type { ParticleElement, StageElement, TextFont, VisualElement } from '../../schema/stageElement'
 import { DEFAULT_EMBEDDED_VIDEO_AUDIO, type EmbeddedVideoAudio } from '../../schema/audio'
 import type { TimelineProperty, TimelineValue } from '../../schema/timeline'
 import { evaluateBookSignals } from '../../runtime/signals'
 import { useT } from '../i18n'
+import { useLocaleStore } from '../i18n'
 import { TEXT_FONT_IDS } from '../../runtime/textStyle'
 import { hiddenKey, useBuilderStore } from '../store'
 import { selectActiveSpread, selectSelectedElement, selectSpreadById } from '../state/selectors'
@@ -14,6 +15,7 @@ import { moveElementCommand, parentValue } from '../operations/commands'
 import { publishOperationResult } from '../operations/result'
 import { FormDialog } from '../ui/FormDialog'
 import st from '../builder.module.css'
+import { AUTHORING_GUIDE_KEYS, AUTHORING_GUIDE_TEXT_LIMIT, type AuthoringGuideKey } from '../../schema/authoringGuide'
 
 /** 書体の名前も表示言語に従う。runtime 側は書体の対応表だけを持つ */
 const FONT_LABEL_KEY: Record<TextFont, 'fontRounded' | 'fontSans' | 'fontSerif' | 'fontMono'> = {
@@ -126,12 +128,50 @@ export function BookProperties({ embedded = false }: { embedded?: boolean } = {}
   </PropertySection>
 }
 
+export function AuthoringGuide() {
+  const t = useT()
+  const locale = useLocaleStore((state) => state.locale)
+  const guide = useBuilderStore((state) => state.project.authoringGuide[locale])
+  return <Panel title={t.authoringGuide.title}
+    data-tobidas-kind="authoring-guide" data-tobidas-guide-locale={locale}>
+    <div className={st.hintSmall}>{t.authoringGuide.hint}</div>
+    <div data-tobidas-kind="authoring-guide-items">
+      {AUTHORING_GUIDE_KEYS.map((key) => <AuthoringGuideField key={key} locale={locale} guideKey={key} value={guide[key]} />)}
+    </div>
+  </Panel>
+}
+
+function AuthoringGuideField({ locale, guideKey, value }: { locale: 'ja' | 'en'; guideKey: AuthoringGuideKey; value: string }) {
+  const t = useT()
+  const commit = useBuilderStore((state) => state.commit)
+  const [draft, setDraft] = useState(value)
+  const id = useId()
+  const descriptionId = `${id}-description`
+
+  useEffect(() => {
+    if (document.activeElement?.id !== id) setDraft(value)
+  }, [id, value])
+
+  const save = () => {
+    if (draft === value) return
+    commit((project) => { project.authoringGuide[locale][guideKey] = draft })
+  }
+  const item = t.authoringGuide.items[guideKey]
+  return <div className={st.authoringGuideField} data-tobidas-kind="authoring-guide-item" data-tobidas-guide-key={guideKey} data-tobidas-guide-locale={locale}>
+    <label className={st.authoringGuideLabel} htmlFor={id}>{item.label}</label>
+    <div className={st.hintSmall} id={descriptionId}>{item.description}</div>
+    <textarea id={id} value={draft} maxLength={AUTHORING_GUIDE_TEXT_LIMIT}
+      aria-describedby={descriptionId} onChange={(event) => setDraft(event.target.value)} onBlur={save} />
+  </div>
+}
+
 function PropertySection({ title, embedded, children }: { title: string; embedded: boolean; children: ReactNode }) {
   return embedded ? <>{children}</> : <Panel title={title}>{children}</Panel>
 }
 
-function InspectorGroup({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
-  return <details className={st.inspectorGroup} open>
+function InspectorGroup({ title, action, defaultOpen = true, children, ...attributes }: { title: string; action?: ReactNode; defaultOpen?: boolean; children: ReactNode } & HTMLAttributes<HTMLDetailsElement>) {
+  const [open, setOpen] = useState(defaultOpen)
+  return <details className={st.inspectorGroup} open={open} onToggle={(event) => setOpen(event.currentTarget.open)} {...attributes}>
     <summary><span>{title}</span>{action}</summary>
     {children}
   </details>
@@ -524,8 +564,8 @@ function VideoAudioFields({ assetId, settings, onChange, positional = true }: {
   </>
 }
 
-function Panel({ title, children }: { title: string; children: React.ReactNode }) {
-  return <section className={st.panel} aria-label={title}><div className={st.panelTitle}>{title}</div>{children}</section>
+function Panel({ title, children, ...attributes }: { title: string; children: React.ReactNode } & HTMLAttributes<HTMLElement>) {
+  return <section className={st.panel} aria-label={title} {...attributes}><div className={st.panelTitle}>{title}</div>{children}</section>
 }
 
 function Text({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {

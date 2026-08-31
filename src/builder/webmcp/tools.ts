@@ -1,11 +1,14 @@
 import { z } from 'zod'
+import { en } from '../i18n/en'
 import { contentMotionSchema, parentSpaceSchema, type ParentSpace } from '../../schema/stageElement'
 import { embeddedVideoAudioSchema } from '../../schema/audio'
 import { vec3Schema } from '../../schema/geometry'
 import { timelinePropertySchema, timelineTargetSchema, timelineValueSchema } from '../../schema/timeline'
 import { analyzeBookContainment, analyzeSpreadContainment } from '../../runtime/stow/containment'
 import { useBuilderStore } from '../store'
-import { t } from '../i18n'
+import { t, useLocaleStore } from '../i18n'
+import { ja } from '../i18n/ja'
+import { AUTHORING_GUIDE_KEYS, authoringGuideLocaleSchema, type AuthoringGuideLocale, type AuthoringGuideKey } from '../../schema/authoringGuide'
 import {
   addSpreadCommand,
   addTimelineKeyCommand,
@@ -28,6 +31,7 @@ import {
   undoCommand,
   updateTimelineKeyCommand,
   updateElementCommand,
+  updateAuthoringGuideCommand,
 } from '../operations/commands'
 import type { ElementUpdateInput } from '../operations/commands'
 import { buildBuilderStateSummary } from '../operations/stateSummary'
@@ -171,6 +175,18 @@ const updateTimelineKeySchema = timelineKeyRefSchema.extend({
   message: 'time, value, or ease is required',
 })
 
+const authoringGuideUpdateSchema = z.object({
+  locale: z.enum(['ja', 'en']).optional(),
+  changes: authoringGuideLocaleSchema.partial().strict(),
+}).refine((input) => Object.keys(input.changes).length > 0, {
+  message: 'changes is required',
+})
+
+const authoringGuideReadSchema = z.object({
+  locale: z.enum(['ja', 'en']).optional(),
+  keys: z.array(z.enum([...AUTHORING_GUIDE_KEYS] as [AuthoringGuideKey, ...AuthoringGuideKey[]])).optional(),
+}).strict()
+
 const selectFailure = (action: string, message = t().operations.invalidInput, fieldErrors: Record<string, string> = {}): BuilderCommandResult => ({
   ok: false,
   action,
@@ -243,12 +259,30 @@ function afterForCommand(result: BuilderCommandResult): unknown {
   if (result.target?.kind === 'bgm') {
     return { audio: state.audio, asset: state.assets.find((asset) => asset.id === result.target?.id) }
   }
+  if (result.target?.kind === 'authoring-guide') return authoringGuidePayload(result.target.id)
   if (result.action === 'clear-bgm') return { audio: state.audio }
   return {
     selection: state.selection,
     activeSpread: state.activeSpread,
     previewProgress: state.previewProgress,
     spreadTime: state.spreadTime,
+  }
+}
+
+function authoringGuidePayload(locale: unknown, keys?: AuthoringGuideKey[]) {
+  const state = useBuilderStore.getState()
+  const selectedLocale = locale === 'en' || locale === 'ja' ? locale : useLocaleStore.getState().locale
+  const dictionary = selectedLocale === 'en' ? en : ja
+  const guide = state.project.authoringGuide[selectedLocale]
+  const selected = keys ?? [...AUTHORING_GUIDE_KEYS]
+  return {
+    locale: selectedLocale,
+    items: selected.map((key) => ({
+      key,
+      label: dictionary.authoringGuide.items[key].label,
+      description: dictionary.authoringGuide.items[key].description,
+      text: guide[key],
+    })),
   }
 }
 
@@ -281,7 +315,7 @@ function makeTools(): WebMcpTool[] {
     {
       name: 'tobidas-get-state',
       title: 'Get tobidas state',
-      description: 'Read the current tobidas project state without asset binary data. Use this first to obtain stable spread and element IDs; scope defaults to full and can be active-spread or selection.',
+      description: 'Read the current tobidas project state without asset binary data. Use this first to obtain stable spread and element IDs, then read tobidas-get-authoring-guide before designing or editing; scope defaults to full and can be active-spread or selection.',
       inputSchema: { type: 'object', properties: { scope: { type: 'string', enum: ['full', 'active-spread', 'selection'], description: 'Return the full project, the active spread, or the current selection. Defaults to full.' } } },
       annotations: { readOnlyHint: true },
       execute: async (input, options) => {
@@ -294,6 +328,37 @@ function makeTools(): WebMcpTool[] {
           return readResponse('get-state', { scope, selection: state.selection, selected })
         }
         return readResponse('get-state', state)
+      },
+    },
+    {
+      name: 'tobidas-get-authoring-guide',
+      title: 'Get tobidas authoring guide',
+      description: 'Read the current work\'s editable authoring guide before designing, generating assets, placing parts, or reviewing a work. The guide has separate Japanese and English text and contains project-specific creative rules that are not visible in ordinary tool contracts.',
+      inputSchema: { type: 'object', properties: {
+        locale: { type: 'string', enum: ['ja', 'en'], description: 'Guide language. Defaults to the current builder display language.' },
+        keys: { type: 'array', items: { type: 'string', enum: [...AUTHORING_GUIDE_KEYS] }, description: 'Optional guide keys to read. Omit to read all items.' },
+      } },
+      annotations: { readOnlyHint: true },
+      execute: async (input, options) => {
+        checkAborted(options?.signal)
+        const parsed = parseInput<{ locale?: 'ja' | 'en'; keys?: AuthoringGuideKey[] }>(authoringGuideReadSchema, input, 'get-authoring-guide')
+        return isCommandResult(parsed) ? commandResponse(parsed) : readResponse('get-authoring-guide', authoringGuidePayload(parsed.locale, parsed.keys))
+      },
+    },
+    {
+      name: 'tobidas-update-authoring-guide',
+      title: 'Update tobidas authoring guide',
+      description: 'Update selected authoring-guide text for the current work and chosen language. Use only when the user explicitly asks to change the work\'s creative guidance; partial updates go through normal validation, undo, and autosave.',
+      inputSchema: { type: 'object', properties: {
+        locale: { type: 'string', enum: ['ja', 'en'], description: 'Language to update. Defaults to the current builder display language.' },
+        changes: { type: 'object', additionalProperties: { type: 'string' }, description: 'Partial map of fixed authoring-guide keys to replacement text.' },
+      }, required: ['changes'] },
+      execute: async (input, options) => {
+        checkAborted(options?.signal)
+        const parsed = parseInput<{ locale?: 'ja' | 'en'; changes: Partial<AuthoringGuideLocale> }>(authoringGuideUpdateSchema, input, 'update-authoring-guide')
+        return isCommandResult(parsed)
+          ? commandResponse(parsed)
+          : resultFromCommand(updateAuthoringGuideCommand(parsed.locale ?? useLocaleStore.getState().locale, parsed.changes))
       },
     },
     {

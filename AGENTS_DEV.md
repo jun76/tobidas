@@ -63,6 +63,7 @@ PowerShellのヒアストリングを別のシェルへ渡すと引用が崩れ�
 ## ソース構造
 
 保存形式は `src/schema/bookPackage.ts` が定義し、互換性はtobidas本体のリリースバージョンで管理します。
+作品ごとの制作ノウハウは `src/schema/authoringGuide.ts` のスキーマと既定値で定義し、作品データの `authoringGuide` として保存します。UIやWebMCPの文言へ既定値を複製せず、この設定を正本にします。
 
 評価は次の順に進みます。
 

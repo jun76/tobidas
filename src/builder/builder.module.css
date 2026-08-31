@@ -183,6 +183,41 @@
   content: '▸';
 }
 
+.authoringGuideField {
+  margin: 12px 0 16px;
+}
+
+.authoringGuideLabel {
+  display: block;
+  margin-bottom: 4px;
+  color: #d0d0dc;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.authoringGuideField textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 76px;
+  margin-top: 6px;
+  padding: 7px;
+  resize: vertical;
+  background: #1a1a20;
+  border: 1px solid #3a3a46;
+  border-radius: 4px;
+  color: #e0e0e6;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.authoringGuideField textarea:focus {
+  outline: none;
+  border-color: #7382ff;
+  box-shadow: 0 0 0 1px #7382ff66;
+}
+
 .inspectorGroupTitle {
   display: flex;
   align-items: center;

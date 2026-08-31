@@ -12,7 +12,7 @@ import { clampPanelWidth, loadPanelWidth, savePanelWidth } from './layout/panelS
 import { Toolbar } from './panels/Toolbar'
 import { BookNavigator, PartPresets } from './panels/Hierarchy'
 import { AssetsPanel } from './panels/AssetsPanel'
-import { Inspector } from './panels/Properties'
+import { AuthoringGuide, Inspector } from './panels/Properties'
 import { Viewport, viewportGlRef } from './Viewport'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 import { SplitStack } from './ui/SplitStack'
@@ -182,8 +182,9 @@ export default function App() {
       <Viewport onScreenshot={screenshot} />
       {mode === 'edit' && <Splitter onDelta={(delta) => setRightWidth((value) => clampPanelWidth(value - delta))} />}
       {mode === 'edit' && <aside className={st.right} style={{ '--panel-width': `${rightWidth}px` } as CSSProperties}>
-        <SplitStack storageKey="inspector" initial={[]} mobileAccordion panes={[
+        <SplitStack storageKey="right" initial={[520]} mobileAccordion panes={[
           { key: 'inspector', label: t.app.panelInspector, node: <Inspector /> },
+          { key: 'authoring-guide', label: t.authoringGuide.title, node: <AuthoringGuide /> },
         ]} />
       </aside>}
     </div>

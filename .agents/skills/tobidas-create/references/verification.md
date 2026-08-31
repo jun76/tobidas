@@ -1,10 +1,11 @@
 # Verify the completed work
 
-Divide verification into mechanical checks of generated output, visual inspection of playback, and standard-builder operation checks.
+Use the work's Authoring guide as the source for creative and visual acceptance criteria.
+This reference lists the technical checks and the inspection order; it does not duplicate the guide's production rules.
 
 ## Mechanical checks
 
-For a public sample in the repository, run the following from the repository root.
+For a public sample in the repository, run:
 
 ```powershell
 npm run samples:generate
@@ -13,83 +14,49 @@ npm run qa:semantic
 npm run qa:holds -- <sample-id> --out shots/<sample-id>-holds --phases 0,0.5,1 --turns
 ```
 
-Use the following to run the checks together through the bundled runner.
-
-```powershell
-node <skill-dir>/scripts/run-repo-qa.mjs --repo <repo-root> --project <sample-id> --out shots/<sample-id>-holds --phases 0,0.5,1
-```
-
-Use the following to inspect one hold time.
+For a standalone work, use the repository's verification scripts with the absolute work-folder path.
+To inspect one hold time:
 
 ```powershell
 node scripts/screenshot.mjs --project projects/<sample-id> --scroll 0.5 --out shots/<sample-id>-mid.png
-```
-
-Run the following to mechanically check background-panel stowing order and initial placement.
-
-```powershell
 node scripts/verify-stow-layout.mjs projects/<sample-id> --strict
 ```
 
-Without `--strict`, the command lists warnings and errors without stopping existing works.
-Background panels are detected from terms such as `backdrop` or `background` in their names or asset IDs.
-The check verifies the earliest `stow.stagger`, an initial Y that rises above the background board, and an initial Z that goes behind it.
-
-For a standalone work, pass the absolute path of the work folder to `--project` to check the same playback path.
-The bundled runner calls the repository's existing `screenshot.mjs` for each hold time.
-When a repository-dependent check is needed, use a temporary QA workspace instead of moving the work into the public samples.
+The stow-layout check is structural. It does not decide whether a composition is attractive or whether an image contains the intended subject.
+Use a temporary QA workspace for repository-dependent checks when the work is not a public sample.
 
 ## Asset checks
 
-- Images are WebP.
-- 3D parts have transparent backgrounds with no checkerboard or white fill left behind.
-- Large transparent margins have been removed.
-- Ground images do not contain prominent buildings, people, tools, or other subjects.
-- Spatial backgrounds are pale and do not compete with the same subject as a 3D part.
-- Character and animal art does not reuse the same image file across spreads, except for user-requested exceptions.
-- Each audio file is no larger than 3 MB.
-- The builder's preloaded `standard/page-turn.wav` asset is assigned to every story-spread transition except after the final spread, with no duplicate imported page-turn asset.
+Confirm the format, transparency, dimensions, aspect ratio, margins, and file size of every imported asset.
+Confirm that each referenced asset exists and that sound files satisfy the repository limits.
+New works already contain the builder's standard cover, BGM, and page-turn assets; use those built-ins where the authoring guide calls for them.
 
 ## Visual playback inspection
 
-Take screenshots at hold times `0`, `0.5`, and `1`, and at the midpoint of every page transition.
-Check the following for every spread.
+Use the standard builder's playback and Browser／Computer Use screenshots at representative hold positions and page-transition positions.
+Compare the result with the work's design sheet and authoring guide.
+Check:
 
-- Text is not clipped by a page edge.
-- Body text is visible at the beginning, middle, and end of the hold and remains fixed as printing on its owning page.
-- At the midpoint of a page transition, body text folds with the page and neither flies into the air nor disappears through a fade or visibility change.
-- Body-text elements have no motion, particle, opacity, or visibility directing tracks.
-- Body-text parent, layer, rotation, pivot, opacity, motion, clock, font, and particle settings match the shared `caption` implementation.
-- Parts never pass through an adjacent page, even briefly.
-- Parts do not overlap unintentionally.
-- The visual roles of ground, spatial background, and 3D parts are distinct.
-- Background panels do not rise later than other standing parts during unfolding.
-- Other parts do not start above the background panel's lower edge or behind the panel.
-- Large parts near the center fold are not arranged in a way that makes folding difficult.
-- Camera movement and lighting do not lose the subject.
-- Hold-time motion does not move parts outside the paper.
-- Sound effects match scene changes and do not play while stopped or during reverse playback.
+- text and important parts remain visible and within their intended page;
+- page backgrounds and separate pop-up parts retain their intended roles;
+- fold, depth, overlap, clipping, and stowing behave as intended;
+- camera, light, motion, BGM, and sound cues support the scene;
+- the opening, middle, and closing states are all understandable.
 
-## Standard-builder operation checks
+Do not claim a visual or playback check was completed without inspecting the corresponding screenshots or playback.
 
-- A new work opens directly in the standard builder without a separate mode switch.
-- Assets can be imported in one batch.
-- The standard workspace exposes the work ID, active spread ID, selection, preview progress, and state version through `data-tobidas-*` attributes.
-- When WebMCP is available, `tobidas-get-state` exposes the work's book, spreads, elements, timeline, selection, and verification results without asset bodies.
-- Adding, duplicating, moving forward or backward, and deleting spreads is reflected in the navigator and operation results.
-- After selecting a spread in the tree, parts can be placed only on that target spread.
-- Names, positions, dimensions, layers, and visibility can be updated after placement.
-- Updates can be confirmed without submitting invalid step values.
-- Keys can be added to the spread hold timeline by specifying the target, property, time, value, and interpolation in the standard detail action or WebMCP.
-- Keys can be played and scrubbed, and their time and interpolation can be changed; keys and tracks can be deleted.
-- Position, rotation, scale, visibility, opacity, image switching, environment, camera, and audio-cue direction are saved to the same work data as standard mode.
-- Every editing field for the cover, pages, spreads, BOOK, lights, and parts can be reached from the standard inspector and timeline.
-- Precise placement, asset metadata, parent changes, and explicit timeline-key creation can be reached through closed-by-default detail actions.
-- BGM can be selected from imported audio or cleared with **Not set** directly in the standard Sound section.
-- After a detail operation, success or failure and the verification count can be read from `data-tobidas-kind="operation-result"`.
-- Timeline tracks and keys can be identified by `data-tobidas-kind="timeline-track"` / `timeline-key` and saved IDs.
-- Editing operations are disabled during playback.
-- When WebMCP is available, registered `tobidas-*` tools change the same store and standard UI; when it is unavailable, semantic DOM and ARIA operations remain usable.
-- Closed detail actions leave no hidden focusable form controls in the tab order.
+## Standard-builder and WebMCP checks
 
-On failure, isolate the cause in the design, assets, generation definition, or placement values and regenerate; do not directly edit the generated `project.json`.
+Confirm that the work can be opened, edited, saved, and replayed in the standard builder.
+Assets are imported through the standard Assets panel.
+When WebMCP is available:
+
+- call `tobidas-get-state`, then `tobidas-get-authoring-guide` before planning;
+- use stable IDs and confirm tool results in the same work;
+- confirm that `tobidas-update-authoring-guide` changes the work and participates in undo/autosave;
+- confirm that page-background assignment is used for full-page artwork;
+- confirm that structural tools and the standard UI show the same result.
+
+When WebMCP is unavailable, use semantic DOM, ARIA, and detail actions. The absence of WebMCP must not change the work data or the verification criteria.
+
+On failure, isolate the cause in the design sheet, authoring guide, assets, generation definition, or placement values and fix that source. Do not directly edit a generated `project.json`.
