@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { BACKGROUND_PANEL_SPEC } from './backgroundPanel'
 
 /**
  * 作品ごとに保存する制作方針の上限。
@@ -67,7 +68,7 @@ export const DEFAULT_AUTHORING_GUIDE_JA: AuthoringGuideLocale = {
   visualStyle: '手描きの絵本らしい表現。素材間で絵柄、比率、色、縮尺、光の方向を揃える。',
   coverPresentation: '表紙の外側、表紙の内側、背表紙を別々の面として扱う。タイトルは表紙に置き、外側の絵を内側へそのまま重複させない。',
   spreadGround: '見開き画像は主に地面や床として使う。飛び出す部品にする人物、建物、木、橋、道具などの目立つ絵は地面画像へ描き込まない。',
-  spatialBackground: '見開きごとに淡い遠景を別に用意する。霞、遠いシルエット、景色で奥行きを作り、主役の飛び出す部品と競合させない。',
+  spatialBackground: `見開きごとに淡い遠景を、ページ面画像ではなく縦置き背景パネルとして別に用意する。霞、遠いシルエット、景色で奥行きを作り、主役の飛び出す部品と競合させない。画像は生成時から比率 ${BACKGROUND_PANEL_SPEC.imageAspectRatio.toFixed(6)}:1（${BACKGROUND_PANEL_SPEC.imageExample[0]}×${BACKGROUND_PANEL_SPEC.imageExample[1]}px）とする。配置はサイズ [${BACKGROUND_PANEL_SPEC.size.join(', ')}]、Scale [${BACKGROUND_PANEL_SPEC.scale.join(', ')}]、位置 [${BACKGROUND_PANEL_SPEC.position.join(', ')}]、Pivot [${BACKGROUND_PANEL_SPEC.pivot.join(', ')}]、左ページ所属、Layer ${BACKGROUND_PANEL_SPEC.layer} に固定する。`,
   partsAndVariety: '地面を含め、見開きごとに少なくとも4つのビジュアル部品を使い、そのうち少なくとも3つを独立した立体部品にする。人物、建物、動物、道具、植物、光の欠片などを使い分け、背景と部品で同じ画像を使わない。',
   characterContinuity: '再登場する人物は見分けられるようにしつつ、見開きごとにポーズ、表情、服装、持ち物、光のいずれかを変えた別素材にする。',
   scaleAndDepth: '同じ場面の縮尺に属する物どうしの比率を保つ。遠景を行動の後ろへ置き、手前の部品を背景パネルより明確に前へ置く。',
@@ -88,7 +89,7 @@ export const DEFAULT_AUTHORING_GUIDE_EN: AuthoringGuideLocale = {
   visualStyle: 'Use a hand-drawn picture-book style. Keep style, proportions, palette, scale, and light direction coherent across assets.',
   coverPresentation: 'Prepare the front exterior, front interior, and back cover as distinct surfaces. Put the title on the front cover and keep interior cover art intentional rather than duplicating the exterior.',
   spreadGround: 'Use spread page images primarily as ground surfaces. Do not bake prominent people, buildings, trees, bridges, tools, or other objects that should become pop-up parts into the ground image.',
-  spatialBackground: 'Prepare a separate pale spatial background for each spread. Use haze, distant silhouettes, or scenery that creates depth without competing with the main pop-up parts.',
+  spatialBackground: `Prepare a separate pale spatial background for each spread as a vertical background panel, not as page-surface artwork. Use haze, distant silhouettes, or scenery that creates depth without competing with the main pop-up parts. Generate the image at ${BACKGROUND_PANEL_SPEC.imageAspectRatio.toFixed(6)}:1 from the outset (${BACKGROUND_PANEL_SPEC.imageExample[0]}×${BACKGROUND_PANEL_SPEC.imageExample[1]}px). Fix its placement to size [${BACKGROUND_PANEL_SPEC.size.join(', ')}], scale [${BACKGROUND_PANEL_SPEC.scale.join(', ')}], position [${BACKGROUND_PANEL_SPEC.position.join(', ')}], pivot [${BACKGROUND_PANEL_SPEC.pivot.join(', ')}], left-page ownership, and layer ${BACKGROUND_PANEL_SPEC.layer}.`,
   partsAndVariety: 'Use at least four visual parts per spread including the ground, with at least three separate 3D parts. Prefer varied people, buildings, animals, tools, plants, and light fragments. Do not reuse one image as both background and part.',
   characterContinuity: 'Keep recurring characters recognizable, but use a distinct asset on each spread with a scene-specific change in pose, expression, clothing, held object, or lighting.',
   scaleAndDepth: 'Preserve relative scale among objects that belong to the same scene scale. Place distant scenery behind the action and keep foreground parts clearly in front of background panels.',

@@ -397,7 +397,7 @@ describe('builder timeline operations', () => {
 })
 
 describe('single-page background preset', () => {
-  it('背景ショートカットは見開き幅へ合わせる', () => {
+  it('縦置き背景パネルを標準仕様で配置する', () => {
     const project = createBookProject('background')
     const spread = project.book.spreads[0]
     project.assets.push({
@@ -409,8 +409,24 @@ describe('single-page background preset', () => {
     useBuilderStore.getState().placeAsset(spread.id, 'left', 'background.svg')
     const created = useBuilderStore.getState().project.book.spreads[0].elements[0]
     expect(created.parent).toEqual({ type: 'left-page' })
-    expect(created.type === 'visual' && created.width).toBe(project.book.format.pageWidth * 2)
-    expect(created.baseTransform.position[2]).toBe(-project.book.format.pageWidth / project.book.format.pageAspect / 2)
+    expect(created.type === 'visual' && [created.width, created.height]).toEqual([15.2, 4.48])
+    expect(created.baseTransform.scale).toEqual([1, 1, 1])
+    expect(created.baseTransform.position).toEqual([4, 0, -2.25])
+    expect(created.pivot).toEqual([.5, 0])
+    expect(created.layer).toBe(0)
+  })
+
+  it('右ページを指定しても背景パネルは左ページ所属に固定する', () => {
+    const project = createBookProject('background owner')
+    const spread = project.book.spreads[0]
+    project.assets.push({
+      id: 'background.svg', name: 'background', type: 'svg', mime: 'image/svg+xml',
+      width: 1900, height: 560, data: '<svg/>',
+    })
+    useBuilderStore.getState().setProject(project, 'import')
+    useBuilderStore.getState().setPlacement('depth-layer')
+    useBuilderStore.getState().placeAsset(spread.id, 'right', 'background.svg')
+    expect(useBuilderStore.getState().project.book.spreads[0].elements[0].parent).toEqual({ type: 'left-page' })
   })
 
   it('背景も作成後は通常のビジュアルとして編集できる', () => {

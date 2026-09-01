@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { BookProject } from '../schema/bookPackage'
 import { bookId, createBookProject, createSpread, createStageElement } from '../schema/bookDefaults'
+import { BACKGROUND_PANEL_SPEC } from '../schema/backgroundPanel'
 import { compileBookBeats, evaluateBookSignals } from '../runtime/signals'
 import { validateBookProject } from '../schema/bookValidate'
 import { measureTextBox } from '../runtime/textStyle'
@@ -135,10 +136,13 @@ export const useBuilderStore = create<EditorState>((set, get) => {
     created.baseTransform.position = [x, flat ? .005 : 0, ((point?.y ?? .5) - .5) * depth]
     created.baseTransform.rotation = flat ? [-90, 0, 0] : [0, 0, 0]
     if (preset.id === 'depth-layer') {
-      created.width = width * 2
-      created.height = asset.width && asset.height ? created.width * asset.height / asset.width : depth
-      created.pivot = [.5, 0]
-      created.baseTransform.position = [side === 'left' ? width / 2 : -width / 2, 0, -depth / 2]
+      created.parent = { ...BACKGROUND_PANEL_SPEC.parent }
+      created.width = BACKGROUND_PANEL_SPEC.size[0]
+      created.height = BACKGROUND_PANEL_SPEC.size[1]
+      created.pivot = [...BACKGROUND_PANEL_SPEC.pivot]
+      created.layer = BACKGROUND_PANEL_SPEC.layer
+      created.baseTransform.position = [...BACKGROUND_PANEL_SPEC.position]
+      created.baseTransform.scale = [...BACKGROUND_PANEL_SPEC.scale]
     }
     commit((project) => {
       const target = project.book.spreads.find((item) => item.id === spreadId)
