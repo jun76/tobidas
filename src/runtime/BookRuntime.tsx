@@ -5,7 +5,11 @@ import { ClockStore } from './clock'
 import { evaluateTimelineEnvironment } from './camera'
 import { evaluatePlayCameraPose } from './camera/playCamera'
 import { GateSet } from './gate'
-import { frontCoverRestHeight, pageLeafRestHeight } from './pageStack'
+import {
+  frontCoverRestHeight,
+  pageLeafRestHeight,
+  paperStackSupportThickness,
+} from './pageStack'
 import { clamp01, evaluateBookSignals } from './signals'
 import { compileSpreadStow } from './stow/assign'
 import { normalizedDihedral } from './stow/dihedral'
@@ -68,10 +72,13 @@ export function BookRuntime({
   const pageThickness = Math.max(0.006, book.format.pageThickness)
   const spreadCount = book.spreads.length
   const sheetAngles = signals.sheetAngles
-  const frontCoverRestY = frontCoverRestHeight(
-    pageThickness, sheetAngles[0], sheetAngles[1] ?? 1,
-  )
   const stack = Math.max(book.format.pageThickness * (spreadCount + 1), coverThickness * 0.22)
+  const supports = paperStackSupportThickness(
+    stack, pageThickness, sheetAngles.slice(1, spreadCount),
+  )
+  const frontCoverRestY = frontCoverRestHeight(
+    pageThickness, supports.left, spreadCount > 1 ? sheetAngles[1] : 0,
+  )
   const coverColor = book.appearance.coverColor ?? '#4f392c'
   const coverEdgeColor = book.appearance.coverEdgeColor ?? '#2d2019'
   const rigX = -width * 0.5 * (1 - sheetAngles[0]) + width * 0.5 * sheetAngles[spreadCount]
@@ -155,6 +162,14 @@ export function BookRuntime({
         </BackFace>
       </group>
 
+      {supports.left > 0.0001 && <PaperSlab
+        position={[-width / 2, -supports.left / 2, 0]}
+        size={[width, supports.left, depth]}
+        color={book.appearance.paperColor} edge={book.appearance.edgeColor}
+        asset={assetFor(assets, book.spreads[0].leftPage.backgroundAsset ?? book.frontCover.backAsset)}
+        videoActive={frames[0].open}
+        instanceKey={`${project.id}:left-stack`} />}
+
       {interiorSheets.map((sheet) => {
         const before = frames[sheet - 1]
         const after = frames[sheet]
@@ -187,15 +202,21 @@ export function BookRuntime({
       })}
 
       <group rotation={[0, 0, Math.PI * sheetAngles[spreadCount]]}>
-        <PaperSlab position={[width / 2, -stack / 2, 0]} size={[width, stack, depth]}
+        {supports.right > 0.0001 && <PaperSlab
+          position={[width / 2, -supports.right / 2, 0]}
+          size={[width, supports.right, depth]}
+          color={book.appearance.paperColor} edge={book.appearance.edgeColor}
+          instanceKey={`${project.id}:right-stack`} />}
+        {frames[spreadCount - 1].open && <PaperSlab
+          position={[width / 2, pageThickness / 2, 0]} size={[width, pageThickness, depth]}
           color={book.appearance.paperColor} edge={book.appearance.edgeColor}
           asset={assetFor(assets, book.spreads[spreadCount - 1].rightPage.backgroundAsset)}
           audio={frames[spreadCount - 1].open && signals.activeSpreadIndex === spreadCount - 1
             ? book.spreads[spreadCount - 1].rightPage.backgroundVideoAudio : undefined}
           audioActive={frames[spreadCount - 1].open && signals.activeSpreadIndex === spreadCount - 1}
           videoActive={frames[spreadCount - 1].open}
-          instanceKey={`${project.id}:last-page`} />
-        <PaperSlab position={[width / 2, -stack - coverThickness / 2, 0]}
+          instanceKey={`${project.id}:last-page`} />}
+        <PaperSlab position={[width / 2, -supports.right - coverThickness / 2, 0]}
           size={[width, coverThickness, depth]} color={coverColor} edge={coverEdgeColor}
           asset={assetFor(assets, book.backCover.frontAsset)}
           back={assetFor(assets, book.backCover.backAsset)}
@@ -206,7 +227,7 @@ export function BookRuntime({
           videoActive={frames[spreadCount - 1].open}
           backVideoActive={signals.beat.kind === 'back-cover-close'}
           instanceKey={`${project.id}:back-cover`} />
-        <group position={[width / 2, 0.004, 0]}>
+        <group position={[width / 2, pageThickness + 0.004, 0]}>
           <PageClickTarget width={width} depth={depth} spreadId={frames[spreadCount - 1].spread.id}
             side="right" onSelect={onSelect} />
           {frames[spreadCount - 1].open
