@@ -5,6 +5,7 @@ import { ClockStore } from './clock'
 import { evaluateTimelineEnvironment } from './camera'
 import { evaluatePlayCameraPose } from './camera/playCamera'
 import { GateSet } from './gate'
+import { frontCoverRestHeight, pageLeafRestHeight } from './pageStack'
 import { clamp01, evaluateBookSignals } from './signals'
 import { compileSpreadStow } from './stow/assign'
 import { normalizedDihedral } from './stow/dihedral'
@@ -67,6 +68,9 @@ export function BookRuntime({
   const pageThickness = Math.max(0.006, book.format.pageThickness)
   const spreadCount = book.spreads.length
   const sheetAngles = signals.sheetAngles
+  const frontCoverRestY = frontCoverRestHeight(
+    pageThickness, sheetAngles[0], sheetAngles[1] ?? 1,
+  )
   const stack = Math.max(book.format.pageThickness * (spreadCount + 1), coverThickness * 0.22)
   const coverColor = book.appearance.coverColor ?? '#4f392c'
   const coverEdgeColor = book.appearance.coverEdgeColor ?? '#2d2019'
@@ -128,7 +132,7 @@ export function BookRuntime({
       intensity={environment.lights.directional.intensity}
       castShadow={book.appearance.shadowOpacity > 0} />
     <group position={[rigX, 0, 0]}>
-      <group rotation={[0, 0, Math.PI * sheetAngles[0]]}>
+      <group position={[0, frontCoverRestY, 0]} rotation={[0, 0, Math.PI * sheetAngles[0]]}>
         <PaperSlab position={[width / 2, coverThickness / 2, 0]} size={[width, coverThickness, depth]}
           color={coverColor} edge={coverEdgeColor}
           asset={assetFor(assets, book.frontCover.frontAsset)}
@@ -154,11 +158,7 @@ export function BookRuntime({
       {interiorSheets.map((sheet) => {
         const before = frames[sheet - 1]
         const after = frames[sheet]
-        const restY = lerpNumber(
-          ((spreadCount - 1) - sheet) * pageThickness + pageThickness / 2,
-          (sheet - 1) * pageThickness + pageThickness / 2,
-          sheetAngles[sheet],
-        )
+        const restY = pageLeafRestHeight(pageThickness)
         return <group key={`sheet-${sheet}`} position={[0, restY, 0]}
           rotation={[0, 0, Math.PI * sheetAngles[sheet]]}>
           <PaperSlab position={[width / 2, 0, 0]} size={[width, pageThickness, depth]}
@@ -259,8 +259,4 @@ function PageClickTarget({ width, depth, spreadId, side, onSelect }: {
     <planeGeometry args={[width, depth]} />
     <meshBasicMaterial color="#6d7cff" transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
   </mesh>
-}
-
-function lerpNumber(from: number, to: number, progress: number): number {
-  return from + (to - from) * progress
 }
