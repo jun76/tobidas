@@ -57,7 +57,7 @@ Browser-use AI and people operate the same standard builder.
 The BOOK navigator, assets, inspector, and timeline expose ARIA and stable `data-tobidas-*` identifiers.
 Project, selection, active-spread, and preview state are available on the standard workspace element.
 
-Use **Precise placement** in the Part presets header when placement must avoid Canvas coordinates.
+Use **Precise placement (AI)** in the Part presets header when placement must avoid Canvas coordinates.
 It accepts the page side, preset, imported asset, and normalized page coordinates.
 The information button on an asset row reveals its stable ID, MIME type, exact byte size, and reference count.
 BGM can be selected from imported audio, or cleared with **Not set**, directly in the Sound section.

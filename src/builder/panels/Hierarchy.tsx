@@ -1,12 +1,9 @@
-import { useEffect, useRef, useState, type DragEvent, type MouseEvent, type ReactNode } from 'react'
+import { useEffect, useState, type DragEvent, type MouseEvent, type ReactNode } from 'react'
 import { ChevronDown, ChevronRight, ChevronUp, Copy, Eye, EyeOff, Plus, SlidersHorizontal, Trash2 } from 'lucide-react'
 import { Icon } from '../../ui/Icon'
-import { assetAccept } from '../../package/model'
 import type { ParentSpace } from '../../schema/stageElement'
 import { useT } from '../i18n'
 import { PART_PRESETS, type PlacementMode, type VisualPresetId } from '../presets'
-import { fileToAsset } from '../assets/ingest'
-import { useDialogs } from '../ui/DialogProvider'
 import { requestContainerElementsDelete, requestElementDelete, requestSpreadDelete } from '../elementDelete'
 import { ELEMENT_DND_MIME, hiddenKey, useBuilderStore } from '../store'
 import type { BookSelection } from '../state/editorState'
@@ -83,19 +80,16 @@ export function BookNavigator() {
  *
  *   モード — 画像の5つと効果音。押すと選択中のプリセットになり、アセットの
  *            ドラッグを待つ。もう一度押すと解除
- *   即時   — BGM・パーティクル・テキスト。押した瞬間に用が済む
+ *   即時   — パーティクル・テキスト。押した瞬間に用が済む
  *
- * その他が即時なのはアセットを要さないからで、BGMが即時なのは置く先が
- * 紙面ではなく作品全体だからである。
+ * その他が即時なのはアセットを要さないからである。
  */
 export function PartPresets() {
   const t = useT()
   const store = useBuilderStore()
-  const dialogs = useDialogs()
   const selectedPage = store.selection.type === 'page' && store.selection.spreadId === store.activeSpreadId
     ? store.selection.side
     : undefined
-  const bgmRef = useRef<HTMLInputElement>(null)
   const [precisionOpen, setPrecisionOpen] = useState(false)
 
   const modeButton = (mode: PlacementMode, label: string, hint: string) => {
@@ -133,21 +127,11 @@ export function PartPresets() {
       <div className={st.presetGroupTitle}>{t.presets.groupSound}</div>
       <div className={st.presetGrid}>
         {modeButton('sound-cue', t.presets.soundCue, t.presets.soundCueHint)}
-        <button title={t.presets.bgmHint} onClick={() => bgmRef.current?.click()}>{t.presets.bgm}</button>
       </div>
 
       <div className={st.hintSmall}>
         {store.placement ? t.presets.dropHint : t.presets.pickHint}
       </div>
-      <input ref={bgmRef} hidden type="file" aria-label={t.presets.bgm} accept={assetAccept('audio')}
-        onChange={(event) => {
-          const file = event.target.files?.[0]
-          event.target.value = ''
-          if (!file) return
-          void fileToAsset(file, new Set(store.project.assets.map((asset) => asset.id)))
-            .then((asset) => store.assignBgm(asset))
-            .catch((error) => dialogs.showMessage(t.dialog.errorTitle, String(error)))
-        }} />
     </section>
 }
 

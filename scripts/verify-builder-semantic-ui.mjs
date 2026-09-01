@@ -22,7 +22,7 @@ try {
   const workspace = page.locator('[data-tobidas-kind="builder-workspace"]')
   await workspace.waitFor()
   await page.getByRole('tree', { name: 'BOOK ナビゲーター' }).waitFor()
-  await page.getByRole('button', { name: '詳細配置', exact: true }).waitFor()
+  await page.getByRole('button', { name: '詳細配置（AI用）', exact: true }).waitFor()
   await page.getByLabel('インスペクター', { exact: true }).waitFor()
   const authoringGuide = page.locator('[data-tobidas-kind="authoring-guide"]')
   await authoringGuide.waitFor()
@@ -96,7 +96,7 @@ try {
   }
   await assetDetails.getByRole('button', { name: 'OK' }).click()
 
-  await page.getByRole('button', { name: '詳細配置' }).click()
+  await page.getByRole('button', { name: '詳細配置（AI用）', exact: true }).click()
   const placement = page.locator('[data-tobidas-kind="precision-placement-form"]')
   await placement.waitFor()
   if (await placement.getAttribute('toolname') !== 'tobidas-place-asset-form') throw new Error('詳細配置の宣言的toolnameがありません')
@@ -146,7 +146,7 @@ try {
   }
   if (await mobile.locator('[data-tobidas-kind="precision-placement-form"]').count()) throw new Error('モバイルで閉じた詳細配置が露出しています')
   await mobile.getByRole('button', { name: '部品プリセット', exact: true }).click()
-  await mobile.getByRole('button', { name: '詳細配置' }).click()
+  await mobile.getByRole('button', { name: '詳細配置（AI用）', exact: true }).click()
   await mobile.locator('[data-tobidas-kind="precision-placement-form"]').waitFor()
   const mobileOverflow = await mobile.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)
   if (mobileOverflow) throw new Error('モバイル幅で横スクロールが発生しています')
