@@ -90,18 +90,27 @@ WebMCP対応AIまたはModel Context Tool Inspectorがページを開くと、�
 ブラウザのコンソールで確認する場合は、次の式が使えます。
 
 ```js
-const context = document.modelContext ?? navigator.modelContext
-const tools = context ? await context.getTools() : []
-tools.map((tool) => tool.name)
+const context = document.modelContext ?? navigator.modelContext;
+const tools = context ? await context.getTools() : [];
+tools.map((tool) => tool.name);
 ```
+
+#### エージェントによる最小開通チェック
+
+1. WebMCPを有効にしたブラウザで `http://localhost:5174/` を開く。
+2. ツールバーに「AIツール利用可能」と表示されるまで待つ。
+3. 呼び出し元AIからページ定義ツールを取得し、`tobidas-get-state` が一覧にあることを確認する。現行版では34件の `tobidas-*` ツールが返る。
+4. `tobidas-get-state` を引数なしで1回呼び出し、成功応答を確認する。
+
+ツール登録はページ起動後に非同期で行われます。そのため、読み込み直後の取得結果が空なら失敗と判定せず、「AIツール利用可能」の表示後にツール一覧をもう一度取得します。ツール一覧の取得や `tobidas-get-state` の呼び出しに失敗した場合は、ブラウザ設定と呼び出し元AIのWebMCP対応を確認し、標準ビルダーの意味付きDOM・ARIA・詳細操作へフォールバックします。
 
 #### 利用経路
 
-| 利用場所 | ブラウザ側の有効化 | 利用者の操作 |
-| --- | --- | --- |
+| 利用場所                                             | ブラウザ側の有効化                                                        | 利用者の操作                                                                |
+| ---------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | [公開Web版](https://tobidas.9rsgy78c9c.workers.dev/) | 対象Originとブラウザ向けのWebMCP Origin Trialトークンを配信HTMLへ組み込む | 対応するトークンがあるChrome・Edgeでは開くだけ。Firefoxはブラウザ設定を使う |
-| ローカルclone版 | Chrome・Edge・Firefoxで、それぞれ下記のWebMCP設定を有効化 | 設定後にブラウザを再起動し、`http://localhost:5174/` を開く |
-| WebMCP非対応のブラウザ・AI環境 | WebMCPは使わない | 標準ビルダーの意味付きDOM、ARIA、詳細操作を使う |
+| ローカルclone版                                      | Chrome・Edge・Firefoxで、それぞれ下記のWebMCP設定を有効化                 | 設定後にブラウザを再起動し、`http://localhost:5174/` を開く                 |
+| WebMCP非対応のブラウザ・AI環境                       | WebMCPは使わない                                                          | 標準ビルダーの意味付きDOM、ARIA、詳細操作を使う                             |
 
 Origin Trialや各ブラウザ設定でブラウザAPIを有効にすることと、そのツールを発見・呼び出せるAI環境を使うことは別の条件です。
 ブラウザ側でWebMCPが有効でも、呼び出し元のAIクライアントがページ定義ツールの一覧取得と実行に対応していなければ、構造化ツールは利用できません。
@@ -115,11 +124,11 @@ ChromeのWebMCP Origin TrialはChrome 149〜156が対象で、終了予定日は
 
 WebMCPの対応状況はブラウザごとに異なります。
 
-| ブラウザ | WebMCPの利用経路 | 確認できている内容 |
-| --- | --- | --- |
-| Chrome | 公開版はOrigin Trial、ローカル版はChrome設定 | 下記のimperativeツール。対応環境では宣言的フォームAPIも利用可能 |
-| Edge | Edge用Origin TrialまたはEdge設定 | 下記のimperativeツール。対応環境では宣言的フォームAPIも利用可能 |
-| Firefox | `about:config`で `dom.modelcontext.enabled` と `dom.modelcontext.testing.enabled` を有効化 | `navigator.modelContext`から下記のimperativeツール。`document.modelContext`と宣言的フォームAPIは未確認 |
+| ブラウザ | WebMCPの利用経路                                                                           | 確認できている内容                                                                                     |
+| -------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| Chrome   | 公開版はOrigin Trial、ローカル版はChrome設定                                               | 下記のimperativeツール。対応環境では宣言的フォームAPIも利用可能                                        |
+| Edge     | Edge用Origin TrialまたはEdge設定                                                           | 下記のimperativeツール。対応環境では宣言的フォームAPIも利用可能                                        |
+| Firefox  | `about:config`で `dom.modelcontext.enabled` と `dom.modelcontext.testing.enabled` を有効化 | `navigator.modelContext`から下記のimperativeツール。`document.modelContext`と宣言的フォームAPIは未確認 |
 
 ローカルclone版では、現在のブラウザに合う設定を有効にして再起動します。Chromeは `chrome://flags/#enable-webmcp-testing`、Edgeは `edge://flags/#enable-webmcp-testing` を使います。
 公開Web版では対象Originとブラウザ向けのOrigin TrialトークンをHTMLへ組み込み、そのトークンに対応するChromeまたはEdgeで利用者側の設定を不要にします。トークンはOriginと提供元ごとに発行されるため、別ドメインや別ブラウザへそのまま流用できません。
@@ -133,42 +142,42 @@ WebMCPを使えない環境では、標準ビルダーのDOM、ARIA、既定で�
 
 WebMCPを利用できる条件では、ページ起動時に次のimperativeツールを登録します。
 
-| 分類 | ツール | 内容 |
-| --- | --- | --- |
-| 読み取り | `tobidas-get-state` | アセット本体を含めず作品状態を取得する。最初に呼び出して見開きIDと部品IDを得る。範囲は作品全体、現在の見開き、現在の選択から選び、省略時は作品全体 |
-| 読み取り | `tobidas-get-authoring-guide` | 現在の作品の制作ガイドを指定言語で取得する。ラベル、短い説明、保存済みの本文を返し、設計、素材準備、配置、検証の前に使う |
-| 編集 | `tobidas-update-authoring-guide` | 現在の作品の指定言語の制作ガイドを指定キーだけ更新する。利用者が明示的に変更を依頼した場合に使い、通常の検証、undo、自動保存を通す |
-| 読み取り | `tobidas-get-spread` | ページ、部品、タイムラインを含む1つの見開きを取得する。`tobidas-get-state`で得た見開きIDを渡す |
-| 読み取り | `tobidas-get-element` | 安定した見開きIDと部品IDで部品を取得する。IDは状態または見開き取得結果から得る |
-| 読み取り | `tobidas-list-assets` | 後の配置やBGM割り当てに使うアセットのメタデータと参照情報を取得する。バイナリの返却やファイルのアップロードは行わない |
-| 読み取り | `tobidas-validate-book` | 最新の検証エラーと警告を取得する。見開きIDを渡すと、その見開きの文脈に絞る |
-| 読み取り | `tobidas-audit-layout` | 紙面包含、収納警告、空中部品数、ページ背景の割り当てを見開き単位または作品全体で監査する。スクリーンショットによる目視確認は別途行う |
-| セッション | `tobidas-select-target` | 作品、光源、表紙、見開き、ページ、部品を人が確認できる対象として選択する。見開き、ページ、部品には対応するIDを渡す |
-| セッション | `tobidas-set-preview` | 表示中のプレビューを作品全体の正規化進行値、または見開きの保持時刻へ移動する。進行値、または見開きIDと保持区間内の秒数を指定する |
-| セッション | `tobidas-enter-play` | 人が作品を確認できる再生モードへ切り替える。表示中の編集セッションだけを変更する |
-| セッション | `tobidas-enter-edit` | 構造化された作品編集ができる編集モードへ戻る。表示中の編集セッションだけを変更する |
-| 編集 | `tobidas-place-asset` | 取り込み済みの画像、SVG、動画をプリセットと正規化ページ座標で配置する。アセットは標準のアセットパネルで先に取り込み、配置は通常の検証とundo履歴を通す |
-| 編集 | `tobidas-set-page-background` | 取り込み済みの画像、SVG、動画を部品ではなくページ面の背景へ直接設定する。全面ページ画像には平積み部品ではなくこのツールを使う |
-| 編集 | `tobidas-clear-page-background` | ページ背景と背景動画の音声設定を解除する |
-| 編集 | `tobidas-create-visual` | 既存のtobidasプリセットでテキストまたは光のパーティクル部品を作成する。通常のレイアウト検証とundo履歴を通す |
-| 編集 | `tobidas-update-element` | レイアウト補正と検証を通して部品を更新する。入力は型付きの全体更新であり任意JSON置換ではなく、省略した項目は現在値を保つ |
-| 編集 | `tobidas-move-element` | 通常の制約を保ちながら部品をページまたは別の部品へ付け替える。共通の編集、検証、undo経路を通す |
-| 編集 | `tobidas-set-element-parent` | 親変更を名前から発見しやすくした`move-element`の明示的な別名。ページまたは別部品へ付け替える |
-| 編集 | `tobidas-delete-element` | `confirm=true`を必須として、部品、子孫、対応するタイムライントラックを削除する |
-| 編集 | `tobidas-add-timeline-key` | 見開きの保持区間へ型付きタイムラインキーを追加または置換する。時刻と値は対象プロパティに対して検証する |
-| 読み取り | `tobidas-list-timeline-keys` | 見開きのトラック、キー、安定IDを取得する。更新・削除前に使う |
-| 編集 | `tobidas-update-timeline-key` | 既存キーの時刻、型付き値、補間方法を更新する |
-| 編集 | `tobidas-delete-timeline-key` | 既存キーを削除し、最後のキーなら空になったトラックも削除する |
-| 編集 | `tobidas-set-camera` | カメラキーのない見開きで使う作品の既定カメラ姿勢を設定する |
-| 編集 | `tobidas-add-camera-key` | 指定した保持時刻へ位置、注視点、視野角のカメラキーを一括保存する |
-| 編集 | `tobidas-assign-bgm` | 取り込み済みの音声アセットを作品のBGMへ割り当てる。アセットは標準のアセットパネルで先に取り込む |
-| 編集 | `tobidas-clear-bgm` | 通常の編集、検証、undo経路を通して作品のBGMを解除する |
-| 編集 | `tobidas-add-spread` | 通常の編集とundo経路を通して見開きを追加、複製、移動する。既存呼び出しとの互換用に複合操作を保つ |
-| 編集 | `tobidas-duplicate-spread` | 見開きを複製し、部品、トラック、キーのIDを再採番する |
-| 編集 | `tobidas-reorder-spread` | 見開きを一つ前または後ろへ移動する |
-| 編集 | `tobidas-delete-spread` | `confirm=true`を必須として見開き全体を削除する。最後の1見開きは削除しない |
-| 編集 | `tobidas-undo` | 通常の履歴を使って直前の編集を取り消す。取り消し後の選択とプレビュー状態を返す |
-| 編集 | `tobidas-redo` | 通常の履歴を使って取り消した編集をやり直す。やり直し後の選択とプレビュー状態を返す |
+| 分類       | ツール                           | 内容                                                                                                                                                  |
+| ---------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 読み取り   | `tobidas-get-state`              | アセット本体を含めず作品状態を取得する。最初に呼び出して見開きIDと部品IDを得る。範囲は作品全体、現在の見開き、現在の選択から選び、省略時は作品全体    |
+| 読み取り   | `tobidas-get-authoring-guide`    | 現在の作品の制作ガイドを指定言語で取得する。ラベル、短い説明、保存済みの本文を返し、設計、素材準備、配置、検証の前に使う                              |
+| 編集       | `tobidas-update-authoring-guide` | 現在の作品の指定言語の制作ガイドを指定キーだけ更新する。利用者が明示的に変更を依頼した場合に使い、通常の検証、undo、自動保存を通す                    |
+| 読み取り   | `tobidas-get-spread`             | ページ、部品、タイムラインを含む1つの見開きを取得する。`tobidas-get-state`で得た見開きIDを渡す                                                        |
+| 読み取り   | `tobidas-get-element`            | 安定した見開きIDと部品IDで部品を取得する。IDは状態または見開き取得結果から得る                                                                        |
+| 読み取り   | `tobidas-list-assets`            | 後の配置やBGM割り当てに使うアセットのメタデータと参照情報を取得する。バイナリの返却やファイルのアップロードは行わない                                 |
+| 読み取り   | `tobidas-validate-book`          | 最新の検証エラーと警告を取得する。見開きIDを渡すと、その見開きの文脈に絞る                                                                            |
+| 読み取り   | `tobidas-audit-layout`           | 紙面包含、収納警告、空中部品数、ページ背景の割り当てを見開き単位または作品全体で監査する。スクリーンショットによる目視確認は別途行う                  |
+| セッション | `tobidas-select-target`          | 作品、光源、表紙、見開き、ページ、部品を人が確認できる対象として選択する。見開き、ページ、部品には対応するIDを渡す                                    |
+| セッション | `tobidas-set-preview`            | 表示中のプレビューを作品全体の正規化進行値、または見開きの保持時刻へ移動する。進行値、または見開きIDと保持区間内の秒数を指定する                      |
+| セッション | `tobidas-enter-play`             | 人が作品を確認できる再生モードへ切り替える。表示中の編集セッションだけを変更する                                                                      |
+| セッション | `tobidas-enter-edit`             | 構造化された作品編集ができる編集モードへ戻る。表示中の編集セッションだけを変更する                                                                    |
+| 編集       | `tobidas-place-asset`            | 取り込み済みの画像、SVG、動画をプリセットと正規化ページ座標で配置する。アセットは標準のアセットパネルで先に取り込み、配置は通常の検証とundo履歴を通す |
+| 編集       | `tobidas-set-page-background`    | 取り込み済みの画像、SVG、動画を部品ではなくページ面の背景へ直接設定する。全面ページ画像には平積み部品ではなくこのツールを使う                         |
+| 編集       | `tobidas-clear-page-background`  | ページ背景と背景動画の音声設定を解除する                                                                                                              |
+| 編集       | `tobidas-create-visual`          | 既存のtobidasプリセットでテキストまたは光のパーティクル部品を作成する。通常のレイアウト検証とundo履歴を通す                                           |
+| 編集       | `tobidas-update-element`         | レイアウト補正と検証を通して部品を更新する。入力は型付きの全体更新であり任意JSON置換ではなく、省略した項目は現在値を保つ                              |
+| 編集       | `tobidas-move-element`           | 通常の制約を保ちながら部品をページまたは別の部品へ付け替える。共通の編集、検証、undo経路を通す                                                        |
+| 編集       | `tobidas-set-element-parent`     | 親変更を名前から発見しやすくした`move-element`の明示的な別名。ページまたは別部品へ付け替える                                                          |
+| 編集       | `tobidas-delete-element`         | `confirm=true`を必須として、部品、子孫、対応するタイムライントラックを削除する                                                                        |
+| 編集       | `tobidas-add-timeline-key`       | 見開きの保持区間へ型付きタイムラインキーを追加または置換する。時刻と値は対象プロパティに対して検証する                                                |
+| 読み取り   | `tobidas-list-timeline-keys`     | 見開きのトラック、キー、安定IDを取得する。更新・削除前に使う                                                                                          |
+| 編集       | `tobidas-update-timeline-key`    | 既存キーの時刻、型付き値、補間方法を更新する                                                                                                          |
+| 編集       | `tobidas-delete-timeline-key`    | 既存キーを削除し、最後のキーなら空になったトラックも削除する                                                                                          |
+| 編集       | `tobidas-set-camera`             | カメラキーのない見開きで使う作品の既定カメラ姿勢を設定する                                                                                            |
+| 編集       | `tobidas-add-camera-key`         | 指定した保持時刻へ位置、注視点、視野角のカメラキーを一括保存する                                                                                      |
+| 編集       | `tobidas-assign-bgm`             | 取り込み済みの音声アセットを作品のBGMへ割り当てる。アセットは標準のアセットパネルで先に取り込む                                                       |
+| 編集       | `tobidas-clear-bgm`              | 通常の編集、検証、undo経路を通して作品のBGMを解除する                                                                                                 |
+| 編集       | `tobidas-add-spread`             | 通常の編集とundo経路を通して見開きを追加、複製、移動する。既存呼び出しとの互換用に複合操作を保つ                                                      |
+| 編集       | `tobidas-duplicate-spread`       | 見開きを複製し、部品、トラック、キーのIDを再採番する                                                                                                  |
+| 編集       | `tobidas-reorder-spread`         | 見開きを一つ前または後ろへ移動する                                                                                                                    |
+| 編集       | `tobidas-delete-spread`          | `confirm=true`を必須として見開き全体を削除する。最後の1見開きは削除しない                                                                             |
+| 編集       | `tobidas-undo`                   | 通常の履歴を使って直前の編集を取り消す。取り消し後の選択とプレビュー状態を返す                                                                        |
+| 編集       | `tobidas-redo`                   | 通常の履歴を使って取り消した編集をやり直す。やり直し後の選択とプレビュー状態を返す                                                                    |
 
 アセットの追加、作品を開く、保存、単一HTML／ZIPの出力は、ブラウザのファイル権限と利用者の保存先選択を伴うためWebMCPへバイナリ経路を設けません。標準のアセットパネルとツールバーを使います。
 最終的な見た目は `tobidas-set-preview` で確認位置を整え、呼び出し元のBrowser／Computer Use機能でビューポートをスクリーンショットします。`tobidas-audit-layout`は構造上の問題を返しますが、絵の重なりや構図の良否を画像として判定するものではありません。
@@ -242,11 +251,11 @@ npm run build
 
 生成された`dist/`を静的ホスティングへ配置してください。Cloudflare Pagesでは次の設定を使えます。
 
-| 設定 | 値 |
-|---|---|
-| Build command | `npm run build` |
-| Build output directory | `dist` |
-| Node.js | 22以降 |
+| 設定                   | 値              |
+| ---------------------- | --------------- |
+| Build command          | `npm run build` |
+| Build output directory | `dist`          |
+| Node.js                | 22以降          |
 
 WebMCP Origin Trialを使う公開ビルドでは、発行されたトークンを `.env.webmcp-public` へ設定して `npm run build:public` を使います。
 
