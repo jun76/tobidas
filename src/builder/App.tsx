@@ -182,7 +182,7 @@ export default function App() {
       <Viewport onScreenshot={screenshot} />
       {mode === 'edit' && <Splitter onDelta={(delta) => setRightWidth((value) => clampPanelWidth(value - delta))} />}
       {mode === 'edit' && <aside className={st.right} style={{ '--panel-width': `${rightWidth}px` } as CSSProperties}>
-        <SplitStack storageKey="right" initial={[520]} mobileAccordion panes={[
+        <SplitStack storageKey="right" initial={[700]} mobileAccordion panes={[
           { key: 'inspector', label: t.app.panelInspector, node: <Inspector /> },
           { key: 'authoring-guide', label: t.authoringGuide.title, node: <AuthoringGuide /> },
         ]} />
