@@ -305,4 +305,5 @@ tobidasはローカルファーストです。作品、画像、音声、フォ�
 ソフトウェアコードと文書は[Apache License 2.0](./LICENSE)で提供します。
 
 `projects/**`のサンプル作品、`scripts/samples/assets/**`の同梱素材、ファビコンなどのビジュアル・音声素材は
-Apache-2.0の対象外です。[ASSET_LICENSE.md](./ASSET_LICENSE.md)の条件が適用されます。
+Apache-2.0の対象外で、[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)で提供します。
+詳しい条件は[ASSET_LICENSE.md](./ASSET_LICENSE.md)を参照してください。

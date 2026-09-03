@@ -289,5 +289,6 @@ Automatic saves use IndexedDB. The hosted builder has no feature that uploads pr
 Software code and documentation text are licensed under the [Apache License 2.0](./LICENSE).
 
 The sample projects under `projects/**`, bundled assets under `scripts/samples/assets/**`, the favicon,
-and other visual or audio assets are not covered by Apache-2.0. They are governed by
-[ASSET_LICENSE.md](./ASSET_LICENSE.md).
+and other visual or audio assets are not covered by Apache-2.0. They are licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); see
+[ASSET_LICENSE.md](./ASSET_LICENSE.md) for the terms.
