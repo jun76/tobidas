@@ -7,6 +7,8 @@ import { evaluatePlayCameraPose } from './camera/playCamera'
 import { GateSet } from './gate'
 import {
   frontCoverRestHeight,
+  lastPageIsExposed,
+  pageClickTargetLift,
   pageLeafRestHeight,
   paperStackSupportThickness,
 } from './pageStack'
@@ -170,10 +172,12 @@ export function BookRuntime({
         videoActive={frames[0].open}
         instanceKey={`${project.id}:left-stack`} />}
 
-      {interiorSheets.map((sheet) => {
+      {interiorSheets.map((sheet, order) => {
         const before = frames[sheet - 1]
         const after = frames[sheet]
         const restY = pageLeafRestHeight(pageThickness)
+        const lift = (face: 'front' | 'back') =>
+          pageClickTargetLift(pageThickness, order, interiorSheets.length, face)
         return <group key={`sheet-${sheet}`} position={[0, restY, 0]}
           rotation={[0, 0, Math.PI * sheetAngles[sheet]]}>
           <PaperSlab position={[width / 2, 0, 0]} size={[width, pageThickness, depth]}
@@ -190,12 +194,12 @@ export function BookRuntime({
             instanceKey={`${project.id}:sheet:${sheet}`} />
           <group position={[width / 2, pageThickness / 2, 0]}>
             <PageClickTarget width={width} depth={depth} spreadId={before.spread.id}
-              side="right" onSelect={onSelect} />
+              side="right" lift={lift('front')} onSelect={onSelect} />
             {before.open && <StowElements {...shared} frame={before} side="right" />}
           </group>
           <BackFace width={width} lift={pageThickness / 2}>
             <PageClickTarget width={width} depth={depth} spreadId={after.spread.id}
-              side="left" onSelect={onSelect} />
+              side="left" lift={lift('back')} onSelect={onSelect} />
             {after.open && <StowElements {...shared} frame={after} side="left" />}
           </BackFace>
         </group>
@@ -228,8 +232,9 @@ export function BookRuntime({
           backVideoActive={signals.beat.kind === 'back-cover-close'}
           instanceKey={`${project.id}:back-cover`} />
         <group position={[width / 2, pageThickness + 0.004, 0]}>
-          <PageClickTarget width={width} depth={depth} spreadId={frames[spreadCount - 1].spread.id}
-            side="right" onSelect={onSelect} />
+          {lastPageIsExposed(sheetAngles[spreadCount - 1])
+            && <PageClickTarget width={width} depth={depth} spreadId={frames[spreadCount - 1].spread.id}
+              side="right" onSelect={onSelect} />}
           {frames[spreadCount - 1].open
             && <StowElements {...shared} frame={frames[spreadCount - 1]} side="right" />}
         </group>
@@ -263,15 +268,17 @@ function BackFace({ width, lift, children }: { width: number; lift: number; chil
   </group>
 }
 
-function PageClickTarget({ width, depth, spreadId, side, onSelect }: {
+function PageClickTarget({ width, depth, spreadId, side, lift = 0, onSelect }: {
   width: number
   depth: number
   spreadId: string
   side: 'left' | 'right'
+  /** 同一平面へ重なった判定面を、束の手前ほど高く並べ直す持ち上げ */
+  lift?: number
   onSelect?: BookRuntimeProps['onSelect']
 }) {
   if (!onSelect) return null
-  return <mesh position={[0, 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={20}
+  return <mesh position={[0, 0.001 + lift, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={20}
     userData={{ pageDropTarget: { spreadId, side } }}
     onClick={(event) => {
       event.stopPropagation()

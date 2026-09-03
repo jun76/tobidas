@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   frontCoverRestHeight,
+  lastPageIsExposed,
+  pageClickTargetLift,
   pageLeafRestHeight,
   paperStackSupportThickness,
 } from './pageStack'
@@ -47,6 +49,51 @@ describe('pageLeafRestHeight', () => {
 
   it('すべての可視紙葉を同じ上面高へ置く', () => {
     expect(pageLeafRestHeight(paper)).toBeCloseTo(paper / 2)
+  })
+})
+
+describe('pageClickTargetLift', () => {
+  const paper = 0.015
+  const lift = (order: number, face: 'front' | 'back') =>
+    pageClickTargetLift(paper, order, 3, face)
+
+  it('右側では葉番号の小さい紙葉の表面を上へ置く', () => {
+    // 束の右では手前の紙葉ほど葉番号が小さい。同じ高さのままだと
+    // 表示中の見開きの右ページと奥の紙葉の右ページが同一平面で競合する
+    expect(lift(0, 'front')).toBeGreaterThan(lift(1, 'front'))
+    expect(lift(1, 'front')).toBeGreaterThan(lift(2, 'front'))
+  })
+
+  it('左側では葉番号の大きい紙葉の裏面を上へ置く', () => {
+    expect(lift(2, 'back')).toBeGreaterThan(lift(1, 'back'))
+    expect(lift(1, 'back')).toBeGreaterThan(lift(0, 'back'))
+  })
+
+  it('持ち上げは隣の紙葉の面を越えない', () => {
+    for (let order = 0; order < 3; order++) {
+      for (const face of ['front', 'back'] as const) {
+        expect(lift(order, face)).toBeLessThan(paper / 2)
+      }
+    }
+  })
+
+  it('紙葉が1枚だけなら持ち上げない', () => {
+    expect(pageClickTargetLift(paper, 0, 1, 'front')).toBe(0)
+    expect(pageClickTargetLift(paper, 0, 1, 'back')).toBe(0)
+  })
+})
+
+describe('lastPageIsExposed', () => {
+  it('手前の紙葉が右半分を覆っている間は天面の判定を出さない', () => {
+    // 手前の見開きを表示中はここが常に真になり、紙面をクリックすると
+    // 最終見開きが選ばれていた
+    expect(lastPageIsExposed(0)).toBe(false)
+    expect(lastPageIsExposed(0.5)).toBe(false)
+  })
+
+  it('覆っている紙葉が左へ倒れた後だけ天面の判定を出す', () => {
+    expect(lastPageIsExposed(0.75)).toBe(true)
+    expect(lastPageIsExposed(1)).toBe(true)
   })
 })
 
