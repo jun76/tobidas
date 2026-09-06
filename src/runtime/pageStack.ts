@@ -1,16 +1,16 @@
+import { STOW_HIDDEN_DEG } from './stow/evaluate'
+
 /**
  * 表表紙が左支持束の下へ潜り込んだ度合い (0..1)。
  *
- * 潜りを最初の紙葉の後半へ寄せる。表紙の裏面は見開き1の左ページそのもので、
- * 送りの前半で沈めると、まだ次の紙葉が覆いかぶさっていないのに左ページだけが
- * 支持束の天面より下がる。地面画像は支持束にも同じものが敷かれていて
- * 差が出ないが、紙面から浮いている本文や平置き部品は束に埋まって消える。
- * 紙葉が寝るころ (角度が1へ近づくころ) まで潜りを遅らせれば、
- * 消える瞬間は必ず次の紙葉の下になる。
+ * 表紙の裏は見開き1の左ページなので、本文や倒伏片を描く間は束の上へ保つ。
+ * 独自の送り角度で沈めると、まだ見える部品が支持束の地面画像へ埋まり、
+ * 不透明のまま突然消える。従来部品の描画終了と同じ条件を使い、
+ * 最後の非表示区間だけで支持束の下へ移す。
  *
  * 端点は従来どおり: 送る前は0、送り切ったら1。
  */
-const COVER_DIVE_ONSET = 0.78
+const COVER_DIVE_ONSET = 1 - STOW_HIDDEN_DEG / 180
 
 function frontCoverDive(firstSheetAngle: number): number {
   const turn = Math.min(1, Math.max(0, firstSheetAngle))
@@ -22,8 +22,9 @@ function frontCoverDive(firstSheetAngle: number): number {
 /**
  * 表表紙の蝶番高さ。
  *
- * 閉じている間と最初の見開きでは連続紙面の上へ載せる。最初の紙葉が
- * 寝るのに合わせて左支持束の下へ回し、その後は支持束の底へ密着させる。
+ * 最初の紙葉が左へ倒れる間に、表紙を紙束の上面(0)まで降ろす。
+ * 開姿勢の高さを閉じ際まで保つと、本文の端が次の紙葉を突き抜けるため。
+ * 内容の描画終了後にだけ束の下へ回し、その後は束の底へ密着させる。
  */
 export function frontCoverRestHeight(
   pageThickness: number,
@@ -32,8 +33,10 @@ export function frontCoverRestHeight(
 ): number {
   const paper = Math.max(0, pageThickness)
   const support = Math.max(0, leftSupportThickness)
+  const covered = Math.min(1, Math.max(0, (firstSheetAngle - .5) * 2))
+  const surfaceY = paper * (1 - covered * covered * (3 - 2 * covered))
   const dive = frontCoverDive(firstSheetAngle)
-  return paper * (1 - dive) - support * dive
+  return surfaceY * (1 - dive) - support * dive
 }
 
 /** 見開きの可視紙葉を、左右で連続する同じ上面高へ置く。 */

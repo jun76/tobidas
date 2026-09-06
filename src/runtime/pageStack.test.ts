@@ -6,6 +6,7 @@ import {
   pageLeafRestHeight,
   paperStackSupportThickness,
 } from './pageStack'
+import { STOW_HIDDEN_DEG, stowIsDrawn } from './stow/evaluate'
 
 describe('frontCoverRestHeight', () => {
   const paper = 0.015
@@ -30,6 +31,44 @@ describe('frontCoverRestHeight', () => {
       const left = support * angle / 7 // 8見開きぶんの左束の伸び
       const restY = frontCoverRestHeight(paper, left, angle)
       expect(restY).toBeGreaterThanOrEqual(0)
+    }
+  })
+
+  it.each([2, 5, 8, 40])('見開き%d枚でも、描画中の本文と寝た部品を支持束へ埋めない', (spreads) => {
+    for (const thickness of [.006, paper, .04]) {
+      const stack = Math.max(thickness * (spreads + 1), .18 * .22)
+      // 17°から15°で本文が消えた場面と、非表示に入る直前までを含める。
+      for (const degrees of [45, 30, 20, 17, 15, 10, 5, STOW_HIDDEN_DEG + .001]) {
+        const angle = 1 - degrees / 180
+        const sheets = [angle, ...Array<number>(spreads - 2).fill(0)]
+        const support = paperStackSupportThickness(stack, thickness, sheets)
+        const restY = frontCoverRestHeight(thickness, support.left, angle)
+        expect(stowIsDrawn(degrees / 180)).toBe(true)
+        // 紙束の天面は0、背景画像は0.003。本文(0.008)と倒伏片(0.006)が
+        // 有効なまま地面の下へ消えないことを、実際の紙面高で検査する。
+        expect(restY + .008).toBeGreaterThan(.003)
+        expect(restY + .006).toBeGreaterThan(.003)
+      }
+    }
+  })
+
+  it('描画終了の境界と閉じ切りで表紙の高さが連続する', () => {
+    const boundary = 1 - STOW_HIDDEN_DEG / 180
+    const restAt = (angle: number) => frontCoverRestHeight(paper, .03, angle)
+    expect(restAt(boundary)).toBeGreaterThanOrEqual(0)
+    expect(restAt(boundary + 1e-7)).toBeCloseTo(restAt(boundary), 9)
+    expect(restAt(1 - 1e-7)).toBeCloseTo(restAt(1), 9)
+    expect(restAt((boundary + 1) / 2)).toBeLessThan(paper)
+  })
+
+  it('閉じ際の本文が次の紙葉の表側を突き抜けない高さへ降ろす', () => {
+    // 綴じ目から0.35離れた本文の端と、実際の紙葉の下面を比較する。
+    for (const degrees of [5, 3, STOW_HIDDEN_DEG + .1]) {
+      const delta = degrees * Math.PI / 180
+      const ceilingY = pageLeafRestHeight(paper) + .35 * Math.tan(delta) - paper / (2 * Math.cos(delta))
+      const captionY = frontCoverRestHeight(paper, .03, 1 - degrees / 180) + .008
+      expect(captionY).toBeGreaterThan(.003)
+      expect(captionY).toBeLessThan(ceilingY)
     }
   })
 

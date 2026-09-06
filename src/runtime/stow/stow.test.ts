@@ -317,6 +317,31 @@ describe('楔空間の包含', () => {
     }
   })
 
+  it('紙面に貼る部品の大きなリフトも、表示を保ったまま紙厚内へ収納する', () => {
+    const book = createBook()
+    const element = createStageElement('visual', { type: 'left-page' }, '本文')
+    if (element.type !== 'visual') throw new Error('unreachable')
+    // 従来サンプルの本文。制作時のリフト0.077を残すと次の紙葉へ文字が抜ける。
+    element.width = 5.4264
+    element.height = .84
+    element.baseTransform.position = [0, .077, 2.624]
+    element.baseTransform.rotation = [-90, 0, 0]
+    book.spreads[0].elements.push(element)
+    const [item] = collectItems(book)
+    expect(item.mechanism).toBe('page-glue')
+    expect(evaluateStow(item, 1, IDENTITY_MOTION).position).toEqual(element.baseTransform.position)
+    for (const degrees of [STOW_SETTLED_DEG, 15, STOW_HIDDEN_DEG + .1]) {
+      const pose = evaluateStow(item, degrees / 180, IDENTITY_MOTION)
+      expect(stowIsDrawn(degrees / 180)).toBe(true)
+      expect(pose.opacityMul).toBe(1)
+      expect(pose.position[1]).toBeGreaterThan(.003)
+      expect(pose.position[1]).toBeLessThan(book.format.pageThickness / 2)
+      expect([pose.position[0], pose.position[2]]).toEqual([0, 2.624])
+      expect(pose.rotationDeg).toEqual(element.baseTransform.rotation)
+      expect(pose.scale).toEqual(element.baseTransform.scale)
+    }
+  })
+
   it('背表紙に近い起立板ほど倒伏角を直接制限する', () => {
     const book = createBook()
     const spread = book.spreads[0]

@@ -162,7 +162,9 @@ export function evaluateStow(item: StowItem, tRaw: number, motion: MotionDelta):
   let rotationDeg: [number, number, number]
 
   if (mechanism === 'page-glue') {
-    position = openPos
+    // 紙面に貼る部品も余分なリフトを収納する。制作時の高さを残すと、
+    // 表紙を支持束の上へ保った閉じ際に、本文の端が次の紙葉を突き抜ける。
+    position = [openPos[0], lerp(Math.min(openPos[1], flatY(item)), openPos[1], f), openPos[2]]
     rotationDeg = openRot
   } else if (mechanism === 'airborne-route') {
     // 透明支持片のファンタジー迂回: 部品を一旦小口の外へ大きく運び出し、
