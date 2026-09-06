@@ -13,6 +13,7 @@ import {
   paperStackSupportThickness,
 } from './pageStack'
 import { clamp01, evaluateBookSignals } from './signals'
+import { bookShadowSettings } from './shadows'
 import { compileSpreadStow } from './stow/assign'
 import { normalizedDihedral } from './stow/dihedral'
 import { stowIsDrawn } from './stow/evaluate'
@@ -113,6 +114,8 @@ export function BookRuntime({
   }, [book, progress, foldOverride])
 
   const environment = useMemo(() => evaluateTimelineEnvironment(book, progress), [book, progress])
+  const shadow = useMemo(() => bookShadowSettings(book, environment.lights.directional.position),
+    [book, environment.lights.directional.position])
   useEffect(() => {
     scene.background = stageBackgroundTexture ?? new THREE.Color(environment.background)
   }, [scene, environment.background, stageBackgroundTexture])
@@ -137,9 +140,15 @@ export function BookRuntime({
     {/* shadowOpacity が 0 の作品は影を落とさない指定として扱い、影のパスごと省く。
         影を受けるのは紙面と本の下の受け皿だけなので、落とす先が透明なら描く意味がない。
         部品の数だけ影マップへの描画が増えるので、寝かせたカメラの作品では効く */}
-    <directionalLight position={environment.lights.directional.position}
+    <directionalLight position={shadow.position}
       color={environment.lights.directional.color}
       intensity={environment.lights.directional.intensity}
+      shadow-mapSize={[shadow.mapSize, shadow.mapSize]}
+      shadow-camera-left={-shadow.radius} shadow-camera-right={shadow.radius}
+      shadow-camera-top={shadow.radius} shadow-camera-bottom={-shadow.radius}
+      shadow-camera-near={shadow.near} shadow-camera-far={shadow.far}
+      shadow-normalBias={shadow.normalBias} shadow-bias={shadow.bias}
+      onUpdate={(light) => light.shadow.camera.updateProjectionMatrix()}
       castShadow={book.appearance.shadowOpacity > 0} />
     <group position={[rigX, 0, 0]}>
       <group position={[0, frontCoverRestY, 0]} rotation={[0, 0, Math.PI * sheetAngles[0]]}>
@@ -262,8 +271,8 @@ export function BookRuntime({
 
       {showGuides && <gridHelper args={[width * 2, 16, '#6d7cff', '#d9d9e8']}
         position={[0, .03, 0]} />}
-      <mesh position={[0, -.31, .6]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[width * 2.5, depth * 1.8]} />
+      <mesh position={[0, shadow.ground.y, shadow.ground.z]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[shadow.ground.width, shadow.ground.depth]} />
         <shadowMaterial transparent opacity={book.appearance.shadowOpacity} />
       </mesh>
     </group>
