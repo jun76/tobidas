@@ -2,6 +2,23 @@ import type { Dict } from './ja'
 
 /** ビルダーUIの英語定義。形は ja.ts が決めるので、抜けや余りは型検査で落ちる */
 export const en: Dict = {
+  mechanisms: {
+    title: 'Folding mechanisms and assemblies', create: 'Add folding mechanism', edit: 'Edit folding mechanism', kind: 'Mechanism', mount: 'Placement',
+    page: 'Page', gutter: 'Gutter', space: 'Spread space', surface: 'Part surface', mode: 'Deployment',
+    virtual: 'Deploy freely', constrained: 'Fold with the pages', parameters: 'Dimensions and faces', depth: 'Depth', segments: 'Faces', angle: 'Opening angle',
+    closedScale: 'Stowed size', closedPosition: 'Move toward stow position', floatAmplitude: 'Floating range', floatPeriod: 'Floating period (seconds)',
+    start: 'Start unfolding', end: 'Finish unfolding', surfaceId: 'Surface', surfaceImage: 'Front asset', surfaceBackImage: 'Back asset',
+    surfaceColor: 'Surface color', surfaceText: 'Surface text', surfaceVisible: 'Show this surface', attach: 'Attach to a surface', placeAsset: 'Place an asset on this surface',
+    offset: 'Height above surface', upright: 'Stand on surface', apply: 'Apply', advanced: 'Deployment and stow details',
+    constrainedHint: 'Keeps connections to the pages. Choose free deployment to move, scale, or float the whole part.',
+    constrainedTimeline: 'Remove position, rotation, and scale timeline tracks before switching to page-connected deployment.',
+    virtualHint: 'Keeps the faces connected while the whole part floats or shrinks for stowing.',
+    occupiedSurface: (names: string) => `Parts are attached to surfaces that would be removed: ${names}`,
+    moveChildrenFirst: 'Move the attached parts before reducing the face count.',
+    kinds: { panel: 'P01 Hinged panel', 'v-fold': 'P01 V fold', beak: 'P02 Opposing V / beak', platform: 'P03 Platform', box: 'P04 Folding box', accordion: 'P05 Accordion', 'curved-shell': 'P06 Curved shell' },
+    compositions: { stage: 'C01 Layered stage', meadow: 'C02 Meadow', arcade: 'C03 Arcade', steps: 'C04 Stepped stage', bridge: 'C05 Bridge and pond', house: 'C06 House and castle', room: 'C07 Room and bed', tree: 'C08 Giant tree and flower', cake: 'C09 Cake and gifts', 'floating-stage': 'C10 Floating stage', scene: 'C12 Spread stage set' },
+    composition: 'Assembly preset', count: 'Tiers / layers', spacing: 'Spacing',
+  },
   app: {
     loading: 'Loading…',
     panelNavigator: 'BOOK navigator',
@@ -315,6 +332,7 @@ export const en: Dict = {
     rotate: 'Rotate (E)',
     scale: 'Scale (R)',
     saveCameraKey: 'Store a camera key at the current time',
+    fitAll: 'Fit all',
     play: 'Play',
     pause: 'Pause',
     replay: 'Replay from start',

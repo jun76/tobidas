@@ -6,6 +6,7 @@ import { evaluateElementTimeline } from '../timeline/evaluate'
 import { compileSpreadStow } from './assign'
 import type { SpanningVFold, StowItem } from './model'
 import { GLUE_WIDTH_FACTOR } from './evaluate'
+import { auditAssemblies } from '../mechanisms/audit'
 
 /**
  * 開姿勢の包含検査。保持中の全時刻について紙面包含を調べる。
@@ -28,6 +29,8 @@ export type ContainmentCode =
   | 'orphan-child'
   | 'span-overhang'
   | 'airborne-budget'
+  | 'assembly-error'
+  | 'assembly-warning'
 
 export interface ContainmentIssue {
   spreadId: string
@@ -65,6 +68,12 @@ export function analyzeBookContainment(book: Book): ContainmentReport {
 export function analyzeSpreadContainment(book: Book, spread: Spread): ContainmentReport {
   const errors: ContainmentIssue[] = []
   const warnings: ContainmentIssue[] = []
+  for (const finding of auditAssemblies(book, spread).issues) {
+    const element = spread.elements.find((item) => item.id === finding.elementId)
+    const target = finding.severity === 'error' ? errors : warnings
+    target.push({ spreadId: spread.id, elementId: finding.elementId, elementName: element?.name ?? '',
+      code: finding.severity === 'error' ? 'assembly-error' : 'assembly-warning', message: finding.message })
+  }
   const w = book.format.pageWidth
   const d = w / book.format.pageAspect
   const compiled = compileSpreadStow(book, spread)
@@ -327,7 +336,7 @@ function livePoseMatrix(element: StageElement, motionTime: number, out: THREE.Ma
 
 /** 部品ローカルの板。Pivotは板の左下からの割合で、原点は板の外にも置ける */
 function localBox(element: StageElement): THREE.Box3 | undefined {
-  if (element.type === 'group') return undefined
+  if (element.type === 'group' || element.type === 'assembly') return undefined
   const [pivotX, pivotY] = element.pivot
   return new THREE.Box3(
     new THREE.Vector3(-pivotX * element.width, -pivotY * element.height, 0),

@@ -51,7 +51,7 @@ export function layerDepthBias(layer: number) {
 }
 
 export function visualPivotOffset(element: StageElement): [number, number] {
-  if (element.type === 'group') return [0, 0]
+  if ((element.type === 'group' || element.type === 'assembly')) return [0, 0]
   return [(0.5 - element.pivot[0]) * element.width, (0.5 - element.pivot[1]) * element.height]
 }
 
@@ -69,7 +69,7 @@ export function ElementVisual({ element, assets, opacityMul, openFactor = 1, ins
   openFactor?: number
   instanceKey?: string
 }) {
-  if (element.type === 'group') return null
+  if ((element.type === 'group' || element.type === 'assembly')) return null
   const particles = particleSettings(element)
   if (element.type === 'particle') return <>
     <ParticleHitBox width={element.width * openFactor} height={element.height * openFactor} />
@@ -268,7 +268,7 @@ export function WingVisual({ element, half, assets, opacityMul, instanceKey, fac
   instanceKey?: string
   face: 'left' | 'right'
 }) {
-  if (element.type === 'group') return null
+  if ((element.type === 'group' || element.type === 'assembly')) return null
   const particles = particleSettings(element)
   const audioKey = instanceKey ?? element.id
   const composite = useVisualTexture(element.type === 'visual' ? element : undefined,

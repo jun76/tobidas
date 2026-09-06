@@ -2,10 +2,11 @@ import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { Camera, Check, LoaderCircle, Move, Pause, Play, RotateCcw, RotateCw, Scale3d, Video, Volume2, VolumeX } from 'lucide-react'
+import { Camera, Check, LoaderCircle, Maximize, Move, Pause, Play, RotateCcw, RotateCw, Scale3d, Video, Volume2, VolumeX } from 'lucide-react'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { BookRuntime, type RuntimeSelection } from '../runtime/BookRuntime'
 import { VIEW_CLIP, VIEW_GL } from '../runtime/camera/view'
+import { evaluateEditCameraPose } from '../runtime/camera/playCamera'
 import { evaluateBookSignals } from '../runtime/signals'
 import type { StageElement } from '../schema/stageElement'
 import { Icon, ICON } from '../ui/Icon'
@@ -39,7 +40,8 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
   // 効果音の受け口はビューポートとタイムラインの全域。両方ともこの箱の中にある
   const soundDropOver = useSoundCueDrop(rootRef)
   useGizmoPressReset()
-  const activeSpreadName = selectActiveSpread(store)?.name
+  const activeSpread = selectActiveSpread(store)
+  const activeSpreadName = activeSpread?.name
   // 表紙を選んでいる間は見開きの外を見ている。保持区間の秒を持たないので
   // タイムラインは出さず、見出しも見開き名ではなく表紙の名前にする
   const coverSide = store.selection.type === 'cover' ? store.selection.side : undefined
@@ -82,6 +84,24 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
       target: [orbit.target.x, orbit.target.y, orbit.target.z],
       fov: camera.fov,
     })
+  }
+  const fitAll = () => {
+    const camera = editCameraRef.current
+    const orbit = orbitRef.current
+    if (!camera || !orbit || !activeSpread || coverSide) return
+    const pose = evaluateEditCameraPose(store.project.book, activeSpread, camera.aspect, {
+      position: camera.position.toArray(), target: orbit.target.toArray(), fov: camera.fov,
+    })
+    // 操作直前の慣性を消してから構図を移す。作品や保存カメラには書き込まない。
+    const damping = orbit.enableDamping
+    orbit.enableDamping = false
+    orbit.update()
+    camera.position.set(...pose.position)
+    camera.fov = pose.fov
+    camera.updateProjectionMatrix()
+    orbit.target.set(...pose.target)
+    orbit.update()
+    orbit.enableDamping = damping
   }
 
   return <div
@@ -180,6 +200,10 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
           <Icon as={glyph} size={ICON.float} />
         </button>
       ))}
+      <button type="button" aria-label={t.viewport.fitAll} title={t.viewport.fitAll}
+        disabled={!activeSpread || Boolean(coverSide)} onClick={fitAll}>
+        <Icon as={Maximize} size={ICON.float} />
+      </button>
       <button type="button" aria-label={t.viewport.saveCameraKey} title={t.viewport.saveCameraKey} onClick={saveCameraView}>
         <Icon as={Video} size={ICON.float} />
       </button>

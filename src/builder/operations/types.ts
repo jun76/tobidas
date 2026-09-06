@@ -32,6 +32,10 @@ export interface ElementSummary {
   text?: string
   particles?: boolean
   particleSettings?: ParticleElement['particles']
+  mechanism?: import('../../schema/mechanism').MechanismSpec
+  surfaces?: string[]
+  surfaceAttachment?: import('../../schema/mechanism').SurfaceAttachment
+  composition?: import('../../schema/stageElement').AssemblyElement['composition']
   motion: string[]
   trackIds: string[]
 }

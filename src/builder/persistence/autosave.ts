@@ -23,4 +23,10 @@ export class ProjectAutosave {
         .catch((error) => this.events.failed?.(error))
     }, this.delayMilliseconds)
   }
+
+  /** HMRで旧インスタンスの遅延書き込みが新しい編集を上書きしないようにする。 */
+  cancel(): void {
+    if (this.timer) clearTimeout(this.timer)
+    this.timer = undefined
+  }
 }

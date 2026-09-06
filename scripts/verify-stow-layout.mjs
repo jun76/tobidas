@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// 背景パネルの積層順と、起立部品の初期配置を点検する。
+// 折り機構の接続・有限値・収納と、従来の背景パネルの積層順を点検する。
 import fs from 'node:fs'
 import path from 'node:path'
+import { createServer } from 'vite'
 
 const input = process.argv[2]
 const strict = process.argv.includes('--strict')
@@ -52,12 +53,36 @@ function addFinding(level, spread, element, message) {
   findings.push({ level, spread: spread.name, element: element?.name ?? '', message })
 }
 
+// 描画と同じ純粋評価器を使う。背景板の有無にかかわらず新機構を検査する。
+const hasAssemblies = (project.book.spreads ?? []).some((spread) => (spread.elements ?? []).some((element) => element.type === 'assembly' || element.surfaceAttachment))
+if (hasAssemblies) {
+  const server = await createServer({ configFile: false, server: { middlewareMode: true, hmr: false, ws: false },
+    optimizeDeps: { noDiscovery: true, entries: [] }, appType: 'custom', logLevel: 'error' })
+  try {
+    const { bookSchema } = await server.ssrLoadModule('/src/schema/book.ts')
+    const parsed = bookSchema.safeParse(project.book)
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) addFinding('error', { name: '作品構造' }, undefined, `${issue.path.join('.')}: ${issue.message}`)
+    } else {
+      const { auditAssemblies } = await server.ssrLoadModule('/src/runtime/mechanisms/audit.ts')
+      for (const spread of parsed.data.spreads) {
+        if (!spread.elements.some((element) => element.type === 'assembly' || element.surfaceAttachment)) continue
+        const result = auditAssemblies(parsed.data, spread)
+        for (const issue of result.issues) addFinding(issue.severity, spread, spread.elements.find((element) => element.id === issue.elementId), `${issue.code}: ${issue.message}`)
+        console.log(`[機構検査] ${spread.name}: ${result.samples}姿勢、最大${result.surfaces}面、全体境界最大径${result.maxExtent.toFixed(3)}`)
+      }
+    }
+  } catch (error) {
+    addFinding('error', { name: '機構検査' }, undefined, error instanceof Error ? error.message : String(error))
+  } finally { await server.close() }
+}
+
 for (const spread of project.book.spreads ?? []) {
-  const roots = (spread.elements ?? []).filter((element) => isRoot(element))
+  const roots = (spread.elements ?? []).filter((element) => isRoot(element) && isVisual(element))
   const upright = roots.filter((element) => isUpright(element) && !isText(element))
   const candidates = upright.filter(isBackgroundCandidate)
   if (!candidates.length) {
-    addFinding('warning', spread, undefined, '背景パネル候補が見つかりません。名前またはアセットIDへ backdrop / 背景 / 遠景 を含めてください。')
+    if (!spread.elements?.some((element) => element.type === 'assembly')) addFinding('warning', spread, undefined, '背景パネル候補が見つかりません。名前またはアセットIDへ backdrop / 背景 / 遠景 を含めてください。')
     continue
   }
   const earliestStagger = Math.min(...upright.map((element) => Number(element.stow?.stagger ?? 0)))

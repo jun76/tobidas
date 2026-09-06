@@ -47,6 +47,8 @@ describe('WebMCP adapter', () => {
     const controller = new AbortController()
     expect(await registerTobidasWebMcpTools(context, controller.signal)).toBe(true)
     expect(registrations.map(({ tool: registered }) => registered.name)).toEqual([
+      'tobidas-create-mechanism', 'tobidas-update-mechanism', 'tobidas-set-mechanism-surface',
+      'tobidas-attach-to-surface', 'tobidas-place-surface-asset', 'tobidas-create-composition', 'tobidas-update-composition',
       'tobidas-get-state', 'tobidas-get-authoring-guide', 'tobidas-update-authoring-guide',
       'tobidas-get-spread', 'tobidas-get-element', 'tobidas-list-assets', 'tobidas-validate-book',
       'tobidas-audit-layout',
@@ -75,6 +77,24 @@ describe('WebMCP adapter', () => {
     expect(result.after.id).toBe(result.target.id)
     expect(result.after.image).toBe('tree.webp')
     expect(useBuilderStore.getState().undoStack.length).toBe(beforeUndo + 1)
+  })
+
+  it('機構と面上部品を共通コマンドで作り、型の外のデータを拒否する', async () => {
+    const spreadId = setup()
+    const created = payload(await invoke('tobidas-create-mechanism', { spreadId, kind: 'box', deployment: { mode: 'page-constrained' } }))
+    expect(created.ok).toBe(true)
+    expect(created.after.mechanism.mount.type).toBe('gutter')
+    expect(created.after.surfaces).toContain('top-left')
+    const id = created.target.id
+    const slot = payload(await invoke('tobidas-set-mechanism-surface', { spreadId, elementId: id, surfaceId: 'top-left', image: 'tree.webp' }))
+    expect(slot.ok).toBe(true)
+    expect(slot.after.mechanism.surfaces['top-left'].image).toBe('tree.webp')
+    const child = payload(await invoke('tobidas-place-surface-asset', { spreadId, parentId: id, surfaceId: 'top-left', assetId: 'tree.webp', u: .5, v: .5, width: 1, height: 2 }))
+    expect(child.ok).toBe(true)
+    expect(child.after.surfaceAttachment.surfaceId).toBe('top-left')
+    const before = useBuilderStore.getState().project
+    expect(payload(await invoke('tobidas-update-mechanism', { spreadId, elementId: id, arbitraryJSON: {} })).ok).toBe(false)
+    expect(useBuilderStore.getState().project).toBe(before)
   })
 
   it('reads and updates the current work authoring guide', async () => {

@@ -38,9 +38,11 @@ export function createTimelineCommands({ commit, get, set }: TimelineCommandCont
       const bookTime = hold.startSeconds + Math.min(spread.sequence.holdSeconds, Math.max(0, seconds))
       set({ previewProgress: bookTime / playbackDurationSeconds(book), activeSpreadId: spreadId })
     },
-    upsertTimelineKey: (spreadId, target, property, time, value) => commit((project) => {
-      upsertProjectTimelineKey(project, spreadId, target, property, time, value)
-    }),
+    upsertTimelineKey: (spreadId, target, property, time, value) => {
+      const element = target.type === 'element' ? get().project.book.spreads.find((spread) => spread.id === spreadId)?.elements.find((item) => item.id === target.elementId) : undefined
+      if (element?.type === 'assembly' && element.mechanism.deployment.mode === 'page-constrained' && /^(position|rotation|scale)(\.|$)/.test(property)) return
+      commit((project) => { upsertProjectTimelineKey(project, spreadId, target, property, time, value) })
+    },
     updateTimelineKeyTime: (spreadId, trackId, keyId, time) => commit((project) => {
       const spread = project.book.spreads.find((item) => item.id === spreadId)
       const track = spread?.timeline.tracks.find((item) => item.id === trackId)

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { vec3Schema } from './geometry'
 import { embeddedVideoAudioSchema } from './audio'
+import { mechanismSchema } from './mechanism'
 
 export const transformSchema = z.object({
   position: vec3Schema,
@@ -56,6 +57,11 @@ const common = {
   visible: z.boolean(),
   opacity: z.number().min(0).max(1),
   parent: parentSpaceSchema,
+  /** 複合部品の面に取り付ける位置。親IDはparentが保持する。 */
+  surfaceAttachment: z.object({
+    surfaceId: z.string().min(1), u: z.number().min(0).max(1), v: z.number().min(0).max(1),
+    offset: z.number().default(0),
+  }).optional(),
   baseTransform: transformSchema,
   pivot: z.tuple([z.number(), z.number()]),
   layer: z.number(),
@@ -136,6 +142,13 @@ const currentStageElementSchema = z.discriminatedUnion('type', [
     particles: particleSettingsSchema.default(() => ({ ...defaultParticleSettings })),
   }),
   z.object({ ...common, type: z.literal('group') }),
+  z.object({
+    ...common, type: z.literal('assembly'), mechanism: mechanismSchema,
+    composition: z.object({
+    kind: z.enum(['stage', 'meadow', 'arcade', 'steps', 'bridge', 'house', 'room', 'tree', 'cake', 'floating-stage', 'scene']),
+      count: z.number().int().min(1).max(40), spacing: z.number().positive(),
+    }).optional(),
+  }),
 ])
 
 /**
@@ -178,7 +191,7 @@ export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown
     }
     return input
   }
-  if (input.type === 'particle' || input.type === 'group') return input
+  if (input.type === 'particle' || input.type === 'group' || input.type === 'assembly') return input
   const base: Record<string, unknown> = { ...input, type: 'visual' }
   if (input.type === 'image') {
     delete base.asset
@@ -228,4 +241,5 @@ export type StageElement = z.infer<typeof stageElementSchema>
 export type StageElementType = StageElement['type']
 export type VisualElement = Extract<StageElement, { type: 'visual' }>
 export type ParticleElement = Extract<StageElement, { type: 'particle' }>
+export type AssemblyElement = Extract<StageElement, { type: 'assembly' }>
 export type TextFont = z.infer<typeof textFontSchema>

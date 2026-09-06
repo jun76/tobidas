@@ -9,6 +9,7 @@ import { ELEMENT_DND_MIME, hiddenKey, useBuilderStore } from '../store'
 import type { BookSelection } from '../state/editorState'
 import { selectSelectedElement, selectSpreadById } from '../state/selectors'
 import { PrecisionPlacement } from './PrecisionPlacement'
+import { MechanismCreateDialog } from './Mechanisms'
 import st from '../builder.module.css'
 
 export function BookNavigator() {
@@ -91,6 +92,7 @@ export function PartPresets() {
     ? store.selection.side
     : undefined
   const [precisionOpen, setPrecisionOpen] = useState(false)
+  const [mechanismOpen, setMechanismOpen] = useState(false)
 
   const modeButton = (mode: PlacementMode, label: string, hint: string) => {
     const active = store.placement === mode
@@ -106,6 +108,7 @@ export function PartPresets() {
 
   return <section className={st.panel}>
       {precisionOpen && <PrecisionPlacement onClose={() => setPrecisionOpen(false)} />}
+      {mechanismOpen && <MechanismCreateDialog onClose={() => setMechanismOpen(false)} />}
       <div className={st.panelTitle}>{t.app.panelPresets}<button type="button" className={st.ghostBtn}
         data-tobidas-action="open-precision-placement" aria-label={t.presets.precisionPlacement}
         title={t.presets.precisionPlacementHint} onClick={() => setPrecisionOpen(true)}>
@@ -128,6 +131,9 @@ export function PartPresets() {
       <div className={st.presetGrid}>
         {modeButton('sound-cue', t.presets.soundCue, t.presets.soundCueHint)}
       </div>
+
+      <div className={st.presetGroupTitle}>{t.mechanisms.title}</div>
+      <button type="button" data-tobidas-action="create-mechanism" onClick={() => setMechanismOpen(true)}>{t.mechanisms.create}</button>
 
       <div className={st.hintSmall}>
         {store.placement ? t.presets.dropHint : t.presets.pickHint}
@@ -197,7 +203,7 @@ function ElementRow({ id, spreadId, collapsed, toggle }: { id: string; spreadId:
   const key = `element:${id}`
   const expanded = !collapsed.has(key)
   return <div style={{ paddingLeft: 12 }}>
-    <Row label={element.name} tag={element.type === 'particle' ? t.presets['light-particles'] : element.type === 'visual' ? t.presets.groupVisual : 'group'}
+    <Row label={element.name} tag={element.type === 'assembly' ? t.mechanisms.kinds[element.mechanism.kind] : element.type === 'particle' ? t.presets['light-particles'] : element.type === 'visual' ? t.presets.groupVisual : 'group'}
       active={store.selection.type === 'element' && store.selection.elementId === id}
       dataKind="element" dataId={id}
       onClick={() => store.select({ type: 'element', spreadId, elementId: id })}

@@ -2,6 +2,8 @@ import type { BookProject } from './bookPackage'
 import { bookProjectSchema } from './bookPackage'
 import { AUDIO_BYTE_LIMIT, VIDEO_BYTE_LIMIT } from './assets'
 import type { EmbeddedVideoAudio } from './audio'
+import { mechanismSurfaceIds } from './mechanism'
+import { realPageAnchorIssues } from './mechanismPlacement'
 import {
   COLOR_PROPERTIES,
   DISCRETE_PROPERTIES,
@@ -109,6 +111,52 @@ export function validateBookProject(data: unknown): BookValidationResult {
     if (new Set(elementIds).size !== elementIds.length) errors.push(`${spread.name}: duplicate element id`)
     for (const element of spread.elements) {
       if (element.parent.type === 'element' && !elementIds.includes(element.parent.elementId)) errors.push(`${element.name}: parent element not found`)
+      // 作品の親子循環と、機構内の閉路は別の契約。
+      const ancestors = new Set<string>([element.id])
+      let cursor = element
+      while (cursor.parent.type === 'element') {
+        const parentId = cursor.parent.elementId
+        if (ancestors.has(parentId)) { errors.push(`${element.name}: cyclic parent chain`); break }
+        ancestors.add(parentId)
+        const parent = spread.elements.find((candidate) => candidate.id === parentId)
+        if (!parent) break
+        cursor = parent
+      }
+      if (element.type === 'assembly') {
+        const spec = element.mechanism
+        const surfaces = new Set(mechanismSurfaceIds(spec))
+        for (const [surfaceId, surface] of Object.entries(spec.surfaces)) {
+          if (!surfaces.has(surfaceId)) errors.push(`${element.name}: unknown mechanism surface ${surfaceId}`)
+          useAsset(surface.image, ['image', 'svg'], `${element.name}/${surfaceId}`)
+          useAsset(surface.backImage, ['image', 'svg'], `${element.name}/${surfaceId} reverse`)
+        }
+        if (spec.mount.type === 'surface') {
+          if (element.parent.type !== 'element' || element.parent.elementId !== spec.mount.elementId) {
+            errors.push(`${element.name}: surface mount must agree with parent`)
+          }
+          const mountId = spec.mount.elementId
+          const parent = spread.elements.find((candidate) => candidate.id === mountId)
+          if (parent?.type !== 'assembly') errors.push(`${element.name}: surface mount requires an assembly parent`)
+          else if (!mechanismSurfaceIds(parent.mechanism).includes(spec.mount.surfaceId)) {
+            errors.push(`${element.name}: unknown parent surface ${spec.mount.surfaceId}`)
+          }
+        } else if (element.parent.type === 'element') {
+          errors.push(`${element.name}: assembly child requires a surface mount`)
+        }
+        for (const issue of realPageAnchorIssues(element, project.book.format)) errors.push(`${element.name}: ${issue}`)
+      }
+      if (element.surfaceAttachment) {
+        const parentId = element.parent.type === 'element' ? element.parent.elementId : undefined
+        const parent = spread.elements.find((candidate) => candidate.id === parentId)
+        if (parent?.type !== 'assembly') errors.push(`${element.name}: surface attachment requires an assembly parent`)
+        else if (!mechanismSurfaceIds(parent.mechanism).includes(element.surfaceAttachment.surfaceId)) {
+          errors.push(`${element.name}: unknown parent surface ${element.surfaceAttachment.surfaceId}`)
+        }
+      } else if (element.type !== 'assembly' && element.parent.type === 'element') {
+        const parentId = element.parent.elementId
+        const parent = spread.elements.find((candidate) => candidate.id === parentId)
+        if (parent?.type === 'assembly') errors.push(`${element.name}: assembly child requires a surface attachment`)
+      }
       const elementTracks = spread.timeline.tracks.filter(
         (track) => track.target.type === 'element' && track.target.elementId === element.id,
       )
@@ -178,6 +226,11 @@ function validateTimeline(
         errors.push(`${lane}: target element not found`)
       } else if (!ELEMENT_PROPERTIES.has(track.property) || !elementCanUseProperty(element, track.property)) {
         errors.push(`${lane}: property not available on element type ${element.type}`)
+      } else if (element.type === 'assembly' && element.mechanism.deployment.mode === 'page-constrained'
+        && (track.property.startsWith('position.') || track.property.startsWith('rotation.')
+          || track.property === 'scale' || track.property.startsWith('scale.'))) {
+        // タイムラインからも実接着点を動かせない。表示と不透明度の演出は残す。
+        errors.push(`${lane}: real page anchors cannot use transform timeline tracks`)
       }
     } else if (track.target.type === 'environment' && !ENVIRONMENT_PROPERTIES.has(track.property)) {
       errors.push(`${lane}: property not available on the environment`)

@@ -58,6 +58,8 @@ export function useViewportPlayback() {
     if (mode === 'play' && previousMode.current !== 'play') {
       target.current = 0
       playProgressRef.current = 0
+      // 前回の停止位置を外部シークの反響と誤認しないよう、再入場時に同期履歴も戻す。
+      synced.current = { value: 0, at: 0 }
       setPlayProgress(0)
     }
     if (mode !== 'play') {

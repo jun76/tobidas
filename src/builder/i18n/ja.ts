@@ -5,6 +5,23 @@
  * 語順は言語ごとに変わるので、値を差し込む文言は文字列の連結ではなく関数で持つ。
  */
 export const ja = {
+  mechanisms: {
+    title: '折り機構と複合部品', create: '折り機構を追加', edit: '折り機構を編集', kind: 'しかけ', mount: '配置場所',
+    page: '片ページ', gutter: '谷間', space: '見開きの空間', surface: '部品の面', mode: '動き方',
+    virtual: '自由に展開する', constrained: 'ページとつながって折れる', parameters: '寸法と面数', depth: '奥行き', segments: '面数', angle: '開く角度',
+    closedScale: '収納時の大きさ', closedPosition: '収納先への移動', floatAmplitude: '浮遊の幅', floatPeriod: '浮遊の周期（秒）',
+    start: '展開の開始', end: '展開の完了', surfaceId: '面', surfaceImage: '表の素材', surfaceBackImage: '裏の素材',
+    surfaceColor: '面の色', surfaceText: '面の文字', surfaceVisible: 'この面を表示', attach: '面へ取り付け', placeAsset: '面に素材部品を配置',
+    offset: '面からの高さ', upright: '面上に立てる', apply: '適用', advanced: '展開と収納の詳細',
+    constrainedHint: 'ページへの接続を保ちます。移動・拡縮・浮遊を使う場合は「自由に展開する」を選びます。',
+    constrainedTimeline: '位置・回転・拡縮のタイムラインを削除してから、ページにつながる動きへ変更してください。',
+    virtualHint: '接続された面を保ったまま、全体を浮かべたり収納時に縮めたりできます。',
+    occupiedSurface: (names: string) => `なくなる面に取り付けられた部品があります: ${names}`,
+    moveChildrenFirst: '部品の取り付け先を変更してから面数を減らしてください。',
+    kinds: { panel: 'P01 ヒンジ面', 'v-fold': 'P01 二面V折り', beak: 'P02 対向V面・くちばし', platform: 'P03 天板付き台', box: 'P04 折り畳み箱', accordion: 'P05 連続折り帯', 'curved-shell': 'P06 曲面胴' },
+    compositions: { stage: 'C01 書き割り舞台', meadow: 'C02 草むらと花畑', arcade: 'C03 アーチの回廊', steps: 'C04 段状の舞台', bridge: 'C05 橋と池', house: 'C06 家と城', room: 'C07 部屋と寝台', tree: 'C08 大きな木と花', cake: 'C09 ケーキと贈り物', 'floating-stage': 'C10 浮遊する舞台', scene: 'C12 見開きの舞台セット' },
+    composition: '複合プリセット', count: '段・層の数', spacing: '間隔',
+  },
   app: {
     loading: '読み込み中…',
     panelNavigator: 'BOOK ナビゲーター',
@@ -318,6 +335,7 @@ export const ja = {
     rotate: '回転 (E)',
     scale: '拡大縮小 (R)',
     saveCameraKey: '現在時刻へカメラキーを保存',
+    fitAll: '全体表示',
     play: '再生',
     pause: '一時停止',
     replay: '最初から再生',

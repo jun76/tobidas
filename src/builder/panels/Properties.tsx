@@ -16,6 +16,7 @@ import { publishOperationResult } from '../operations/result'
 import { FormDialog } from '../ui/FormDialog'
 import st from '../builder.module.css'
 import { AUTHORING_GUIDE_KEYS, AUTHORING_GUIDE_TEXT_LIMIT, type AuthoringGuideKey } from '../../schema/authoringGuide'
+import { MechanismFields, SurfaceAttachmentDialog } from './Mechanisms'
 
 /** 書体の名前も表示言語に従う。runtime 側は書体の対応表だけを持つ */
 const FONT_LABEL_KEY: Record<TextFont, 'fontRounded' | 'fontSans' | 'fontSerif' | 'fontMono'> = {
@@ -296,6 +297,7 @@ function Element({ element, embedded = false }: { element: StageElement; embedde
   const update = (change: (item: StageElement) => void) => store.updateElement(selection.spreadId, element.id, change)
   const time = activeSpreadTime()
   const [parentDialogOpen, setParentDialogOpen] = useState(false)
+  const [surfaceDialogOpen, setSurfaceDialogOpen] = useState(false)
   const key = (property: TimelineProperty, value: TimelineValue) =>
     store.upsertTimelineKey(selection.spreadId, { type: 'element', elementId: element.id }, property, time, value)
 
@@ -306,6 +308,7 @@ function Element({ element, embedded = false }: { element: StageElement; embedde
       <Icon as={Link} />
     </button>}>
       <Text label={t.properties.name} value={element.name} onChange={(value) => update((item) => { item.name = value })} />
+      <button type="button" data-tobidas-action="attach-to-surface" onClick={() => setSurfaceDialogOpen(true)}>{t.mechanisms.attach}</button>
       <Num label={t.properties.layer} value={element.layer} onChange={(value) => update((item) => { item.layer = Math.round(value) })} />
       <div className={st.row}><span className={st.rowLabel}>{t.properties.visible}</span><label>
         <input type="checkbox" aria-label={t.properties.visible} checked={element.visible} onChange={(event) => update((item) => { item.visible = event.target.checked })} />
@@ -323,8 +326,9 @@ function Element({ element, embedded = false }: { element: StageElement; embedde
     {element.type !== 'group' && <InspectorGroup title={t.app.inspectorContent}>
       {element.type === 'visual' && <VisualFields element={element} update={update} onKey={key} />}
       {element.type === 'particle' && <ParticleFields element={element} update={update} onKey={key} />}
+      {element.type === 'assembly' && <MechanismFields key={element.id} spreadId={selection.spreadId} element={element} />}
     </InspectorGroup>}
-    <InspectorGroup title={t.app.inspectorMotion}>
+    {element.type !== 'assembly' && <InspectorGroup title={t.app.inspectorMotion}>
       <Select label={t.properties.motion} value={element.motion[0]?.type ?? ''} options={[
         ['', t.properties.motionNone], ['bob', t.properties.motionBob], ['sway', t.properties.motionSway],
         ['drift', t.properties.motionDrift], ['spin', t.properties.motionSpin], ['pulse', t.properties.motionPulse],
@@ -337,9 +341,10 @@ function Element({ element, embedded = false }: { element: StageElement; embedde
                   : { type: 'bob', amplitude: .18, period: 2.5, phase: 0 }]
           : []
       })} />
-    </InspectorGroup>
+    </InspectorGroup>}
     {parentDialogOpen && <ParentChangeDialog spreadId={selection.spreadId} element={element}
       onClose={() => setParentDialogOpen(false)} />}
+    {surfaceDialogOpen && <SurfaceAttachmentDialog spreadId={selection.spreadId} element={element} onClose={() => setSurfaceDialogOpen(false)} />}
   </PropertySection>
 }
 
@@ -429,12 +434,15 @@ function Transform({ value, update, onKey }: {
       <span className={st.rowLabel}>{group}</span>
       <div className={st.vec3}>{value.baseTransform[group].map((part, index) =>
         <input key={index} type="number" aria-label={`${group} ${['X', 'Y', 'Z'][index]}`}
+          disabled={value.type === 'assembly' && value.mechanism.deployment.mode === 'page-constrained'
+            && (group !== 'position' || value.mechanism.mount.type === 'gutter' && index < 2)}
           step={group === 'rotation' ? 1 : .1} value={part}
           onChange={(event) => update((element) => {
             element.baseTransform[group][index as 0 | 1 | 2] = Number(event.target.value)
           })} />)}
       </div>
       <button className={st.keyButton}
+        disabled={value.type === 'assembly' && value.mechanism.deployment.mode === 'page-constrained'}
         aria-label={t.properties.addKey(group)} title={t.properties.addKeyVec3Hint(group)}
         onClick={() => {
           value.baseTransform[group].forEach((part, index) =>

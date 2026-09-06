@@ -2,6 +2,7 @@ import { DEFAULT_BOOK_LIGHTS, type Book, type Page, type Spread } from './book'
 import { createDefaultAuthoringGuide } from './authoringGuide'
 import type { BookProject } from './bookPackage'
 import type { ParentSpace, StageElement, StageElementType } from './stageElement'
+import { makeMechanism } from './mechanism'
 
 let counter = 0
 export function bookId(prefix = 'id') { counter = (counter + 1) % 1296; return `${prefix}_${Date.now().toString(36)}${counter.toString(36).padStart(2, '0')}` }
@@ -52,6 +53,10 @@ export function createStageElement(
   if (type === 'particle') return {
     ...common, type, width: 2, height: 2, billboard: false,
     particles: { color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
+  }
+  if (type === 'assembly') return {
+    ...common, type, mechanism: makeMechanism('box'),
+    baseTransform: { ...common.baseTransform, position: [0, 0, 0], rotation: [0, 0, 0] },
   }
   return { ...common, type, baseTransform: { ...common.baseTransform, rotation: [0, 0, 0] } }
 }

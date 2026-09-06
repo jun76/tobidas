@@ -15,6 +15,19 @@ export type { CompiledSpreadStow, FaceSide, FallDirection, MechanismKind, Spanni
  */
 
 export function compileSpreadStow(book: Book, spread: Spread): CompiledSpreadStow {
+  // 複合機構とその面上の子は専用評価器が一体で処理する。
+  const byId = new Map(spread.elements.map((element) => [element.id, element]))
+  const isAssemblyTree = (element: StageElement): boolean => {
+    const seen = new Set<string>()
+    let current: StageElement | undefined = element
+    while (current && !seen.has(current.id)) {
+      if (current.type === 'assembly') return true
+      seen.add(current.id)
+      current = current.parent.type === 'element' ? byId.get(current.parent.elementId) : undefined
+    }
+    return false
+  }
+  spread = { ...spread, elements: spread.elements.filter((element) => !isAssemblyTree(element)) }
   const w = book.format.pageWidth
   const d = w / book.format.pageAspect
   const left: StowItem[] = []

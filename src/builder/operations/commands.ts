@@ -7,6 +7,8 @@ import { useBuilderStore } from '../store'
 import type { BuilderCommandResult } from './types'
 import { COLOR_PROPERTIES, DISCRETE_PROPERTIES, NUMBER_PROPERTIES, VEC3_PROPERTIES, type TimelineKey, type TimelineProperty, type TimelineTarget, type TimelineValue } from '../../schema/timeline'
 import { AUTHORING_GUIDE_KEYS, authoringGuideLocaleSchema, type AuthoringGuideLocale, type AuthoringGuideKey } from '../../schema/authoringGuide'
+import { updateMechanismCommand } from './mechanisms'
+export { createMechanismCommand, updateMechanismCommand, setMechanismSurfaceCommand, attachToSurfaceCommand, placeSurfaceAssetCommand, createCompositionCommand, updateCompositionCommand } from './mechanisms'
 
 type AssetPreset = Extract<VisualPresetId, 'paper-stack' | 'bottom-upright' | 'depth-layer'>
 
@@ -156,6 +158,11 @@ export function updateElementCommand(spreadId: string, elementId: string, input:
   if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const element = state.project.book.spreads.find((spread) => spread.id === spreadId)?.elements.find((item) => item.id === elementId)
   if (!element) return failure(action, t().operations.notFound)
+  if (element.type === 'assembly' && element.mechanism.deployment.mode === 'page-constrained') {
+    if (input.rotation.some((value) => value !== 0) || input.scale.some((value) => value !== 1)
+      || element.mechanism.mount.type === 'gutter' && input.position.slice(0, 2).some((value) => value !== 0)
+      || input.motion?.length) return failure(action, t().mechanisms.constrainedHint)
+  }
   const errors: Record<string, string> = {}
   if (!input.name.trim()) errors.name = t().operations.required
   for (const [group, values] of Object.entries({ position: input.position, rotation: input.rotation, scale: input.scale })) {
@@ -238,10 +245,15 @@ export function moveElementCommand(spreadId: string, elementId: string, parent: 
   const spread = state.project.book.spreads.find((item) => item.id === spreadId)
   const element = spread?.elements.find((item) => item.id === elementId)
   if (!spread || !element) return failure(action, t().operations.notFound)
+  if (element.type === 'assembly') {
+    if (parent.type === 'element') return failure(action, t().mechanisms.attach)
+    return updateMechanismCommand({ spreadId, elementId, mount: { type: 'page', side: parent.type === 'left-page' ? 'left' : 'right' } })
+  }
   if (parent.type === 'element') {
     const descendants = elementDescendantIds(spread, elementId)
     if (parent.elementId === elementId || descendants.has(parent.elementId)) return failure(action, t().operations.invalidParent)
     if (!spread.elements.some((item) => item.id === parent.elementId)) return failure(action, t().operations.notFound)
+    if (spread.elements.some((item) => item.id === parent.elementId && item.type === 'assembly')) return failure(action, t().mechanisms.attach)
   }
   state.moveElement(spreadId, elementId, parent)
   return success(action, t().operations.moved(element.name), { kind: 'element', id: elementId })
@@ -315,6 +327,8 @@ export function addTimelineKeyCommand(input: {
   if (input.target.type === 'element') {
     const elementId = input.target.elementId
     if (!spread.elements.some((element) => element.id === elementId)) errors.target = t().operations.notFound
+    const element = spread.elements.find((item) => item.id === elementId)
+    if (element?.type === 'assembly' && element.mechanism.deployment.mode === 'page-constrained' && /^(position|rotation|scale)(\.|$)/.test(input.property)) errors.property = t().mechanisms.constrainedTimeline
   }
   if (input.target.type === 'sound') {
     const assetId = input.target.assetId

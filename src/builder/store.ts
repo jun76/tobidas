@@ -1,4 +1,4 @@
-import { create } from 'zustand'
+import { create, type StateCreator, type UseBoundStore, type StoreApi } from 'zustand'
 import type { BookProject } from '../schema/bookPackage'
 import { bookId, createBookProject, createSpread, createStageElement } from '../schema/bookDefaults'
 import { BACKGROUND_PANEL_SPEC } from '../schema/backgroundPanel'
@@ -92,7 +92,7 @@ function initialView(project: BookProject): Pick<EditorState, 'activeSpreadId' |
   }
 }
 
-export const useBuilderStore = create<EditorState>((set, get) => {
+const initializeBuilder: StateCreator<EditorState> = (set, get) => {
   const initial = createLocalizedBookProject()
 
   const commit = (change: (project: BookProject) => void) => {
@@ -330,9 +330,14 @@ export const useBuilderStore = create<EditorState>((set, get) => {
       copy.id = createSpread().id
       copy.name = t().defaults.copySuffix(copy.name)
       const remap = new Map(copy.elements.map((element) => [element.id, createStageElement('group').id]))
+      for (const element of copy.elements) if (element.type === 'assembly' && element.composition) {
+        const prefix = `${element.id}/`
+        for (const child of copy.elements) if (child.id.startsWith(prefix)) remap.set(child.id, `${remap.get(element.id)}/${child.id.slice(prefix.length)}`)
+      }
       copy.elements.forEach((element) => {
         element.id = remap.get(element.id)!
         if (element.parent.type === 'element') element.parent.elementId = remap.get(element.parent.elementId) ?? element.parent.elementId
+        if (element.type === 'assembly' && element.mechanism.mount.type === 'surface') element.mechanism.mount.elementId = remap.get(element.mechanism.mount.elementId) ?? element.mechanism.mount.elementId
       })
       copy.timeline.tracks.forEach((track) => {
         track.id = bookId('track')
@@ -446,6 +451,21 @@ export const useBuilderStore = create<EditorState>((set, get) => {
       if (project.audio?.bgmAsset === id) project.audio = undefined
     }),
   }
+}
+
+// 開発中の差し替えでも同じstoreを使い、進行中の素材読み込みやWebMCPの参照を切らない。
+const retainedStore = import.meta.hot?.data.builderStore as UseBoundStore<StoreApi<EditorState>> | undefined
+export const useBuilderStore = retainedStore ?? create<EditorState>(initializeBuilder)
+if (retainedStore) {
+  const previous = retainedStore.getState()
+  const data = Object.fromEntries(Object.entries(previous).filter(([, value]) => typeof value !== 'function')) as Partial<EditorState>
+  const next = initializeBuilder(retainedStore.setState, retainedStore.getState, retainedStore)
+  retainedStore.setState({ ...next, ...data }, true)
+  if (previous.saveStatus === 'saving') autosave.schedule(previous.project)
+}
+if (import.meta.hot) import.meta.hot.dispose((data) => {
+  autosave.cancel()
+  data.builderStore = useBuilderStore
 })
 
 export const ELEMENT_DND_MIME = 'application/x-tobidas-stage-element'

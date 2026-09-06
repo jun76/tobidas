@@ -21,6 +21,7 @@ import type { BookRuntimeProps, RenderSpreadFrame } from './types'
 import { PaperSlab, assetFor } from './visuals/ElementVisuals'
 import { setVideoPlaybackEnabled, useImageTexture, useSvgTexture, useVideoTexture } from './assets'
 import { VideoAudioProvider, VideoAudioSource } from './videoAudio'
+import { AssemblyRenderer } from './mechanisms/AssemblyRenderer'
 
 export type { BookRuntimeProps, RuntimeSelection } from './types'
 
@@ -250,6 +251,14 @@ export function BookRuntime({
             leftAngle={leftAngle} rightAngle={rightAngle} assets={assets} clocks={clocks}
             spread={frame.spread} spreadTime={frame.spreadTime} onSelect={onSelect} />
         }))}
+
+      {frames.filter((frame) => frame.open && frame.spread.elements.some((element) => element.type === 'assembly')).map((frame) => {
+        const override = foldOverride?.spreadId === frame.spread.id
+        return <AssemblyRenderer key={frame.spread.id} book={book} spread={frame.spread} open={frame.t}
+          leftAngle={override ? Math.PI : Math.PI * sheetAngles[frame.index]}
+          rightAngle={override ? (1 - frame.t) * Math.PI : Math.PI * sheetAngles[frame.index + 1]}
+          spreadTime={frame.spreadTime} {...shared} />
+      })}
 
       {showGuides && <gridHelper args={[width * 2, 16, '#6d7cff', '#d9d9e8']}
         position={[0, .03, 0]} />}

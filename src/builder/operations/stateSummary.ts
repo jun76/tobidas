@@ -4,6 +4,7 @@ import type { EditorState } from '../state/editorState'
 import type { StageElement } from '../../schema/stageElement'
 import type { BuilderStateSummary, ElementSummary, TargetSummary } from './types'
 import { AUTHORING_GUIDE_KEYS } from '../../schema/authoringGuide'
+import { mechanismSurfaceIds } from '../../schema/mechanism'
 
 function selectionSummary(state: EditorState): TargetSummary {
   const selection = state.selection
@@ -37,6 +38,7 @@ export function countAssetReferences(project: BookProject): Map<string, number> 
         use(element.image)
         use(element.backImage)
       }
+      if (element.type === 'assembly') for (const slot of Object.values(element.mechanism.surfaces)) { use(slot.image); use(slot.backImage) }
     }
     for (const track of spread.timeline.tracks) {
       if (track.target.type === 'sound') use(track.target.assetId)
@@ -62,6 +64,8 @@ function elementSummary(element: StageElement, spreadId: string, trackIds: strin
     layer: element.layer,
     visible: element.visible,
     opacity: element.opacity,
+    surfaceAttachment: element.surfaceAttachment,
+    ...(element.type === 'assembly' ? { mechanism: element.mechanism, surfaces: mechanismSurfaceIds(element.mechanism), composition: element.composition } : {}),
     ...(element.type === 'visual' ? {
       width: element.width,
       height: element.height,
