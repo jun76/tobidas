@@ -1,7 +1,9 @@
 import * as THREE from 'three'
 import type { Spread } from '../schema/book'
 import type { ParentSpace, Transform } from '../schema/stageElement'
-import { evaluateMechanism, surfaceFrame } from '../runtime/mechanisms/evaluate'
+import { createBook } from '../schema/bookDefaults'
+import { surfaceFrame } from '../runtime/mechanisms/evaluate'
+import { evaluateAssemblyScene } from '../runtime/mechanisms/scene'
 
 function transformMatrix(transform: Transform) {
   const matrix = new THREE.Matrix4()
@@ -13,6 +15,17 @@ function transformMatrix(transform: Transform) {
   return matrix
 }
 
+/** ブリッジの子も含め、描画と同じ全開形状の面からワールド姿勢を求める。 */
+function attachmentWorldFrame(spread: Spread, parentId: string, attachment: { surfaceId: string; u: number; v: number; offset: number }, pageWidth: number): THREE.Matrix4 | null {
+  const book = createBook()
+  book.format.pageWidth = pageWidth; book.spreads = [spread]
+  const scene = evaluateAssemblyScene(book, spread, { open: 1, leftAngle: Math.PI, rightAngle: 0, spreadTime: 0, clock: 0 })
+  const entry = scene.structuralSurfaces.find((part) => part.elementId === parentId && part.surface.id === attachment.surfaceId)
+  if (!entry) return null
+  const frame = surfaceFrame({ surfaces: [entry.surface] } as Parameters<typeof surfaceFrame>[0], attachment.surfaceId, attachment.u, attachment.v, attachment.offset)
+  return frame ? entry.matrix.clone().multiply(new THREE.Matrix4().fromArray(frame.matrix)) : null
+}
+
 function parentFrame(spread: Spread, parent: ParentSpace, pageWidth: number, seen = new Set<string>()): THREE.Matrix4 | null {
   if (parent.type === 'left-page') return new THREE.Matrix4().makeTranslation(-pageWidth / 2, 0, 0)
   if (parent.type === 'right-page') return new THREE.Matrix4().makeTranslation(pageWidth / 2, 0, 0)
@@ -20,17 +33,18 @@ function parentFrame(spread: Spread, parent: ParentSpace, pageWidth: number, see
   const element = spread.elements.find((item) => item.id === parent.elementId)
   if (!element) return null
   seen.add(element.id)
+  // 複合面は接続先から直接ワールド座標へ評価済み。所属ページの変換を重ねない。
+  if (element.type === 'assembly') return new THREE.Matrix4()
   const ancestor = parentFrame(spread, element.parent, pageWidth, seen)
-  const isSpace = element.type === 'assembly' && (element.mechanism.mount.type === 'space' || element.mechanism.mount.type === 'gutter')
-  const basis = isSpace ? new THREE.Matrix4() : ancestor
+  let basis = ancestor
   if (!basis) return null
-  const attachment = element.type === 'assembly' && element.mechanism.mount.type === 'surface' ? element.mechanism.mount : element.surfaceAttachment
+  const attachment = element.surfaceAttachment
   if (attachment && element.parent.type === 'element') {
     const parentId = element.parent.elementId
     const attachedParent = spread.elements.find((item) => item.id === parentId)
     if (attachedParent?.type === 'assembly') {
-      const frame = surfaceFrame(evaluateMechanism(attachedParent.mechanism, { open: 1, clock: 0 }), attachment.surfaceId, attachment.u, attachment.v, attachment.offset)
-      if (frame) basis.multiply(new THREE.Matrix4().fromArray(frame.matrix))
+      basis = attachmentWorldFrame(spread, attachedParent.id, attachment, pageWidth)
+      if (!basis) return null
     }
   }
   return basis.multiply(transformMatrix(element.baseTransform))
@@ -77,8 +91,9 @@ export function reparentElement(spread: Spread, id: string, nextParent: ParentSp
     const parent = spread.elements.find((item) => item.id === parentId)
     const mount = element.surfaceAttachment
     if (parent?.type === 'assembly') {
-      const frame = surfaceFrame(evaluateMechanism(parent.mechanism, { open: 1, clock: 0 }), mount.surfaceId, mount.u, mount.v, mount.offset)
-      if (frame) oldFrame.multiply(new THREE.Matrix4().fromArray(frame.matrix))
+      const frame = attachmentWorldFrame(spread, parent.id, mount, pageWidth)
+      if (!frame) return false
+      oldFrame.copy(frame)
     }
   }
 

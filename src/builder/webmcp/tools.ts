@@ -324,10 +324,10 @@ function makeMechanismTools(): WebMcpTool[] {
   const vector = { type: 'array', items: number, minItems: 3, maxItems: 3 }
   const refs = { spreadId: string, elementId: string }
   const parameters = { type: 'object', additionalProperties: false, properties: { width: number, height: number, depth: number, segments: { type: 'integer' }, angleDeg: number } }
-  const mount = { type: 'object', additionalProperties: false, properties: { type: { type: 'string', enum: ['page', 'gutter', 'surface', 'space'] },
-    side: { type: 'string', enum: ['left', 'right'] }, elementId: string, surfaceId: string, u: number, v: number, offset: number }, required: ['type'] }
-  const deployment = { type: 'object', additionalProperties: false, properties: { mode: { type: 'string', enum: ['page-constrained', 'virtual'] }, start: number, end: number } }
-  const staging = { type: 'object', additionalProperties: false, properties: { closedScale: number, closedPosition: vector, floatAmplitude: vector,
+  const mount = { type: 'object', additionalProperties: false, properties: { type: { type: 'string', enum: ['page', 'gutter', 'surface', 'bridge'] },
+    side: { type: 'string', enum: ['left', 'right'] }, elementId: string, bridgeId: { type: 'string', enum: ['deck'] }, surfaceId: string, u: number, v: number, offset: number }, required: ['type'] }
+  const deployment = { type: 'object', additionalProperties: false, properties: { mode: { type: 'string', enum: ['page-constrained', 'virtual'] } } }
+  const staging = { type: 'object', additionalProperties: false, properties: { openScale: number, closedScale: number, openPosition: vector, closedPosition: vector, floatAmplitude: vector,
     floatPeriod: number, floatPhase: number, fadeStart: number, fadeEnd: number } }
   const surfaceRefs = { ...refs, surfaceId: string }
   const attach = { ...surfaceRefs, parentId: string, u: number, v: number, offset: number }
@@ -344,21 +344,21 @@ function makeMechanismTools(): WebMcpTool[] {
     },
   })
   return [
-    tool('create-mechanism', 'Create a folding assembly using the shared builder command. Kinds cover P01–P06. Page-constrained panel requires page mount; box, platform and v-fold require gutter mount. Virtual mode allows space/page/surface placement, floating and stow scaling. position is spread coordinates for gutter/space and page-local coordinates for page. Read authoring guide first.',
+    tool('create-mechanism', 'Create a connected folding assembly (P01–P06) through the shared command. Defaults attach panels to a page and other mechanisms to the real gutter. Nested folding mechanisms require mount bridge with elementId, bridgeId deck and normalized depth position v; panels may use a surface mount. All modes keep real attachments. Explicit virtual staging uses openScale or floating with connected support surfaces. Read the authoring guide first.',
       createMechanismInputSchema, { spreadId: string, kind: { type: 'string', enum: [...mechanismKinds] }, name: string, parameters, mount, deployment, staging, position: vector, rotation: vector, color: string },
       ['spreadId', 'kind'], createMechanismCommand),
-    tool('update-mechanism', 'Edit dimensions, placement, deployment or staging of an assembly atomically. Existing surviving surface slots and children remain. Removing an occupied face is rejected with affected child names. Page-constrained mode requires closedScale=1 and zero floatAmplitude/closedPosition.',
+    tool('update-mechanism', 'Edit connected geometry, attachment or explicit staging atomically. Bridge width/depth and v must fit the parent deck. Set deployment.mode virtual to enable openScale, closedScale or floating while preserving real attachment points. Transform timelines and independent movement of child roots are unavailable. Removing occupied surfaces is rejected.',
       updateMechanismInputSchema, { ...refs, parameters, mount, deployment, staging }, ['spreadId', 'elementId'], updateMechanismCommand),
     tool('set-mechanism-surface', 'Edit one stable surface role of an assembly: color, existing front/back asset IDs, text or visibility. Obtain surface IDs from get-element. Hiding a support retains its folding mechanism. Null image/backImage clears the assignment.',
       setMechanismSurfaceInputSchema, { ...surfaceRefs, color: string, image: { type: ['string', 'null'] }, backImage: { type: ['string', 'null'] }, text: string, visible: { type: 'boolean' } },
       ['spreadId', 'elementId', 'surfaceId'], setMechanismSurfaceCommand),
-    tool('attach-to-surface', 'Attach an existing part to an assembly surface, using normalized face coordinates u/v (0..1) and normal offset. Children follow the moving face. Assembly children switch to virtual deployment. Cycles and missing faces are rejected.',
+    tool('attach-to-surface', 'Attach a visual or hinged panel to an assembly surface using normalized u/v and offset. Folding assembly children other than panels require update-mechanism with a bridge mount instead. Cycles and missing faces are rejected.',
       attachSurfaceInputSchema, attach, ['spreadId', 'elementId', 'parentId', 'surfaceId', 'u', 'v'], attachToSurfaceCommand),
     tool('place-surface-asset', 'Place a visual part made from an existing imported asset directly on an assembly face. upright=true stands the part on the face, false lays it flat. Uses one undo operation.',
       placeSurfaceAssetInputSchema, { spreadId: string, parentId: string, surfaceId: string, u: number, v: number, offset: number, assetId: string, name: string, width: number, height: number, upright: { type: 'boolean' } },
       ['spreadId', 'parentId', 'surfaceId', 'assetId', 'u', 'v', 'width', 'height'], placeSurfaceAssetCommand),
-    tool('create-composition', 'Create a parameterized assembly preset (C01–C10) composed of connected folding mechanisms. Returns the root element; child roles have stable IDs. count and spacing can be changed later with update-composition. Customize each face with set-mechanism-surface.',
-      createCompositionInputSchema, { spreadId: string, kind: { type: 'string', enum: [...compositionKinds] }, name: string, count: { type: 'integer', minimum: 1, maximum: 12 }, spacing: number, position: vector, width: number, depth: number },
+    tool('create-composition', 'Create a parameterized connected assembly preset (C01–C10/C12). Each family has its own root shape attached to the real gutter by default; an existing parent bridge may be selected. Folding children span their parent bridge and single panels follow parent surfaces. Initial staging is neutral. Returns a root with stable child role IDs.',
+      createCompositionInputSchema, { spreadId: string, kind: { type: 'string', enum: [...compositionKinds] }, name: string, count: { type: 'integer', minimum: 1, maximum: 12 }, spacing: number, position: vector, width: number, depth: number, mount },
       ['spreadId', 'kind'], createCompositionCommand),
     tool('update-composition', 'Change a composite preset count and spacing atomically. Stable roles keep surface materials and attached custom children. Refuses changes that would remove a role with custom children.',
       updateCompositionInputSchema, { ...refs, count: { type: 'integer', minimum: 1, maximum: 12 }, spacing: number }, ['spreadId', 'elementId', 'count', 'spacing'], updateCompositionCommand),

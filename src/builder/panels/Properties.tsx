@@ -434,15 +434,14 @@ function Transform({ value, update, onKey }: {
       <span className={st.rowLabel}>{group}</span>
       <div className={st.vec3}>{value.baseTransform[group].map((part, index) =>
         <input key={index} type="number" aria-label={`${group} ${['X', 'Y', 'Z'][index]}`}
-          disabled={value.type === 'assembly' && value.mechanism.deployment.mode === 'page-constrained'
-            && (group !== 'position' || value.mechanism.mount.type === 'gutter' && index < 2)}
+          disabled={value.type === 'assembly' && (group !== 'position' || (value.mechanism.mount.type === 'gutter' ? index < 2 : value.mechanism.mount.type === 'page' ? index === 1 : true))}
           step={group === 'rotation' ? 1 : .1} value={part}
           onChange={(event) => update((element) => {
             element.baseTransform[group][index as 0 | 1 | 2] = Number(event.target.value)
           })} />)}
       </div>
       <button className={st.keyButton}
-        disabled={value.type === 'assembly' && value.mechanism.deployment.mode === 'page-constrained'}
+        disabled={value.type === 'assembly'}
         aria-label={t.properties.addKey(group)} title={t.properties.addKeyVec3Hint(group)}
         onClick={() => {
           value.baseTransform[group].forEach((part, index) =>

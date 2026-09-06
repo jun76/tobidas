@@ -6,7 +6,7 @@ import { evaluateElementTimeline } from '../timeline/evaluate'
 import { compileSpreadStow } from './assign'
 import type { SpanningVFold, StowItem } from './model'
 import { GLUE_WIDTH_FACTOR } from './evaluate'
-import { auditAssemblies } from '../mechanisms/audit'
+import { auditAssemblies, type AssemblyAudit } from '../mechanisms/audit'
 
 /**
  * 開姿勢の包含検査。保持中の全時刻について紙面包含を調べる。
@@ -38,11 +38,13 @@ export interface ContainmentIssue {
   elementName: string
   code: ContainmentCode
   message: string
+  assemblyCode?: string
 }
 
 export interface ContainmentReport {
   errors: ContainmentIssue[]
   warnings: ContainmentIssue[]
+  assemblyAudits: Array<{ spreadId: string } & Omit<AssemblyAudit, 'issues'>>
 }
 
 /** 紙面 y=0 に対する許容。収納評価のリフト量 (SURFACE_Y) を下回らせない */
@@ -56,11 +58,12 @@ const EDGE_TOLERANCE = 0.05
 const AIRBORNE_BUDGET = 4
 
 export function analyzeBookContainment(book: Book): ContainmentReport {
-  const report: ContainmentReport = { errors: [], warnings: [] }
+  const report: ContainmentReport = { errors: [], warnings: [], assemblyAudits: [] }
   for (const spread of book.spreads) {
     const spreadReport = analyzeSpreadContainment(book, spread)
     report.errors.push(...spreadReport.errors)
     report.warnings.push(...spreadReport.warnings)
+    report.assemblyAudits.push(...spreadReport.assemblyAudits)
   }
   return report
 }
@@ -68,11 +71,12 @@ export function analyzeBookContainment(book: Book): ContainmentReport {
 export function analyzeSpreadContainment(book: Book, spread: Spread): ContainmentReport {
   const errors: ContainmentIssue[] = []
   const warnings: ContainmentIssue[] = []
-  for (const finding of auditAssemblies(book, spread).issues) {
+  const { issues: assemblyIssues, ...assemblyMetrics } = auditAssemblies(book, spread)
+  for (const finding of assemblyIssues) {
     const element = spread.elements.find((item) => item.id === finding.elementId)
     const target = finding.severity === 'error' ? errors : warnings
     target.push({ spreadId: spread.id, elementId: finding.elementId, elementName: element?.name ?? '',
-      code: finding.severity === 'error' ? 'assembly-error' : 'assembly-warning', message: finding.message })
+      code: finding.severity === 'error' ? 'assembly-error' : 'assembly-warning', assemblyCode: finding.code, message: finding.message })
   }
   const w = book.format.pageWidth
   const d = w / book.format.pageAspect
@@ -147,7 +151,7 @@ export function analyzeSpreadContainment(book: Book, spread: Spread): Containmen
       message: `${airborne} airborne parts (${AIRBORNE_BUDGET} or fewer recommended)`,
     })
   }
-  return { errors, warnings }
+  return { errors, warnings, assemblyAudits: [{ spreadId: spread.id, ...assemblyMetrics }] }
 }
 
 /**

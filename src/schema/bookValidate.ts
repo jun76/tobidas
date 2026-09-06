@@ -2,7 +2,7 @@ import type { BookProject } from './bookPackage'
 import { bookProjectSchema } from './bookPackage'
 import { AUDIO_BYTE_LIMIT, VIDEO_BYTE_LIMIT } from './assets'
 import type { EmbeddedVideoAudio } from './audio'
-import { mechanismSurfaceIds } from './mechanism'
+import { mechanismSurfaceIds, mechanismBridgeIds, mechanismSurfaceSize } from './mechanism'
 import { realPageAnchorIssues } from './mechanismPlacement'
 import {
   COLOR_PROPERTIES,
@@ -130,7 +130,23 @@ export function validateBookProject(data: unknown): BookValidationResult {
           useAsset(surface.image, ['image', 'svg'], `${element.name}/${surfaceId}`)
           useAsset(surface.backImage, ['image', 'svg'], `${element.name}/${surfaceId} reverse`)
         }
-        if (spec.mount.type === 'surface') {
+        if (spec.mount.type === 'bridge') {
+          if (element.parent.type !== 'element' || element.parent.elementId !== spec.mount.elementId) errors.push(`${element.name}: bridge mount must agree with parent`)
+          const mountId = spec.mount.elementId
+          const parent = spread.elements.find((candidate) => candidate.id === mountId)
+          if (parent?.type !== 'assembly') errors.push(`${element.name}: bridge mount requires an assembly parent`)
+          else if (!mechanismBridgeIds(parent.mechanism).includes(spec.mount.bridgeId)) errors.push(`${element.name}: unknown parent bridge ${spec.mount.bridgeId}`)
+          else {
+            // 曲面の円内矩形も含め、二つの接続辺を実際の親面の範囲へ収める。
+            const factor = parent.mechanism.staging.openScale * (parent.mechanism.kind === 'curved-shell' ? .64 : 1)
+            const width = parent.mechanism.parameters.width * factor
+            const depth = parent.mechanism.parameters.depth * factor
+            const epsilon = 1e-7 * Math.max(width, depth)
+            if (spec.parameters.width > width + epsilon) errors.push(`${element.name}: bridge connection exceeds parent width`)
+            // vは子が収まった後に残る奥行き内の移動率。0と1でも接続辺は外れない。
+            if (spec.parameters.depth > depth + epsilon) errors.push(`${element.name}: bridge connection exceeds parent depth`)
+          }
+        } else if (spec.mount.type === 'surface') {
           if (element.parent.type !== 'element' || element.parent.elementId !== spec.mount.elementId) {
             errors.push(`${element.name}: surface mount must agree with parent`)
           }
@@ -139,9 +155,16 @@ export function validateBookProject(data: unknown): BookValidationResult {
           if (parent?.type !== 'assembly') errors.push(`${element.name}: surface mount requires an assembly parent`)
           else if (!mechanismSurfaceIds(parent.mechanism).includes(spec.mount.surfaceId)) {
             errors.push(`${element.name}: unknown parent surface ${spec.mount.surfaceId}`)
+          } else {
+            const { width } = mechanismSurfaceSize(parent.mechanism, spec.mount.surfaceId)
+            const half = spec.parameters.width / width / 2
+            if (spec.mount.offset !== 0) errors.push(`${element.name}: surface panel hinge requires offset=0`)
+            if (spec.mount.u - half < -1e-7 || spec.mount.u + half > 1 + 1e-7) errors.push(`${element.name}: surface panel hinge exceeds parent face width`)
+            if (spec.mount.surfaceId === 'top' && ['platform', 'curved-shell'].includes(parent.mechanism.kind)
+              && spec.mount.u - half < .5 - 1e-7 && spec.mount.u + half > .5 + 1e-7) errors.push(`${element.name}: surface panel hinge cannot cross parent fold`)
           }
         } else if (element.parent.type === 'element') {
-          errors.push(`${element.name}: assembly child requires a surface mount`)
+          errors.push(`${element.name}: assembly child requires a bridge or panel surface mount`)
         }
         for (const issue of realPageAnchorIssues(element, project.book.format)) errors.push(`${element.name}: ${issue}`)
       }
@@ -226,7 +249,7 @@ function validateTimeline(
         errors.push(`${lane}: target element not found`)
       } else if (!ELEMENT_PROPERTIES.has(track.property) || !elementCanUseProperty(element, track.property)) {
         errors.push(`${lane}: property not available on element type ${element.type}`)
-      } else if (element.type === 'assembly' && element.mechanism.deployment.mode === 'page-constrained'
+      } else if (element.type === 'assembly'
         && (track.property.startsWith('position.') || track.property.startsWith('rotation.')
           || track.property === 'scale' || track.property.startsWith('scale.'))) {
         // タイムラインからも実接着点を動かせない。表示と不透明度の演出は残す。

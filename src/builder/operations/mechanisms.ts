@@ -1,12 +1,14 @@
 import { z } from 'zod'
 import { bookId, createStageElement } from '../../schema/bookDefaults'
-import { makeMechanism, mechanismSchema, mechanismSurfaceIds, type MechanismSpec } from '../../schema/mechanism'
+import { makeMechanism, mechanismSchema, mechanismSurfaceIds, mechanismBridgeIds, type MechanismSpec } from '../../schema/mechanism'
+import { validateBookProject } from '../../schema/bookValidate'
+import type { BookProject } from '../../schema/bookPackage'
 import type { AssemblyElement, StageElement } from '../../schema/stageElement'
 import { elementDescendantIds } from '../hierarchy'
 import { t } from '../i18n'
 import { useBuilderStore } from '../store'
 import type { BuilderCommandResult } from './types'
-import { buildMechanismComposition, compositionKinds } from '../mechanismPresets'
+import { buildMechanismComposition, compositionKinds, compositionRootMechanism } from '../mechanismPresets'
 
 export const mechanismKinds = ['panel', 'v-fold', 'beak', 'platform', 'box', 'accordion', 'curved-shell'] as const
 const vec3 = z.tuple([z.number().finite(), z.number().finite(), z.number().finite()])
@@ -14,14 +16,15 @@ export const mechanismParametersInputSchema = z.object({
   width: z.number().positive().optional(), height: z.number().positive().optional(),
   depth: z.number().positive().optional(), segments: z.number().int().optional(), angleDeg: z.number().finite().optional(),
 }).strict()
-export const mechanismDeploymentInputSchema = z.object({ mode: z.enum(['page-constrained', 'virtual']).optional(), start: z.number().optional(), end: z.number().optional() }).strict()
+export const mechanismDeploymentInputSchema = z.object({ mode: z.enum(['page-constrained', 'virtual']).optional() }).strict()
 export const mechanismStagingInputSchema = z.object({
-  closedScale: z.number().optional(), closedPosition: vec3.optional(), floatAmplitude: vec3.optional(),
+  closedScale: z.number().optional(), openScale: z.number().positive().optional(), openPosition: vec3.optional(), closedPosition: vec3.optional(), floatAmplitude: vec3.optional(),
   floatPeriod: z.number().positive().optional(), floatPhase: z.number().finite().optional(), fadeStart: z.number().optional(), fadeEnd: z.number().optional(),
 }).strict()
 export const mechanismMountInputSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('page'), side: z.enum(['left', 'right']) }).strict(),
-  z.object({ type: z.literal('gutter') }).strict(), z.object({ type: z.literal('space') }).strict(),
+  z.object({ type: z.literal('gutter') }).strict(),
+  z.object({ type: z.literal('bridge'), elementId: z.string().min(1), bridgeId: z.literal('deck'), v: z.number().min(0).max(1).default(.5) }).strict(),
   z.object({ type: z.literal('surface'), elementId: z.string().min(1), surfaceId: z.string().min(1),
     u: z.number().min(0).max(1), v: z.number().min(0).max(1), offset: z.number().finite().default(0) }).strict(),
 ])
@@ -52,6 +55,7 @@ export const placeSurfaceAssetInputSchema = attachSurfaceInputSchema.omit({ elem
 export const createCompositionInputSchema = z.object({
   spreadId: z.string().min(1), kind: z.enum(compositionKinds), name: z.string().optional(), count: z.number().int().min(1).max(12).default(3),
   spacing: z.number().positive().max(50).default(1.2), position: vec3.optional(), width: z.number().positive().default(6), depth: z.number().positive().default(4),
+  mount: mechanismMountInputSchema.optional(),
 }).strict()
 export const updateCompositionInputSchema = z.object({ spreadId: z.string().min(1), elementId: z.string().min(1),
   count: z.number().int().min(1).max(12), spacing: z.number().positive().max(50) }).strict()
@@ -74,7 +78,7 @@ function readOnly(action: string): BuilderCommandResult | undefined {
 }
 function spreadFor(id: string) { return useBuilderStore.getState().project.book.spreads.find((spread) => spread.id === id) }
 function parentFor(spec: MechanismSpec): StageElement['parent'] {
-  return spec.mount.type === 'surface' ? { type: 'element', elementId: spec.mount.elementId }
+  return spec.mount.type === 'surface' || spec.mount.type === 'bridge' ? { type: 'element', elementId: spec.mount.elementId }
     : { type: spec.mount.type === 'page' && spec.mount.side === 'left' ? 'left-page' : 'right-page' }
 }
 function surfaceExists(spreadId: string, parentId: string, surfaceId: string): boolean {
@@ -82,11 +86,24 @@ function surfaceExists(spreadId: string, parentId: string, surfaceId: string): b
   return parent?.type === 'assembly' && mechanismSurfaceIds(parent.mechanism).includes(surfaceId)
 }
 function checkMount(spreadId: string, spec: MechanismSpec, elementId?: string): string | undefined {
-  if (spec.mount.type !== 'surface') return undefined
-  if (!surfaceExists(spreadId, spec.mount.elementId, spec.mount.surfaceId)) return t().operations.notFound
+  if (spec.mount.type !== 'surface' && spec.mount.type !== 'bridge') return undefined
+  if (spec.mount.type === 'surface' && !surfaceExists(spreadId, spec.mount.elementId, spec.mount.surfaceId)) return t().operations.notFound
   const spread = spreadFor(spreadId)!
+  if (spec.mount.type === 'bridge') {
+    const mountId = spec.mount.elementId
+    const parent = spread?.elements.find((part) => part.id === mountId)
+    if (parent?.type !== 'assembly' || !mechanismBridgeIds(parent.mechanism).includes(spec.mount.bridgeId)) return t().operations.notFound
+  }
   if (elementId && (elementId === spec.mount.elementId || elementDescendantIds(spread, elementId).has(spec.mount.elementId))) return t().operations.invalidParent
   return undefined
+}
+
+/** 不正な接続をundo履歴へ入れる前に、保存時と同じ契約で検査する。 */
+function validateElements(action: string, spreadId: string, elements: StageElement[]): BuilderCommandResult | undefined {
+  const project = structuredClone(useBuilderStore.getState().project)
+  project.book.spreads.find((spread) => spread.id === spreadId)!.elements = elements
+  const validation = validateBookProject(project)
+  return validation.errors.length ? fail(action, t().operations.invalidInput, { mount: validation.errors.join('\n') }) : undefined
 }
 
 /** UIとWebMCPが共有する、定義に基づく部品の原子的な投入。 */
@@ -98,10 +115,6 @@ export function createMechanismCommand(input: CreateMechanismInput): BuilderComm
   const value = parsed.data
   if (!spreadFor(value.spreadId)) return fail(action, t().operations.notFound)
   const base = makeMechanism(value.kind)
-  if (value.deployment?.mode === 'page-constrained') {
-    base.mount = value.kind === 'panel' ? { type: 'page', side: 'right' } : { type: 'gutter' }
-    base.staging.closedScale = 1
-  }
   const checked = mechanismSchema.safeParse({ ...base, parameters: { ...base.parameters, ...value.parameters }, mount: value.mount ?? base.mount,
     deployment: { ...base.deployment, ...value.deployment }, staging: { ...base.staging, ...value.staging } })
   if (!checked.success) return invalid(action, checked.error)
@@ -116,6 +129,8 @@ export function createMechanismCommand(input: CreateMechanismInput): BuilderComm
   element.baseTransform.rotation = value.rotation ?? [0, 0, 0]
   if (spec.deployment.mode === 'page-constrained' && (element.baseTransform.rotation.some((n) => n !== 0)
     || spec.mount.type === 'gutter' && element.baseTransform.position.slice(0, 2).some((n) => n !== 0))) return fail(action, t().mechanisms.constrainedHint)
+  const validation = validateElements(action, value.spreadId, [...spreadFor(value.spreadId)!.elements, element])
+  if (validation) return validation
   const state = useBuilderStore.getState()
   state.commit((project) => project.book.spreads.find((spread) => spread.id === value.spreadId)!.elements.push(element))
   state.select({ type: 'element', spreadId: value.spreadId, elementId: element.id })
@@ -140,21 +155,24 @@ export function updateMechanismCommand(input: UpdateMechanismInput): BuilderComm
   if (mountError) return fail(action, mountError)
   const remaining = new Set(mechanismSurfaceIds(next))
   next.surfaces = Object.fromEntries(Object.entries(next.surfaces).filter(([id]) => remaining.has(id)))
-  if (next.deployment.mode === 'page-constrained' && spread.timeline.tracks.some((track) => track.target.type === 'element'
+  if (spread.timeline.tracks.some((track) => track.target.type === 'element'
     && track.target.elementId === element.id && /^(position|rotation|scale)(\.|$)/.test(track.property))) {
     return fail(action, t().mechanisms.constrainedTimeline)
   }
   const affected = spread.elements.filter((child) => child.parent.type === 'element' && child.parent.elementId === element.id &&
+    !(child.type === 'assembly' && child.mechanism.mount.type === 'bridge') &&
     !remaining.has(child.type === 'assembly' && child.mechanism.mount.type === 'surface' ? child.mechanism.mount.surfaceId : child.surfaceAttachment?.surfaceId ?? ''))
   if (affected.length) return fail(action, t().mechanisms.occupiedSurface(affected.map((child) => child.name).join(', ')), { parameters: t().mechanisms.moveChildrenFirst })
-  useBuilderStore.getState().commit((project) => {
+  const apply = (project: BookProject) => {
     const target = project.book.spreads.find((item) => item.id === value.spreadId)!.elements.find((item) => item.id === value.elementId) as AssemblyElement
     target.mechanism = next
     target.parent = parentFor(next)
-    if (value.mount?.type === 'surface') target.baseTransform.position = [0, 0, 0]
-    if (next.deployment.mode === 'page-constrained') {
+    if (value.mount?.type === 'surface' || value.mount?.type === 'bridge') target.baseTransform.position = [0, 0, 0]
+    {
       target.baseTransform.rotation = [0, 0, 0]; target.baseTransform.scale = [1, 1, 1]; target.motion = []
       if (next.mount.type === 'gutter') target.baseTransform.position = [0, 0, target.baseTransform.position[2]]
+      else if (next.mount.type === 'page') target.baseTransform.position[1] = 0
+      else target.baseTransform.position = [0, 0, 0]
     }
     if (target.composition && value.parameters) {
       const spread = project.book.spreads.find((item) => item.id === value.spreadId)!
@@ -166,7 +184,12 @@ export function updateMechanismCommand(input: UpdateMechanismInput): BuilderComm
       }
       spread.elements = spread.elements.filter((part) => !oldIds.has(part.id)).concat(generated)
     }
-  })
+  }
+  const draft = structuredClone(useBuilderStore.getState().project)
+  apply(draft)
+  const validation = validateBookProject(draft)
+  if (validation.errors.length) return fail(action, t().operations.invalidInput, { mount: validation.errors.join('\n') })
+  useBuilderStore.getState().commit(apply)
   return done(action, element.id)
 }
 
@@ -202,9 +225,10 @@ export function attachToSurfaceCommand(input: z.input<typeof attachSurfaceInputS
   const element = spread?.elements.find((item) => item.id === value.elementId)
   if (!spread || !element || !surfaceExists(value.spreadId, value.parentId, value.surfaceId)) return fail(action, t().operations.notFound)
   if (element.id === value.parentId || elementDescendantIds(spread, element.id).has(value.parentId)) return fail(action, t().operations.invalidParent)
+  if (element.type === 'assembly' && element.mechanism.kind !== 'panel') return fail(action, t().mechanisms.bridgeRequired)
   if (element.type === 'assembly') return updateMechanismCommand({ spreadId: value.spreadId, elementId: element.id,
     mount: { type: 'surface', elementId: value.parentId, surfaceId: value.surfaceId, u: value.u, v: value.v, offset: value.offset },
-    deployment: { mode: 'virtual' } })
+    deployment: { mode: 'page-constrained' } })
   useBuilderStore.getState().commit((project) => {
     const target = project.book.spreads.find((item) => item.id === value.spreadId)!.elements.find((item) => item.id === value.elementId)!
     target.parent = { type: 'element', elementId: value.parentId }
@@ -243,10 +267,15 @@ export function createCompositionCommand(input: z.input<typeof createComposition
   if (!spreadFor(value.spreadId)) return fail(action, t().operations.notFound)
   const root = createStageElement('assembly') as AssemblyElement
   root.name = value.name ?? t().mechanisms.compositions[value.kind]
-  root.mechanism = makeMechanism('platform', { parameters: { width: value.width, depth: value.depth, height: .25 } })
+  const checked = mechanismSchema.safeParse({ ...compositionRootMechanism(value.kind, value.width, value.depth), ...(value.mount ? { mount: value.mount } : {}) })
+  if (!checked.success) return invalid(action, checked.error)
+  root.mechanism = checked.data
+  root.parent = parentFor(root.mechanism)
   root.baseTransform = { position: value.position ?? [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] }
   root.composition = { kind: value.kind, count: value.count, spacing: value.spacing }
   const children = buildMechanismComposition(root, root.composition)
+  const validation = validateElements(action, value.spreadId, [...spreadFor(value.spreadId)!.elements, root, ...children])
+  if (validation) return validation
   const state = useBuilderStore.getState()
   state.commit((project) => {
     const spread = project.book.spreads.find((spread) => spread.id === value.spreadId)!
@@ -281,7 +310,7 @@ export function updateCompositionCommand(input: z.input<typeof updateComposition
   const removedIds = new Set([...oldGenerated].filter((id) => !nextIds.has(id)))
   const affected = spread.elements.filter((item) => !oldGenerated.has(item.id) && item.parent.type === 'element' && removedIds.has(item.parent.elementId))
   if (affected.length) return fail(action, t().mechanisms.occupiedSurface(affected.map((item) => item.name).join(', ')))
-  useBuilderStore.getState().commit((project) => {
+  const apply = (project: BookProject) => {
     const target = project.book.spreads.find((item) => item.id === value.spreadId)!
     for (const part of generated) {
       const old = target.elements.find((item) => item.id === part.id)
@@ -291,6 +320,11 @@ export function updateCompositionCommand(input: z.input<typeof updateComposition
     const targetRoot = target.elements.find((item) => item.id === root.id) as AssemblyElement
     targetRoot.composition = settings
     target.timeline.tracks = target.timeline.tracks.filter((track) => track.target.type !== 'element' || !removedIds.has(track.target.elementId))
-  })
+  }
+  const draft = structuredClone(useBuilderStore.getState().project)
+  apply(draft)
+  const validation = validateBookProject(draft)
+  if (validation.errors.length) return fail(action, t().operations.invalidInput, { mount: validation.errors.join('\n') })
+  useBuilderStore.getState().commit(apply)
   return done(action, root.id)
 }

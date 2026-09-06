@@ -11,7 +11,10 @@ import { evaluateEditCameraPose, evaluatePlayCameraPose, fitCameraPoseToBounds }
 
 function platform(width = 24, height = 4): AssemblyElement {
   const element = createStageElement('assembly') as AssemblyElement
-  element.mechanism = makeMechanism('platform', { parameters: { width, height, depth: 5 } })
+  const supportWidth = Math.min(width, 8)
+  const openScale = width / supportWidth
+  element.mechanism = makeMechanism('platform', { parameters: { width: supportWidth, height: height / openScale, depth: 5 / openScale },
+    deployment: { mode: 'virtual' }, staging: { openScale, closedScale: .2 } })
   return element
 }
 
@@ -23,12 +26,10 @@ describe('全開の複合部品を使う構図', () => {
   it('台、面上の入れ子、その上の人物まで全開境界に含める', () => {
     const book = createBook()
     const lower = platform()
-    lower.baseTransform.position = [-3, 1, -2]
-    lower.baseTransform.rotation = [0, 20, 0]
-    lower.baseTransform.scale = [1.5, 1.5, 1.5]
+    lower.mechanism.staging.openPosition = [-8, 6, 0]
     const upper = platform(7, 9)
     upper.parent = { type: 'element', elementId: lower.id }
-    upper.mechanism.mount = { type: 'surface', elementId: lower.id, surfaceId: 'top', u: .9, v: .5, offset: .1 }
+    upper.mechanism.mount = { type: 'bridge', elementId: lower.id, bridgeId: 'deck', v: .5 }
     const person = createStageElement('visual', { type: 'element', elementId: upper.id }) as VisualElement
     person.baseTransform.rotation = [0, 0, 0]
     person.surfaceAttachment = { surfaceId: 'top', u: .5, v: .5, offset: 0 }
@@ -62,13 +63,14 @@ describe('全開の複合部品を使う構図', () => {
 
   it('後から現れる拡大部品も先に囲み、保持中に再フィットしない', () => {
     const book = createBook()
-    const stage = platform()
+    const stage = platform(72, 12)
+    stage.visible = false
     const spread = book.spreads[0]
     spread.elements = [stage]
     spread.timeline.tracks = [{
-      id: 'grow', target: { type: 'element', elementId: stage.id }, property: 'scale',
-      keys: [{ id: 'small', time: 0, value: 1, ease: 'linear' },
-        { id: 'large', time: spread.sequence.holdSeconds, value: 3, ease: 'linear' }],
+      id: 'appear', target: { type: 'element', elementId: stage.id }, property: 'visible',
+      keys: [{ id: 'hidden', time: 0, value: false, ease: 'linear' },
+        { id: 'shown', time: spread.sequence.holdSeconds, value: true, ease: 'linear' }],
     }]
     const bounds = spreadCameraBounds(book, spread)
     expect(bounds.max.x).toBeGreaterThanOrEqual(36)
@@ -83,7 +85,7 @@ describe('全開の複合部品を使う構図', () => {
     bounds.max.x = 999
     expect(spreadCameraBounds(book, book.spreads[0]).max.x).toBe(12)
     const edited = structuredClone(book)
-    ;(edited.spreads[0].elements[0] as AssemblyElement).mechanism.parameters.width = 40
+    ;(edited.spreads[0].elements[0] as AssemblyElement).mechanism.staging.openScale = 5
     expect(spreadCameraBounds(edited, edited.spreads[0]).max.x).toBe(20)
   })
 
@@ -175,7 +177,7 @@ describe('機構に追いかけられない再生カメラ', () => {
   it('編集用全体表示は全開境界へ注視し、保存カメラを書き換えない', () => {
     const book = createBook()
     const stage = platform(40, 20)
-    stage.baseTransform.position = [15, 10, 0]
+    stage.mechanism.staging.openPosition = [15, 10, 0]
     book.spreads[0].elements = [stage]
     const original = structuredClone(book.camera)
     const edit = evaluateEditCameraPose(book, book.spreads[0], 1.8)

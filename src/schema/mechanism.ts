@@ -18,7 +18,7 @@ export const mechanismMountSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('page'), side: z.enum(['left', 'right']) }),
   z.object({ type: z.literal('gutter') }),
   z.object({ type: z.literal('surface'), elementId: z.string().min(1), ...surfaceAttachmentSchema.shape }),
-  z.object({ type: z.literal('space') }),
+  z.object({ type: z.literal('bridge'), elementId: z.string().min(1), bridgeId: z.literal('deck'), v: finite().min(0).max(1).default(.5) }),
 ])
 
 export const mechanismSurfaceSchema = z.object({
@@ -39,14 +39,14 @@ export const mechanismSchema = z.object({
     segments: finite().int().min(2).max(64).default(8),
     angleDeg: finite().min(1).max(175).default(90),
   }).default({}),
-  mount: mechanismMountSchema.default({ type: 'space' }),
+  mount: mechanismMountSchema.default({ type: 'gutter' }),
   deployment: z.object({
-    mode: z.enum(['page-constrained', 'virtual']).default('virtual'),
-    start: finite().min(0).max(.95).default(.12),
-    end: finite().min(.01).max(1).default(.88),
-  }).default({}),
+    mode: z.enum(['page-constrained', 'virtual']).default('page-constrained'),
+  }).strict().default({}),
   staging: z.object({
-    closedScale: finite().positive().max(1).default(.2),
+    openScale: finite().positive().max(20).default(1),
+    closedScale: finite().positive().max(1).default(1),
+    openPosition: vector().default([0, 0, 0]),
     /** 開姿勢の原点から収納先への変位。親面への取り付け位置とは独立。 */
     closedPosition: vector().default([0, 0, 0]),
     floatAmplitude: vector().default([0, 0, 0]),
@@ -57,20 +57,17 @@ export const mechanismSchema = z.object({
   }).default({}),
   surfaces: z.record(mechanismSurfaceSchema).default({}),
 }).superRefine((value, ctx) => {
-  if (value.deployment.start >= value.deployment.end) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['deployment', 'end'], message: 'Deployment end must exceed start' })
-  }
   if (value.staging.fadeStart >= value.staging.fadeEnd) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['staging', 'fadeEnd'], message: 'Fade end must exceed start' })
   }
-  if (value.deployment.mode !== 'page-constrained') return
-  const allowed = value.kind === 'panel' ? value.mount.type === 'page'
-    : ['v-fold', 'platform', 'box'].includes(value.kind) && value.mount.type === 'gutter'
+  const allowed = value.mount.type === 'gutter' || value.mount.type === 'bridge'
+    || value.kind === 'panel' && ['page', 'surface'].includes(value.mount.type)
   if (!allowed) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['mount'], message: 'This mechanism does not support this page-constrained mount' })
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['mount'], message: 'Folding mechanisms require a real gutter or a parent bridge; a single surface supports panels only' })
   }
+  if (value.deployment.mode !== 'page-constrained') return
   const stage = value.staging
-  if (stage.closedScale !== 1 || stage.closedPosition.some((n) => n !== 0) || stage.floatAmplitude.some((n) => n !== 0)) {
+  if (stage.openScale !== 1 || stage.closedScale !== 1 || stage.openPosition.some((n) => n !== 0) || stage.closedPosition.some((n) => n !== 0) || stage.floatAmplitude.some((n) => n !== 0)) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['staging'], message: 'Page-constrained mechanisms cannot move or scale their real anchors' })
   }
 })
@@ -82,15 +79,38 @@ export type MechanismSurface = z.infer<typeof mechanismSurfaceSchema>
 export type SurfaceAttachment = z.infer<typeof surfaceAttachmentSchema>
 
 export function mechanismSurfaceIds(spec: MechanismSpec): string[] {
+  const support = ['mount-left', 'mount-center', 'mount-right', 'base-left', 'base-right']
   switch (spec.kind) {
-    case 'panel': return ['panel']
-    case 'v-fold': return ['wing-left', 'wing-right']
-    case 'beak': return ['upper', 'lower']
-    case 'platform': return ['top', 'wall-left', 'wall-right']
-    case 'box': return ['front-left', 'front-right', 'back-left', 'back-right', 'wall-left', 'wall-right', 'top-left', 'top-right']
-    case 'accordion': return Array.from({ length: spec.parameters.segments }, (_, i) => `fold-${i}`)
-    case 'curved-shell': return [...Array.from({ length: Math.max(8, spec.parameters.segments * 2) }, (_, i) => `shell-${i}`), 'top']
+    case 'panel': return [...support, 'panel']
+    case 'v-fold': return [...support, 'wing-left', 'wing-right']
+    case 'beak': return [...support, 'upper', 'lower', 'jaw-support-left', 'jaw-support-right']
+    case 'platform': return [...support, 'top', 'wall-left', 'wall-right']
+    case 'box': return [...support, 'front-left', 'front-right', 'back-left', 'back-right', 'wall-left', 'wall-right', 'top-left', 'top-right']
+    case 'accordion': return [...support, ...Array.from({ length: spec.parameters.segments }, (_, i) => `fold-${i}`)]
+    case 'curved-shell': return [...support, ...Array.from({ length: Math.max(8, spec.parameters.segments * 2) }, (_, i) => `shell-${i}`), 'top']
   }
+}
+
+/** 左右の面と実際の折り線を持つ、子機構の接続先。 */
+export function mechanismBridgeIds(spec: MechanismSpec): string[] {
+  return ['box', 'platform', 'v-fold', 'curved-shell'].includes(spec.kind) ? ['deck'] : []
+}
+
+/** 全開の面UVが占める長さ。ヒンジの寸法指定と保存時検証が共有する。 */
+export function mechanismSurfaceSize(spec: MechanismSpec, surfaceId: string): { width: number; height: number } {
+  const p = spec.parameters, scale = spec.staging.openScale
+  let width = p.width, height = p.height
+  if (surfaceId === 'top' || surfaceId.startsWith('base-')) { width = surfaceId.startsWith('base-') ? p.width / 2 : p.width; height = p.depth }
+  if (surfaceId === 'top-left' || surfaceId === 'top-right') { width = p.width / 2; height = p.depth }
+  if (surfaceId.startsWith('wall-')) width = p.depth
+  if (/^(front|back)-(left|right)$/.test(surfaceId)) width = p.width / 2
+  if (surfaceId.startsWith('wing-')) { width = Math.hypot(p.width / 2, p.height); height = p.depth }
+  if (surfaceId.startsWith('fold-')) width = Math.hypot(p.width / p.segments, p.depth)
+  if (surfaceId.startsWith('shell-')) {
+    const count = Math.max(8, p.segments * 2), i = Number(surfaceId.slice(6)), a = i / count * Math.PI * 2, b = (i + 1) / count * Math.PI * 2
+    width = Math.hypot(p.width / 2 * (Math.cos(b) - Math.cos(a)), p.depth / 2 * (Math.sin(b) - Math.sin(a)))
+  }
+  return { width: width * scale, height: height * scale }
 }
 
 type MechanismOverrides = Omit<Partial<MechanismSpec>, 'kind' | 'parameters' | 'deployment' | 'staging'> & {
@@ -100,11 +120,10 @@ type MechanismOverrides = Omit<Partial<MechanismSpec>, 'kind' | 'parameters' | '
 }
 
 export function makeMechanism(kind: MechanismKind, overrides: MechanismOverrides = {}): MechanismSpec {
-  const constrained = overrides.deployment?.mode === 'page-constrained'
   return mechanismSchema.parse({
     kind,
     ...overrides,
-    mount: overrides.mount ?? (constrained ? kind === 'panel' ? { type: 'page', side: 'right' } : { type: 'gutter' } : { type: 'space' }),
-    staging: { ...(constrained ? { closedScale: 1 } : {}), ...overrides.staging },
+    mount: overrides.mount ?? (kind === 'panel' ? { type: 'page', side: 'right' } : { type: 'gutter' }),
+    staging: overrides.staging,
   })
 }

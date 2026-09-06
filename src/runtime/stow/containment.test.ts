@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createBookProject, createStageElement } from '../../schema/bookDefaults'
 import type { Book, Spread } from '../../schema/book'
 import type { StageElement } from '../../schema/stageElement'
-import { analyzeSpreadContainment } from './containment'
+import { analyzeBookContainment, analyzeSpreadContainment } from './containment'
 
 /**
  * 開姿勢の包含検査。
@@ -31,6 +31,19 @@ const codes = (source: Book) => analyzeSpreadContainment(source, spreadOf(source
 const warningCodes = (source: Book) => analyzeSpreadContainment(source, spreadOf(source)).warnings.map((issue) => issue.code)
 
 describe('開姿勢の包含検査', () => {
+  it('機構の駆動エラーcodeと見開きごとの検査量を、作品全体のreportまで残す', () => {
+    const source = book()
+    const element = createStageElement('assembly')
+    if (element.type !== 'assembly') throw new Error('unreachable')
+    element.mechanism.mount = { type: 'space' } as never
+    spreadOf(source).elements.push(element)
+    const report = analyzeBookContainment(source)
+    expect(report.errors).toContainEqual(expect.objectContaining({ elementId: element.id,
+      code: 'assembly-error', assemblyCode: 'invalid-drive-contract' }))
+    expect(report.assemblyAudits).toContainEqual(expect.objectContaining({ spreadId: spreadOf(source).id,
+      samples: 0, checkedConnections: 0, undrivenAssemblies: 1 }))
+  })
+
   it('紙面に収まる立ち板は問題を報告しない', () => {
     const source = book()
     place(source, () => {})

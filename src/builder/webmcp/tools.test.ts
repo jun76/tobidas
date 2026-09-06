@@ -97,6 +97,25 @@ describe('WebMCP adapter', () => {
     expect(useBuilderStore.getState().project).toBe(before)
   })
 
+  it('公開する入力定義と実行の両方からブリッジ接続と明示的な展開位置を使える', async () => {
+    const spreadId = setup()
+    const schema = tool('tobidas-create-mechanism').inputSchema as any
+    expect(schema.properties.mount.properties.type.enum).toEqual(['page', 'gutter', 'surface', 'bridge'])
+    expect(schema.properties.mount.properties.bridgeId.enum).toEqual(['deck'])
+    expect(schema.properties.deployment.properties).not.toHaveProperty('start')
+    expect(schema.properties.deployment.properties).not.toHaveProperty('end')
+    expect(schema.properties.staging.properties).toHaveProperty('openScale')
+    expect(schema.properties.staging.properties).toHaveProperty('openPosition')
+    expect((tool('tobidas-create-composition').inputSchema as any).properties).toHaveProperty('mount')
+    const parent = payload(await invoke('tobidas-create-mechanism', { spreadId, kind: 'platform', parameters: { width: 6, depth: 4 } }))
+    const child = payload(await invoke('tobidas-create-mechanism', { spreadId, kind: 'box',
+      parameters: { width: 3, depth: 2 }, mount: { type: 'bridge', elementId: parent.target.id, bridgeId: 'deck', v: .3 },
+      deployment: { mode: 'virtual' }, staging: { openScale: 2, openPosition: [0, .6, 0] } }))
+    expect(child.ok).toBe(true)
+    expect(child.after.mechanism.mount).toMatchObject({ type: 'bridge', elementId: parent.target.id, v: .3 })
+    expect(child.after.mechanism.staging.openPosition).toEqual([0, .6, 0])
+  })
+
   it('reads and updates the current work authoring guide', async () => {
     setup()
     const guide = payload(await invoke('tobidas-get-authoring-guide', { locale: 'en', keys: ['spreadGround'] }))

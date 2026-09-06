@@ -27,6 +27,10 @@ describe('機構の共通編集コマンド', () => {
     expect(useBuilderStore.getState().project.book.spreads[0].elements).toHaveLength(0)
     useBuilderStore.getState().redo()
     expect(assembly().mechanism.kind).toBe(kind)
+    expect(assembly().mechanism.deployment.mode).toBe('page-constrained')
+    expect(assembly().mechanism.mount.type).toBe(kind === 'panel' ? 'page' : 'gutter')
+    expect(assembly().mechanism.staging.openScale).toBe(1)
+    expect(assembly().mechanism.staging.closedScale).toBe(1)
   })
 
   it('谷間の箱は実駆動で作れ、浮遊との不正な組み合わせは作品を変えず拒否する', () => {
@@ -37,19 +41,38 @@ describe('機構の共通編集コマンド', () => {
     const before = useBuilderStore.getState().project
     expect(updateMechanismCommand({ spreadId, elementId: assembly().id, staging: { floatAmplitude: [0, 1, 0] } }).ok).toBe(false)
     expect(useBuilderStore.getState().project).toBe(before)
-    expect(createMechanismCommand({ spreadId, kind: 'beak', deployment: { mode: 'page-constrained' } }).ok).toBe(false)
+    expect(createMechanismCommand({ spreadId, kind: 'beak', mount: { type: 'page', side: 'right' } }).ok).toBe(false)
     expect(useBuilderStore.getState().project).toBe(before)
   })
 
-  it('巨大な開姿勢と収納設定を保持し紙面内へ自動縮小しない', () => {
+  it('巨大化は明示演出で指定し、実際の谷間の取り付けを動かさない', () => {
     const spreadId = setup()
-    expect(createMechanismCommand({ spreadId, kind: 'box', parameters: { width: 20, height: 15 },
-      position: [0, 5, 0], staging: { closedScale: .04, closedPosition: [0, -5, 0], floatAmplitude: [0, 1, 0] } }).ok).toBe(true)
+    expect(createMechanismCommand({ spreadId, kind: 'box', parameters: { width: 4, height: 2 },
+      deployment: { mode: 'virtual' }, staging: { openScale: 4, closedScale: 1, openPosition: [0, .6, 0], floatAmplitude: [0, .2, 0] } }).ok).toBe(true)
     const part = assembly()
-    expect(part.mechanism.parameters.width).toBe(20)
-    expect(part.baseTransform.position).toEqual([0, 5, 0])
+    expect(part.mechanism.mount).toEqual({ type: 'gutter' })
+    expect(part.mechanism.parameters.width).toBe(4)
+    expect(part.mechanism.staging.openScale).toBe(4)
+    expect(part.mechanism.staging.openPosition).toEqual([0, .6, 0])
+    expect(part.baseTransform.position).toEqual([0, 0, 0])
     useBuilderStore.getState().updateElement(spreadId, part.id, (item) => { item.name = '巨大な箱' })
-    expect(assembly().baseTransform.position).toEqual([0, 5, 0])
+    expect(assembly().baseTransform.position).toEqual([0, 0, 0])
+  })
+
+  it('ブリッジの親・寸法と位置を検査し、不正な接続をcommitしない', () => {
+    const spreadId = setup()
+    createMechanismCommand({ spreadId, kind: 'platform', parameters: { width: 6, depth: 4 } })
+    const root = assembly()
+    const before = useBuilderStore.getState().project
+    expect(createMechanismCommand({ spreadId, kind: 'box', parameters: { width: 7 }, mount: { type: 'bridge', elementId: root.id, bridgeId: 'deck' } }).ok).toBe(false)
+    expect(useBuilderStore.getState().project).toBe(before)
+    expect(createMechanismCommand({ spreadId, kind: 'box', parameters: { width: 3, depth: 1 }, mount: { type: 'bridge', elementId: root.id, bridgeId: 'deck', v: .7 } }).ok).toBe(true)
+    const child = useBuilderStore.getState().project.book.spreads[0].elements[1] as AssemblyElement
+    expect(child.parent).toEqual({ type: 'element', elementId: root.id })
+    expect(child.mechanism.mount).toEqual({ type: 'bridge', elementId: root.id, bridgeId: 'deck', v: .7 })
+    const valid = useBuilderStore.getState().project
+    expect(updateMechanismCommand({ spreadId, elementId: child.id, parameters: { depth: 5 } }).ok).toBe(false)
+    expect(useBuilderStore.getState().project).toBe(valid)
   })
 
   it('面上の素材配置は一度のundoで戻り、面参照と素材を状態要約に含める', () => {
@@ -86,7 +109,7 @@ describe('機構の共通編集コマンド', () => {
     const spreadId = setup()
     createMechanismCommand({ spreadId, kind: 'platform' })
     const root = assembly()
-    createMechanismCommand({ spreadId, kind: 'box', mount: { type: 'surface', elementId: root.id, surfaceId: 'top', u: .5, v: .5 } })
+    createMechanismCommand({ spreadId, kind: 'box', mount: { type: 'bridge', elementId: root.id, bridgeId: 'deck' } })
     const child = useBuilderStore.getState().project.book.spreads[0].elements[1]
     expect(setMechanismSurfaceCommand({ spreadId, elementId: root.id, surfaceId: 'top', visible: false }).ok).toBe(true)
     expect(assembly().mechanism.surfaces.top.visible).toBe(false)
@@ -98,6 +121,8 @@ describe('機構の共通編集コマンド', () => {
     expect(createCompositionCommand({ spreadId, kind, count: 3 }).ok).toBe(true)
     expect(useBuilderStore.getState().issues.errors).toEqual([])
     const root = assembly()
+    expect(root.mechanism.mount.type).toBe('gutter')
+    expect(root.mechanism.deployment.mode).toBe('page-constrained')
     const first = useBuilderStore.getState().project.book.spreads[0].elements[1] as AssemblyElement
     const surfaceId = buildBuilderStateSummary(useBuilderStore.getState()).spreads[0].elements[1].surfaces![0]
     setMechanismSurfaceCommand({ spreadId, elementId: first.id, surfaceId, image: 'actor.svg' })

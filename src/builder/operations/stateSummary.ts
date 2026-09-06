@@ -4,7 +4,7 @@ import type { EditorState } from '../state/editorState'
 import type { StageElement } from '../../schema/stageElement'
 import type { BuilderStateSummary, ElementSummary, TargetSummary } from './types'
 import { AUTHORING_GUIDE_KEYS } from '../../schema/authoringGuide'
-import { mechanismSurfaceIds } from '../../schema/mechanism'
+import { mechanismSurfaceIds, mechanismBridgeIds } from '../../schema/mechanism'
 
 function selectionSummary(state: EditorState): TargetSummary {
   const selection = state.selection
@@ -65,7 +65,7 @@ function elementSummary(element: StageElement, spreadId: string, trackIds: strin
     visible: element.visible,
     opacity: element.opacity,
     surfaceAttachment: element.surfaceAttachment,
-    ...(element.type === 'assembly' ? { mechanism: element.mechanism, surfaces: mechanismSurfaceIds(element.mechanism), composition: element.composition } : {}),
+    ...(element.type === 'assembly' ? { mechanism: element.mechanism, surfaces: mechanismSurfaceIds(element.mechanism), bridges: mechanismBridgeIds(element.mechanism), composition: element.composition } : {}),
     ...(element.type === 'visual' ? {
       width: element.width,
       height: element.height,

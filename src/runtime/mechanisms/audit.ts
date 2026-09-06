@@ -1,12 +1,144 @@
 import * as THREE from 'three'
 import type { Book, Spread } from '../../schema/book'
 import type { StageElement } from '../../schema/stageElement'
+import { mechanismBridgeIds, mechanismSchema } from '../../schema/mechanism'
 import { realPageAnchorIssues } from '../../schema/mechanismPlacement'
-import { evaluateAssemblyScene, assemblySceneBounds } from './scene'
-import { evaluateMechanism, mechanismSurfaceIds } from './evaluate'
+import { evaluateAssemblyScene, assemblySceneBounds, type AssemblySurfaceInstance, type AssemblySceneInput, type AssemblyScene, type AssemblyConnection } from './scene'
+import { bridgePointNames, mechanismSurfaceIds } from './evaluate'
 
 export interface AssemblyAuditIssue { elementId: string; code: string; severity: 'error' | 'warning'; message: string }
-export interface AssemblyAudit { issues: AssemblyAuditIssue[]; samples: number; surfaces: number; maxExtent: number }
+export interface AssemblyAudit extends AssemblyConnectionAudit {
+  samples: number
+  surfaces: number
+  maxExtent: number
+  drivenAssemblies: number
+  undrivenAssemblies: number
+  unauthorizedTransforms: number
+}
+
+export interface AssemblyConnectionAudit {
+  issues: AssemblyAuditIssue[]
+  checkedConnections: number
+  maxConnectionError: number
+}
+
+/**
+ * 評価器の「接続済み」という診断は信頼せず、最終描画行列で接着残差を再計算する。
+ * 可視面を先に渡し、非表示の支持面は構造面で補う。同じ面の描画後の移動も検出できる。
+ */
+export function inspectAssemblyConnections(
+  input: Pick<AssemblySceneInput, 'leftAngle' | 'rightAngle'>,
+  surfaces: Pick<AssemblySurfaceInstance, 'elementId' | 'surface' | 'matrix'>[],
+  connections: AssemblyConnection[],
+): AssemblyConnectionAudit {
+  const report: AssemblyConnectionAudit = { issues: [], checkedConnections: 0, maxConnectionError: 0 }
+  const bySurface = new Map<string, typeof surfaces[number]>()
+  for (const surface of surfaces) {
+    const key = `${surface.elementId}/${surface.surface.id}`
+    if (!bySurface.has(key)) bySurface.set(key, surface)
+  }
+  const pointAt = (elementId: string, surfaceId: string, vertexId: string): THREE.Vector3 | undefined => {
+    const entry = bySurface.get(`${elementId}/${surfaceId}`)
+    if (!entry) return undefined
+    const index = entry.surface.vertexIds.indexOf(vertexId)
+    if (index < 0 || index * 3 + 2 >= entry.surface.positions.length) return undefined
+    const point = new THREE.Vector3(...entry.surface.positions.slice(index * 3, index * 3 + 3) as [number, number, number]).applyMatrix4(entry.matrix)
+    return point.toArray().every(Number.isFinite) ? point : undefined
+  }
+  const add = (elementId: string, code: string, message: string) => {
+    if (!report.issues.some((issue) => issue.elementId === elementId && issue.code === code)) report.issues.push({ elementId, code, severity: 'error', message })
+  }
+  const sharedVertices = new Map<string, THREE.Vector3>()
+  for (const entry of bySurface.values()) for (const vertexId of entry.surface.vertexIds) {
+    const point = pointAt(entry.elementId, entry.surface.id, vertexId)
+    const key = `${entry.elementId}/${vertexId}`
+    const previous = sharedVertices.get(key)
+    if (!point) {
+      add(entry.elementId, 'non-finite-scene-vertex', `Vertex ${vertexId} has no finite position after scene transforms`)
+    } else {
+      if (previous && previous.distanceTo(point) > 1e-6) add(entry.elementId, 'broken-scene-seam',
+        `Shared vertex ${vertexId} is separated after scene transforms`)
+      sharedVertices.set(key, point)
+    }
+  }
+  for (const connection of connections) {
+    const { actual, expected, elementId } = connection
+    const point = pointAt(actual.elementId, actual.surfaceId, actual.vertexId)
+    let target: THREE.Vector3 | undefined
+    if (expected.type === 'page') {
+      const angle = expected.side === 'left' ? input.leftAngle : input.rightAngle
+      target = new THREE.Vector3(Math.cos(angle) * expected.distance, Math.sin(angle) * expected.distance, expected.z)
+    } else if (expected.weights.length
+      && expected.weights.every(({ weight }) => Number.isFinite(weight) && weight >= -1e-7)
+      && Math.abs(expected.weights.reduce((sum, { weight }) => sum + weight, 0) - 1) <= 1e-7) {
+      target = new THREE.Vector3()
+      for (const { vertexId, weight } of expected.weights) {
+        const vertex = pointAt(expected.elementId, expected.surfaceId, vertexId)
+        if (!vertex) { target = undefined; break }
+        target.addScaledVector(vertex, weight)
+      }
+    }
+    if (actual.elementId !== elementId || !point || !target?.toArray().every(Number.isFinite)) {
+      add(elementId, 'missing-connection-geometry', `Connection ${actual.vertexId} has no finite independent attachment geometry`)
+      continue
+    }
+    report.checkedConnections++
+    const error = point.distanceTo(target)
+    report.maxConnectionError = Math.max(report.maxConnectionError, error)
+    if (error > 1e-6) add(elementId, expected.type === 'page' ? 'detached-page-anchor' : 'detached-parent-anchor',
+      `Connection ${actual.vertexId} is separated from its ${expected.type} target by ${error.toPrecision(6)} after scene transforms`)
+  }
+  return report
+}
+
+/** 頂点が実座標へ解かれた後の、暗黙の一括移動・縮小や駆動記録の欠落を検出する。 */
+export function inspectAssemblyScene(spread: Spread, input: AssemblySceneInput, scene: AssemblyScene): AssemblyConnectionAudit & { unauthorizedTransforms: number } {
+  const surfaces = [...scene.surfaces, ...scene.structuralSurfaces]
+  const report = { ...inspectAssemblyConnections(input, surfaces, scene.connections), unauthorizedTransforms: 0 }
+  const add = (issue: AssemblyAuditIssue) => {
+    if (!report.issues.some((existing) => existing.elementId === issue.elementId && existing.code === issue.code)) report.issues.push(issue)
+  }
+  for (const issue of scene.issues) add(issue)
+  const unauthorized = new Set<string>()
+  const identity = new THREE.Matrix4().elements
+  for (const entry of surfaces) if (entry.matrix.elements.some((value, i) => !Number.isFinite(value) || Math.abs(value - identity[i]) > 1e-7)) unauthorized.add(entry.elementId)
+  for (const element of spread.elements) {
+    if (element.type !== 'assembly') continue
+    const entries = surfaces.filter((entry) => entry.elementId === element.id)
+    const connections = scene.connections.filter((entry) => entry.elementId === element.id)
+    const mount = element.mechanism.mount
+    if (mount.type === 'bridge' && !scene.bridges.some((bridge) => bridge.elementId === mount.elementId && bridge.id === mount.bridgeId)) {
+      add({ elementId: element.id, code: 'missing-scene-bridge', severity: 'error', message: 'The final scene has no evaluated parent bridge for this folding child' })
+    }
+    if (bridgePointNames.some((name) => !connections.some((connection) => connection.actual.vertexId === `anchor-${name}`))) {
+      add({ elementId: element.id, code: 'incomplete-driver-anchors', severity: 'error', message: 'The final scene does not retain all six real attachment references for this assembly' })
+    }
+    const point = (id: string) => {
+      const entry = entries.find((candidate) => candidate.surface.vertexIds.includes(id))
+      if (!entry) return undefined
+      const i = entry.surface.vertexIds.indexOf(id)
+      return new THREE.Vector3(...entry.surface.positions.slice(i * 3, i * 3 + 3) as [number, number, number]).applyMatrix4(entry.matrix)
+    }
+    const stage = element.mechanism.staging
+    if (stage.openScale === 1 && stage.closedScale === 1) {
+      // 浮遊を指定しても、基部の幅と奥行きを勝手に縮める許可にはならない。
+      for (const [a, b] of [['leftBack', 'rightBack'], ['creaseBack', 'creaseFront']] as const) {
+        const anchorA = point(`anchor-${a}`), anchorB = point(`anchor-${b}`), baseA = point(`base-${a}`), baseB = point(`base-${b}`)
+        if (anchorA && anchorB && baseA && baseB && anchorB.sub(anchorA).distanceTo(baseB.sub(baseA)) > 1e-6) unauthorized.add(element.id)
+      }
+    }
+    if (stage.openPosition.every((value) => value === 0) && stage.closedPosition.every((value) => value === 0) && stage.floatAmplitude.every((value) => value === 0)) {
+      // 指定された拡縮の中心は駆動面の折り線中央。無指定の退避先へ寄せない。
+      const anchorBack = point('anchor-creaseBack'), anchorFront = point('anchor-creaseFront')
+      const baseBack = point('base-creaseBack'), baseFront = point('base-creaseFront')
+      if (anchorBack && anchorFront && baseBack && baseFront && anchorBack.add(anchorFront).distanceTo(baseBack.add(baseFront)) > 2e-6) unauthorized.add(element.id)
+    }
+  }
+  for (const elementId of unauthorized) add({ elementId, code: 'unauthorized-scene-transform', severity: 'error',
+    message: 'Assembly was moved or scaled after solving its real attachment geometry, without a matching explicit staging instruction' })
+  report.unauthorizedTransforms = unauthorized.size
+  return report
+}
 
 function assemblyElements(spread: Spread): StageElement[] {
   const byId = new Map(spread.elements.map((element) => [element.id, element]))
@@ -74,21 +206,73 @@ function clockSampleTimes(elements: StageElement[]): number[] {
   return [...times].sort((a, b) => a - b)
 }
 
+/** 保持キーとContent Motionの検査時刻。実駆動の途中姿勢とは別の時間軸を網羅する。 */
+export function assemblyAuditSampleTimes(spread: Spread): { holdTimes: number[]; clocks: number[] } {
+  const relevant = assemblyElements(spread)
+  return { holdTimes: holdSampleTimes(spread, relevant), clocks: clockSampleTimes(relevant) }
+}
+
 /** 機構の方式に応じて接続と収納を検査する。全開の大きさは拒否条件にしない。 */
 export function auditAssemblies(book: Book, spread: Spread): AssemblyAudit {
-  const report: AssemblyAudit = { issues: [], samples: 0, surfaces: 0, maxExtent: 0 }
+  const report: AssemblyAudit = { issues: [], samples: 0, surfaces: 0, maxExtent: 0,
+    checkedConnections: 0, maxConnectionError: 0, drivenAssemblies: 0, undrivenAssemblies: 0, unauthorizedTransforms: 0 }
   const add = (issue: AssemblyAuditIssue) => {
     if (!report.issues.some((existing) => existing.elementId === issue.elementId && existing.code === issue.code)) report.issues.push(issue)
   }
   const assemblies = spread.elements.filter((element) => element.type === 'assembly')
   if (!assemblies.length) return report
+  const byId = new Map(spread.elements.map((element) => [element.id, element]))
+  let invalidSchema = false
+  for (const element of assemblies) {
+    const parsed = mechanismSchema.safeParse(element.mechanism)
+    if (!parsed.success) {
+      invalidSchema = true
+      add({ elementId: element.id, code: 'invalid-drive-contract', severity: 'error',
+        message: parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ') })
+    }
+    const deployment = element.mechanism.deployment
+    if ('start' in deployment || 'end' in deployment) {
+      invalidSchema = true
+      add({ elementId: element.id, code: 'invalid-drive-contract', severity: 'error',
+        message: 'Local deployment timing cannot replace the real page or parent bridge driver' })
+    }
+    const seen = new Set<string>()
+    let current = element
+    let connected = false
+    while (!seen.has(current.id)) {
+      seen.add(current.id)
+      const mount = current.mechanism.mount
+      if (mount.type === 'page' || mount.type === 'gutter') {
+        connected = current.parent.type !== 'element'
+        break
+      }
+      if (mount.type !== 'surface' && mount.type !== 'bridge') break
+      if (current.parent.type !== 'element' || current.parent.elementId !== mount.elementId) break
+      const parent = byId.get(mount.elementId)
+      if (parent?.type !== 'assembly') break
+      if (mount.type === 'bridge' && !mechanismBridgeIds(parent.mechanism).includes(mount.bridgeId)) break
+      if (mount.type === 'surface' && (current.mechanism.kind !== 'panel' || !mechanismSurfaceIds(parent.mechanism).includes(mount.surfaceId))) break
+      current = parent
+    }
+    if (connected && parsed.success) report.drivenAssemblies++
+    else {
+      report.undrivenAssemblies++
+      add({ elementId: element.id, code: 'missing-drive-chain', severity: 'error',
+        message: 'Assembly does not resolve through compatible parent bridges or panel surfaces to a real page attachment' })
+    }
+  }
+  // 不正な旧データを既定値で救済したり、評価器の例外から合格扱いへ落とさない。
+  if (invalidSchema) return report
   for (const element of assemblies) {
     const issues = realPageAnchorIssues(element, book.format)
     if (issues.length) add({ elementId: element.id, code: 'invalid-page-anchor', severity: 'error', message: issues.join('; ') })
+    if (spread.timeline.tracks.some((track) => track.target.type === 'element' && track.target.elementId === element.id
+      && /^(position|rotation|scale)(\.|$)/.test(track.property))) add({ elementId: element.id, code: 'invalid-drive-transform', severity: 'error',
+      message: 'Assembly transform tracks cannot replace the real attachment driver; use explicit mechanism staging' })
   }
-  const relevant = assemblyElements(spread)
-  const holdTimes = holdSampleTimes(spread, relevant)
-  const clocks = clockSampleTimes(relevant)
+  const { holdTimes, clocks } = assemblyAuditSampleTimes(spread)
+  const unauthorizedElements = new Set<string>()
+  const undrivenElements = new Set(report.issues.filter((issue) => issue.code === 'missing-drive-chain').map((issue) => issue.elementId))
   for (const element of spread.elements) {
     const attachment = element.type === 'assembly' && element.mechanism.mount.type === 'surface'
       ? element.mechanism.mount : element.surfaceAttachment
@@ -103,7 +287,19 @@ export function auditAssemblies(book: Book, spread: Spread): AssemblyAudit {
       const leftAngle = reverse ? Math.PI * open : Math.PI
       const rightAngle = reverse ? 0 : Math.PI * (1 - open)
       const context = `openness ${open.toFixed(3)} (${reverse ? 'outgoing' : 'incoming'}, hold ${spreadTime.toFixed(3)}s, clock ${clock.toFixed(3)}s)`
-      const scene = evaluateAssemblyScene(book, spread, { open, leftAngle, rightAngle, clock, spreadTime })
+      const input = { open, leftAngle, rightAngle, clock, spreadTime }
+      const scene = evaluateAssemblyScene(book, spread, input)
+      const inspected = inspectAssemblyScene(spread, input, scene)
+      report.checkedConnections += inspected.checkedConnections
+      report.maxConnectionError = Math.max(report.maxConnectionError, inspected.maxConnectionError)
+      for (const issue of inspected.issues) {
+        add({ ...issue, message: `${issue.message} at ${context}` })
+        if (issue.code === 'unauthorized-scene-transform') unauthorizedElements.add(issue.elementId)
+        if (['missing-driver', 'invalid-driver', 'missing-real-root', 'unsupported-parent', 'incomplete-driver-anchors', 'missing-scene-bridge'].includes(issue.code)) undrivenElements.add(issue.elementId)
+      }
+      report.unauthorizedTransforms = unauthorizedElements.size
+      report.undrivenAssemblies = undrivenElements.size
+      report.drivenAssemblies = assemblies.length - report.undrivenAssemblies
       report.samples++
       report.surfaces = Math.max(report.surfaces, scene.surfaces.length)
       const bounds = assemblySceneBounds(scene)
@@ -131,22 +327,11 @@ export function auditAssemblies(book: Book, spread: Spread): AssemblyAudit {
         for (const u of [0, 1]) for (const v of [0, 1]) checkPoint(new THREE.Vector3(
           (u - element.pivot[0]) * element.width, (v - element.pivot[1]) * element.height, 0).applyMatrix4(matrix), element.id)
       }
-      for (const message of scene.diagnostics) {
-        if (message.includes('unknown surface') || message.includes('missing surface') || message.includes('cyclic')) {
-          add({ elementId: '', code: message, severity: 'error', message: `${message} at ${context}` })
-        }
-      }
   }
   // 開くときは保持先頭、閉じるときは保持終端の姿勢を使う。
   for (let i = 0; i <= 40; i++) {
     const open = i / 40
     for (const reverse of [false, true]) {
-      const leftAngle = reverse ? Math.PI * open : Math.PI
-      const rightAngle = reverse ? 0 : Math.PI * (1 - open)
-      for (const element of assemblies) {
-        const result = evaluateMechanism(element.mechanism, { open, leftAngle, rightAngle, clock: 0 })
-        for (const issue of result.diagnostics) add({ ...issue, elementId: element.id })
-      }
       for (const clock of clocks) inspectScene(open, reverse, reverse ? spread.sequence.holdSeconds : 0, clock)
     }
   }

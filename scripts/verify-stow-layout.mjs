@@ -69,7 +69,9 @@ if (hasAssemblies) {
         if (!spread.elements.some((element) => element.type === 'assembly' || element.surfaceAttachment)) continue
         const result = auditAssemblies(parsed.data, spread)
         for (const issue of result.issues) addFinding(issue.severity, spread, spread.elements.find((element) => element.id === issue.elementId), `${issue.code}: ${issue.message}`)
-        console.log(`[機構検査] ${spread.name}: ${result.samples}姿勢、最大${result.surfaces}面、全体境界最大径${result.maxExtent.toFixed(3)}`)
+        console.log(`[機構検査] ${spread.name}: ${result.samples}姿勢、最大${result.surfaces}面、全体境界最大径${result.maxExtent.toFixed(3)}`
+          + `、接着検査${result.checkedConnections}点、最大残差${result.maxConnectionError.toExponential(3)}`
+          + `、実駆動鎖${result.drivenAssemblies}件、未駆動${result.undrivenAssemblies}件、無指定変換${result.unauthorizedTransforms}件`)
       }
     }
   } catch (error) {

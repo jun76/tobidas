@@ -1,3 +1,4 @@
+import { realPageAnchorIssues } from '../../schema/mechanismPlacement'
 import type { ContentMotion, ParentSpace, ParticleElement, StageElement, VisualElement } from '../../schema/stageElement'
 import { embeddedVideoAudioSchema, type EmbeddedVideoAudio } from '../../schema/audio'
 import { elementDescendantIds } from '../hierarchy'
@@ -158,10 +159,9 @@ export function updateElementCommand(spreadId: string, elementId: string, input:
   if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const element = state.project.book.spreads.find((spread) => spread.id === spreadId)?.elements.find((item) => item.id === elementId)
   if (!element) return failure(action, t().operations.notFound)
-  if (element.type === 'assembly' && element.mechanism.deployment.mode === 'page-constrained') {
-    if (input.rotation.some((value) => value !== 0) || input.scale.some((value) => value !== 1)
-      || element.mechanism.mount.type === 'gutter' && input.position.slice(0, 2).some((value) => value !== 0)
-      || input.motion?.length) return failure(action, t().mechanisms.constrainedHint)
+  if (element.type === 'assembly') {
+    const candidate = { ...element, baseTransform: { position: input.position, rotation: input.rotation, scale: input.scale }, motion: input.motion ?? element.motion }
+    if (realPageAnchorIssues(candidate, state.project.book.format).length) return failure(action, t().mechanisms.constrainedHint)
   }
   const errors: Record<string, string> = {}
   if (!input.name.trim()) errors.name = t().operations.required
@@ -328,7 +328,7 @@ export function addTimelineKeyCommand(input: {
     const elementId = input.target.elementId
     if (!spread.elements.some((element) => element.id === elementId)) errors.target = t().operations.notFound
     const element = spread.elements.find((item) => item.id === elementId)
-    if (element?.type === 'assembly' && element.mechanism.deployment.mode === 'page-constrained' && /^(position|rotation|scale)(\.|$)/.test(input.property)) errors.property = t().mechanisms.constrainedTimeline
+    if (element?.type === 'assembly' && /^(position|rotation|scale)(\.|$)/.test(input.property)) errors.property = t().mechanisms.constrainedTimeline
   }
   if (input.target.type === 'sound') {
     const assetId = input.target.assetId

@@ -6,75 +6,84 @@ export const compositionKinds = ['stage', 'meadow', 'arcade', 'steps', 'bridge',
 export type CompositionKind = typeof compositionKinds[number]
 export interface CompositionParameters { kind: CompositionKind; count: number; spacing: number }
 
-/** 役割IDを固定し、段数を変えても残る面の素材と取り付けを維持する。 */
+/** 根元そのものが作品の形を持つ。全プリセットを仮想の台へ載せない。 */
+export function compositionRootMechanism(kind: CompositionKind, width: number, depth: number, mount: MechanismSpec['mount'] = { type: 'gutter' }): MechanismSpec {
+  const shapes: Record<CompositionKind, [MechanismKind, number]> = {
+    stage: ['v-fold', 1.8], meadow: ['accordion', .55], arcade: ['v-fold', 2.2], steps: ['platform', .4],
+    bridge: ['platform', 1], house: ['box', 1.8], room: ['box', 1.8], tree: ['v-fold', 2.8],
+    cake: ['curved-shell', 1], 'floating-stage': ['platform', .8], scene: ['v-fold', 1.2],
+  }
+  const [primitive, height] = shapes[kind]
+  const spec = makeMechanism(primitive, { parameters: { width, depth, height }, mount, deployment: { mode: 'page-constrained' } })
+  if (kind === 'room') for (const id of ['front-left', 'front-right', 'top-left', 'top-right']) spec.surfaces[id] = { color: '#c8d0bd', visible: false }
+  return spec
+}
+
+/** 折れる子は両面を跨ぐ。単面の飾りだけ、指定面のヒンジを使う。 */
 export function buildMechanismComposition(root: AssemblyElement, settings: CompositionParameters): AssemblyElement[] {
   const count = Math.max(1, Math.min(12, Math.round(settings.count)))
-  const gap = settings.spacing
-  const { width: w, depth: d } = root.mechanism.parameters
-  const h = root.mechanism.parameters.height * 8
+  const { width: w, depth: d, height: h } = root.mechanism.parameters
   const parts: AssemblyElement[] = []
-  const color = ['#54845a', '#daa862', '#bd6266', '#6196a8', '#8b77b8', '#edcc83']
-  const add = (role: string, kind: MechanismKind, parameters: Partial<MechanismSpec['parameters']>, position: [number, number, number],
-    options: { parent?: AssemblyElement; surface?: string; u?: number; v?: number; rotation?: [number, number, number]; color?: string } = {}) => {
-    const parent = options.parent ?? root
+  const colors = ['#54845a', '#daa862', '#bd6266', '#6196a8', '#8b77b8', '#edcc83']
+  const finish = (role: string, spec: MechanismSpec, parent: AssemblyElement, color?: string) => {
     const part = createStageElement('assembly', { type: 'element', elementId: parent.id }) as AssemblyElement
-    part.id = `${root.id}/${role}`
-    part.name = role
-    part.mechanism = makeMechanism(kind, { parameters,
-      mount: { type: 'surface', elementId: parent.id, surfaceId: options.surface ?? 'top', u: options.u ?? .5, v: options.v ?? .5, offset: 0 },
-      staging: { closedScale: 1 }, deployment: { start: .16, end: .9 } })
-    part.baseTransform = { position, rotation: options.rotation ?? [0, 0, 0], scale: [1, 1, 1] }
-    for (const id of mechanismSurfaceIds(part.mechanism)) part.mechanism.surfaces[id] = { color: options.color ?? color[parts.length % color.length], visible: true }
+    part.id = `${root.id}/${role}`; part.name = role; part.mechanism = spec
+    part.baseTransform = { position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] }
+    for (const id of mechanismSurfaceIds(spec)) spec.surfaces[id] ??= { color: color ?? colors[parts.length % colors.length], visible: true }
     parts.push(part)
     return part
   }
-  for (let i = 0; i < count; i++) {
-    const x = (i - (count - 1) / 2) * gap
-    if (settings.kind === 'stage') add(`scenery-${i}`, 'panel', { width: w * .9, height: h * (1 + i * .25) }, [0, 0, (i - (count - 1) / 2) * gap])
-    if (settings.kind === 'meadow') {
-      add(`grass-${i}`, 'panel', { width: w, height: h * .6 }, [0, 0, x])
-      add(`flower-${i}`, 'beak', { width: h * .65, depth: h * .5, height: h * .5 }, [Math.sin(i * 2) * w * .3, h * .5, x])
-    }
-    if (settings.kind === 'arcade') {
-      for (const side of [-1, 1]) add(`arch-${i}/pier-${side}`, 'panel', { width: w * .12, height: h * 2 }, [side * w * .4, 0, x], { color: '#bb9476' })
-      add(`arch-${i}/lintel`, 'v-fold', { width: w, height: h * .7 }, [0, h * 2, x], { color: '#d7b990' })
-    }
-    if (settings.kind === 'steps') add(`step-${i}`, 'platform', { width: w * .8, height: h * (i + 1) / count, depth: d / count }, [0, 0, x])
-    if (settings.kind === 'bridge') add(`span-${i}`, 'platform', { width: w / count, height: h, depth: d * .35 }, [x, 0, 0], { color: '#bc8554' })
-    if (settings.kind === 'house') {
-      const house = add(`house-${i}`, 'box', { width: w / Math.max(2, count), height: h, depth: d * .6 }, [x, 0, 0], { color: '#e5c789' })
-      add(`roof-${i}`, 'v-fold', { width: w / Math.max(2, count) * 1.1, height: h * .6, depth: d * .7 }, [0, 0, 0],
-        { parent: house, surface: 'top-left', u: 1, color: '#9e5a59' })
-    }
-    if (settings.kind === 'room') add(`bed-${i}`, 'platform', { width: w / Math.max(2, count), height: h * .4, depth: d * .55 }, [x, 0, 0], { color: '#799dab' })
-    if (settings.kind === 'tree') {
-      const trunk = add(`trunk-${i}`, 'panel', { width: h * .25, height: h * 2.5 }, [x, 0, 0], { color: '#966e49' })
-      add(`crown-${i}`, 'accordion', { width: w / Math.max(1, count) * 1.8, height: h * 1.5, depth: h, segments: 10 }, [0, 0, 0],
-        { parent: trunk, surface: 'panel', v: 1, color: '#5c8b59', rotation: [90, 0, 0] })
-    }
-    if (settings.kind === 'cake') {
-      const parent = parts.find((part) => part.id === `${root.id}/tier-${i - 1}`) ?? root
-      add(`tier-${i}`, 'curved-shell', { width: w * (1 - i / (count + 1) * .6), height: h, depth: d * (1 - i / (count + 1) * .6), segments: 24 }, [0, 0, 0],
-        { parent, color: i % 2 ? '#e8a5b8' : '#fff0d1' })
-    }
-    if (settings.kind === 'floating-stage') {
-      const part = add(`island-${i}`, i % 2 ? 'curved-shell' : 'platform', { width: w / 3, height: h * .5, depth: d / 3 }, [x, h * (1 + Math.sin(i) * .4), Math.cos(i) * d * .25])
-      part.mechanism.staging.floatAmplitude = [.1, .2, .1]
-      part.mechanism.staging.floatPhase = i * .8
-    }
-    if (settings.kind === 'scene') {
-      const sceneKinds = ['house', 'tree', 'cake', 'arcade'] as const
-      const width = w / Math.max(2, Math.ceil(count / 2))
-      const part = add(`scene-${i}`, 'platform', { width, height: .14, depth: d * .4 },
-        [(i % 2 ? 1 : -1) * w * .25, 0, (Math.floor(i / 2) - Math.floor((count - 1) / 2) / 2) * gap], { color: '#778769' })
-      part.composition = { kind: sceneKinds[i % sceneKinds.length], count: 1, spacing: 1 }
-      part.mechanism.deployment = { mode: 'virtual', start: .08 + i / count * .12, end: .8 + i / count * .15 }
-      parts.push(...buildMechanismComposition(part, part.composition))
+  const bridge = (role: string, kind: MechanismKind, parent: AssemblyElement, width: number, depth: number, height: number, v = .5, color?: string) =>
+    finish(role, makeMechanism(kind, { parameters: { width, depth, height }, mount: { type: 'bridge', elementId: parent.id, bridgeId: 'deck', v }, deployment: { mode: 'page-constrained' } }), parent, color)
+  const panel = (role: string, parent: AssemblyElement, surfaceId: string, width: number, height: number, u: number, v: number, color?: string) =>
+    finish(role, makeMechanism('panel', { parameters: { width, height }, mount: { type: 'surface', elementId: parent.id, surfaceId, u, v, offset: 0 }, deployment: { mode: 'page-constrained' } }), parent, color)
+  // 反復要素は綴じ目方向の有限領域へ並べ、左右へ移して接続線を外さない。
+  const row = (index: number, partDepth: number) => .5 + (index - (count - 1) / 2)
+    * Math.min(settings.spacing, Math.max(0, d - partDepth) / Math.max(1, count - 1)) / Math.max(1e-9, d - partDepth)
+
+  if (settings.kind === 'stage') for (let i = 0; i < count; i++) panel(`scenery-${i}`, root, i % 2 ? 'wing-right' : 'wing-left', w * .25, .6 + i * .12, .55, (i + .5) / count)
+  if (settings.kind === 'meadow') for (let i = 0; i < count; i++) {
+    const id = `fold-${Math.min(root.mechanism.parameters.segments - 1, Math.floor(i / count * root.mechanism.parameters.segments))}`
+    panel(`grass-${i}`, root, id, w / root.mechanism.parameters.segments * .8, .45, .5, .3, '#60934f')
+    panel(`flower-${i}`, root, id, w / root.mechanism.parameters.segments * .6, .6, .5, .75, '#e5ae73')
+  }
+  if (settings.kind === 'arcade') for (let i = 0; i < count; i++) {
+    const arch = bridge(`arch-${i}`, 'v-fold', root, w * .8, d / count * .6, .9, row(i, d / count * .6), '#c6a482')
+    for (const side of ['left', 'right']) panel(`arch-${i}/pier-${side}`, arch, `wing-${side}`, w * .08, .65, .1, .5, '#a98666')
+  }
+  if (settings.kind === 'steps') {
+    let parent = root
+    for (let i = 0; i < count; i++) parent = bridge(`step-${i}`, 'platform', parent, parent.mechanism.parameters.width * .8, parent.mechanism.parameters.depth * .8, .35)
+  }
+  if (settings.kind === 'bridge') for (let i = 0; i < count; i++) {
+    for (const [side, center] of [['left', .25], ['right', .75]] as const) {
+      const u = center + ((i + .5) / count - .5) / 2
+      panel(`rail-front-${side}-${i}`, root, 'top', w / count * .4, .35, u, .05, '#ae794b')
+      panel(`rail-back-${side}-${i}`, root, 'top', w / count * .4, .35, u, .95, '#ae794b')
     }
   }
-  if (settings.kind === 'room') {
-    add('back-wall', 'panel', { width: w, height: h * 2 }, [0, 0, -d / 2], { color: '#b5c5bf' })
-    add('side-wall', 'panel', { width: d, height: h * 2 }, [-w / 2, 0, 0], { rotation: [0, 90, 0], color: '#d1c4b1' })
+  if (settings.kind === 'house') {
+    bridge('roof-0', 'v-fold', root, w * .95, d * .95, h * .6, .5, '#a65852')
+    for (let i = 0; i < count; i++) panel(`window-${i}`, root, 'wall-right', .4, .45, (i + .5) / count, .5, '#edd397')
+  }
+  if (settings.kind === 'room') for (let i = 0; i < count; i++) panel(`furniture-${i}`, root, 'wall-left', .6, .5, (i + .5) / count, .2, '#849e9b')
+  if (settings.kind === 'tree') {
+    const crown = bridge('crown-0', 'accordion', root, w * .9, d * .85, 1.1, .5, '#5b8a50')
+    for (let i = 0; i < count; i++) panel(`leaf-${i}`, crown, `fold-${Math.floor(i / count * crown.mechanism.parameters.segments)}`, .45, .5, .5, .5, '#74a65b')
+  }
+  if (settings.kind === 'cake') {
+    let parent = root
+    for (let i = 0; i < count; i++) parent = bridge(`tier-${i}`, 'curved-shell', parent, parent.mechanism.parameters.width * .6, parent.mechanism.parameters.depth * .6, .7, .5, i % 2 ? '#f0c6d2' : '#fff0d1')
+  }
+  if (settings.kind === 'floating-stage') for (let i = 0; i < count; i++) {
+    // 初期状態は実接続。浮遊・拡大は利用者が明示したときだけ使う。
+    bridge(`island-${i}`, i % 2 ? 'curved-shell' : 'platform', root, w * .7, d / count * .6, .5, row(i, d / count * .6))
+  }
+  if (settings.kind === 'scene') for (let i = 0; i < count; i++) {
+    const kind = (['house', 'tree', 'cake', 'arcade'] as const)[i % 4], depth = d / count * .7
+    const part = finish(`scene-${i}`, compositionRootMechanism(kind, w * .65, depth, { type: 'bridge', elementId: root.id, bridgeId: 'deck', v: row(i, depth) }), root)
+    part.composition = { kind, count: 1, spacing: 1 }
+    parts.push(...buildMechanismComposition(part, part.composition))
   }
   return parts
 }

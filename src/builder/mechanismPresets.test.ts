@@ -1,45 +1,80 @@
 import { describe, expect, it } from 'vitest'
 import * as THREE from 'three'
 import { createBookProject, createStageElement } from '../schema/bookDefaults'
-import { makeMechanism } from '../schema/mechanism'
 import type { AssemblyElement } from '../schema/stageElement'
+import { validateBookProject } from '../schema/bookValidate'
+import { auditAssemblies } from '../runtime/mechanisms/audit'
 import { evaluateAssemblyScene } from '../runtime/mechanisms/scene'
-import { buildMechanismComposition } from './mechanismPresets'
+import { buildMechanismComposition, compositionKinds, compositionRootMechanism, type CompositionKind } from './mechanismPresets'
 
-function scene(kind: 'house' | 'tree') {
-  const project = createBookProject('複合接続')
+function fixture(kind: CompositionKind, count = 3) {
+  const project = createBookProject('初期状態の接続')
   const root = createStageElement('assembly') as AssemblyElement
-  root.mechanism = makeMechanism('platform', { parameters: { width: 6, height: .25, depth: 4 } })
-  const children = buildMechanismComposition(root, { kind, count: 1, spacing: 1 })
+  root.mechanism = compositionRootMechanism(kind, 6, 4)
+  root.baseTransform.position = [0, 0, 0]
+  root.composition = { kind, count, spacing: 1.2 }
+  const children = buildMechanismComposition(root, root.composition)
   const spread = project.book.spreads[0]
   spread.elements = [root, ...children]
-  const result = evaluateAssemblyScene(project.book, spread, { open: 1, leftAngle: Math.PI, rightAngle: 0, spreadTime: 0, clock: 0 })
-  const bounds = (role: string) => {
-    const box = new THREE.Box3()
-    for (const instance of result.surfaces.filter((surface) => surface.elementId === `${root.id}/${role}`)) {
-      const positions = instance.surface.positions
-      for (let i = 0; i < positions.length; i += 3) box.expandByPoint(new THREE.Vector3(...positions.slice(i, i + 3) as [number, number, number]).applyMatrix4(instance.matrix))
-    }
-    return box
-  }
-  return { bounds, result }
+  return { project, root, children, spread }
 }
 
-describe('複合プリセットの全開構図', () => {
-  it('屋根の軒は箱の天面上に接続し、棟は上へ伸びる', () => {
-    const { bounds, result } = scene('house')
-    const body = bounds('house-0'), roof = bounds('roof-0')
-    expect(result.diagnostics).toEqual([])
-    expect(roof.min.y).toBeCloseTo(body.max.y, 8)
-    expect(roof.max.y).toBeGreaterThan(body.max.y)
-    expect(roof.getCenter(new THREE.Vector3()).x).toBeCloseTo(body.getCenter(new THREE.Vector3()).x, 8)
+describe('複合プリセットの初期接続', () => {
+  it.each(compositionKinds)('%sは実際の谷間につながり、開閉途中も支点を保持する', (kind) => {
+    const { project, root, children, spread } = fixture(kind)
+    expect(validateBookProject(project).errors).toEqual([])
+    expect(root.mechanism.mount.type).toBe('gutter')
+    for (const part of [root, ...children]) {
+      expect(part.mechanism.deployment.mode).toBe('page-constrained')
+      expect(part.mechanism.staging.openScale).toBe(1)
+      expect(part.mechanism.staging.closedScale).toBe(1)
+      expect(part.mechanism.staging.closedPosition).toEqual([0, 0, 0])
+      expect(part.mechanism.staging.openPosition).toEqual([0, 0, 0])
+      expect(part.mechanism.staging.floatAmplitude).toEqual([0, 0, 0])
+      if (part !== root) expect(part.mechanism.mount.type).toBe(part.mechanism.kind === 'panel' ? 'surface' : 'bridge')
+    }
+    const report = auditAssemblies(project.book, spread)
+    expect(report.issues.filter((issue) => issue.severity === 'error')).toEqual([])
+    expect(report.checkedConnections).toBeGreaterThan(0)
+    expect(report.maxConnectionError).toBeLessThan(1e-6)
+    expect(report.drivenAssemblies).toBe(children.length + 1)
+    expect(report.undrivenAssemblies).toBe(0)
+    expect(report.unauthorizedTransforms).toBe(0)
+    for (const open of [.15, .35, .5, .75, 1]) {
+      const scene = evaluateAssemblyScene(project.book, spread, { open, leftAngle: Math.PI, rightAngle: (1 - open) * Math.PI, spreadTime: 0, clock: 0 })
+      const rootSurfaces = scene.surfaces.filter((entry) => entry.elementId === root.id)
+      expect(rootSurfaces.length).toBeGreaterThan(0)
+      for (const part of rootSurfaces) {
+        // 形状は紙の角度から折る。全体を移動・縮小して検査を通していない。
+        expect(new THREE.Vector3().setFromMatrixPosition(part.matrix).length()).toBeLessThan(1e-8)
+        expect(new THREE.Vector3().setFromMatrixScale(part.matrix).toArray()).toEqual([1, 1, 1])
+      }
+    }
   })
-  it('樹冠は幹の先端に接続し、幹の法線方向へ寝ない', () => {
-    const { bounds, result } = scene('tree')
-    const trunk = bounds('trunk-0'), crown = bounds('crown-0')
-    expect(result.diagnostics).toEqual([])
-    expect(crown.min.y).toBeCloseTo(trunk.max.y, 8)
-    expect(crown.max.y).toBeGreaterThan(trunk.max.y + 1)
-    expect(crown.max.z - crown.min.z).toBeLessThan(crown.max.y - crown.min.y)
+
+  it('家・木・ケーキはそれぞれ箱・V折り・曲面胴を根元の形にする', () => {
+    expect(fixture('house').root.mechanism.kind).toBe('box')
+    expect(fixture('tree').root.mechanism.kind).toBe('v-fold')
+    expect(fixture('cake').root.mechanism.kind).toBe('curved-shell')
+    expect(fixture('meadow').root.mechanism.kind).toBe('accordion')
+  })
+
+  it('多段ケーキの子は実際の親のブリッジへつながる', () => {
+    const { root, children } = fixture('cake')
+    let parent = root
+    for (const tier of children) {
+      expect(tier.mechanism.mount).toMatchObject({ type: 'bridge', elementId: parent.id, bridgeId: 'deck' })
+      expect(tier.mechanism.parameters.width).toBeLessThanOrEqual(parent.mechanism.parameters.width * .64)
+      expect(tier.mechanism.parameters.depth).toBeLessThanOrEqual(parent.mechanism.parameters.depth * .64)
+      parent = tier
+    }
+  })
+
+  it.each(['house', 'room', 'bridge'] as const)('%sの反復数1〜3で片面のヒンジが面の端や折り線を越えない', (kind) => {
+    for (const count of [1, 2, 3]) {
+      const { project, spread } = fixture(kind, count)
+      expect(validateBookProject(project).errors).toEqual([])
+      expect(auditAssemblies(project.book, spread).issues.filter((issue) => issue.severity === 'error')).toEqual([])
+    }
   })
 })

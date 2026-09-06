@@ -16,10 +16,10 @@ function fixture() {
     { id: 'back.svg', name: '裏', type: 'svg', mime: 'image/svg+xml', data: '<svg xmlns="http://www.w3.org/2000/svg"><path fill="blue" d="M0 0h10v10z"/></svg>' },
   ]
   const root = createStageElement('assembly') as AssemblyElement
-  root.mechanism = makeMechanism('box', { parameters: { width: 12, height: 8 }, staging: { closedScale: .07, floatAmplitude: [0, 1, 0] },
+  root.mechanism = makeMechanism('box', { parameters: { width: 4, height: 2 }, deployment: { mode: 'virtual' }, staging: { openScale: 3, closedScale: .07, floatAmplitude: [0, 1, 0] },
     surfaces: { 'top-left': { color: '#ffffff', image: 'front.svg', backImage: 'back.svg', text: '</script>箱', visible: true } } })
   root.composition = { kind: 'house', count: 1, spacing: 1 }
-  root.baseTransform.position = [0, 4, 0]
+  root.baseTransform.position = [0, 0, 0]
   const child = createStageElement('visual', { type: 'element', elementId: root.id })
   if (child.type !== 'visual') throw new Error('visual fixture expected')
   child.image = 'front.svg'

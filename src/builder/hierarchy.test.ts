@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { createSpread, createStageElement } from '../schema/bookDefaults'
+import * as THREE from 'three'
+import { createBook, createSpread, createStageElement } from '../schema/bookDefaults'
+import { makeMechanism } from '../schema/mechanism'
+import type { AssemblyElement } from '../schema/stageElement'
+import { evaluateAssemblyScene } from '../runtime/mechanisms/scene'
 import { containerElementIds, elementDescendantIds, reparentElement } from './hierarchy'
 
 describe('階層ツリーの部品移動', () => {
@@ -51,5 +55,25 @@ describe('階層ツリーの部品移動', () => {
 
     expect(containerElementIds(spread, 'left-page')).toEqual(new Set([leftRoot.id, leftChild.id]))
     expect(containerElementIds(spread, 'right-page')).toEqual(new Set([rightRoot.id]))
+  })
+
+  it('ブリッジ上の部品の面から子を外しても、描画されていた全開位置を保つ', () => {
+    const book = createBook(), spread = book.spreads[0]
+    const base = createStageElement('assembly') as AssemblyElement
+    base.mechanism = makeMechanism('platform', { parameters: { width: 6, height: 1, depth: 4 } })
+    const tier = createStageElement('assembly', { type: 'element', elementId: base.id }) as AssemblyElement
+    tier.mechanism = makeMechanism('box', { parameters: { width: 3, height: 1.2, depth: 2 }, mount: { type: 'bridge', elementId: base.id, bridgeId: 'deck', v: .7 } })
+    const child = createStageElement('visual', { type: 'element', elementId: tier.id })
+    child.surfaceAttachment = { surfaceId: 'top-right', u: .3, v: .6, offset: .01 }
+    child.baseTransform.position = [.1, .2, .3]
+    spread.elements = [base, tier, child]
+    const scene = evaluateAssemblyScene(book, spread, { open: 1, leftAngle: Math.PI, rightAngle: 0, clock: 0, spreadTime: 0 })
+    const world = scene.visuals.find((entry) => entry.element.id === child.id)!.matrix
+    const expected = new THREE.Vector3().setFromMatrixPosition(world)
+    expect(expected.y).toBeGreaterThan(2)
+    expect(reparentElement(spread, child.id, { type: 'left-page' }, book.format.pageWidth)).toBe(true)
+    expect(child.surfaceAttachment).toBeUndefined()
+    const actual = new THREE.Vector3(...child.baseTransform.position).add(new THREE.Vector3(-book.format.pageWidth / 2, 0, 0))
+    expect(actual.distanceTo(expected)).toBeLessThan(1e-8)
   })
 })

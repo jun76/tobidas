@@ -40,7 +40,7 @@ export function createTimelineCommands({ commit, get, set }: TimelineCommandCont
     },
     upsertTimelineKey: (spreadId, target, property, time, value) => {
       const element = target.type === 'element' ? get().project.book.spreads.find((spread) => spread.id === spreadId)?.elements.find((item) => item.id === target.elementId) : undefined
-      if (element?.type === 'assembly' && element.mechanism.deployment.mode === 'page-constrained' && /^(position|rotation|scale)(\.|$)/.test(property)) return
+      if (element?.type === 'assembly' && /^(position|rotation|scale)(\.|$)/.test(property)) return
       commit((project) => { upsertProjectTimelineKey(project, spreadId, target, property, time, value) })
     },
     updateTimelineKeyTime: (spreadId, trackId, keyId, time) => commit((project) => {

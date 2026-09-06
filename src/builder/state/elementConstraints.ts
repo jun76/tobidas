@@ -8,11 +8,13 @@ export function normalizeElementLayout(spread: Spread, elementId: string, pageWi
   if (!initial) return
   // 新機構の配置はmountと面アンカーが決める。従来の紙面への押し戻しを適用しない。
   if (initial.type === 'assembly') {
-    if (initial.mechanism.deployment.mode === 'page-constrained') {
+    {
       initial.baseTransform.rotation = [0, 0, 0]
       initial.baseTransform.scale = [1, 1, 1]
       initial.motion = []
       if (initial.mechanism.mount.type === 'gutter') initial.baseTransform.position = [0, 0, initial.baseTransform.position[2]]
+      else if (initial.mechanism.mount.type === 'page') initial.baseTransform.position[1] = 0
+      else initial.baseTransform.position = [0, 0, 0]
     }
     return
   }

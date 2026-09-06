@@ -4,7 +4,6 @@ import type { AssemblyElement } from './stageElement'
 /** 保存時検証とQAが共有する、実ページ接続の有限領域と変換の契約。 */
 export function realPageAnchorIssues(element: AssemblyElement, format: Book['format']): string[] {
   const spec = element.mechanism
-  if (spec.deployment.mode !== 'page-constrained') return []
   const errors: string[] = []
   const transform = element.baseTransform
   const pageWidth = format.pageWidth
@@ -26,6 +25,8 @@ export function realPageAnchorIssues(element: AssemblyElement, format: Book['for
     if (Math.abs(y) > epsilon) errors.push('real page hinge requires y=0')
     if (Math.abs(x) + width / 2 > pageWidth / 2 + epsilon) errors.push('real page hinge exceeds page width')
     if (z - height < -pageDepth / 2 - epsilon || z > pageDepth / 2 + epsilon) errors.push('folded real page panel exceeds page depth')
+  } else if (transform.position.some((value) => value !== 0)) {
+    errors.push('child attachments cannot move independently of their parent surface or bridge')
   }
   if (element.motion.length) errors.push('real page anchors cannot use content motion')
   return errors
