@@ -1,0 +1,139 @@
+import { Vector3 } from 'three'
+import type { BuiltinPartId } from './catalog'
+import { builtinPart } from './catalog'
+import { parameterValues, type PartMaterial } from './schema'
+import { checkInput, EPSILON, faceContains, faceCorners, makeFace, pointOnFace,
+  type FoldPair, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
+
+/** 紙面は全て剛体。角度の換算や面の伸縮で解を作らない。 */
+export function evaluateBuiltin(id: BuiltinPartId, port: PartPort, overrides: Record<string, number> = {}, prefix: string = id): PaperEvaluation {
+  const spec = builtinPart(id), p = parameterValues(spec.parameters, overrides)
+  checkInput(spec.input, port)
+  const result: PaperEvaluation = { faces: [], ports: {}, connections: [] }
+  const put = (name: string, origin: Vector3, u: Vector3, v: Vector3, width: number, height: number, support = false) => {
+    const face = makeFace(`${prefix}/${name}`, origin, u, v, width, height, support)
+    result.faces.push(face); result.ports[name] = { kind: 'surface', face }
+    return face
+  }
+  const glue = (child: PaperFace, parent: PaperFace, expectedStart: Vector3, expectedEnd: Vector3, edge: 'bottom' | 'top' = 'bottom') => {
+    if (!faceContains(parent, expectedStart) || !faceContains(parent, expectedEnd)) throw new Error(`Attachment exceeds surface: ${parent.id}`)
+    result.connections.push({ parentFace: parent.id, childFace: child.id,
+      actual: [pointOnFace(child, 0, edge === 'top' ? child.height : 0), pointOnFace(child, child.width, edge === 'top' ? child.height : 0)],
+      expected: [expectedStart, expectedEnd] })
+  }
+  if (port.kind === 'surface') {
+    const face = port.face, angle = p.rotation * Math.PI / 180
+    const u = face.u.clone().multiplyScalar(Math.cos(angle)).addScaledVector(face.v, Math.sin(angle))
+    const v = face.v.clone().multiplyScalar(Math.cos(angle)).addScaledVector(face.u, -Math.sin(angle))
+    const center = pointOnFace(face, face.width / 2 + p.u, p.v)
+    const sheet = put('face', center.addScaledVector(u, -p.width / 2).addScaledVector(v, -p.height / 2), u, v, p.width, p.height)
+    if (!faceCorners(sheet).every((corner) => faceContains(face, corner))) throw new Error('Glued part exceeds its parent face')
+    glue(sheet, face, sheet.origin, pointOnFace(sheet, sheet.width, 0))
+    sheet.material = id === 'text' ? { color: '#ffffff', text: 'Text' } : { color: '#e3b476' }
+    return result
+  }
+  const { axis, rayA, rayB } = port
+  if (Math.abs(p.offset) + p.width / 2 > port.width / 2 + EPSILON) throw new Error('Attachment exceeds hinge width')
+  const o = port.origin.clone().addScaledVector(axis, p.offset)
+  const a = o.clone().addScaledVector(rayA, p.distance)
+  const left = (center: Vector3, width = p.width) => center.clone().addScaledVector(axis, -width / 2)
+  const right = (center: Vector3, width = p.width) => center.clone().addScaledVector(axis, width / 2)
+  const pair = (name: string, aFace: PaperFace, bFace: PaperFace, origin: Vector3, aRay: Vector3, bRay: Vector3, extentA: number, extentB: number, sign: 1 | -1) => {
+    result.ports[name] = { kind: 'fold-pair', a: aFace, b: bFace, origin, axis, rayA: aRay, rayB: bRay,
+      extentA, extentB, width: p.width, foldSign: sign }
+  }
+  const addPanel = (name: string, center: Vector3, direction: Vector3, height: number, support = false, width = p.width) =>
+    put(name, left(center, width), axis, direction, width, height, support)
+  result.ports.ground = { kind: 'surface', face: port.a }
+
+  if (id === 'backdrop') {
+    // 閉じたときに一直線へ畳める四節リンク。全開180°では背景が地面に直立する。
+    const bDistance = p.height * p.distance / (p.height + 2 * p.distance)
+    const b = o.clone().addScaledVector(rayB, bDistance)
+    const supportLength = p.height + p.distance - bDistance
+    const chord = b.clone().sub(a), gap = chord.length()
+    if (gap < EPSILON) throw new Error('Degenerate backdrop dimensions')
+    const along = (p.height ** 2 - supportLength ** 2 + gap ** 2) / (2 * gap)
+    const squared = p.height ** 2 - along ** 2
+    if (squared < -EPSILON) throw new Error('Backdrop linkage cannot reach its attachment')
+    const direction = chord.divideScalar(gap)
+    const perpendicular = axis.clone().cross(direction).multiplyScalar(-port.foldSign)
+    const top = a.clone().addScaledVector(direction, along).addScaledVector(perpendicular, Math.sqrt(Math.max(0, squared)))
+    const panelRay = top.clone().sub(a).normalize(), supportRay = top.clone().sub(b).normalize()
+    const panel = addPanel('panel', a, panelRay, p.height)
+    const support = addPanel('support', b, supportRay, supportLength, true)
+    glue(panel, port.a, left(a), right(a)); glue(support, port.b, left(b), right(b))
+    glue(support, panel, left(top), right(top), 'top')
+    pair('ground-backdrop', port.a, panel, a, rayA, panelRay, port.extentA - p.distance, p.height, port.foldSign)
+  } else if (id === 'v-fold' || id === 'beak') {
+    const b = o.clone().addScaledVector(rayB, p.distance), halfGap = a.distanceTo(b) / 2
+    const length = Math.hypot(p.distance, p.height)
+    const bisector = rayA.clone().add(rayB)
+    if (bisector.lengthSq() < EPSILON ** 2) bisector.copy(axis).cross(rayA).multiplyScalar(port.foldSign)
+    bisector.normalize()
+    const top = a.clone().add(b).multiplyScalar(.5).addScaledVector(bisector, Math.sqrt(Math.max(0, length ** 2 - halfGap ** 2)))
+    const wingA = addPanel('wing-a', a, top.clone().sub(a).normalize(), length)
+    const wingB = addPanel('wing-b', b, top.clone().sub(b).normalize(), length)
+    glue(wingA, port.a, left(a), right(a)); glue(wingB, port.b, left(b), right(b))
+    glue(wingB, wingA, left(top), right(top), 'top')
+    if (id === 'beak') {
+      // 折り線と接着辺を残し、対向する翼の外縁だけを切り抜く。
+      wingA.outline = [[0, 0], [1, 0], [.85, .5], [1, 1], [0, 1], [.15, .5]]
+      wingB.outline = [[0, 0], [1, 0], [.85, .5], [1, 1], [0, 1], [.15, .5]]
+    }
+    pair('ridge', wingA, wingB, top, a.clone().sub(top).normalize(), b.clone().sub(top).normalize(), length, length, port.foldSign === 1 ? -1 : 1)
+  } else if (id === 'accordion') {
+    const count = p.segments
+    let start = a
+    for (let i = 0; i < count; i++) {
+      const next = o.clone().addScaledVector(rayA, p.distance * (1 - (i + 1) / count)).addScaledVector(rayB, p.height * i / count)
+      addPanel(`fold-${i * 2}`, start, rayA.clone().negate(), p.distance / count)
+      addPanel(`fold-${i * 2 + 1}`, next, rayB, p.height / count)
+      // 各折り点を二面から支持する。帯だけに独立した駆動角を与えない。
+      const level = p.height * (i + 1) / count
+      const x = p.distance * (1 - (i + 1) / count)
+      start = o.clone().addScaledVector(rayA, x).addScaledVector(rayB, level)
+      if (i < count - 1) {
+        const groundAnchor = o.clone().addScaledVector(rayA, x), backAnchor = o.clone().addScaledVector(rayB, level)
+        const width = Math.min(.12, p.width)
+        const post = addPanel(`support-post-${i}`, groundAnchor, rayB, level, true, width)
+        const bridge = addPanel(`support-bridge-${i}`, backAnchor, rayA, x, true, width)
+        glue(post, port.a, left(groundAnchor, width), right(groundAnchor, width))
+        glue(bridge, port.b, left(backAnchor, width), right(backAnchor, width))
+        glue(bridge, post, left(start, width), right(start, width), 'top')
+      }
+    }
+    const first = result.faces.find((face) => face.id.endsWith('/fold-0'))!
+    const last = result.faces.find((face) => face.id.endsWith(`/fold-${count * 2 - 1}`))!
+    glue(first, port.a, left(a), right(a))
+    const b = o.clone().addScaledVector(rayB, p.height)
+    glue(last, port.b, left(b), right(b), 'top')
+  } else {
+    const supportHeight = id === 'upright' ? p.supportHeight : p.height
+    const supportWidth = id === 'upright' ? p.supportWidth : p.width
+    if (supportHeight > p.height + EPSILON || supportWidth > p.width + EPSILON) throw new Error('Support must fit the upright face')
+    const backAnchor = o.clone().addScaledVector(rayB, supportHeight)
+    const top = a.clone().addScaledVector(rayB, p.height)
+    const panel = addPanel('panel', a, rayB, p.height)
+    const support = addPanel(id === 'upright' ? 'support' : 'top', backAnchor, rayA, p.distance, id === 'upright', supportWidth)
+    glue(panel, port.a, left(a), right(a)); glue(support, port.b, left(backAnchor, supportWidth), right(backAnchor, supportWidth))
+    const contact = a.clone().addScaledVector(rayB, supportHeight)
+    glue(support, panel, left(contact, supportWidth), right(contact, supportWidth), 'top')
+    pair('ground-panel', port.a, panel, a, rayA, rayB, port.extentA - p.distance, p.height, port.foldSign)
+    if (id !== 'upright') pair('top-panel', support, panel, top, rayA.clone().negate(), rayB.clone().negate(), p.distance, p.height, port.foldSign)
+    if (id === 'folding-box') {
+      const bottom = addPanel('bottom', o, rayA, p.distance, true)
+      const back = addPanel('back', o, rayB, p.height, true)
+      glue(bottom, port.a, left(o), right(o)); glue(back, port.b, left(o), right(o))
+    }
+  }
+  return result
+}
+
+export function decorateFaces(result: PaperEvaluation, materials: Record<string, PartMaterial>, outline?: [number, number][]): void {
+  for (const face of result.faces) {
+    const name = face.id.slice(face.id.lastIndexOf('/') + 1)
+    face.material = { ...face.material, ...materials['*'], ...materials[name] }
+    if (outline && !face.support && !['top', 'bottom', 'back'].includes(name)) face.outline = outline
+  }
+}
