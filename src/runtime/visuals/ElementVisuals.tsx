@@ -8,6 +8,7 @@ import type { StowItem } from '../stow/model'
 import { SPARKLE, buildSparkleField } from './sparkleField'
 import { buildSparkleSpriteGeometry } from './sparkleGeometry'
 import { VideoAudioSource } from '../videoAudio'
+import { PAPER_SURFACE_LIFT } from '../pageStack'
 
 /**
  * 消えた部品は影も落とさない。
@@ -469,7 +470,7 @@ export function PaperSlab({
   return <group position={position}>
     <mesh castShadow receiveShadow><boxGeometry args={size} />
       <meshStandardMaterial color={edge} roughness={.94} /></mesh>
-    <group position={[0, size[1] / 2 + .003, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+    <group position={[0, size[1] / 2 + PAPER_SURFACE_LIFT, 0]} rotation={[-Math.PI / 2, 0, 0]}>
       {asset
         ? <AssetPlane asset={asset} width={size[0]} height={size[2]} audio={audio}
           audioActive={audioActive}
@@ -477,7 +478,7 @@ export function PaperSlab({
           instanceKey={`${instanceKey ?? 'paper'}:front`} />
         : <mesh><planeGeometry args={[size[0], size[2]]} /><meshStandardMaterial color={color} /></mesh>}
     </group>
-    {(back || backColor) && <group position={[0, -size[1] / 2 - .003, 0]} rotation={[Math.PI / 2, 0, Math.PI]}>
+    {(back || backColor) && <group position={[0, -size[1] / 2 - PAPER_SURFACE_LIFT, 0]} rotation={[Math.PI / 2, 0, Math.PI]}>
       {back
         ? <AssetPlane asset={back} width={size[0]} height={size[2]} audio={backAudio}
           audioActive={backAudioActive}

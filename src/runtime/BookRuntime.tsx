@@ -24,6 +24,7 @@ import { setVideoPlaybackEnabled, useImageTexture, useSvgTexture, useVideoTextur
 import { VideoAudioProvider, VideoAudioSource } from './videoAudio'
 import { AssemblyRenderer } from './mechanisms/AssemblyRenderer'
 import { BookPartsRenderer } from '../parts/BookPartsRenderer'
+import { bookPaperDisplay } from '../parts/paperDisplay'
 
 export type { BookRuntimeProps, RuntimeSelection } from './types'
 
@@ -275,9 +276,11 @@ export function BookRuntime({
 
       {frames.filter((frame) => frame.open && frame.spread.elements.some((element) => element.type === 'part')).map((frame) => {
         const override = foldOverride?.spreadId === frame.spread.id
+        const leftAngle = override ? Math.PI : Math.PI * sheetAngles[frame.index]
+        const rightAngle = override ? (1 - frame.t) * Math.PI : Math.PI * sheetAngles[frame.index + 1]
         return <BookPartsRenderer key={`parts-${frame.spread.id}`} project={project} spread={frame.spread} spreadTime={frame.spreadTime}
-          leftAngle={override ? Math.PI : Math.PI * sheetAngles[frame.index]}
-          rightAngle={override ? (1 - frame.t) * Math.PI : Math.PI * sheetAngles[frame.index + 1]}
+          leftAngle={leftAngle} rightAngle={rightAngle}
+          paperDisplay={bookPaperDisplay({ width, depth, thickness: pageThickness, index: frame.index, count: spreadCount, leftAngle, rightAngle, frontCoverY: frontCoverRestY })}
           assets={assets} isHidden={isHidden} onSelect={onSelect} />
       })}
 

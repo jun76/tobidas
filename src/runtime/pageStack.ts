@@ -1,5 +1,8 @@
 import { STOW_HIDDEN_DEG } from './stow/evaluate'
 
+/** 紙の実体と表裏の印刷面の間に確保する深度差。 */
+export const PAPER_SURFACE_LIFT = .003
+
 /**
  * 表表紙が左支持束の下へ潜り込んだ度合い (0..1)。
  *

@@ -1,17 +1,20 @@
 import { useEffect, useMemo } from 'react'
-import { BufferGeometry, CanvasTexture, Float32BufferAttribute, Matrix4, ShapeUtils, Vector2, FrontSide, BackSide, DoubleSide, SRGBColorSpace } from 'three'
+import { BufferGeometry, CanvasTexture, Float32BufferAttribute, Matrix4, FrontSide, BackSide, DoubleSide, SRGBColorSpace } from 'three'
 import type { Asset } from '../schema/assets'
 import { useImageTexture, useSvgTexture } from '../runtime/assets'
 import type { PaperFace } from './geometry'
+import { paperMeshData, type BookPaperSurface } from './paperDisplay'
 
-export function PaperMeshes({ faces, assets, onSelect, selected, opacity = 1 }: {
+export function PaperMeshes({ faces, assets, onSelect, selected, opacity = 1, paperSurfaces }: {
   faces: PaperFace[]; assets: Map<string, Asset>; onSelect?: (id: string) => void; selected?: string; opacity?: number
+  paperSurfaces?: BookPaperSurface[]
 }) {
   return <group>{faces.map((face) => <PaperMesh key={face.id} face={face} assets={assets} onSelect={onSelect}
-    selected={selected !== undefined && (face.id === selected || face.id.startsWith(selected + '/'))} opacity={opacity} />)}</group>
+    selected={selected !== undefined && (face.id === selected || face.id.startsWith(selected + '/'))} opacity={opacity} paperSurfaces={paperSurfaces} />)}</group>
 }
-function PaperMesh({ face, assets, onSelect, selected, opacity }: {
+function PaperMesh({ face, assets, onSelect, selected, opacity, paperSurfaces }: {
   face: PaperFace; assets: Map<string, Asset>; onSelect?: (id: string) => void; selected: boolean; opacity: number
+  paperSurfaces?: BookPaperSurface[]
 }) {
   const front = face.material.image ? assets.get(face.material.image) : undefined
   const back = face.material.backImage ? assets.get(face.material.backImage) : undefined
@@ -19,15 +22,15 @@ function PaperMesh({ face, assets, onSelect, selected, opacity }: {
   const backImage = useImageTexture(back?.type === 'image' ? back : undefined), backSvg = useSvgTexture(back?.type === 'svg' ? back : undefined)
   const frontMap = frontImage?.texture ?? frontSvg?.texture, backMap = backImage?.texture ?? backSvg?.texture ?? frontMap
   const outline = JSON.stringify(face.outline ?? [[0, 0], [1, 0], [1, 1], [0, 1]])
+  const clippingKey = paperSurfaces ? JSON.stringify([face.origin, face.u, face.v, paperSurfaces]) : ''
   const geometry = useMemo(() => {
-    const points = (JSON.parse(outline) as [number, number][]).map(([u, v]) => new Vector2(u, v))
-    const triangles = ShapeUtils.triangulateShape(points, [])
+    const data = paperMeshData(face, paperSurfaces)
     const g = new BufferGeometry()
-    g.setAttribute('position', new Float32BufferAttribute(points.flatMap((point) => [point.x * face.width, point.y * face.height, 0]), 3))
-    g.setAttribute('uv', new Float32BufferAttribute(points.flatMap((point) => [point.x, point.y]), 2))
-    g.setIndex(triangles.flat()); g.computeVertexNormals()
+    g.setAttribute('position', new Float32BufferAttribute(data.positions, 3))
+    g.setAttribute('uv', new Float32BufferAttribute(data.uvs, 2))
+    g.computeVertexNormals()
     return g
-  }, [outline, face.width, face.height])
+  }, [outline, face.width, face.height, clippingKey])
   useEffect(() => () => geometry.dispose(), [geometry])
   const textTexture = useMemo(() => {
     if (!face.material.text) return undefined
