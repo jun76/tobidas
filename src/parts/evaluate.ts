@@ -56,6 +56,7 @@ export function evaluatePartReference(reference: PartReference, input: PartPort,
   if (!definition) throw new Error(`Missing part definition: ${reference.custom}`)
   if (ancestors.includes(reference.custom) || ancestors.length > 32) throw new Error('Cyclic or excessively deep part definitions')
   checkInput(definition.input, input)
+  for (const name of Object.keys(materials)) if (!(name in definition.materialSlots)) throw new Error(`Unknown public material slot: ${name}`)
   const parameters = parameterValues(definition.parameters, values)
   const slots = { ...definition.materialSlots, ...materials }
   const graph = evaluatePartGraph(definition.nodes, definitions, input, {}, parameters, slots, prefix, [...ancestors, reference.custom])

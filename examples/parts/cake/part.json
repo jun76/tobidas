@@ -1,0 +1,108 @@
+{
+  "format": "tobidas-part",
+  "schemaVersion": 1,
+  "id": "example-cake",
+  "revision": 1,
+  "name": "ケーキの箱",
+  "description": "180度で展開する四面のケーキ箱。両端は開いている。90度の接続口では途中姿勢になる。",
+  "author": "tobidas",
+  "license": "Apache-2.0",
+  "input": {
+    "kind": "fold-pair",
+    "maxOpeningAngleDeg": 180,
+    "referenceOpenAngleDeg": 180
+  },
+  "parameters": {
+    "width": {
+      "label": "ケーキの幅",
+      "type": "length",
+      "default": 3,
+      "min": 1,
+      "max": 5
+    },
+    "height": {
+      "label": "ケーキの高さ",
+      "type": "length",
+      "default": 1.3,
+      "min": 0.5,
+      "max": 3
+    },
+    "distance": {
+      "label": "天板の奥行き",
+      "type": "length",
+      "default": 1.8,
+      "min": 0.5,
+      "max": 3
+    }
+  },
+  "materialSlots": {
+    "icing": {
+      "color": "#f6e6bd"
+    },
+    "cake": {
+      "image": "cake.svg"
+    }
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "name": "ケーキの折り畳み箱",
+      "definition": {
+        "builtin": "folding-box",
+        "version": 1
+      },
+      "mount": {
+        "type": "input"
+      },
+      "parameters": {
+        "width": {
+          "parameter": "width"
+        },
+        "height": {
+          "parameter": "height"
+        },
+        "distance": {
+          "parameter": "distance"
+        }
+      },
+      "materials": {
+        "panel": {
+          "slot": "cake"
+        },
+        "top": {
+          "slot": "icing"
+        },
+        "back": {
+          "slot": "cake"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "top": {
+      "type": "output",
+      "nodeId": "body",
+      "portId": "top"
+    },
+    "ground-wall": {
+      "type": "output",
+      "nodeId": "body",
+      "portId": "ground-panel"
+    }
+  },
+  "assets": [
+    {
+      "id": "cake.svg",
+      "name": "ケーキの断面",
+      "type": "svg",
+      "mime": "image/svg+xml",
+      "width": 900,
+      "height": 390,
+      "bytes": 693,
+      "hash": "0b70e3b6ab13898920c2e9e25699f8e7b476b548707179b412754826de0b784b"
+    }
+  ],
+  "requiredBuiltins": {
+    "folding-box": 1
+  }
+}

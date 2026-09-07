@@ -51,7 +51,7 @@ export function makePartTools(): WebMcpTool[] {
     tool('create-part-draft', 'Create a custom-part document in the separate editor. This never replaces the book. No built-in themed presets are seeded.', commands.createPartDraftSchema,
       { name: string, input: ref('input') }, ['name', 'input'], commands.createPartDraftCommand),
     tool('update-part-definition', 'Edit draft metadata and the input capacity. A 180-degree part on a 90-degree host remains partly open; a 150-degree part cannot be placed on a 180-degree host.', commands.updatePartDefinitionSchema,
-      { name: string, description: string, author: string, license: string, input: ref('input') }, [], commands.updatePartDefinitionCommand),
+      { name: string, description: string, author: string, license: string, input: ref('input'), parameters: { type: 'object', additionalProperties: ref('parameter') } }, [], commands.updatePartDefinitionCommand),
     tool('add-part-node', 'Add a built-in or library part to the draft graph. Bind to input, an upstream public output, or two coincident material hinge lines. Use get-part-catalog first. Assets must already be imported in the standard UI.', commands.addPartNodeSchema,
       node, ['name', 'definition', 'mount'], commands.addPartNodeCommand),
     tool('update-part-node', 'Edit an internal node through the same typed command, undo and autosave as the inspector. Parameters allow literals, public parameter references, addition and multiplication; no executable code.', commands.updatePartNodeSchema,

@@ -48,9 +48,9 @@ export function PartPalette() {
   </section>
 }
 
-export function PartPlacementDialog({ reference, element, onClose }: { reference: PartReference; element?: PartElement; onClose: () => void }) {
+export function PartPlacementDialog({ reference, element, spreadId, onClose }: { reference: PartReference; element?: PartElement; spreadId?: string; onClose: () => void }) {
   const t = useT().parts, store = useBuilderStore(), library = usePartEditorStore((state) => state.library)
-  const spread = store.project.book.spreads.find((item) => item.id === store.activeSpreadId)!
+  const spread = store.project.book.spreads.find((item) => item.id === (spreadId ?? store.activeSpreadId))!
   const definitions = { ...store.project.partDefinitions, ...Object.fromEntries(library.flatMap((entry) => [[entry.hash, entry.bundle.definition], ...Object.entries(entry.bundle.definitions)])) }
   const definition = referenceDefinition(reference, definitions)
   const options = mountOptions(spreadPartNodes(spread), definitions, undefined, element?.id)
@@ -86,7 +86,7 @@ export function PartPlacementDialog({ reference, element, onClose }: { reference
     <MountField value={mount} options={definition.input.kind === 'fold-pair' ? [...compatible, ...options.filter((option) => option.kind === 'surface')] : compatible} kind={definition.input.kind} onChange={setMount} />
     {!compatible.length && <p className={st.hint}>{t.noCompatible}</p>}
     {definition.input.kind === 'fold-pair' && <p className={st.hint}>{t.maximum}: {definition.input.maxOpeningAngleDeg}</p>}
-    {Object.entries(definition.parameters).map(([key, p]) => <NumberField key={key} label={parameterLabel(key)} value={parameters[key] ?? p.default} min={p.min} max={p.max}
+    {Object.entries(definition.parameters).map(([key, p]) => <NumberField key={key} label={'custom' in reference ? p.label : parameterLabel(key)} value={parameters[key] ?? p.default} min={p.min} max={p.max}
       step={p.type === 'integer' ? 1 : .05} onChange={(value) => setParameters({ ...parameters, [key]: value })} />)}
     {'builtin' in reference && reference.builtin === 'folding-box' && <p className={st.hint}>{t.boxHint}</p>}
   </div></FormDialog>
@@ -118,6 +118,6 @@ export function PlacedPartInspector({ element, spreadId }: { element: PartElemen
     }}>{t.updateDefinition}</button>}
     <button type="button" onClick={() => deletePlacedPartCommand(spreadId, element.id)}>{t.remove}</button>
     {error && <p className={st.error} role="alert">{error}</p>}
-    {editing && <PartPlacementDialog reference={element.part.definition} element={element} onClose={() => setEditing(false)} />}
+    {editing && <PartPlacementDialog reference={element.part.definition} element={element} spreadId={spreadId} onClose={() => setEditing(false)} />}
   </div></section>
 }

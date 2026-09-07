@@ -1,6 +1,7 @@
 import { VIDEO_BYTE_LIMIT, type Asset, type AssetData, type AssetMeta } from '../schema/assets'
 import { bookProjectSchema } from '../schema/bookPackage'
 import { assetKindForFile, normalizeAssetPath, type AssembleResult, type AssetSource } from './model'
+import { verifyEmbeddedParts } from '../parts/package'
 
 export async function assemblePackage(
   projectJsonText: string,
@@ -68,6 +69,7 @@ export async function assemblePackage(
     })
   }
 
+  await verifyEmbeddedParts(file.partDefinitions ?? {}, assets)
   return { project: { ...file, assets }, notices }
 }
 

@@ -17,10 +17,14 @@ import { usePartEditorStore, useWorkspaceStore } from './store'
 
 const fail = (action: string, error: unknown): BuilderCommandResult => publishOperationResult({ ok: false, action,
   message: error instanceof Error ? error.message : String(error), fieldErrors: {} })
-const done = (action: string, id: string): BuilderCommandResult => publishOperationResult({ ok: true, action,
-  message: t().parts.operationDone, target: { kind: 'part', id }, corrections: [], validation: { errors: 0, warnings: 0 } })
+const done = (action: string, id: string, validation = { errors: 0, warnings: 0 }): BuilderCommandResult => publishOperationResult({ ok: true, action,
+  message: t().parts.operationDone, target: { kind: 'part', id }, corrections: [], validation })
 function edit(action: string, mutate: (bundle: PartBundle) => void, id = ''): BuilderCommandResult {
-  try { usePartEditorStore.getState().change(mutate); return done(action, id) } catch (error) { return fail(action, error) }
+  try {
+    usePartEditorStore.getState().change(mutate)
+    const { bundle } = usePartEditorStore.getState(), validation = validatePartDefinition(bundle.definition, bundle.definitions)
+    return done(action, id, { errors: validation.errors.length, warnings: 0 })
+  } catch (error) { return fail(action, error) }
 }
 export const createPartDraftSchema = z.object({ name: z.string().min(1), input: partInputSchema }).strict()
 export function createPartDraftCommand(value: z.input<typeof createPartDraftSchema>): BuilderCommandResult {
@@ -29,11 +33,11 @@ export function createPartDraftCommand(value: z.input<typeof createPartDraftSche
     const definition = newPartDefinition(parsed.name, parsed.input)
     usePartEditorStore.getState().open({ definition, definitions: {}, assets: [] })
     useWorkspaceStore.getState().setScreen('part')
-    return done('create-part-draft', definition.id)
+    return done('create-part-draft', definition.id, { errors: 1, warnings: 0 })
   } catch (error) { return fail('create-part-draft', error) }
 }
 export const updatePartDefinitionSchema = z.object({ name: z.string().min(1).optional(), description: z.string().optional(), author: z.string().optional(),
-  license: z.string().optional(), input: partInputSchema.optional() }).strict()
+  license: z.string().optional(), input: partInputSchema.optional(), parameters: z.record(partParameterSchema).optional() }).strict()
 export function updatePartDefinitionCommand(value: z.input<typeof updatePartDefinitionSchema>) {
   return edit('update-part-definition', (bundle) => { Object.assign(bundle.definition, updatePartDefinitionSchema.parse(value)) })
 }
@@ -53,7 +57,7 @@ export function addPartNodeCommand(value: z.input<typeof addPartNodeSchema>) {
     bundle.definition.nodes.push({ ...parsed, id })
   }, id)
   if (result.ok) usePartEditorStore.getState().select(id)
-  return result.ok ? done('add-part-node', id) : result
+  return result.ok ? done('add-part-node', id, result.validation) : result
 }
 export const updatePartNodeSchema = z.object({ nodeId: z.string(), changes: partNodeSchema.omit({ id: true, definition: true }).partial().strict() }).strict()
 export function updatePartNodeCommand(value: z.input<typeof updatePartNodeSchema>) {

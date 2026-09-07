@@ -67,6 +67,7 @@ export function AssetsPanel() {
     notifyAssetPointerDrag({ assetId, clientX, clientY, phase: 'cancel' })
   }
   const assetRow = (asset: Asset) => {
+    const embedded = Object.values(store.project.partDefinitions ?? {}).some((definition) => definition.assets.some((item) => item.id === asset.id))
     // 掴めるのは、いま選んでいるプリセットが受け取れる種類だけ
     const draggable = asset.type === 'audio' ? kind === 'audio' : kind === 'image'
     return <div key={asset.id} className={`${st.assetRow} ${draggable ? st.assetDraggable : ''} ${dragging && draggable ? st.assetDragging : ''}`}
@@ -106,10 +107,10 @@ export function AssetsPanel() {
         aria-label={t.assets.details(asset.name)} title={t.assets.detailsHint}
         onClick={() => setDetails(asset)}><Icon as={Info} /></button>
       <button className={`${st.ghostBtn} ${st.ghostOn}`}
-        aria-label={t.assets.replace(asset.name)} title={t.assets.replaceHint}
+        aria-label={t.assets.replace(asset.name)} disabled={embedded} title={embedded ? t.assets.partEmbeddedHint : t.assets.replaceHint}
         onClick={() => { setReplacing(asset); setTimeout(() => replaceRef.current?.click()) }}><Icon as={RefreshCw} /></button>
       <button className={`${st.ghostBtn} ${st.ghostDanger}`}
-        aria-label={t.assets.remove(asset.name)} title={t.assets.removeHint}
+        aria-label={t.assets.remove(asset.name)} disabled={embedded} title={embedded ? t.assets.partEmbeddedHint : t.assets.removeHint}
         onClick={() => store.removeAsset(asset.id)}><Icon as={Trash2} /></button>
     </div>
   }

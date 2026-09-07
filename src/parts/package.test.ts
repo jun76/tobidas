@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { newPartDefinition, type PartBundle } from './schema'
 import { definitionHash, importPartFiles, partBundleFiles, snapshotPartBundle } from './package'
 import { syncDefinitionRequirements, validatePartDefinition } from './validate'
+import { createBookProject } from '../schema/bookDefaults'
+import { assemblePackage } from '../package/assemble'
+import { projectFileJson } from '../package/serialize'
 
 async function example(): Promise<PartBundle> {
   const child = newPartDefinition('Child', { kind: 'fold-pair', maxOpeningAngleDeg: 90 })
@@ -46,5 +49,19 @@ describe('portable part definitions', () => {
     const restored = await importPartFiles(await partBundleFiles(source))
     expect(restored.definition.nodes[0].definition).toEqual({ builtin: 'future-fold', version: 7 })
     expect(validatePartDefinition(restored.definition).ok).toBe(false)
+  })
+  it('絵本の再読み込みでも、同梱した改訂と素材の変更を検出する', async () => {
+    const snapshot = await snapshotPartBundle(await example()), project = createBookProject('同梱部品の検査')
+    project.partDefinitions = { ...snapshot.definitions, [snapshot.hash]: snapshot.definition }; project.assets = snapshot.assets
+    const files = new Map(project.assets.map((asset) => [asset.id, {
+      text: async () => String(asset.data), dataUrl: async () => String(asset.data), blob: async () => new Blob([asset.data]),
+    }]))
+    expect((await assemblePackage(projectFileJson(project), files)).project.partDefinitions).toEqual(project.partDefinitions)
+    const changed = structuredClone(project)
+    changed.partDefinitions![snapshot.hash].name = '内容を変更'
+    await expect(assemblePackage(projectFileJson(changed), files)).rejects.toThrow('definition hash mismatch')
+    const assetId = snapshot.assets[0].id
+    files.set(assetId, { text: async () => '<svg/>', dataUrl: async () => '', blob: async () => new Blob() })
+    await expect(assemblePackage(projectFileJson(project), files)).rejects.toThrow('asset hash or size mismatch')
   })
 })

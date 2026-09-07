@@ -1,0 +1,51 @@
+{
+  "format": "tobidas-part",
+  "schemaVersion": 1,
+  "id": "example-box-150",
+  "revision": 1,
+  "name": "最大150度の箱（制約テスト）",
+  "description": "180度の本の谷には設置できない。90度の地面・背景接続口では途中まで開く。",
+  "author": "tobidas",
+  "license": "Apache-2.0",
+  "input": {
+    "kind": "fold-pair",
+    "maxOpeningAngleDeg": 150,
+    "referenceOpenAngleDeg": 150
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "name": "箱",
+      "definition": {
+        "builtin": "folding-box",
+        "version": 1
+      },
+      "mount": {
+        "type": "input"
+      },
+      "parameters": {
+        "width": 2,
+        "height": 1,
+        "distance": 1.4
+      },
+      "materials": {
+        "panel": {
+          "color": "#628e9c"
+        },
+        "top": {
+          "color": "#d4b86e"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "top": {
+      "type": "output",
+      "nodeId": "body",
+      "portId": "top"
+    }
+  },
+  "requiredBuiltins": {
+    "folding-box": 1
+  }
+}

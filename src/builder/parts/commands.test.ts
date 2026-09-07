@@ -79,4 +79,19 @@ describe('基本・カスタム部品の共通編集', () => {
     expect(addTimelineKeyCommand({ spreadId: spread().id, target: { type: 'element', elementId: id }, property: 'position.y', time: 0, value: 2 }).ok).toBe(false)
     expect(addTimelineKeyCommand({ spreadId: spread().id, target: { type: 'element', elementId: id }, property: 'opacity', time: 0, value: .5 }).ok).toBe(true)
   })
+  it('150度対応の部品は180度の本の谷へ置けず、90度の背景接続口へ置ける', async () => {
+    const definition = newPartDefinition('150度の箱', { kind: 'fold-pair', maxOpeningAngleDeg: 150 })
+    definition.nodes = [node('folding-box')]
+    const snapshot = await snapshotPartBundle({ definition, definitions: {}, assets: [] })
+    usePartEditorStore.setState({ library: [{ hash: snapshot.hash, bundle: snapshot, savedAt: '2026-09-07' }] })
+    const before = useBuilderStore.getState().project
+    const invalid = placePartCommand({ spreadId: spread().id, name: '150度の箱', definition: { custom: snapshot.hash }, mount: gutter })
+    expect(invalid.ok).toBe(false)
+    expect(invalid.message).toContain('exceeds 150')
+    expect(useBuilderStore.getState().project).toBe(before)
+    const background = placed('backdrop', gutter, { width: 4, height: 3, distance: 1 })
+    const valid = placePartCommand({ spreadId: spread().id, name: '150度の箱', definition: { custom: snapshot.hash },
+      mount: { type: 'output', nodeId: background, portId: 'ground-backdrop' } })
+    expect(valid.ok, valid.message).toBe(true)
+  })
 })

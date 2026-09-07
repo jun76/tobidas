@@ -68,6 +68,7 @@ export function PartEditor() {
           <TextField label={t.author} value={bundle.definition.author} onChange={(author) => updatePartDefinitionCommand({ author })} />
           <TextField label={t.license} value={bundle.definition.license} onChange={(license) => updatePartDefinitionCommand({ license })} />
         </div></details>
+        <details className={st.section}><summary>{t.exposedParameters}</summary><PublicParameters /></details>
         <details className={st.section}><summary>{t.publicPorts}</summary><PublicPorts /></details>
         <div className={st.section}><h2>{t.materials}</h2><button type="button" onClick={() => assetRef.current?.click()}>{t.upload}</button>
           <input ref={assetRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" multiple hidden aria-label={t.upload} onChange={(event) => {
@@ -128,10 +129,11 @@ function NodeInspector({ node }: { node: PartNode }) {
   const update = (changes: Parameters<typeof updatePartNodeCommand>[0]['changes']) => {
     const result = updatePartNodeCommand({ nodeId: node.id, changes }); setError(result.ok ? '' : result.message)
   }
-  const materialValue = node.materials[surface] ?? {}, slot = 'slot' in materialValue ? materialValue.slot : undefined
-  const material = 'slot' in materialValue ? bundle.definition.materialSlots[materialValue.slot] ?? {} : materialValue
-  const ownSurfaces = 'builtin' in node.definition ? referencePorts(node.definition, bundle.definitions).filter((port) => port.kind === 'surface').map((port) => port.name)
+  const ownSurfaces = 'builtin' in node.definition ? ['*', ...referencePorts(node.definition, bundle.definitions).filter((port) => port.kind === 'surface').map((port) => port.name)]
     : Object.keys('materialSlots' in definition ? definition.materialSlots : {})
+  const active = ownSurfaces.includes(surface) ? surface : ownSurfaces[0]
+  const materialValue = node.materials[active] ?? {}, slot = 'slot' in materialValue ? materialValue.slot : undefined
+  const material = 'slot' in materialValue ? bundle.definition.materialSlots[materialValue.slot] ?? {} : materialValue
   return <div className={st.fields}>
     <h2>{node.name}</h2><TextField label={t.name} value={node.name} onChange={(name) => update({ name })} />
     <MountField value={node.mount} options={mountOptions(bundle.definition.nodes, bundle.definitions, bundle.definition.input, node.id)} kind={definition.input.kind} onChange={(mount) => update({ mount })} />
@@ -140,7 +142,7 @@ function NodeInspector({ node }: { node: PartNode }) {
         let value = p.default
         try { value = evaluateExpression(node.parameters[key] ?? p.default, values) } catch { /* 公開項目を直せるよう既定値を表示する。 */ }
         const expression = node.parameters[key]
-        return <div key={key}><NumberField label={parameterLabel(key)} value={value} min={p.min} max={p.max} step={p.type === 'integer' ? 1 : .05}
+        return <div key={key}><NumberField label={'custom' in node.definition ? p.label : parameterLabel(key)} value={value} min={p.min} max={p.max} step={p.type === 'integer' ? 1 : .05}
           onChange={(number) => update({ parameters: { ...node.parameters, [key]: number } })} />
           {expression && typeof expression !== 'number' && 'parameter' in expression && <p className={st.hint}>{t.exposedParameters}: {expression.parameter}</p>}
         </div>
@@ -158,15 +160,15 @@ function NodeInspector({ node }: { node: PartNode }) {
         setError(result.ok ? '' : result.message)
       }}>{t.expose}</button>
     </div></details>
-    <div className={st.section}><h2>{t.materials}</h2><label className={st.field}><span>{t.material}</span><select aria-label={t.material} value={surface} onChange={(event) => setSurface(event.target.value)}>
-      <option value="*">{t.title}</option>{ownSurfaces.map((name) => <option value={name} key={name}>{portLabel(name)}</option>)}
+    {active && <div className={st.section}><h2>{t.materials}</h2><label className={st.field}><span>{t.material}</span><select aria-label={t.material} value={active} onChange={(event) => setSurface(event.target.value)}>
+      {ownSurfaces.map((name) => <option value={name} key={name}>{name === '*' ? t.title : portLabel(name)}</option>)}
     </select></label>
       <MaterialFields value={material} assets={bundle.assets} onChange={(value) => slot
-        ? exposePartMaterialCommand({ name: slot, nodeId: node.id, surface, material: value }) : update({ materials: { ...node.materials, [surface]: value } })} />
+        ? exposePartMaterialCommand({ name: slot, nodeId: node.id, surface: active, material: value }) : update({ materials: { ...node.materials, [active]: value } })} />
       <details className={st.section}><summary>{t.exposeMaterial}</summary><TextField label={t.exposedMaterial} value={exposedName} onChange={setExposedName} />
-        <button type="button" onClick={() => exposePartMaterialCommand({ name: exposedName, nodeId: node.id, surface, material })}>{t.expose}</button>
+        <button type="button" onClick={() => exposePartMaterialCommand({ name: exposedName, nodeId: node.id, surface: active, material })}>{t.expose}</button>
       </details>
-    </div>
+    </div>}
     <details className={st.section}><summary>{t.outline}</summary><p className={st.hint}>{t.outlineHint}</p>
       <TextField label={t.outline} multiline value={(node.outline ?? []).map((point) => point.join(' ')).join('\n')} onChange={(text) => {
         if (!text.trim()) { update({ outline: undefined }); return }
@@ -176,6 +178,23 @@ function NodeInspector({ node }: { node: PartNode }) {
       }} />
     </details>
     <button type="button" onClick={() => deletePartNodeCommand(node.id)}>{t.remove}</button>
+    {error && <p className={st.error} role="alert">{error}</p>}
+  </div>
+}
+function PublicParameters() {
+  const t = useT().parts, { bundle } = usePartEditorStore(), [error, setError] = useState('')
+  const update = (id: string, changes: Partial<PartParameter>) => {
+    const result = updatePartDefinitionCommand({ parameters: { ...bundle.definition.parameters, [id]: { ...bundle.definition.parameters[id], ...changes } } })
+    setError(result.ok ? '' : result.message)
+  }
+  return <div className={st.fields}>
+    {Object.entries(bundle.definition.parameters).map(([id, parameter]) => <fieldset key={id} className={`${st.fields} ${st.parameterSpec}`}><legend>{id}</legend>
+      <TextField label={t.parameterLabel} value={parameter.label} onChange={(label) => update(id, { label })} />
+      <NumberField label={t.parameterDefault} value={parameter.default} step={parameter.type === 'integer' ? 1 : .05} onChange={(value) => update(id, { default: value })} />
+      <NumberField label={t.parameterMin} value={parameter.min} onChange={(min) => update(id, { min })} />
+      <NumberField label={t.parameterMax} value={parameter.max} onChange={(max) => update(id, { max })} />
+    </fieldset>)}
+    <p className={st.hint}>{t.parameterHint}</p>
     {error && <p className={st.error} role="alert">{error}</p>}
   </div>
 }

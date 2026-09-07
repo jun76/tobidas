@@ -66,4 +66,18 @@ describe('connected paper parts', () => {
     expect(evaluateBuiltin('backdrop', pairAt(46)).faces.map(faceCorners)).toEqual(first.faces.map(faceCorners))
     expect(first.faces[0].u).toEqual(new Vector3(0, 0, 1))
   })
+  it('箱の90度姿勢を保ち、接着辺を切る輪郭と未公開の素材指定を拒否する', () => {
+    const definition = newPartDefinition('箱')
+    definition.nodes.push({ id: 'box', name: '箱', definition: { builtin: 'folding-box', version: 1 }, mount: { type: 'input' }, parameters: {}, materials: {} })
+    syncDefinitionRequirements(definition)
+    const partial = evaluatePartReference({ custom: 'box' }, pairAt(90), { box: definition })
+    expect(partial.faces.map(faceCorners)).toEqual(evaluateBuiltin('folding-box', pairAt(90), {}, 'part/box').faces.map(faceCorners))
+    expect(partial.faces.map(faceCorners)).not.toEqual(evaluateBuiltin('folding-box', pairAt(180), {}, 'part/box').faces.map(faceCorners))
+    expect(() => evaluatePartReference({ custom: 'box' }, pairAt(90), { box: definition }, {}, { hidden: { color: '#ffffff' } })).toThrow('Unknown public material slot')
+    definition.input = { kind: 'fold-pair', maxOpeningAngleDeg: 90 }
+    definition.nodes[0].definition = { builtin: 'upright', version: 1 }
+    definition.nodes[0].outline = [[0, 0], [.3, 0], [.5, .4], [.7, 0], [1, 0], [1, 1], [0, 1]]
+    syncDefinitionRequirements(definition)
+    expect(validatePartDefinition(definition).errors).toContainEqual(expect.stringContaining('Outline cuts through an attachment'))
+  })
 })

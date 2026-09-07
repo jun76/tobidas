@@ -16,6 +16,27 @@ export async function contentHash(value: string | Uint8Array): Promise<string> {
 }
 export const definitionHash = (definition: PartDefinition) => contentHash(canonicalJson(definition))
 
+/** 絵本へ同梱された改訂も、部品ファイルと同じ内容ハッシュで照合する。 */
+export async function verifyEmbeddedParts(definitions: PartDefinitions, assets: Asset[]): Promise<void> {
+  const byId = new Map(assets.map((asset) => [asset.id, asset])), checkedAssets = new Map<string, { hash: string; bytes: number }>()
+  for (const [hash, definition] of Object.entries(definitions)) {
+    if (await definitionHash(definition) !== hash) throw new Error(`Part definition hash mismatch: ${hash}`)
+    for (const dependency of definition.dependencies) if (!definitions[dependency]) throw new Error(`Missing part dependency: ${dependency}`)
+    for (const node of definition.nodes) if ('custom' in node.definition && !definition.dependencies.includes(node.definition.custom)) throw new Error('Undeclared custom dependency')
+    for (const meta of definition.assets) {
+      const asset = byId.get(meta.id)
+      if (!asset || asset.type !== meta.type || asset.mime !== meta.mime) throw new Error(`Missing or mismatched part asset: ${meta.id}`)
+      let checked = checkedAssets.get(meta.id)
+      if (!checked) {
+        const bytes = await assetBytes(asset)
+        checked = { hash: await contentHash(bytes), bytes: bytes.length }; checkedAssets.set(meta.id, checked)
+      }
+      if (checked.hash !== meta.hash || checked.bytes !== meta.bytes) throw new Error(`Part asset hash or size mismatch: ${meta.id}`)
+    }
+    for (const id of materialAssetIds(definition)) if (!definition.assets.some((asset) => asset.id === id)) throw new Error(`Undeclared part asset: ${id}`)
+  }
+}
+
 export async function assetBytes(asset: Asset): Promise<Uint8Array> {
   if (asset.data instanceof Blob) return new Uint8Array(await asset.data.arrayBuffer())
   if (asset.type === 'svg') return new TextEncoder().encode(asset.data)

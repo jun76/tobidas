@@ -1,0 +1,144 @@
+{
+  "format": "tobidas-part",
+  "schemaVersion": 1,
+  "id": "example-house",
+  "revision": 1,
+  "name": "家",
+  "description": "地面と背景の90度接続口で起き上がる家。背面に支持ブリッジを持つ。",
+  "author": "tobidas",
+  "license": "Apache-2.0",
+  "input": {
+    "kind": "fold-pair",
+    "maxOpeningAngleDeg": 90,
+    "referenceOpenAngleDeg": 90
+  },
+  "parameters": {
+    "width": {
+      "label": "家の幅",
+      "type": "length",
+      "default": 2,
+      "min": 1,
+      "max": 4
+    },
+    "height": {
+      "label": "屋根までの高さ",
+      "type": "length",
+      "default": 2,
+      "min": 1.2,
+      "max": 3
+    },
+    "distance": {
+      "label": "背景からの距離",
+      "type": "length",
+      "default": 1.5,
+      "min": 0.2,
+      "max": 4
+    },
+    "offset": {
+      "label": "左右の位置",
+      "type": "number",
+      "default": 0,
+      "min": -4,
+      "max": 4
+    }
+  },
+  "materialSlots": {
+    "facade": {
+      "image": "house.svg"
+    }
+  },
+  "nodes": [
+    {
+      "id": "wall",
+      "name": "屋根付きの壁",
+      "definition": {
+        "builtin": "upright",
+        "version": 1
+      },
+      "mount": {
+        "type": "input"
+      },
+      "parameters": {
+        "width": {
+          "parameter": "width"
+        },
+        "height": {
+          "parameter": "height"
+        },
+        "distance": {
+          "parameter": "distance"
+        },
+        "offset": {
+          "parameter": "offset"
+        },
+        "supportHeight": {
+          "op": "multiply",
+          "args": [
+            {
+              "parameter": "height"
+            },
+            0.5
+          ]
+        },
+        "supportWidth": 0.3
+      },
+      "materials": {
+        "panel": {
+          "slot": "facade"
+        },
+        "support": {
+          "color": "#cbbf9d"
+        }
+      },
+      "outline": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0.7
+        ],
+        [
+          0.5,
+          1
+        ],
+        [
+          0,
+          0.7
+        ]
+      ]
+    }
+  ],
+  "outputs": {
+    "wall": {
+      "type": "output",
+      "nodeId": "wall",
+      "portId": "panel"
+    },
+    "ground-wall": {
+      "type": "output",
+      "nodeId": "wall",
+      "portId": "ground-panel"
+    }
+  },
+  "assets": [
+    {
+      "id": "house.svg",
+      "name": "家の正面",
+      "type": "svg",
+      "mime": "image/svg+xml",
+      "width": 600,
+      "height": 720,
+      "bytes": 713,
+      "hash": "ffc0301ec8d0a359c433c72f59713df09ced2bc7184e82ad6a79bdde5062469f"
+    }
+  ],
+  "requiredBuiltins": {
+    "upright": 1
+  }
+}
