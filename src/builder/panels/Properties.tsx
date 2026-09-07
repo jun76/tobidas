@@ -289,6 +289,8 @@ function Page({ side, embedded = false }: { side: 'left' | 'right'; embedded?: b
   </PropertySection>
 }
 
+import { PlacedPartInspector } from '../parts/PartPalette'
+
 function Element({ element, embedded = false }: { element: StageElement; embedded?: boolean }) {
   const t = useT()
   const store = useBuilderStore()
@@ -298,6 +300,7 @@ function Element({ element, embedded = false }: { element: StageElement; embedde
   const time = activeSpreadTime()
   const [parentDialogOpen, setParentDialogOpen] = useState(false)
   const [surfaceDialogOpen, setSurfaceDialogOpen] = useState(false)
+  if (element.type === 'part') return <PlacedPartInspector element={element} spreadId={selection.spreadId} />
   const key = (property: TimelineProperty, value: TimelineValue) =>
     store.upsertTimelineKey(selection.spreadId, { type: 'element', elementId: element.id }, property, time, value)
 

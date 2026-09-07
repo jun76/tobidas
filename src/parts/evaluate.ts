@@ -59,7 +59,12 @@ export function evaluatePartReference(reference: PartReference, input: PartPort,
   const parameters = parameterValues(definition.parameters, values)
   const slots = { ...definition.materialSlots, ...materials }
   const graph = evaluatePartGraph(definition.nodes, definitions, input, {}, parameters, slots, prefix, [...ancestors, reference.custom])
-  const output = (nodeId: string, portId: string) => {
+  const output = (nodeId: string, portId: string): PartPort => {
+    if (nodeId === '$input') {
+      if (portId === 'mount') return input
+      if (input.kind === 'fold-pair' && (portId === 'a' || portId === 'b')) return { kind: 'surface', face: input[portId] }
+      if (input.kind === 'surface' && portId === 'surface') return input
+    }
     const port = graph.nodes[nodeId]?.ports[portId]
     if (!port) throw new Error(`Unknown output: ${nodeId}/${portId}`)
     return port
@@ -72,6 +77,7 @@ export function evaluatePartGraph(nodes: PartNode[], definitions: PartDefinition
   slots: Record<string, PartMaterial> = {}, prefix = '', ancestors: string[] = []): EvaluatedPartGraph {
   const evaluated: Record<string, PaperEvaluation> = {}, active = new Set<string>(), byId = new Map(nodes.map((node) => [node.id, node]))
   if (byId.size !== nodes.length) throw new Error('Duplicate part node id')
+  if (nodes.some((node) => node.id.startsWith('$'))) throw new Error('Part node ID is reserved')
   const output = (nodeId: string, portId: string): PartPort => {
     if (external[nodeId]?.[portId]) return external[nodeId][portId]
     if (nodeId === '$input' && input) {

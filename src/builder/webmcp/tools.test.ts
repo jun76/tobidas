@@ -46,21 +46,18 @@ describe('WebMCP adapter', () => {
     }
     const controller = new AbortController()
     expect(await registerTobidasWebMcpTools(context, controller.signal)).toBe(true)
-    expect(registrations.map(({ tool: registered }) => registered.name)).toEqual([
-      'tobidas-create-mechanism', 'tobidas-update-mechanism', 'tobidas-set-mechanism-surface',
-      'tobidas-attach-to-surface', 'tobidas-place-surface-asset', 'tobidas-create-composition', 'tobidas-update-composition',
-      'tobidas-get-state', 'tobidas-get-authoring-guide', 'tobidas-update-authoring-guide',
-      'tobidas-get-spread', 'tobidas-get-element', 'tobidas-list-assets', 'tobidas-validate-book',
-      'tobidas-audit-layout',
-      'tobidas-select-target', 'tobidas-set-preview', 'tobidas-enter-play', 'tobidas-enter-edit',
-      'tobidas-place-asset', 'tobidas-set-page-background', 'tobidas-clear-page-background',
-      'tobidas-create-visual', 'tobidas-update-element', 'tobidas-move-element', 'tobidas-set-element-parent',
-      'tobidas-delete-element', 'tobidas-add-timeline-key', 'tobidas-list-timeline-keys',
-      'tobidas-update-timeline-key', 'tobidas-delete-timeline-key', 'tobidas-set-camera',
-      'tobidas-add-camera-key', 'tobidas-assign-bgm', 'tobidas-clear-bgm', 'tobidas-add-spread',
-      'tobidas-duplicate-spread', 'tobidas-reorder-spread', 'tobidas-delete-spread',
-      'tobidas-undo', 'tobidas-redo',
-    ])
+    const names = registrations.map(({ tool }) => tool.name)
+    expect(names).toEqual(expect.arrayContaining(['tobidas-get-part-catalog', 'tobidas-place-part', 'tobidas-update-placed-part', 'tobidas-get-state']))
+    expect(names).not.toContain('tobidas-create-mechanism')
+    expect(names).not.toContain('tobidas-create-composition')
+    expect(names).not.toContain('tobidas-place-asset')
+    expect(names).not.toContain('tobidas-add-part-node')
+    expect(createTobidasWebMcpTools('part').map((tool) => tool.name)).toContain('tobidas-add-part-node')
+    for (const screen of ['home', 'book', 'part', 'settings'] as const) {
+      const registered = createTobidasWebMcpTools(screen)
+      expect(registered.length).toBeLessThan(50)
+      expect(JSON.stringify(registered).length).toBeLessThan(60000)
+    }
     expect(registrations.every(({ signal }) => signal === controller.signal)).toBe(true)
     controller.abort()
     expect(controller.signal.aborted).toBe(true)
@@ -69,51 +66,28 @@ describe('WebMCP adapter', () => {
   it('places an asset through the normal command and returns the reflected element', async () => {
     const spreadId = setup()
     const beforeUndo = useBuilderStore.getState().undoStack.length
-    const result = payload(await invoke('tobidas-place-asset', {
-      spreadId, side: 'right', assetId: 'tree.webp', presetId: 'bottom-upright', u: .5, v: .5,
+    const result = payload(await invoke('tobidas-place-part', {
+      spreadId, name: 'Tree', definition: { builtin: 'flat', version: 1 }, mount: { type: 'output', nodeId: '$book', portId: 'right-page' }, materials: { face: { image: 'tree.webp' } },
     }))
 
     expect(result.ok).toBe(true)
-    expect(result.after.id).toBe(result.target.id)
-    expect(result.after.image).toBe('tree.webp')
+    const created = useBuilderStore.getState().project.book.spreads[0].elements.find((element) => element.id === result.target.id)!
+    expect(created.type === 'part' && created.part.materials.face.image).toBe('tree.webp')
     expect(useBuilderStore.getState().undoStack.length).toBe(beforeUndo + 1)
   })
 
-  it('機構と面上部品を共通コマンドで作り、型の外のデータを拒否する', async () => {
+  it('二面駆動の部品を作り、未定義入力と接続の破壊を拒否する', async () => {
     const spreadId = setup()
-    const created = payload(await invoke('tobidas-create-mechanism', { spreadId, kind: 'box', deployment: { mode: 'page-constrained' } }))
-    expect(created.ok).toBe(true)
-    expect(created.after.mechanism.mount.type).toBe('gutter')
-    expect(created.after.surfaces).toContain('top-left')
-    const id = created.target.id
-    const slot = payload(await invoke('tobidas-set-mechanism-surface', { spreadId, elementId: id, surfaceId: 'top-left', image: 'tree.webp' }))
-    expect(slot.ok).toBe(true)
-    expect(slot.after.mechanism.surfaces['top-left'].image).toBe('tree.webp')
-    const child = payload(await invoke('tobidas-place-surface-asset', { spreadId, parentId: id, surfaceId: 'top-left', assetId: 'tree.webp', u: .5, v: .5, width: 1, height: 2 }))
+    const parent = payload(await invoke('tobidas-place-part', { spreadId, name: '背景', definition: { builtin: 'backdrop', version: 1 }, mount: { type: 'output', nodeId: '$book', portId: 'gutter' } }))
+    expect(parent.ok).toBe(true)
+    const child = payload(await invoke('tobidas-place-part', { spreadId, name: '看板', definition: { builtin: 'upright', version: 1 },
+      mount: { type: 'output', nodeId: parent.target.id, portId: 'ground-backdrop' }, parameters: { width: 1, height: 1, distance: 1, supportHeight: .5 } }))
     expect(child.ok).toBe(true)
-    expect(child.after.surfaceAttachment.surfaceId).toBe('top-left')
     const before = useBuilderStore.getState().project
-    expect(payload(await invoke('tobidas-update-mechanism', { spreadId, elementId: id, arbitraryJSON: {} })).ok).toBe(false)
+    expect(payload(await invoke('tobidas-update-placed-part', { spreadId, elementId: child.target.id, changes: { arbitraryJSON: {} } })).ok).toBe(false)
+    expect(payload(await invoke('tobidas-update-placed-part', { spreadId, elementId: child.target.id,
+      changes: { mount: { type: 'output', nodeId: '$book', portId: 'gutter' } } })).ok).toBe(false)
     expect(useBuilderStore.getState().project).toBe(before)
-  })
-
-  it('公開する入力定義と実行の両方からブリッジ接続と明示的な展開位置を使える', async () => {
-    const spreadId = setup()
-    const schema = tool('tobidas-create-mechanism').inputSchema as any
-    expect(schema.properties.mount.properties.type.enum).toEqual(['page', 'gutter', 'surface', 'bridge'])
-    expect(schema.properties.mount.properties.bridgeId.enum).toEqual(['deck'])
-    expect(schema.properties.deployment.properties).not.toHaveProperty('start')
-    expect(schema.properties.deployment.properties).not.toHaveProperty('end')
-    expect(schema.properties.staging.properties).toHaveProperty('openScale')
-    expect(schema.properties.staging.properties).toHaveProperty('openPosition')
-    expect((tool('tobidas-create-composition').inputSchema as any).properties).toHaveProperty('mount')
-    const parent = payload(await invoke('tobidas-create-mechanism', { spreadId, kind: 'platform', parameters: { width: 6, depth: 4 } }))
-    const child = payload(await invoke('tobidas-create-mechanism', { spreadId, kind: 'box',
-      parameters: { width: 3, depth: 2 }, mount: { type: 'bridge', elementId: parent.target.id, bridgeId: 'deck', v: .3 },
-      deployment: { mode: 'virtual' }, staging: { openScale: 2, openPosition: [0, .6, 0] } }))
-    expect(child.ok).toBe(true)
-    expect(child.after.mechanism.mount).toMatchObject({ type: 'bridge', elementId: parent.target.id, v: .3 })
-    expect(child.after.mechanism.staging.openPosition).toEqual([0, .6, 0])
   })
 
   it('reads and updates the current work authoring guide', async () => {
@@ -166,7 +140,7 @@ describe('WebMCP adapter', () => {
 
   it('exposes explicit destructive and spread tools with confirmation', async () => {
     const spreadId = setup()
-    const created = payload(await invoke('tobidas-create-visual', { spreadId, side: 'right', presetId: 'page-text' }))
+    const created = payload(await invoke('tobidas-place-part', { spreadId, name: 'Text', definition: { builtin: 'text', version: 1 }, mount: { type: 'output', nodeId: '$book', portId: 'right-page' } }))
     const rejected = payload(await invoke('tobidas-delete-element', {
       spreadId, elementId: created.target.id, confirm: false,
     }))
@@ -216,14 +190,14 @@ describe('WebMCP adapter', () => {
   it('rejects invalid IDs and edits in play mode without changing the project', async () => {
     const spreadId = setup()
     const before = useBuilderStore.getState().project
-    const invalid = payload(await invoke('tobidas-place-asset', {
-      spreadId, side: 'right', assetId: 'missing.webp', presetId: 'bottom-upright', u: .5, v: .5,
+    const invalid = payload(await invoke('tobidas-place-part', {
+      spreadId, name: 'Missing', definition: { builtin: 'flat', version: 1 }, mount: { type: 'output', nodeId: '$book', portId: 'right-page' }, materials: { face: { image: 'missing.webp' } },
     }))
     expect(invalid.ok).toBe(false)
     expect(useBuilderStore.getState().project).toBe(before)
 
     useBuilderStore.getState().setMode('play')
-    const readOnly = payload(await invoke('tobidas-create-visual', { spreadId, side: 'right', presetId: 'page-text' }))
+    const readOnly = payload(await invoke('tobidas-place-part', { spreadId, name: 'Text', definition: { builtin: 'text', version: 1 }, mount: { type: 'output', nodeId: '$book', portId: 'right-page' } }))
     expect(readOnly.ok).toBe(false)
     expect(useBuilderStore.getState().project).toBe(before)
   })

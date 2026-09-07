@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { vec3Schema } from './geometry'
 import { embeddedVideoAudioSchema } from './audio'
 import { mechanismSchema } from './mechanism'
+import { partInstanceSchema } from '../parts/schema'
 
 export const transformSchema = z.object({
   position: vec3Schema,
@@ -142,6 +143,7 @@ const currentStageElementSchema = z.discriminatedUnion('type', [
     particles: particleSettingsSchema.default(() => ({ ...defaultParticleSettings })),
   }),
   z.object({ ...common, type: z.literal('group') }),
+  z.object({ ...common, type: z.literal('part'), part: partInstanceSchema }),
   z.object({
     ...common, type: z.literal('assembly'), mechanism: mechanismSchema,
     composition: z.object({
@@ -191,7 +193,7 @@ export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown
     }
     return input
   }
-  if (input.type === 'particle' || input.type === 'group' || input.type === 'assembly') return input
+  if (input.type === 'particle' || input.type === 'group' || input.type === 'assembly' || input.type === 'part') return input
   const base: Record<string, unknown> = { ...input, type: 'visual' }
   if (input.type === 'image') {
     delete base.asset
@@ -242,4 +244,5 @@ export type StageElementType = StageElement['type']
 export type VisualElement = Extract<StageElement, { type: 'visual' }>
 export type ParticleElement = Extract<StageElement, { type: 'particle' }>
 export type AssemblyElement = Extract<StageElement, { type: 'assembly' }>
+export type PartElement = Extract<StageElement, { type: 'part' }>
 export type TextFont = z.infer<typeof textFontSchema>

@@ -10,6 +10,7 @@ import { COLOR_PROPERTIES, DISCRETE_PROPERTIES, NUMBER_PROPERTIES, VEC3_PROPERTI
 import { AUTHORING_GUIDE_KEYS, authoringGuideLocaleSchema, type AuthoringGuideLocale, type AuthoringGuideKey } from '../../schema/authoringGuide'
 import { updateMechanismCommand } from './mechanisms'
 export { createMechanismCommand, updateMechanismCommand, setMechanismSurfaceCommand, attachToSurfaceCommand, placeSurfaceAssetCommand, createCompositionCommand, updateCompositionCommand } from './mechanisms'
+export * from '../parts/commands'
 
 type AssetPreset = Extract<VisualPresetId, 'paper-stack' | 'bottom-upright' | 'depth-layer'>
 
@@ -159,6 +160,8 @@ export function updateElementCommand(spreadId: string, elementId: string, input:
   if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
   const element = state.project.book.spreads.find((spread) => spread.id === spreadId)?.elements.find((item) => item.id === elementId)
   if (!element) return failure(action, t().operations.notFound)
+  if (element.type === 'part' && (input.position.some((n) => n !== 0) || input.rotation.some((n) => n !== 0)
+    || input.scale.some((n) => n !== 1) || input.motion?.length)) return failure(action, t().parts.editConnection)
   if (element.type === 'assembly') {
     const candidate = { ...element, baseTransform: { position: input.position, rotation: input.rotation, scale: input.scale }, motion: input.motion ?? element.motion }
     if (realPageAnchorIssues(candidate, state.project.book.format).length) return failure(action, t().mechanisms.constrainedHint)
@@ -245,6 +248,7 @@ export function moveElementCommand(spreadId: string, elementId: string, parent: 
   const spread = state.project.book.spreads.find((item) => item.id === spreadId)
   const element = spread?.elements.find((item) => item.id === elementId)
   if (!spread || !element) return failure(action, t().operations.notFound)
+  if (element.type === 'part') return failure(action, t().parts.editConnection)
   if (element.type === 'assembly') {
     if (parent.type === 'element') return failure(action, t().mechanisms.attach)
     return updateMechanismCommand({ spreadId, elementId, mount: { type: 'page', side: parent.type === 'left-page' ? 'left' : 'right' } })
@@ -329,6 +333,7 @@ export function addTimelineKeyCommand(input: {
     if (!spread.elements.some((element) => element.id === elementId)) errors.target = t().operations.notFound
     const element = spread.elements.find((item) => item.id === elementId)
     if (element?.type === 'assembly' && /^(position|rotation|scale)(\.|$)/.test(input.property)) errors.property = t().mechanisms.constrainedTimeline
+    if (element?.type === 'part' && !['opacity', 'visible'].includes(input.property)) errors.property = t().parts.editConnection
   }
   if (input.target.type === 'sound') {
     const assetId = input.target.assetId

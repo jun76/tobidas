@@ -10,6 +10,21 @@ export function evaluateBuiltin(id: BuiltinPartId, port: PartPort, overrides: Re
   const spec = builtinPart(id), p = parameterValues(spec.parameters, overrides)
   checkInput(spec.input, port)
   const result: PaperEvaluation = { faces: [], ports: {}, connections: [] }
+  if ((id === 'platform' || id === 'folding-box') && port.kind === 'fold-pair') {
+    // 本の二面から90°の背面を起こす支持を、台と箱の内部に含める。
+    const base = evaluateBuiltin('backdrop', port, { width: p.width, height: p.height, distance: p.distance / 2, offset: p.offset }, `${prefix}/base`)
+    for (const face of base.faces) {
+      const previous = face.id
+      face.id = `${prefix}/${previous.endsWith('/panel') ? 'back' : 'rear-support'}`
+      for (const connection of base.connections) {
+        if (connection.childFace === previous) connection.childFace = face.id
+        if (connection.parentFace === previous) connection.parentFace = face.id
+      }
+    }
+    result.faces.push(...base.faces); result.connections.push(...base.connections)
+    result.ports.back = base.ports.panel
+    port = base.ports['ground-backdrop']; p.offset = 0
+  }
   const put = (name: string, origin: Vector3, u: Vector3, v: Vector3, width: number, height: number, support = false) => {
     const face = makeFace(`${prefix}/${name}`, origin, u, v, width, height, support)
     result.faces.push(face); result.ports[name] = { kind: 'surface', face }
@@ -123,8 +138,7 @@ export function evaluateBuiltin(id: BuiltinPartId, port: PartPort, overrides: Re
     if (id !== 'upright') pair('top-panel', support, panel, top, rayA.clone().negate(), rayB.clone().negate(), p.distance, p.height, port.foldSign)
     if (id === 'folding-box') {
       const bottom = addPanel('bottom', o, rayA, p.distance, true)
-      const back = addPanel('back', o, rayB, p.height, true)
-      glue(bottom, port.a, left(o), right(o)); glue(back, port.b, left(o), right(o))
+      glue(bottom, port.a, left(o), right(o))
     }
   }
   return result

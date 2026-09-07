@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import type { PartDefinitions } from '../parts/schema'
 import type { Book } from '../schema/book'
 import { DEFAULT_EMBEDDED_VIDEO_AUDIO, type EmbeddedVideoAudio } from '../schema/audio'
 import type { Asset } from '../schema/assets'
@@ -43,8 +44,9 @@ export function unlockVideoAudio(): void {
   for (const attachment of attachments) applyGate(attachment)
 }
 
-export function VideoAudioProvider({ book, progress, active, muted, children }: {
+export function VideoAudioProvider({ book, partDefinitions, progress, active, muted, children }: {
   book: Book
+  partDefinitions?: PartDefinitions
   progress: number
   active: boolean
   muted: boolean
@@ -59,7 +61,7 @@ export function VideoAudioProvider({ book, progress, active, muted, children }: 
 
   // 音像は端末の縦横比によるカメラ後退へ引きずらず、作品が持つ基準カメラへ固定する。
   useFrame(() => {
-    const pose = evaluatePlayCameraPose(book, progress, CAMERA_REFERENCE_ASPECT)
+    const pose = evaluatePlayCameraPose(book, progress, CAMERA_REFERENCE_ASPECT, partDefinitions)
     listener.position.set(...pose.position)
     listener.up.set(0, 1, 0)
     listener.lookAt(...pose.target)

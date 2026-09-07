@@ -54,6 +54,11 @@ export function createStageElement(
     ...common, type, width: 2, height: 2, billboard: false,
     particles: { color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
   }
+  if (type === 'part') return {
+    ...common, type,
+    baseTransform: { position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] },
+    part: { definition: { builtin: 'flat', version: 1 }, mount: { type: 'output', nodeId: '$book', portId: parent.type === 'left-page' ? 'left-page' : 'right-page' }, parameters: {}, materials: {} },
+  }
   if (type === 'assembly') return {
     ...common, type, mechanism: makeMechanism('box'),
     baseTransform: { ...common.baseTransform, position: [0, 0, 0], rotation: [0, 0, 0] },

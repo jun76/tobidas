@@ -36,7 +36,7 @@ export function CameraPreview({ book, progress }: { book: Book; progress: number
   }, [helper, targetLine])
 
   useFrame(({ camera: viewCamera }) => {
-    const pose = evaluatePlayCameraPose(book, progress, size.width / Math.max(1, size.height))
+    const pose = evaluatePlayCameraPose(book, progress, size.width / Math.max(1, size.height), useBuilderStore.getState().project.partDefinitions)
     position.set(...pose.position)
     camera.fov = pose.fov
     camera.position.copy(position)

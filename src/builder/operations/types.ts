@@ -32,6 +32,7 @@ export interface ElementSummary {
   text?: string
   particles?: boolean
   particleSettings?: ParticleElement['particles']
+  part?: import('../../parts/schema').PartInstance
   mechanism?: import('../../schema/mechanism').MechanismSpec
   surfaces?: string[]
   bridges?: string[]
@@ -84,6 +85,7 @@ export interface BuilderStateSummary {
   authoringGuide: { available: true; locales: readonly ['ja', 'en']; readTool: 'tobidas-get-authoring-guide'; updateTool: 'tobidas-update-authoring-guide'; itemCount: number }
   /** 素材本体を除く作品データ。AIがフォームを再走査せず現在値を照合できるようにする。 */
   book: import('../../schema/bookPackage').BookProject['book']
+  partDefinitions?: import('../../parts/schema').PartDefinitions
   audio?: import('../../schema/bookPackage').BookProject['audio']
   mode: EditorMode
   activeSpread?: { id: string; name: string; index: number; holdSeconds: number; turnSeconds: number }

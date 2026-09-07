@@ -31,7 +31,7 @@ export function SelectionGizmo() {
   let billboard = false
   if (selection.type === 'element' && spread) {
     const element = spread.elements.find((item) => item.id === selection.elementId)
-    if (element) {
+    if (element && element.type !== 'part') {
       pose = evaluateElementTimeline(element, spread, spreadTime).baseTransform
       const width = store.project.book.format.pageWidth
       if (element.parent.type === 'left-page') anchor = [-width / 2, 0, 0]

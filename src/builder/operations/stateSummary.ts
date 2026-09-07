@@ -38,6 +38,7 @@ export function countAssetReferences(project: BookProject): Map<string, number> 
         use(element.image)
         use(element.backImage)
       }
+      if (element.type === 'part') for (const slot of Object.values(element.part.materials)) { use(slot.image); use(slot.backImage) }
       if (element.type === 'assembly') for (const slot of Object.values(element.mechanism.surfaces)) { use(slot.image); use(slot.backImage) }
     }
     for (const track of spread.timeline.tracks) {
@@ -47,6 +48,7 @@ export function countAssetReferences(project: BookProject): Map<string, number> 
       }
     }
   }
+  for (const definition of Object.values(project.partDefinitions ?? {})) for (const asset of definition.assets) use(asset.id)
   return counts
 }
 
@@ -65,6 +67,7 @@ function elementSummary(element: StageElement, spreadId: string, trackIds: strin
     visible: element.visible,
     opacity: element.opacity,
     surfaceAttachment: element.surfaceAttachment,
+    ...(element.type === 'part' ? { part: element.part } : {}),
     ...(element.type === 'assembly' ? { mechanism: element.mechanism, surfaces: mechanismSurfaceIds(element.mechanism), bridges: mechanismBridgeIds(element.mechanism), composition: element.composition } : {}),
     ...(element.type === 'visual' ? {
       width: element.width,
@@ -131,6 +134,7 @@ export function buildBuilderStateSummary(state: EditorState): BuilderStateSummar
     },
     book: state.project.book,
     audio: state.project.audio,
+    partDefinitions: state.project.partDefinitions,
     mode: state.mode,
     activeSpread: spread ? {
       id: spread.id,

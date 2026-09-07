@@ -23,6 +23,7 @@ import { PaperSlab, assetFor } from './visuals/ElementVisuals'
 import { setVideoPlaybackEnabled, useImageTexture, useSvgTexture, useVideoTexture } from './assets'
 import { VideoAudioProvider, VideoAudioSource } from './videoAudio'
 import { AssemblyRenderer } from './mechanisms/AssemblyRenderer'
+import { BookPartsRenderer } from '../parts/BookPartsRenderer'
 
 export type { BookRuntimeProps, RuntimeSelection } from './types'
 
@@ -123,7 +124,7 @@ export function BookRuntime({
 
   useEffect(() => {
     if (showGuides) return
-    const pose = evaluatePlayCameraPose(book, progress, size.width / Math.max(1, size.height))
+    const pose = evaluatePlayCameraPose(book, progress, size.width / Math.max(1, size.height), project.partDefinitions)
     camera.position.set(...pose.position)
     if (camera instanceof THREE.PerspectiveCamera) camera.fov = pose.fov
     camera.lookAt(...pose.target)
@@ -135,7 +136,7 @@ export function BookRuntime({
   // 隣接ページの透明な判定面を作らず、紙束越しのクリックを拾わせない。
   const selectPage = (spreadId: string) => spreadId === selectionSpreadId ? onSelect : undefined
 
-  return <VideoAudioProvider book={book} progress={progress} active={audioActive} muted={audioMuted}>
+  return <VideoAudioProvider book={book} partDefinitions={project.partDefinitions} progress={progress} active={audioActive} muted={audioMuted}>
     <VideoAudioSource video={stageBackgroundVideo?.video}
       settings={book.appearance.backgroundVideoAudio} positional={false} />
   <group>
@@ -270,6 +271,14 @@ export function BookRuntime({
           leftAngle={override ? Math.PI : Math.PI * sheetAngles[frame.index]}
           rightAngle={override ? (1 - frame.t) * Math.PI : Math.PI * sheetAngles[frame.index + 1]}
           spreadTime={frame.spreadTime} {...shared} />
+      })}
+
+      {frames.filter((frame) => frame.open && frame.spread.elements.some((element) => element.type === 'part')).map((frame) => {
+        const override = foldOverride?.spreadId === frame.spread.id
+        return <BookPartsRenderer key={`parts-${frame.spread.id}`} project={project} spread={frame.spread} spreadTime={frame.spreadTime}
+          leftAngle={override ? Math.PI : Math.PI * sheetAngles[frame.index]}
+          rightAngle={override ? (1 - frame.t) * Math.PI : Math.PI * sheetAngles[frame.index + 1]}
+          assets={assets} isHidden={isHidden} onSelect={onSelect} />
       })}
 
       {showGuides && <gridHelper args={[width * 2, 16, '#6d7cff', '#d9d9e8']}

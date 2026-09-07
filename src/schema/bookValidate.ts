@@ -4,6 +4,7 @@ import { AUDIO_BYTE_LIMIT, VIDEO_BYTE_LIMIT } from './assets'
 import type { EmbeddedVideoAudio } from './audio'
 import { mechanismSurfaceIds, mechanismBridgeIds, mechanismSurfaceSize } from './mechanism'
 import { realPageAnchorIssues } from './mechanismPlacement'
+import { validateBookParts } from '../parts/book'
 import {
   COLOR_PROPERTIES,
   DISCRETE_PROPERTIES,
@@ -24,6 +25,7 @@ export function validateBookProject(data: unknown): BookValidationResult {
     return { ok: false, errors, warnings }
   }
   const project = parsed.data as BookProject
+  errors.push(...validateBookParts(project))
   const assets = new Map(project.assets.map((asset) => [asset.id, asset]))
   const used = new Set<string>()
   const useAsset = (id: string | undefined, expected: string[], label: string) => {
@@ -72,6 +74,9 @@ export function validateBookProject(data: unknown): BookValidationResult {
     }
   }
   useAsset(project.audio?.bgmAsset, ['audio'], 'BGM')
+  for (const definition of Object.values(project.partDefinitions ?? {})) {
+    for (const asset of definition.assets) useAsset(asset.id, ['image', 'svg'], definition.name)
+  }
   const visualTypes = ['image', 'svg', 'video']
   useAsset(project.book.frontCover.frontAsset, visualTypes, 'front cover')
   useAsset(project.book.frontCover.backAsset, visualTypes, 'front cover reverse')
@@ -110,6 +115,10 @@ export function validateBookProject(data: unknown): BookValidationResult {
     const elementIds = spread.elements.map((e) => e.id)
     if (new Set(elementIds).size !== elementIds.length) errors.push(`${spread.name}: duplicate element id`)
     for (const element of spread.elements) {
+      if (element.type === 'part') for (const material of Object.values(element.part.materials)) {
+        useAsset(material.image, ['image', 'svg'], element.name)
+        useAsset(material.backImage, ['image', 'svg'], element.name)
+      }
       if (element.parent.type === 'element' && !elementIds.includes(element.parent.elementId)) errors.push(`${element.name}: parent element not found`)
       // 作品の親子循環と、機構内の閉路は別の契約。
       const ancestors = new Set<string>([element.id])

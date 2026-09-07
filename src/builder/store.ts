@@ -337,6 +337,11 @@ const initializeBuilder: StateCreator<EditorState> = (set, get) => {
       copy.elements.forEach((element) => {
         element.id = remap.get(element.id)!
         if (element.parent.type === 'element') element.parent.elementId = remap.get(element.parent.elementId) ?? element.parent.elementId
+        if (element.type === 'part') {
+          const mount = element.part.mount
+          if (mount.type === 'output') mount.nodeId = remap.get(mount.nodeId) ?? mount.nodeId
+          if (mount.type === 'pair') for (const side of [mount.a, mount.b]) side.nodeId = remap.get(side.nodeId) ?? side.nodeId
+        }
         if (element.type === 'assembly' && (element.mechanism.mount.type === 'surface' || element.mechanism.mount.type === 'bridge')) element.mechanism.mount.elementId = remap.get(element.mechanism.mount.elementId) ?? element.mechanism.mount.elementId
       })
       copy.timeline.tracks.forEach((track) => {
@@ -443,10 +448,12 @@ const initializeBuilder: StateCreator<EditorState> = (set, get) => {
     }),
     clearBgm: () => commit((project) => { project.audio = undefined }),
     replaceAsset: (id, asset) => commit((project) => {
+      if (Object.values(project.partDefinitions ?? {}).some((definition) => definition.assets.some((item) => item.id === id))) return
       const index = project.assets.findIndex((item) => item.id === id)
       if (index >= 0) project.assets[index] = { ...asset, id }
     }),
     removeAsset: (id) => commit((project) => {
+      if (Object.values(project.partDefinitions ?? {}).some((definition) => definition.assets.some((item) => item.id === id))) return
       project.assets = project.assets.filter((asset) => asset.id !== id)
       if (project.audio?.bgmAsset === id) project.audio = undefined
     }),

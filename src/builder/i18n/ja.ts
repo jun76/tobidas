@@ -4,7 +4,9 @@
  *
  * 語順は言語ごとに変わるので、値を差し込む文言は文字列の連結ではなく関数で持つ。
  */
+import { partsJa } from './parts'
 export const ja = {
+  parts: partsJa,
   mechanisms: {
     title: '折り機構と複合部品', create: '折り機構を追加', edit: '折り機構を編集', kind: 'しかけ', mount: '配置場所',
     page: '片ページ', gutter: '谷間', space: '見開きの空間', bridge: '谷を跨ぐ部品のブリッジ', bridgePosition: 'ブリッジ上の前後位置（0〜1）', fiction: '接続を保つ拡縮・浮遊を使う', openScale: '展開時の拡大率', bridgeRequired: '折れる機構は片面へ載せず、谷を跨ぐ部品のブリッジへ取り付けてください。', surface: '部品の面', mode: '動き方',

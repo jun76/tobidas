@@ -93,7 +93,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
     if (!camera || !orbit || !activeSpread || coverSide) return
     const pose = evaluateEditCameraPose(store.project.book, activeSpread, camera.aspect, {
       position: camera.position.toArray(), target: orbit.target.toArray(), fov: camera.fov,
-    })
+    }, store.project.partDefinitions)
     // 操作直前の慣性を消してから構図を移す。作品や保存カメラには書き込まない。
     const damping = orbit.enableDamping
     orbit.enableDamping = false

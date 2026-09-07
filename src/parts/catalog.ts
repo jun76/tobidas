@@ -22,15 +22,15 @@ export const BUILTIN_PARTS: BuiltinPart[] = [
   }, surfaces: ['face'], pairs: [] },
   { id: 'backdrop', version: 1, input: pair, parameters: dimensions,
     surfaces: ['panel', 'support', 'ground'], pairs: ['ground-backdrop'] },
-  { id: 'upright', version: 1, input: { ...pair, referenceOpenAngleDeg: 90 }, parameters: {
+  { id: 'upright', version: 1, input: { kind: 'fold-pair', maxOpeningAngleDeg: 90, referenceOpenAngleDeg: 90 }, parameters: {
     ...dimensions, supportHeight: length('supportHeight', 1), supportWidth: length('supportWidth', .3),
   }, surfaces: ['panel', 'support', 'ground'], pairs: ['ground-panel'] },
   { id: 'v-fold', version: 1, input: pair, parameters: dimensions,
     surfaces: ['wing-a', 'wing-b'], pairs: ['ridge'] },
-  { id: 'platform', version: 1, input: { ...pair, referenceOpenAngleDeg: 90 }, parameters: dimensions,
+  { id: 'platform', version: 1, input: pair, parameters: dimensions,
     surfaces: ['panel', 'top', 'ground'], pairs: ['ground-panel', 'top-panel'] },
   // 両端が開いた四面の箱。端面を伸縮する旧モデルは使わない。
-  { id: 'folding-box', version: 1, input: { ...pair, referenceOpenAngleDeg: 90 }, parameters: dimensions,
+  { id: 'folding-box', version: 1, input: pair, parameters: dimensions,
     surfaces: ['panel', 'top', 'bottom', 'back', 'ground'], pairs: ['ground-panel', 'top-panel'] },
   { id: 'accordion', version: 1, input: { ...pair, referenceOpenAngleDeg: 90 }, parameters: {
     ...dimensions, segments: { label: 'segments', type: 'integer', default: 4, min: 2, max: 16 },

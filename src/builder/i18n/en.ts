@@ -1,7 +1,9 @@
 import type { Dict } from './ja'
+import { partsEn } from './parts'
 
 /** ビルダーUIの英語定義。形は ja.ts が決めるので、抜けや余りは型検査で落ちる */
 export const en: Dict = {
+  parts: partsEn,
   mechanisms: {
     title: 'Folding mechanisms and assemblies', create: 'Add folding mechanism', edit: 'Edit folding mechanism', kind: 'Mechanism', mount: 'Placement',
     page: 'Page', gutter: 'Gutter', space: 'Spread space', bridge: 'Bridge across a connected part', bridgePosition: 'Bridge depth position (0–1)', fiction: 'Add connected scaling and floating', openScale: 'Open size multiplier', bridgeRequired: 'Attach folding mechanisms to a bridge across both sides of a connected part.', surface: 'Part surface', mode: 'Deployment',

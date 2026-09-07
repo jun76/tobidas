@@ -22,6 +22,7 @@ import type { BookSelection } from './state/editorState'
 import st from './builder.module.css'
 
 const RIGHT_PANEL_DEFAULT = 340
+let projectRestored = false
 
 function loadRightPanelWidth(): number {
   const saved = localStorage.getItem('tobidas4.panelW.right')
@@ -52,7 +53,7 @@ export default function App() {
   const selection = useBuilderStore((state) => state.selection)
   const previewProgress = useBuilderStore((state) => state.previewProgress)
   const operationResult = useOperationResultStore((state) => state.result)
-  const [booted, setBooted] = useState(false)
+  const [booted, setBooted] = useState(projectRestored)
   const [stateVersion, setStateVersion] = useState(0)
   const [pendingElementDelete, setPendingElementDelete] = useState<{
     spreadId: string
@@ -81,10 +82,11 @@ export default function App() {
     setPendingContainerDelete(null)
   }, [projectSession])
   useEffect(() => {
+    if (projectRestored) return
     let alive = true
     void loadCurrentProject().then((project) => {
       if (alive && project) setProject(project, 'idb')
-      if (alive) setBooted(true)
+      if (alive) { projectRestored = true; setBooted(true) }
     })
     return () => { alive = false }
   }, [setProject])
@@ -137,7 +139,6 @@ export default function App() {
 
   if (!booted) return <div className={st.app} style={{ alignItems: 'center', justifyContent: 'center' }}>{t.app.loading}</div>
   return <div className={st.app}>
-    <WebMcpBridge />
     <output className={st.visuallyHidden} data-tobidas-kind="operation-result"
       aria-live="polite" aria-atomic="true">{operationResult ? JSON.stringify(operationResult) : ''}</output>
     {pendingElementDelete && <ConfirmDialog

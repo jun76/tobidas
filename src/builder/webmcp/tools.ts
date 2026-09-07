@@ -38,13 +38,8 @@ import { buildBuilderStateSummary } from '../operations/stateSummary'
 import type { BuilderCommandResult, BuilderStateSummary, ElementSummary, SpreadSummary } from '../operations/types'
 import { publishOperationResult } from '../operations/result'
 import type { WebMcpModelContext, WebMcpTool } from './types'
-import {
-  createMechanismCommand, createMechanismInputSchema, updateMechanismCommand, updateMechanismInputSchema,
-  setMechanismSurfaceCommand, setMechanismSurfaceInputSchema, attachToSurfaceCommand, attachSurfaceInputSchema,
-  placeSurfaceAssetCommand, placeSurfaceAssetInputSchema, createCompositionCommand, createCompositionInputSchema,
-  updateCompositionCommand, updateCompositionInputSchema, mechanismKinds,
-} from '../operations/mechanisms'
-import { compositionKinds } from '../mechanismPresets'
+import { makePartTools } from './partTools'
+import { useWorkspaceStore } from '../parts/store'
 
 const elementUpdateSchema = z.object({
   name: z.string(),
@@ -317,57 +312,9 @@ function targetToSelection(input: z.infer<typeof selectTargetSchema>): Parameter
   return { type: 'element', spreadId, elementId }
 }
 
-/** 機構編集もフォームと同じ型付きコマンドへ接続する。素材本体や自由JSONは受け付けない。 */
-function makeMechanismTools(): WebMcpTool[] {
-  const string = { type: 'string' }
-  const number = { type: 'number' }
-  const vector = { type: 'array', items: number, minItems: 3, maxItems: 3 }
-  const refs = { spreadId: string, elementId: string }
-  const parameters = { type: 'object', additionalProperties: false, properties: { width: number, height: number, depth: number, segments: { type: 'integer' }, angleDeg: number } }
-  const mount = { type: 'object', additionalProperties: false, properties: { type: { type: 'string', enum: ['page', 'gutter', 'surface', 'bridge'] },
-    side: { type: 'string', enum: ['left', 'right'] }, elementId: string, bridgeId: { type: 'string', enum: ['deck'] }, surfaceId: string, u: number, v: number, offset: number }, required: ['type'] }
-  const deployment = { type: 'object', additionalProperties: false, properties: { mode: { type: 'string', enum: ['page-constrained', 'virtual'] } } }
-  const staging = { type: 'object', additionalProperties: false, properties: { openScale: number, closedScale: number, openPosition: vector, closedPosition: vector, floatAmplitude: vector,
-    floatPeriod: number, floatPhase: number, fadeStart: number, fadeEnd: number } }
-  const surfaceRefs = { ...refs, surfaceId: string }
-  const attach = { ...surfaceRefs, parentId: string, u: number, v: number, offset: number }
-  const tool = <T,>(name: string, description: string, schema: z.ZodType<T, z.ZodTypeDef, unknown>,
-    properties: Record<string, unknown>, required: string[], run: (input: T) => BuilderCommandResult): WebMcpTool => ({
-    name: `tobidas-${name}`, title: name, description,
-    inputSchema: { type: 'object', additionalProperties: false, properties, required },
-    execute: async (input, options) => {
-      checkAborted(options?.signal)
-      const parsed = schema.safeParse(input)
-      if (!parsed.success) return commandResponse(selectFailure(name, t().operations.invalidInput,
-        Object.fromEntries(parsed.error.issues.map((issue) => [issue.path.join('.'), issue.message]))))
-      return resultFromCommand(run(parsed.data))
-    },
-  })
-  return [
-    tool('create-mechanism', 'Create a connected folding assembly (P01–P06) through the shared command. Defaults attach panels to a page and other mechanisms to the real gutter. Nested folding mechanisms require mount bridge with elementId, bridgeId deck and normalized depth position v; panels may use a surface mount. All modes keep real attachments. Explicit virtual staging uses openScale or floating with connected support surfaces. Read the authoring guide first.',
-      createMechanismInputSchema, { spreadId: string, kind: { type: 'string', enum: [...mechanismKinds] }, name: string, parameters, mount, deployment, staging, position: vector, rotation: vector, color: string },
-      ['spreadId', 'kind'], createMechanismCommand),
-    tool('update-mechanism', 'Edit connected geometry, attachment or explicit staging atomically. Bridge width/depth and v must fit the parent deck. Set deployment.mode virtual to enable openScale, closedScale or floating while preserving real attachment points. Transform timelines and independent movement of child roots are unavailable. Removing occupied surfaces is rejected.',
-      updateMechanismInputSchema, { ...refs, parameters, mount, deployment, staging }, ['spreadId', 'elementId'], updateMechanismCommand),
-    tool('set-mechanism-surface', 'Edit one stable surface role of an assembly: color, existing front/back asset IDs, text or visibility. Obtain surface IDs from get-element. Hiding a support retains its folding mechanism. Null image/backImage clears the assignment.',
-      setMechanismSurfaceInputSchema, { ...surfaceRefs, color: string, image: { type: ['string', 'null'] }, backImage: { type: ['string', 'null'] }, text: string, visible: { type: 'boolean' } },
-      ['spreadId', 'elementId', 'surfaceId'], setMechanismSurfaceCommand),
-    tool('attach-to-surface', 'Attach a visual or hinged panel to an assembly surface using normalized u/v and offset. Folding assembly children other than panels require update-mechanism with a bridge mount instead. Cycles and missing faces are rejected.',
-      attachSurfaceInputSchema, attach, ['spreadId', 'elementId', 'parentId', 'surfaceId', 'u', 'v'], attachToSurfaceCommand),
-    tool('place-surface-asset', 'Place a visual part made from an existing imported asset directly on an assembly face. upright=true stands the part on the face, false lays it flat. Uses one undo operation.',
-      placeSurfaceAssetInputSchema, { spreadId: string, parentId: string, surfaceId: string, u: number, v: number, offset: number, assetId: string, name: string, width: number, height: number, upright: { type: 'boolean' } },
-      ['spreadId', 'parentId', 'surfaceId', 'assetId', 'u', 'v', 'width', 'height'], placeSurfaceAssetCommand),
-    tool('create-composition', 'Create a parameterized connected assembly preset (C01–C10/C12). Each family has its own root shape attached to the real gutter by default; an existing parent bridge may be selected. Folding children span their parent bridge and single panels follow parent surfaces. Initial staging is neutral. Returns a root with stable child role IDs.',
-      createCompositionInputSchema, { spreadId: string, kind: { type: 'string', enum: [...compositionKinds] }, name: string, count: { type: 'integer', minimum: 1, maximum: 12 }, spacing: number, position: vector, width: number, depth: number, mount },
-      ['spreadId', 'kind'], createCompositionCommand),
-    tool('update-composition', 'Change a composite preset count and spacing atomically. Stable roles keep surface materials and attached custom children. Refuses changes that would remove a role with custom children.',
-      updateCompositionInputSchema, { ...refs, count: { type: 'integer', minimum: 1, maximum: 12 }, spacing: number }, ['spreadId', 'elementId', 'count', 'spacing'], updateCompositionCommand),
-  ]
-}
-
 function makeTools(): WebMcpTool[] {
   return [
-    ...makeMechanismTools(),
+    ...makePartTools(),
     {
       name: 'tobidas-get-state',
       title: 'Get tobidas state',
@@ -558,12 +505,12 @@ function makeTools(): WebMcpTool[] {
     {
       name: 'tobidas-enter-play', title: 'Enter tobidas play mode',
       description: 'Enter playback mode so the person can inspect the book. This changes only the visible editing session.', inputSchema: { type: 'object', properties: {} },
-      execute: async (_input, options) => { checkAborted(options?.signal); useBuilderStore.getState().setMode('play'); return readResponse('enter-play', { mode: summary().mode }) },
+      execute: async (_input, options) => { checkAborted(options?.signal); useWorkspaceStore.getState().setScreen('book'); useBuilderStore.getState().setMode('play'); return readResponse('enter-play', { mode: summary().mode }) },
     },
     {
       name: 'tobidas-enter-edit', title: 'Enter tobidas edit mode',
       description: 'Return to edit mode so structured book changes can be made. This changes only the visible editing session.', inputSchema: { type: 'object', properties: {} },
-      execute: async (_input, options) => { checkAborted(options?.signal); useBuilderStore.getState().setMode('edit'); return readResponse('enter-edit', { mode: summary().mode }) },
+      execute: async (_input, options) => { checkAborted(options?.signal); useWorkspaceStore.getState().setScreen('book'); useBuilderStore.getState().setMode('edit'); return readResponse('enter-edit', { mode: summary().mode }) },
     },
     {
       name: 'tobidas-place-asset', title: 'Place tobidas asset',
@@ -766,16 +713,27 @@ function isCommandResult(value: unknown): value is BuilderCommandResult {
   return isRecord(value) && typeof value.ok === 'boolean' && typeof value.action === 'string'
 }
 
-export function createTobidasWebMcpTools(): WebMcpTool[] {
-  return makeTools()
+export type ToolScreen = 'home' | 'book' | 'part' | 'settings'
+export function createTobidasWebMcpTools(screen: ToolScreen = 'book'): WebMcpTool[] {
+  const tools = makeTools().filter((tool) => !['tobidas-place-asset', 'tobidas-create-visual'].includes(tool.name))
+  const shared = ['tobidas-enter-edit', 'tobidas-enter-play', 'tobidas-get-state', 'tobidas-get-part-catalog', 'tobidas-create-part-draft', 'tobidas-open-part-library']
+  if (screen === 'part') {
+    const names = new Set(makePartTools().map((tool) => tool.name))
+    return tools.filter((tool) => names.has(tool.name) || shared.includes(tool.name))
+  }
+  if (screen !== 'book') return tools.filter((tool) => shared.includes(tool.name))
+  const partNames = new Set(makePartTools().map((tool) => tool.name))
+  return tools.filter((tool) => !partNames.has(tool.name) || shared.includes(tool.name)
+    || ['tobidas-get-part-mounts', 'tobidas-place-part', 'tobidas-update-placed-part'].includes(tool.name))
 }
 
 export async function registerTobidasWebMcpTools(
   context: WebMcpModelContext | null,
   signal: AbortSignal,
+  screen: ToolScreen = 'book',
 ): Promise<boolean> {
   if (!context) return false
-  for (const tool of makeTools()) {
+  for (const tool of createTobidasWebMcpTools(screen)) {
     checkAborted(signal)
     await context.registerTool(tool, { signal })
   }

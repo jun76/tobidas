@@ -340,7 +340,7 @@ function livePoseMatrix(element: StageElement, motionTime: number, out: THREE.Ma
 
 /** 部品ローカルの板。Pivotは板の左下からの割合で、原点は板の外にも置ける */
 function localBox(element: StageElement): THREE.Box3 | undefined {
-  if (element.type === 'group' || element.type === 'assembly') return undefined
+  if (element.type === 'group' || element.type === 'assembly' || element.type === 'part') return undefined
   const [pivotX, pivotY] = element.pivot
   return new THREE.Box3(
     new THREE.Vector3(-pivotX * element.width, -pivotY * element.height, 0),

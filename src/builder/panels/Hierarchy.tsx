@@ -3,13 +3,11 @@ import { ChevronDown, ChevronRight, ChevronUp, Copy, Eye, EyeOff, Plus, SlidersH
 import { Icon } from '../../ui/Icon'
 import type { ParentSpace } from '../../schema/stageElement'
 import { useT } from '../i18n'
-import { PART_PRESETS, type PlacementMode, type VisualPresetId } from '../presets'
 import { requestContainerElementsDelete, requestElementDelete, requestSpreadDelete } from '../elementDelete'
 import { ELEMENT_DND_MIME, hiddenKey, useBuilderStore } from '../store'
 import type { BookSelection } from '../state/editorState'
 import { selectSelectedElement, selectSpreadById } from '../state/selectors'
-import { PrecisionPlacement } from './PrecisionPlacement'
-import { MechanismCreateDialog } from './Mechanisms'
+import { PartPalette } from '../parts/PartPalette'
 import st from '../builder.module.css'
 
 export function BookNavigator() {
@@ -74,77 +72,8 @@ export function BookNavigator() {
     </section>
 }
 
-/**
- * 部品プリセット。
- *
- * ボタンには2種類ある。混ぜない。
- *
- *   モード — 画像の5つと効果音。押すと選択中のプリセットになり、アセットの
- *            ドラッグを待つ。もう一度押すと解除
- *   即時   — パーティクル・テキスト。押した瞬間に用が済む
- *
- * その他が即時なのはアセットを要さないからである。
- */
-export function PartPresets() {
-  const t = useT()
-  const store = useBuilderStore()
-  const selectedPage = store.selection.type === 'page' && store.selection.spreadId === store.activeSpreadId
-    ? store.selection.side
-    : undefined
-  const [precisionOpen, setPrecisionOpen] = useState(false)
-  const [mechanismOpen, setMechanismOpen] = useState(false)
+export function PartPresets() { return <PartPalette /> }
 
-  const modeButton = (mode: PlacementMode, label: string, hint: string) => {
-    const active = store.placement === mode
-    return <button key={mode} className={active ? st.presetButtonActive : ''} aria-pressed={active}
-      title={hint} onClick={() => store.setPlacement(active ? null : mode)}>{label}</button>
-  }
-  const assetPresets = PART_PRESETS.filter((preset) => preset.requiresAsset)
-  const immediatePresets = PART_PRESETS.filter((preset) => !preset.requiresAsset)
-  const createImmediate = (id: VisualPresetId) => {
-    if (id !== 'light-particles' && id !== 'page-text') return
-    store.addPresetVisual(store.activeSpreadId, selectedPage ?? 'right', id)
-  }
-
-  return <section className={st.panel}>
-      {precisionOpen && <PrecisionPlacement onClose={() => setPrecisionOpen(false)} />}
-      {mechanismOpen && <MechanismCreateDialog onClose={() => setMechanismOpen(false)} />}
-      <div className={st.panelTitle}>{t.app.panelPresets}<button type="button" className={st.ghostBtn}
-        data-tobidas-action="open-precision-placement" aria-label={t.presets.precisionPlacement}
-        title={t.presets.precisionPlacementHint} onClick={() => setPrecisionOpen(true)}>
-        <Icon as={SlidersHorizontal} />
-      </button></div>
-      <button type="button" className={st.mobilePanelAction} data-tobidas-action="open-precision-placement"
-        aria-label={t.presets.precisionPlacement} title={t.presets.precisionPlacementHint}
-        onClick={() => setPrecisionOpen(true)}><Icon as={SlidersHorizontal} />{t.presets.precisionPlacement}</button>
-
-      <div className={st.presetGroupTitle}>{t.presets.groupVisual}</div>
-      <div className={st.presetGrid}>
-        {assetPresets.map((preset) => modeButton(preset.id, t.presets[preset.id], t.presets.dragHint(t.presets[preset.id])))}
-        {immediatePresets.map((preset) => <button key={preset.id}
-          title={t.presets.create(t.presets[preset.id])} onClick={() => createImmediate(preset.id)}>
-          {t.presets[preset.id]}
-        </button>)}
-      </div>
-
-      <div className={st.presetGroupTitle}>{t.presets.groupSound}</div>
-      <div className={st.presetGrid}>
-        {modeButton('sound-cue', t.presets.soundCue, t.presets.soundCueHint)}
-      </div>
-
-      <div className={st.presetGroupTitle}>{t.mechanisms.title}</div>
-      <button type="button" data-tobidas-action="create-mechanism" onClick={() => setMechanismOpen(true)}>{t.mechanisms.create}</button>
-
-      <div className={st.hintSmall}>
-        {store.placement ? t.presets.dropHint : t.presets.pickHint}
-      </div>
-    </section>
-}
-
-/**
- * 編集ビューでの表示・非表示。作品データには触れない。
- * 隠しているあいだは行にホバーしていなくても見えるようにする。
- */
 function EyeButton({ hiddenId, label }: { hiddenId: string; label: string }) {
   const t = useT()
   const hidden = useBuilderStore((state) => state.hidden.has(hiddenId))

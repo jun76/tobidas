@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './builder/App'
+import App from './builder/Workspace'
 import { DialogProvider } from './builder/ui/DialogProvider'
 import './styles/global.css'
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Check, ChevronDown, Copy as CopyIcon, Pencil, Play, Redo2, Undo2 } from 'lucide-react'
+import { Check, ChevronDown, Copy as CopyIcon, Home, Pencil, Play, Redo2, Undo2 } from 'lucide-react'
+import { useWorkspaceStore } from '../parts/store'
 import { LOCALES, useLocaleStore, useT, type Locale } from '../i18n'
 import { Icon, ICON } from '../../ui/Icon'
 import { createLocalizedBookProject, useBuilderStore } from '../store'
@@ -51,6 +52,7 @@ export function Toolbar() {
 
   return <>
     <div className={st.toolbar}>
+      <button type="button" onClick={() => { store.setMode('edit'); useWorkspaceStore.getState().setScreen('home') }}><Icon as={Home} />{t.parts.home}</button>
       <div className={st.toolbarDesktop}>
         <button onClick={() => setConfirmNew(true)}>{t.toolbar.new}</button>
         <OpenButton />

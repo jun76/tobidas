@@ -4,6 +4,7 @@ import type { ParentSpace, Transform } from '../schema/stageElement'
 import { createBook } from '../schema/bookDefaults'
 import { surfaceFrame } from '../runtime/mechanisms/evaluate'
 import { evaluateAssemblyScene } from '../runtime/mechanisms/scene'
+import { bindingDependencies } from '../parts/schema'
 
 function transformMatrix(transform: Transform) {
   const matrix = new THREE.Matrix4()
@@ -54,7 +55,9 @@ export function elementDescendantIds(spread: Spread, id: string): Set<string> {
   const found = new Set<string>()
   const visit = (parentId: string) => {
     for (const element of spread.elements) {
-      if (element.parent.type !== 'element' || element.parent.elementId !== parentId || found.has(element.id)) continue
+      const follows = element.parent.type === 'element' && element.parent.elementId === parentId
+        || element.type === 'part' && bindingDependencies(element.part.mount).includes(parentId)
+      if (!follows || found.has(element.id)) continue
       found.add(element.id)
       visit(element.id)
     }
@@ -79,8 +82,8 @@ export function containerElementIds(spread: Spread, parentType: RootParentType):
 export function reparentElement(spread: Spread, id: string, nextParent: ParentSpace, pageWidth: number): boolean {
   const element = spread.elements.find((item) => item.id === id)
   if (!element) return false
-  if (element.type === 'assembly') return false
-  if (nextParent.type === 'element' && spread.elements.some((item) => item.id === nextParent.elementId && item.type === 'assembly')) return false
+  if (element.type === 'assembly' || element.type === 'part') return false
+  if (nextParent.type === 'element' && spread.elements.some((item) => item.id === nextParent.elementId && (item.type === 'assembly' || item.type === 'part'))) return false
   if (nextParent.type === 'element' && (nextParent.elementId === id || elementDescendantIds(spread, id).has(nextParent.elementId))) return false
 
   const oldFrame = parentFrame(spread, element.parent, pageWidth)

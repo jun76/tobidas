@@ -1,3 +1,4 @@
+import type { PartDefinitions } from '../../parts/schema'
 import * as THREE from 'three'
 import type { Book, Spread } from '../../schema/book'
 import { evaluateBookSignals } from '../signals'
@@ -58,9 +59,9 @@ export function fitCameraPoseToBounds(
 
 /** 編集時の全体表示。再生用の作者カメラは変更しない。 */
 export function evaluateEditCameraPose(
-  book: Book, spread: Spread, aspect: number, view: PlayCameraPose = book.camera,
+  book: Book, spread: Spread, aspect: number, view: PlayCameraPose = book.camera, definitions?: PartDefinitions,
 ): PlayCameraPose {
-  const bounds = spreadCameraBounds(book, spread)
+  const bounds = spreadCameraBounds(book, spread, definitions)
   const target = bounds.getCenter(new THREE.Vector3())
   const direction = new THREE.Vector3(...view.position).sub(new THREE.Vector3(...view.target)).normalize()
   return fitCameraPoseToBounds({
@@ -68,34 +69,34 @@ export function evaluateEditCameraPose(
   }, bounds, aspect)
 }
 
-function spreadPose(book: Book, spread: Spread, time: number, aspect: number): PlayCameraPose {
+function spreadPose(book: Book, spread: Spread, time: number, aspect: number, definitions?: PartDefinitions): PlayCameraPose {
   const pose = evaluateSpreadCamera(spread, time, book.camera)
   // 明示したカメラは巨大部品の拡大を強調する構図としても使う。部品境界を重ねない。
   if (spread.timeline.tracks.some((track) => track.target.type === 'camera' && track.keys.length)) {
     return fitTrackedPoseToAspect(pose, aspect)
   }
-  return fitCameraPoseToBounds(pose, spreadCameraBounds(book, spread), aspect)
+  return fitCameraPoseToBounds(pose, spreadCameraBounds(book, spread, definitions), aspect)
 }
 
-export function evaluatePlayCameraPose(book: Book, progress: number, aspect: number): PlayCameraPose {
+export function evaluatePlayCameraPose(book: Book, progress: number, aspect: number, definitions?: PartDefinitions): PlayCameraPose {
   const signals = evaluateBookSignals(book, progress)
   const spread = book.spreads[signals.activeSpreadIndex]
   // 見開きごとに全開境界から構図を決め、ページ送りでは二つの構図だけを補間する。
   // 毎フレームの二面角や収納途中の縮尺で再フィットすると、巨大展開と逆向きにズームする。
   if (signals.beat.kind === 'turn' && signals.activeSpreadIndex + 1 < book.spreads.length) {
     return blendCamera(
-      spreadPose(book, spread, spread.sequence.holdSeconds, aspect),
-      spreadPose(book, book.spreads[signals.activeSpreadIndex + 1], 0, aspect),
+      spreadPose(book, spread, spread.sequence.holdSeconds, aspect, definitions),
+      spreadPose(book, book.spreads[signals.activeSpreadIndex + 1], 0, aspect, definitions),
       signals.beatProgress,
     )
   }
   if (signals.beat.kind === 'cover-open') {
-    const first = spreadPose(book, spread, 0, aspect)
+    const first = spreadPose(book, spread, 0, aspect, definitions)
     // 自動構図では開き始めから全開時の距離を使い、拡大する機構を追って後退しない。
     if (!spread.timeline.tracks.some((track) => track.target.type === 'camera' && track.keys.length)) return first
     return blendCamera(fitTrackedPoseToAspect(book.camera, aspect), first, signals.beatProgress)
   }
   const time = signals.beat.kind === 'back-cover-close' ? spread.sequence.holdSeconds
     : signals.spreadTimes[signals.activeSpreadIndex]
-  return spreadPose(book, spread, time, aspect)
+  return spreadPose(book, spread, time, aspect, definitions)
 }

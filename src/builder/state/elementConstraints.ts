@@ -6,6 +6,11 @@ import { childrenByParent, constrainAbovePaper, updatePageOwnership } from '../.
 export function normalizeElementLayout(spread: Spread, elementId: string, pageWidth: number): void {
   const initial = spread.elements.find((element) => element.id === elementId)
   if (!initial) return
+  if (initial.type === 'part') {
+    initial.baseTransform = { position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] }
+    initial.motion = []
+    return
+  }
   // 新機構の配置はmountと面アンカーが決める。従来の紙面への押し戻しを適用しない。
   if (initial.type === 'assembly') {
     {
