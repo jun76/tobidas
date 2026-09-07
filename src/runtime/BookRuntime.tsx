@@ -39,6 +39,7 @@ export function BookRuntime({
   progress,
   foldOverride,
   showGuides = false,
+  selectionSpreadId,
   isHidden,
   onSelect,
   audioActive = false,
@@ -131,6 +132,8 @@ export function BookRuntime({
   }, [book, camera, size, progress, showGuides])
 
   const shared = { assets, clocks, isHidden, onSelect }
+  // 隣接ページの透明な判定面を作らず、紙束越しのクリックを拾わせない。
+  const selectPage = (spreadId: string) => spreadId === selectionSpreadId ? onSelect : undefined
 
   return <VideoAudioProvider book={book} progress={progress} active={audioActive} muted={audioMuted}>
     <VideoAudioSource video={stageBackgroundVideo?.video}
@@ -169,7 +172,7 @@ export function BookRuntime({
               : undefined} />
         <BackFace width={width} lift={0}>
           <PageClickTarget width={width} depth={depth} spreadId={frames[0].spread.id}
-            side="left" onSelect={onSelect} />
+            side="left" onSelect={selectPage(frames[0].spread.id)} />
           {frames[0].open && <StowElements {...shared} frame={frames[0]} side="left" />}
         </BackFace>
       </group>
@@ -204,12 +207,12 @@ export function BookRuntime({
             instanceKey={`${project.id}:sheet:${sheet}`} />
           <group position={[width / 2, pageThickness / 2, 0]}>
             <PageClickTarget width={width} depth={depth} spreadId={before.spread.id}
-              side="right" lift={lift('front')} onSelect={onSelect} />
+              side="right" lift={lift('front')} onSelect={selectPage(before.spread.id)} />
             {before.open && <StowElements {...shared} frame={before} side="right" />}
           </group>
           <BackFace width={width} lift={pageThickness / 2}>
             <PageClickTarget width={width} depth={depth} spreadId={after.spread.id}
-              side="left" lift={lift('back')} onSelect={onSelect} />
+              side="left" lift={lift('back')} onSelect={selectPage(after.spread.id)} />
             {after.open && <StowElements {...shared} frame={after} side="left" />}
           </BackFace>
         </group>
@@ -244,7 +247,7 @@ export function BookRuntime({
         <group position={[width / 2, pageThickness + 0.004, 0]}>
           {lastPageIsExposed(sheetAngles[spreadCount - 1])
             && <PageClickTarget width={width} depth={depth} spreadId={frames[spreadCount - 1].spread.id}
-              side="right" onSelect={onSelect} />}
+              side="right" onSelect={selectPage(frames[spreadCount - 1].spread.id)} />}
           {frames[spreadCount - 1].open
             && <StowElements {...shared} frame={frames[spreadCount - 1]} side="right" />}
         </group>

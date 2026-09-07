@@ -13,6 +13,8 @@ export interface BookRuntimeProps {
   progress: number
   foldOverride?: { spreadId: string; openness: number }
   showGuides?: boolean
+  /** 編集中の紙面だけにクリック・素材ドロップの判定面を置く。 */
+  selectionSpreadId?: string
   isHidden?: (spreadId: string, element: StageElement) => boolean
   onSelect?: (selection: RuntimeSelection) => void
   /** ビルダーでは再生モードだけtrue。公開プレイヤーは常にtrue。 */

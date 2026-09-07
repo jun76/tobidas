@@ -71,6 +71,8 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
   }, [hidden])
 
   const select = (selection: RuntimeSelection) => {
+    // 見開きの切り替えはナビゲーターで行い、キャンバスでは編集中の対象だけを選ぶ。
+    if (selection.spreadId !== store.activeSpreadId) return
     if (!didGizmoPress()) store.select(selection)
   }
   const saveCameraView = () => {
@@ -133,6 +135,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
         project={store.project}
         progress={playback.progress}
         showGuides={store.mode === 'edit'}
+        selectionSpreadId={store.mode === 'edit' && !coverSide ? store.activeSpreadId : undefined}
         isHidden={store.mode === 'edit' ? hiddenPredicate : undefined}
         onSelect={store.mode === 'edit' ? select : undefined}
         audioActive={store.mode === 'play'}
