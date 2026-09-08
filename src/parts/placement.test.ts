@@ -4,7 +4,7 @@ import type { BookProject } from '../schema/bookPackage'
 import type { PartElement } from '../schema/stageElement'
 import { evaluateBookParts, validateBookParts } from './book'
 import { inspectPaper, syncDefinitionRequirements } from './validate'
-import { faceCorners } from './geometry'
+import { faceContains, faceCorners } from './geometry'
 import { planPartPlacement, type SurfacePick } from './placement'
 import { newPartDefinition, partInstanceSchema, type PartInstance } from './schema'
 
@@ -90,6 +90,10 @@ describe('本の上で面を選ぶ部品配置', () => {
     expect(partInstanceSchema.parse(JSON.parse(JSON.stringify(result.instance)))).toEqual(result.instance)
     add(project, 'custom', result.instance)
     const geometry = evaluateBookParts(project, spread, Math.PI, 0)
+    const customFaces = geometry.nodes.custom.faces.filter((face) => !face.support)
+    for (const bridge of geometry.nodes.custom.faces.filter((face) => face.support)) {
+      expect(faceCorners(bridge).every((point) => customFaces.some((face) => faceContains(face, point)))).toBe(true)
+    }
     const centers = geometry.nodes.custom.faces.filter((face) => !face.support).map((face) => faceCorners(face).reduce((sum, p) => sum.add(p)).multiplyScalar(.25))
     expect(centers[0].distanceTo(centers[1])).toBeCloseTo(1.2)
     const center = centers[0].clone().add(centers[1]).multiplyScalar(.5)
@@ -104,5 +108,26 @@ describe('本の上で面を選ぶ部品配置', () => {
     expect(result.ok, JSON.stringify(result)).toBe(true)
     if (result.ok) expect(result.bridgeCount).toBe(2)
     expect(planPartPlacement(project, spread.id, builtin('text'), pick('$book', 'right-page', .01, 7.9))).toMatchObject({ ok: false, reason: 'stow' })
+  })
+  it('平積みとテキストを四隅に貼っても、支持紙が外周の縁としてはみ出さない', () => {
+    for (const id of ['flat', 'text']) for (const [u, v] of [[.05, .05], [1.9, .05], [.05, 1.4], [1.9, 1.4]]) {
+      const project = createBookProject(), spread = project.book.spreads[0]
+      add(project, 'parent', { definition: builtin('flat'), mount: { type: 'output', nodeId: '$book', portId: 'right-page' },
+        parameters: { width: 2, height: 1.5, v: 3 }, materials: {} })
+      const plan = planPartPlacement(project, spread.id, builtin(id), pick('parent', 'face', u, v))
+      expect(plan.ok, JSON.stringify(plan)).toBe(true)
+      if (!plan.ok) continue
+      expect(plan.bridgeCount).toBeGreaterThan(0)
+      add(project, 'child', plan.instance)
+      for (const angle of [0, 30, 90, 180]) {
+        const graph = evaluateBookParts(project, spread, angle * Math.PI / 180, 0), child = graph.nodes.child
+        const sheet = child.faces.find((face) => !face.support)!
+        for (const bridge of child.faces.filter((face) => face.support)) {
+          expect(faceCorners(bridge).every((point) => faceContains(sheet, point))).toBe(true)
+        }
+        expect(inspectPaper(graph)).toEqual([])
+      }
+      expect(validateBookParts(project)).toEqual([])
+    }
   })
 })

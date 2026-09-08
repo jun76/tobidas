@@ -2,7 +2,7 @@ import { builtinPart } from './catalog'
 import { decorateFaces, evaluateBuiltin } from './builtins'
 import { bindingDependencies, evaluateExpression, parameterValues, type PartBinding, type PartDefinitions,
   type PartMaterial, type PartNode, type PartReference } from './schema'
-import { checkInput, EPSILON, faceContains, makeFace, pointOnFace, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
+import { checkInput, EPSILON, faceContains, makeFace, pointOnFace, stackOnSurface, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
 import type { Vector3 } from 'three'
 import { extendPaperSurface } from './extensions'
 
@@ -37,6 +37,7 @@ export function resolveBinding(binding: PartBinding, input: PartPort | undefined
     if (!binding.frame) return { kind: 'surface', face: extended }
     const { origin, width, height } = binding.frame
     const face = makeFace(`${prefix}/frame`, pointOnFace(source, ...origin), source.u, source.v, width, height)
+    face.surfaceStack = stackOnSurface(extended)
     face.contactRegions = extended.contactRegions ?? [source]
     if (supports) supports.contactSurfaces = [...supports.contactSurfaces ?? [], source, face]
     return { kind: 'surface', face }

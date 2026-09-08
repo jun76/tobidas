@@ -3,13 +3,15 @@ import { PAPER_SURFACE_LIFT, pageLeafRestHeight } from '../runtime/pageStack'
 import type { PaperFace } from './geometry'
 
 const CONTACT_LIFT = .001
+const MAX_STACK_LIFT = .006
+export type DisplayPaperFace = PaperFace & { renderOrder?: number }
 export interface BookPaperSurface {
   normal: Vector3
   plane: Plane
   /** 紙の裏側に当たる、紙幅と奥行きで囲った領域。各平面の正側が領域内。 */
   occluded: Plane[]
 }
-export interface BookPaperDisplay { hingeY: number; surfaces: BookPaperSurface[] }
+export interface BookPaperDisplay { hingeY: number; thickness: number; surfaces: BookPaperSurface[] }
 
 /** PaperSlabと同じ蝶番高・紙厚から、この見開きの内側の実紙面を求める。 */
 export function bookPaperDisplay({ width, depth, thickness, index, count, leftAngle, rightAngle, frontCoverY }: {
@@ -28,7 +30,7 @@ export function bookPaperDisplay({ width, depth, thickness, index, count, leftAn
       new Plane(new Vector3(0, 0, 1), depth / 2), new Plane(new Vector3(0, 0, -1), depth / 2),
     ] }
   }
-  return { hingeY, surfaces: [
+  return { hingeY, thickness, surfaces: [
     surface(leftAngle, 'left', index === 0 ? frontCoverY : hingeY, index === 0 ? 0 : thickness / 2),
     surface(rightAngle, 'right', index === count - 1 ? 0 : hingeY, index === count - 1 ? thickness : thickness / 2),
   ] }
@@ -44,6 +46,30 @@ export function paperDisplayFace(face: PaperFace, display: BookPaperDisplay): Pa
     && occluded.slice(1).every((boundary) => boundary.distanceToPoint(center) >= -1e-9))
   if (attached) origin.addScaledVector(attached.normal, CONTACT_LIFT - attached.plane.distanceToPoint(origin))
   return { ...face, origin }
+}
+
+/** 親、補完ブリッジ、貼り紙の順を、元の面の法線に沿う紙厚内の描画層へ変換する。 */
+export function paperDisplayFaces(faces: PaperFace[], display?: BookPaperDisplay): DisplayPaperFace[] {
+  const maxLift = display ? Math.min(MAX_STACK_LIFT, Math.max(0, display.thickness / 2 - CONTACT_LIFT)) : MAX_STACK_LIFT
+  const stacks = new Map<string, Map<string, number>>()
+  for (const face of faces) if (face.surfaceStack) {
+    const { base, layers } = face.surfaceStack
+    let order = stacks.get(base.id)
+    if (!order) { order = new Map(); stacks.set(base.id, order) }
+    // 兄弟の貼り紙も別の層にする。親の層を先に登録するため、配列の親子順には依存しない。
+    for (const layer of layers) if (!order.has(layer)) order.set(layer, order.size + 1)
+  }
+  return faces.map((face) => {
+    if (!face.surfaceStack) return { ...(display ? paperDisplayFace(face, display) : face), renderOrder: 100 }
+    const { base, layers } = face.surfaceStack, order = stacks.get(base.id)!
+    const level = layers.length ? order.get(layers[layers.length - 1])! : 0
+    const drawnBase = display ? paperDisplayFace(base, display) : base
+    // 左ページだけは材料座標の表法線が見開きの外側を向くため、内側へ積む。
+    const normal = base.u.clone().cross(base.v).multiplyScalar(base.id === '$book/left' ? -1 : 1)
+    const lift = Math.min(CONTACT_LIFT, maxLift / Math.max(1, order.size)) * level
+    const origin = face.origin.clone().add(drawnBase.origin.clone().sub(base.origin)).addScaledVector(normal, lift)
+    return { ...face, origin, renderOrder: 100 + level * 2 }
+  })
 }
 
 interface Vertex { point: Vector3; uv: Vector2 }

@@ -3,7 +3,7 @@ import type { BuiltinPartId } from './catalog'
 import { builtinPart } from './catalog'
 import { evaluateBackdrop } from './backdrop'
 import { parameterValues, type PartMaterial } from './schema'
-import { checkInput, EPSILON, faceContains, faceCorners, makeFace, pointOnFace,
+import { checkInput, EPSILON, faceContains, faceCorners, makeFace, pointOnFace, stackOnSurface,
   type FoldPair, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
 
 /** 紙面は全て剛体。角度の換算や面の伸縮で解を作らない。 */
@@ -46,6 +46,7 @@ export function evaluateBuiltin(id: BuiltinPartId, port: PartPort, overrides: Re
     const sheet = put('face', center.addScaledVector(u, -p.width / 2).addScaledVector(v, -p.height / 2), u, v, p.width, p.height)
     if (!faceCorners(sheet).every((corner) => faceContains(face, corner))) throw new Error('Glued part exceeds its parent face')
     glue(sheet, face, sheet.origin, pointOnFace(sheet, sheet.width, 0))
+    sheet.surfaceStack = stackOnSurface(face, sheet.id)
     sheet.material = id === 'text' ? { color: '#ffffff', text: 'Text' } : { color: '#e3b476' }
     return result
   }

@@ -1,4 +1,4 @@
-import { faceContainsLine, makeFace, pointOnFace, type PaperEvaluation, type PaperFace } from './geometry'
+import { faceContainsLine, makeFace, pointOnFace, stackOnSurface, type PaperEvaluation, type PaperFace } from './geometry'
 import type { PartExtension } from './schema'
 
 /** 親面を動かさず、足りない材料座標の範囲を同一平面の支持紙で延長する。 */
@@ -8,10 +8,12 @@ export function extendPaperSurface(parent: PaperFace, bounds: PartExtension | un
   if (minU > 0 || minV > 0 || maxU < parent.width || maxV < parent.height
     || maxU - minU > 160 || maxV - minV > 160) throw new Error('Invalid support extension bounds')
   const surface = makeFace(id, pointOnFace(parent, minU, minV), parent.u, parent.v, maxU - minU, maxV - minV, true)
+  surface.surfaceStack = stackOnSurface(parent, id)
   const regions = [parent]
   const strip = (name: string, u: number, v: number, width: number, height: number, seam: [[number, number], [number, number]]) => {
     if (width < 1e-7 || height < 1e-7) return
     const face = makeFace(`${id}/${name}`, pointOnFace(parent, u, v), parent.u, parent.v, width, height, true)
+    face.surfaceStack = surface.surfaceStack
     const edge = seam.map(([x, y]) => pointOnFace(parent, x, y))
     if (!faceContainsLine(parent, edge[0], edge[1]) || !faceContainsLine(face, edge[0], edge[1])) throw new Error('A cut-out face has no intact support attachment edge')
     regions.push(face)

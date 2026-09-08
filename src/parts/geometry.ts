@@ -8,6 +8,8 @@ export interface PaperFace {
   artworkSpan?: [number, number]
   /** 仮想接続面を実際に覆う親面と支持紙。接着検査では空白を支持面とみなさない。 */
   contactRegions?: PaperFace[]
+  /** 同一平面に重ねた紙の順序。接続の計算座標には紙厚を加えず、描画時だけ使う。 */
+  surfaceStack?: { base: PaperFace; layers: string[] }
 }
 export interface FoldPair {
   kind: 'fold-pair'; a: PaperFace; b: PaperFace; origin: Vector3; axis: Vector3
@@ -24,6 +26,11 @@ export interface PaperEvaluation {
 }
 export const EPSILON = 1e-7
 export const pointOnFace = (face: PaperFace, u: number, v: number) => face.origin.clone().addScaledVector(face.u, u).addScaledVector(face.v, v)
+/** 仮想接続面は層を引き継ぎ、貼り付ける紙・補完する支持紙は一層追加する。 */
+export function stackOnSurface(parent: PaperFace, layerId?: string): NonNullable<PaperFace['surfaceStack']> {
+  const stack = parent.surfaceStack ?? { base: parent, layers: [] }
+  return { base: stack.base, layers: layerId ? [...stack.layers, layerId] : stack.layers }
+}
 export function openingAngle(pair: FoldPair): number {
   return Math.acos(Math.max(-1, Math.min(1, pair.rayA.dot(pair.rayB)))) * 180 / Math.PI
 }

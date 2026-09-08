@@ -44,12 +44,14 @@ const materialPoint = (face: PaperFace, point: Vector3): [number, number] => {
   const delta = point.clone().sub(face.origin)
   return [delta.dot(face.u), delta.dot(face.v)]
 }
-function extensionFor(face: PaperFace, points: [number, number][], hinge: [number, number][] = []): PartExtension | undefined {
+function extensionFor(face: PaperFace, points: [number, number][], { hinge = [], margin = .04 }: {
+  hinge?: [number, number][]; margin?: number
+} = {}): PartExtension | undefined {
   const bounds = { min: [0, 0], max: [face.width, face.height] } as PartExtension
   const panels: NonNullable<PartExtension['panels']> = []
   if (points.length) {
-    const u = Math.min(...points.map((p) => p[0])) - .04, v = Math.min(...points.map((p) => p[1])) - .04
-    const endU = Math.max(...points.map((p) => p[0])) + .04, endV = Math.max(...points.map((p) => p[1])) + .04
+    const u = Math.min(...points.map((p) => p[0])) - margin, v = Math.min(...points.map((p) => p[1])) - margin
+    const endU = Math.max(...points.map((p) => p[0])) + margin, endV = Math.max(...points.map((p) => p[1])) + margin
     const lowV = Math.min(v, face.height - .08), highV = Math.max(endV, .08)
     const lowU = Math.max(0, Math.min(u, face.width - .08)), highU = Math.min(face.width, Math.max(endU, .08))
     if (points.some((p) => p[0] < -1e-7)) panels.push({ min: [u, lowV], max: [0, highV] })
@@ -85,8 +87,9 @@ export function planPartPlacement(project: BookProject, spreadId: string, refere
       mount = { type: 'output', ...first.surface }
       if ('builtin' in reference) {
         const p = parameterValues(definition.parameters, {})
+        // 面全体を貼る部品には、接着辺用の余白を付けない。支持紙を飾り縁として露出させない。
         const bounds = extensionFor(sourceA, [[first.point[0] - p.width / 2, first.point[1] - p.height / 2],
-          [first.point[0] + p.width / 2, first.point[1] + p.height / 2]])
+          [first.point[0] + p.width / 2, first.point[1] + p.height / 2]], { margin: 0 })
         if (bounds) mount.extension = bounds
         parameters = { u: first.point[0] - (bounds ? (bounds.min[0] + bounds.max[0]) / 2 : sourceA.width / 2),
           v: first.point[1] - (bounds?.min[1] ?? 0) }
@@ -98,7 +101,7 @@ export function planPartPlacement(project: BookProject, spreadId: string, refere
         if (!points.length) throw new Error('Part has no material faces')
         const origin = [0, 1].map((axis) => first.point[axis] - (Math.min(...points.map((p) => p[axis])) + Math.max(...points.map((p) => p[axis]))) / 2) as [number, number]
         mount.frame = { origin, width: 80, height: 80 }
-        mount.extension = extensionFor(sourceA, points.map(([u, v]) => [u + origin[0], v + origin[1]]))
+        mount.extension = extensionFor(sourceA, points.map(([u, v]) => [u + origin[0], v + origin[1]]), { margin: 0 })
       }
     } else {
       if (!second) throw new Error('Second placement surface is missing')
@@ -161,8 +164,8 @@ export function planPartPlacement(project: BookProject, spreadId: string, refere
         binding.hingeA = line(a, width); binding.hingeB = line(b, width)
         const contacts = (face: PaperFace, portFace: PaperFace) => probe.connections.filter((edge) => edge.parentFace === portFace.id)
           .flatMap((edge) => edge.expected.map((point) => materialPoint(face, point)))
-        binding.extensions = { a: extensionFor(a, contacts(a, input.a), binding.hingeA),
-          b: extensionFor(b, contacts(b, input.b), binding.hingeB) }
+        binding.extensions = { a: extensionFor(a, contacts(a, input.a), { hinge: binding.hingeA }),
+          b: extensionFor(b, contacts(b, input.b), { hinge: binding.hingeB }) }
         mount = binding
       }
     }

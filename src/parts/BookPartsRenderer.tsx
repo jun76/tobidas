@@ -5,7 +5,7 @@ import type { BookRuntimeProps } from '../runtime/types'
 import { evaluateBookParts, partIsVisible } from './book'
 import { PaperMeshes } from './PaperMeshes'
 import { evaluateElementTimeline } from '../runtime/timeline/evaluate'
-import { paperDisplayFace, type BookPaperDisplay } from './paperDisplay'
+import { paperDisplayFaces, type BookPaperDisplay } from './paperDisplay'
 
 export function BookPartsRenderer({ project, spread: source, spreadTime, leftAngle, rightAngle, assets, isHidden, onSelect, paperDisplay }: {
   project: BookProject; spread: Spread; leftAngle: number; rightAngle: number; assets: Map<string, Asset>
@@ -16,9 +16,10 @@ export function BookPartsRenderer({ project, spread: source, spreadTime, leftAng
   try {
     const spread = { ...source, elements: source.elements.map((element) => evaluateElementTimeline(element, source, spreadTime)) }
     const evaluated = evaluateBookParts(project, spread, leftAngle, rightAngle)
+    const displayed = new Map(paperDisplayFaces(evaluated.faces, paperDisplay).map((face) => [face.id, face]))
     return <group>{spread.elements.filter((element) => element.type === 'part' && partIsVisible(spread, element.id,
       (id) => Boolean(isHidden?.(spread.id, spread.elements.find((item) => item.id === id)!)))).map((element) => <PaperMeshes
-        key={element.id} faces={(evaluated.nodes[element.id]?.faces ?? []).map((face) => paperDisplayFace(face, paperDisplay))}
+        key={element.id} faces={(evaluated.nodes[element.id]?.faces ?? []).map((face) => displayed.get(face.id)!)}
         paperSurfaces={paperDisplay.surfaces} assets={assets} opacity={element.opacity}
         surfaceTarget={{ spreadId: spread.id, nodeId: element.id }}
         onSelect={onSelect ? () => onSelect({ type: 'element', spreadId: spread.id, elementId: element.id }) : undefined} />)}</group>

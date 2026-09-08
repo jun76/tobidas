@@ -2,11 +2,10 @@ import { useEffect, useMemo } from 'react'
 import { BufferGeometry, CanvasTexture, Float32BufferAttribute, Matrix4, FrontSide, BackSide, DoubleSide, SRGBColorSpace } from 'three'
 import type { Asset } from '../schema/assets'
 import { useImageTexture, useSvgTexture } from '../runtime/assets'
-import type { PaperFace } from './geometry'
-import { paperMeshData, type BookPaperSurface } from './paperDisplay'
+import { paperMeshData, type BookPaperSurface, type DisplayPaperFace } from './paperDisplay'
 
 export function PaperMeshes({ faces, assets, onSelect, selected, opacity = 1, paperSurfaces, surfaceTarget }: {
-  faces: PaperFace[]; assets: Map<string, Asset>; onSelect?: (id: string) => void; selected?: string; opacity?: number
+  faces: DisplayPaperFace[]; assets: Map<string, Asset>; onSelect?: (id: string) => void; selected?: string; opacity?: number
   paperSurfaces?: BookPaperSurface[]
   surfaceTarget?: { spreadId: string; nodeId: string }
 }) {
@@ -14,7 +13,7 @@ export function PaperMeshes({ faces, assets, onSelect, selected, opacity = 1, pa
     selected={selected !== undefined && (face.id === selected || face.id.startsWith(selected + '/'))} opacity={opacity} paperSurfaces={paperSurfaces} surfaceTarget={surfaceTarget} />)}</group>
 }
 function PaperMesh({ face, assets, onSelect, selected, opacity, paperSurfaces, surfaceTarget }: {
-  face: PaperFace; assets: Map<string, Asset>; onSelect?: (id: string) => void; selected: boolean; opacity: number
+  face: DisplayPaperFace; assets: Map<string, Asset>; onSelect?: (id: string) => void; selected: boolean; opacity: number
   paperSurfaces?: BookPaperSurface[]
   surfaceTarget?: { spreadId: string; nodeId: string }
 }) {
@@ -48,18 +47,19 @@ function PaperMesh({ face, assets, onSelect, selected, opacity, paperSurfaces, s
   }, [face.material.text, face.material.textColor, face.width, face.height, artworkStart, artworkEnd])
   useEffect(() => () => textTexture?.dispose(), [textTexture])
   const normal = face.u.clone().cross(face.v)
+  const renderOrder = face.renderOrder ?? 100
   const matrix = new Matrix4().makeBasis(face.u, face.v, normal).setPosition(face.origin)
   const properties = { color: frontMap ? '#ffffff' : face.material.color ?? '#e3b476', roughness: .9, transparent: true,
     opacity, alphaTest: .1, polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -2 }
   return <group matrix={matrix} matrixAutoUpdate={false} onClick={(event) => { if (onSelect) { event.stopPropagation(); onSelect(face.id) } }}>
-    <mesh geometry={geometry} castShadow receiveShadow userData={surfaceTarget ? { partSurfaceTarget: { ...surfaceTarget, faceId: face.id } } : {}}>
+    <mesh geometry={geometry} renderOrder={renderOrder} castShadow receiveShadow userData={surfaceTarget ? { partSurfaceTarget: { ...surfaceTarget, faceId: face.id } } : {}}>
       <meshStandardMaterial key={`front-${Boolean(frontMap)}`} {...properties} side={FrontSide} shadowSide={FrontSide} map={frontMap} />
     </mesh>
-    <mesh geometry={geometry} castShadow receiveShadow userData={surfaceTarget ? { partSurfaceTarget: { ...surfaceTarget, faceId: face.id } } : {}}>
+    <mesh geometry={geometry} renderOrder={renderOrder} castShadow receiveShadow userData={surfaceTarget ? { partSurfaceTarget: { ...surfaceTarget, faceId: face.id } } : {}}>
       <meshStandardMaterial key={`back-${Boolean(backMap)}`} {...properties} side={BackSide} shadowSide={BackSide} map={backMap} />
     </mesh>
-    {textTexture && <mesh geometry={geometry} renderOrder={2}><meshBasicMaterial map={textTexture} side={DoubleSide}
+    {textTexture && <mesh geometry={geometry} renderOrder={renderOrder + 1}><meshBasicMaterial map={textTexture} side={DoubleSide}
       transparent opacity={opacity} depthWrite={false} polygonOffset polygonOffsetFactor={0} polygonOffsetUnits={-4} /></mesh>}
-    {selected && <mesh geometry={geometry} renderOrder={3}><meshBasicMaterial color="#7998ff" wireframe side={DoubleSide} depthTest={false} /></mesh>}
+    {selected && <mesh geometry={geometry} renderOrder={10000}><meshBasicMaterial color="#7998ff" wireframe side={DoubleSide} depthTest={false} /></mesh>}
   </group>
 }

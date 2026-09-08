@@ -5,6 +5,7 @@ import type { PartBundle } from '../../parts/schema'
 import { evaluatePartReference } from '../../parts/evaluate'
 import { pagePorts, type PaperFace } from '../../parts/geometry'
 import { PaperMeshes } from '../../parts/PaperMeshes'
+import { paperDisplayFaces } from '../../parts/paperDisplay'
 import { useT } from '../i18n'
 import st from './parts.module.css'
 
@@ -38,7 +39,7 @@ export function PartPreview({ bundle, selected, onSelect }: { bundle: PartBundle
           shadow-camera-left={-16} shadow-camera-right={16} shadow-camera-top={16} shadow-camera-bottom={-16}
           shadow-camera-near={.5} shadow-camera-far={50} shadow-bias={-.0002} shadow-normalBias={.025} />
         <PaperMeshes faces={fixtureFaces} assets={assets} />
-        <PaperMeshes faces={faces} assets={assets} selected={selected ? `preview/${selected}` : undefined}
+        <PaperMeshes faces={paperDisplayFaces(faces)} assets={assets} selected={selected ? `preview/${selected}` : undefined}
           onSelect={onSelect ? (path) => onSelect(path.split('/')[1]) : undefined} />
         <OrbitControls target={[2, 1, 0]} makeDefault />
       </Canvas>

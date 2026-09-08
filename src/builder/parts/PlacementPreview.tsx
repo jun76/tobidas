@@ -7,6 +7,7 @@ import type { PartElement } from '../../schema/stageElement'
 import { createStageElement } from '../../schema/bookDefaults'
 import { evaluateBookParts, validateBookParts } from '../../parts/book'
 import { PaperMeshes } from '../../parts/PaperMeshes'
+import { paperDisplayFaces } from '../../parts/paperDisplay'
 import { pagePorts, type PaperFace } from '../../parts/geometry'
 import { useT } from '../i18n'
 import st from './parts.module.css'
@@ -30,7 +31,7 @@ export function PlacementPreview({ project, spreadId, instance, elementId }: { p
   return <section aria-label={t.preview} className={st.placementPreview}>
     <div style={{ height: 240 }}><Canvas camera={{ position: [width * .7, width, width * 1.5], fov: 44 }}>
       <color attach="background" args={['#cbbd9f']} /><ambientLight intensity={1.8} /><directionalLight position={[4, 10, 8]} intensity={2} />
-      <PaperMeshes faces={paper} assets={assets} /><PaperMeshes faces={faces} assets={assets} />
+      <PaperMeshes faces={paper} assets={assets} /><PaperMeshes faces={paperDisplayFaces(faces)} assets={assets} />
       <OrbitControls target={[0, .5, 0]} />
     </Canvas></div>
     <label>{t.previewAngle}<input aria-label={t.previewAngle} type="range" min={0} max={180} step={1} value={angle} onChange={(event) => setAngle(Number(event.target.value))} />{angle}°</label>
