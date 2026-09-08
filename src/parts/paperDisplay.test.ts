@@ -65,7 +65,7 @@ describe('実紙面による部品の表示と遮蔽', () => {
     for (const right of [100, 125, 145, 160, 170, 177, 178.8]) {
       const ports = pagePorts(width, depth, Math.PI, right * Math.PI / 180), display = displayAt(180, right)
       for (const id of ['folding-box', 'platform', 'backdrop'] as const) {
-        const result = evaluateBuiltin(id, ports.gutter), before = result.faces.map(faceCorners)
+        const result = evaluateBuiltin(id, ports.gutter, {}, id, 1), before = result.faces.map(faceCorners)
         let vertices = 0
         for (const face of result.faces) for (const point of drawnVertices(paperDisplayFace(face, display), display)) {
           vertices++

@@ -13,6 +13,7 @@ export function fixtureInput(input: PartInput, angle: number, size = 80): PartPo
 }
 export function inspectPaper(result: PaperEvaluation): string[] {
   const errors: string[] = []
+  const surfaces = [...result.faces, ...result.contactSurfaces ?? []]
   for (const face of result.faces) {
     if ([...face.origin, ...face.u, ...face.v, face.width, face.height].some((value) => !Number.isFinite(value))) errors.push(`Non-finite paper geometry: ${face.id}`)
     if (Math.abs(face.u.length() - 1) > 1e-6 || Math.abs(face.v.length() - 1) > 1e-6 || Math.abs(face.u.dot(face.v)) > 1e-6) errors.push(`Paper face is not rigid: ${face.id}`)
@@ -20,7 +21,7 @@ export function inspectPaper(result: PaperEvaluation): string[] {
   }
   for (const connection of result.connections) {
     if (connection.actual.some((point, i) => point.distanceTo(connection.expected[i]) > 1e-6)) errors.push(`Broken paper connection: ${connection.childFace}`)
-    const parent = result.faces.find((face) => face.id === connection.parentFace)
+    const parent = surfaces.find((face) => face.id === connection.parentFace)
     if (parent && !connection.actual.every((point) => faceContains(parent, point))) errors.push(`Connection lies outside its supporting face: ${connection.childFace}`)
     for (const face of [parent, result.faces.find((item) => item.id === connection.childFace)]) {
       if (!face) continue

@@ -85,7 +85,11 @@ export function paperMeshData(face: PaperFace, surfaces: BookPaperSurface[] = []
   for (const polygon of polygons) for (let i = 1; i + 1 < polygon.length; i++) {
     const triangle = [polygon[0], polygon[i], polygon[i + 1]]
     if (Math.abs(triangle[1].uv.clone().sub(triangle[0].uv).cross(triangle[2].uv.clone().sub(triangle[0].uv))) < 1e-12) continue
-    for (const { uv } of triangle) { positions.push(uv.x * face.width, uv.y * face.height, 0); uvs.push(uv.x, uv.y) }
+    for (const { uv } of triangle) {
+      positions.push(uv.x * face.width, uv.y * face.height, 0)
+      const [start, end] = face.artworkSpan ?? [0, 1]
+      uvs.push(start + uv.x * (end - start), uv.y)
+    }
   }
   return { positions, uvs }
 }

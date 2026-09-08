@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { BUILTIN_PARTS } from '../../parts/catalog'
 import { evaluateBookParts } from '../../parts/book'
+import { placementSurfaces } from '../../parts/placement'
 import { openingAngle, type PartPort } from '../../parts/geometry'
 import { number, string, object, record, ref, partToolSchema } from '../../parts/jsonSchema'
 import { validatePartDefinition } from '../../parts/validate'
@@ -45,6 +46,7 @@ export function makePartTools(): WebMcpTool[] {
         if (!spread) return response({ ok: false, error: 'Spread not found' })
         try { const result = evaluateBookParts(project, spread, Math.PI, 0)
           return response({ book: { nodeId: '$book', ports: ['gutter', 'left-page', 'right-page'] },
+            surfaces: placementSurfaces(project, spread).map(({ reference, face }) => ({ reference, width: face.width, height: face.height, outline: face.outline })),
             nodes: Object.fromEntries(Object.entries(result.nodes).map(([id, node]) => [id, Object.fromEntries(Object.entries(node.ports).map(([key, port]) => [key, portSummary(port)]))])) })
         } catch (error) { return response({ ok: false, error: String(error) }) }
       } },
@@ -69,6 +71,11 @@ export function makePartTools(): WebMcpTool[] {
       { hash: string, copy: { type: 'boolean' } }, ['hash'], ({ hash, copy }) => commands.openPartLibraryCommand(hash, copy)),
     tool('place-part', 'Place a built-in or custom library part on real book faces. Checks all opening angles, connections and closed-page fit before a single commit. Custom definitions and assets are embedded immutably in the book.', commands.placePartSchema,
       { spreadId: string, name: string, ...instance }, ['spreadId', 'name', 'definition', 'mount'], commands.placePartCommand),
+    tool('place-part-on-surfaces', 'Choose one or two actual faces and material points, just like clicking in the canvas. Automatically completes attachment bridges, checks the full opening path, and places the part in one undo step. Read surface references with get-part-mounts first.', commands.placePartOnSurfacesSchema,
+      { spreadId: string, name: string, definition: ref('reference'),
+        first: object({ surface: ref('surfaceRef'), point: { type: 'array', items: number, minItems: 2, maxItems: 2 } }),
+        second: object({ surface: ref('surfaceRef'), point: { type: 'array', items: number, minItems: 2, maxItems: 2 } }) },
+      ['spreadId', 'name', 'definition', 'first'], commands.placePartOnSurfacesCommand),
     tool('update-placed-part', 'Edit instance dimensions, mount or public artwork. Explicitly change definition.custom to update a library revision. Existing placements never auto-update. Transforming an independent local fold is unsupported.', commands.updatePlacedPartSchema,
       { spreadId: string, elementId: string, name: string, changes: object(instance, []) }, ['spreadId', 'elementId', 'changes'], commands.updatePlacedPartCommand),
     ...(['undo', 'redo'] as const).map((action): WebMcpTool => ({ name: `tobidas-part-${action}`, description: `${action} the separate custom-part draft using its own history.`, inputSchema: object({}), execute: () => {

@@ -1,18 +1,20 @@
 import { Vector3 } from 'three'
 import type { BuiltinPartId } from './catalog'
 import { builtinPart } from './catalog'
+import { evaluateBackdrop } from './backdrop'
 import { parameterValues, type PartMaterial } from './schema'
 import { checkInput, EPSILON, faceContains, faceCorners, makeFace, pointOnFace,
   type FoldPair, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
 
 /** 紙面は全て剛体。角度の換算や面の伸縮で解を作らない。 */
-export function evaluateBuiltin(id: BuiltinPartId, port: PartPort, overrides: Record<string, number> = {}, prefix: string = id): PaperEvaluation {
-  const spec = builtinPart(id), p = parameterValues(spec.parameters, overrides)
+export function evaluateBuiltin(id: BuiltinPartId, port: PartPort, overrides: Record<string, number> = {}, prefix: string = id, version?: number): PaperEvaluation {
+  const spec = builtinPart(id, version), p = parameterValues(spec.parameters, overrides)
   checkInput(spec.input, port)
+  if (id === 'backdrop' && spec.version === 2 && port.kind === 'fold-pair') return evaluateBackdrop(port, p, prefix)
   const result: PaperEvaluation = { faces: [], ports: {}, connections: [] }
   if ((id === 'platform' || id === 'folding-box') && port.kind === 'fold-pair') {
     // 本の二面から90°の背面を起こす支持を、台と箱の内部に含める。
-    const base = evaluateBuiltin('backdrop', port, { width: p.width, height: p.height, distance: p.distance / 2, offset: p.offset }, `${prefix}/base`)
+    const base = evaluateBuiltin('backdrop', port, { width: p.width, height: p.height, distance: p.distance / 2, offset: p.offset }, `${prefix}/base`, 1)
     for (const face of base.faces) {
       const previous = face.id
       face.id = `${prefix}/${previous.endsWith('/panel') ? 'back' : 'rear-support'}`
@@ -148,6 +150,8 @@ export function decorateFaces(result: PaperEvaluation, materials: Record<string,
   for (const face of result.faces) {
     const name = face.id.slice(face.id.lastIndexOf('/') + 1)
     face.material = { ...face.material, ...materials['*'], ...materials[name] }
+    // 全体の背景画は二面で分担し、面を指定して貼った絵はその一面へ収める。
+    if (materials[name]?.image || materials[name]?.backImage || materials[name]?.text) face.artworkSpan = undefined
     if (outline && !face.support && !['top', 'bottom', 'back'].includes(name)) face.outline = outline
   }
 }

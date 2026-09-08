@@ -29,15 +29,21 @@ export const partMaterialSchema = z.object({
 export const partMaterialValueSchema = z.union([partMaterialSchema, z.object({ slot: id }).strict()])
 export const partSurfaceRefSchema = z.object({ nodeId: id, portId: id }).strict()
 const point2 = z.tuple([finite, finite])
+// 取り付け時に補完する支持面の範囲。親の材料座標に固定し、途中姿勢は保存しない。
+const extensionPanel = z.object({ min: point2, max: point2 }).strict()
+export const partExtensionSchema = extensionPanel.extend({ panels: z.array(extensionPanel).max(16).optional() }).strict()
+// 一面カスタム部品の入力原点。仮想の紙を描かず、接着は実面と補完支持紙で検査する。
+export const partSurfaceFrameSchema = z.object({ origin: point2, width: finite.positive().max(160), height: finite.positive().max(160) }).strict()
 // 材料座標の線分を両面で指定する。描画用UVとは独立した接続である。
 export const partBindingSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('input'), face: z.enum(['a', 'b']).optional() }).strict(),
-  z.object({ type: z.literal('output'), nodeId: id, portId: id }).strict(),
+  z.object({ type: z.literal('output'), nodeId: id, portId: id, extension: partExtensionSchema.optional(), frame: partSurfaceFrameSchema.optional() }).strict(),
   z.object({ type: z.literal('pair'), a: partSurfaceRefSchema, b: partSurfaceRefSchema,
     hingeA: z.tuple([point2, point2]), hingeB: z.tuple([point2, point2]),
     directionA: z.enum(['positive', 'negative']).default('positive'),
     directionB: z.enum(['positive', 'negative']).default('positive'),
     foldSign: z.union([z.literal(1), z.literal(-1)]).default(1),
+    extensions: z.object({ a: partExtensionSchema.optional(), b: partExtensionSchema.optional() }).strict().optional(),
   }).strict(),
 ])
 export const partNodeSchema = z.object({
@@ -62,6 +68,8 @@ export const partInstanceSchema = z.object({
   parameters: z.record(finite).default({}), materials: z.record(partMaterialSchema).default({}),
 })
 export type PartInput = z.infer<typeof partInputSchema>
+export type PartExtension = z.infer<typeof partExtensionSchema>
+export type PartSurfaceRef = z.infer<typeof partSurfaceRefSchema>
 export type PartReference = z.infer<typeof partReferenceSchema>
 export type PartBinding = z.infer<typeof partBindingSchema>
 export type PartMaterial = z.infer<typeof partMaterialSchema>

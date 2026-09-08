@@ -20,6 +20,7 @@ export function BookPartsRenderer({ project, spread: source, spreadTime, leftAng
       (id) => Boolean(isHidden?.(spread.id, spread.elements.find((item) => item.id === id)!)))).map((element) => <PaperMeshes
         key={element.id} faces={(evaluated.nodes[element.id]?.faces ?? []).map((face) => paperDisplayFace(face, paperDisplay))}
         paperSurfaces={paperDisplay.surfaces} assets={assets} opacity={element.opacity}
+        surfaceTarget={{ spreadId: spread.id, nodeId: element.id }}
         onSelect={onSelect ? () => onSelect({ type: 'element', spreadId: spread.id, elementId: element.id }) : undefined} />)}</group>
   } catch {
     // 不適合な下書きはインスペクターの診断で修正する。空中の代替姿勢は描かない。

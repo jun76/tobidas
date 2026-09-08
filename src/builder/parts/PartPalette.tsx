@@ -15,21 +15,24 @@ import { importPartSelection } from './files'
 import { MaterialFields, MountField, NumberField, TextField, mountOptions, parameterLabel, portLabel, referenceName, referencePorts } from './fields'
 import st from './parts.module.css'
 import { PlacementPreview } from './PlacementPreview'
+import { usePartPlacementStore } from './placementState'
 
 export function PartPalette() {
   const t = useT().parts, store = useBuilderStore(), library = usePartEditorStore((state) => state.library)
-  const [reference, setReference] = useState<PartReference | null>(null), [error, setError] = useState('')
+  const placement = usePartPlacementStore(), [error, setError] = useState('')
+  const selected = (reference: PartReference) => JSON.stringify(placement.tool?.reference) === JSON.stringify(reference)
   const input = useRef<HTMLInputElement>(null)
   const valid = useMemo(() => new Map(library.map((entry) => [entry.hash, validatePartDefinition(entry.bundle.definition, entry.bundle.definitions)])), [library])
   return <section className={st.palette} data-tobidas-kind="parts-palette">
     <h3>{t.basic}</h3><div className={st.grid}>{BUILTIN_PARTS.map((part) => <button type="button" key={part.id} data-tobidas-basic-part={part.id}
-      onClick={() => setReference({ builtin: part.id, version: part.version })}>{t.names[part.id]}</button>)}</div>
+      aria-pressed={selected({ builtin: part.id, version: part.version })} disabled={store.mode !== 'edit'}
+      onClick={() => placement.start({ builtin: part.id, version: part.version })}>{t.names[part.id]}</button>)}</div>
     <h3>{t.custom}</h3>
     {!library.length && <p className={st.hint}>{t.empty}</p>}
     {library.map((entry) => <div className={st.libraryItem} key={entry.hash}>
       <strong>{entry.bundle.definition.name} <small>{t.version} {entry.bundle.definition.revision}</small></strong>
-      <div className={st.buttons}><button type="button" disabled={!valid.get(entry.hash)?.ok} title={valid.get(entry.hash)?.errors.join('\n')}
-        onClick={() => setReference({ custom: entry.hash })}>{t.place}</button>
+      <div className={st.buttons}><button type="button" disabled={store.mode !== 'edit' || !valid.get(entry.hash)?.ok} title={valid.get(entry.hash)?.errors.join('\n')}
+        aria-pressed={selected({ custom: entry.hash })} onClick={() => placement.start({ custom: entry.hash })}>{t.place}</button>
         <button type="button" onClick={() => void openPartLibraryCommand(entry.hash)}>{t.edit}</button>
         <button type="button" onClick={() => void openPartLibraryCommand(entry.hash, true)}>{t.copy}</button></div>
     </div>)}
@@ -44,7 +47,6 @@ export function PartPalette() {
       <button type="button" onClick={() => store.setPlacement(store.placement === 'sound-cue' ? null : 'sound-cue')}>{useT().presets.soundCue}</button>
     </div>
     {error && <p className={st.error} role="alert">{error}</p>}
-    {reference && <PartPlacementDialog reference={reference} onClose={() => setReference(null)} />}
   </section>
 }
 
@@ -86,7 +88,7 @@ export function PartPlacementDialog({ reference, element, spreadId, onClose }: {
     <MountField value={mount} options={definition.input.kind === 'fold-pair' ? [...compatible, ...options.filter((option) => option.kind === 'surface')] : compatible} kind={definition.input.kind} onChange={setMount} />
     {!compatible.length && <p className={st.hint}>{t.noCompatible}</p>}
     {definition.input.kind === 'fold-pair' && <p className={st.hint}>{t.maximum}: {definition.input.maxOpeningAngleDeg}</p>}
-    {Object.entries(definition.parameters).map(([key, p]) => <NumberField key={key} label={'custom' in reference ? p.label : parameterLabel(key)} value={parameters[key] ?? p.default} min={p.min} max={p.max}
+    {Object.entries(definition.parameters).map(([key, p]) => <NumberField key={key} label={'custom' in reference ? p.label : parameterLabel(p.label)} value={parameters[key] ?? p.default} min={p.min} max={p.max}
       step={p.type === 'integer' ? 1 : .05} onChange={(value) => setParameters({ ...parameters, [key]: value })} />)}
     {'builtin' in reference && reference.builtin === 'folding-box' && <p className={st.hint}>{t.boxHint}</p>}
   </div></FormDialog>

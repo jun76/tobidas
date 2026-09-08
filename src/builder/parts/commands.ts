@@ -6,7 +6,8 @@ import { builtinPart } from '../../parts/catalog'
 import { dependentPartIds } from '../../parts/evaluate'
 import { validateBookParts, spreadPartNodes } from '../../parts/book'
 import { bindingDependencies, newPartDefinition, partBindingSchema, partInputSchema, partInstanceSchema, partMaterialSchema,
-  partNodeSchema, partParameterSchema, partReferenceSchema, type PartBinding, type PartBundle, type PartDefinition, type PartReference } from '../../parts/schema'
+  partNodeSchema, partParameterSchema, partReferenceSchema, partSurfaceRefSchema, type PartBinding, type PartBundle, type PartDefinition, type PartReference } from '../../parts/schema'
+import { planPartPlacement, type SurfacePick } from '../../parts/placement'
 import { validatePartDefinition } from '../../parts/validate'
 import { useBuilderStore } from '../store'
 import { t } from '../i18n'
@@ -139,6 +140,25 @@ function embedDefinition(project: BookProject, reference: PartReference) {
   }
 }
 export const placePartSchema = z.object({ spreadId: z.string(), name: z.string().min(1), ...partInstanceSchema.shape }).strict()
+export function placementProject(): BookProject {
+  const project = useBuilderStore.getState().project, library = usePartEditorStore.getState().library
+  return { ...project, partDefinitions: { ...Object.fromEntries(library.flatMap((entry) => [[entry.hash, entry.bundle.definition], ...Object.entries(entry.bundle.definitions)])), ...project.partDefinitions },
+    assets: [...new Map([...library.flatMap((entry) => entry.bundle.assets), ...project.assets].map((asset) => [asset.id, asset])).values()] }
+}
+export function previewSurfacePlacement(spreadId: string, reference: PartReference, first: SurfacePick, second?: SurfacePick) {
+  return planPartPlacement(placementProject(), spreadId, reference, first, second)
+}
+export const surfacePickSchema = z.object({ surface: partSurfaceRefSchema, point: z.tuple([z.number().finite(), z.number().finite()]) }).strict()
+export const placePartOnSurfacesSchema = z.object({ spreadId: z.string(), name: z.string().min(1), definition: partReferenceSchema,
+  first: surfacePickSchema, second: surfacePickSchema.optional() }).strict()
+export function placePartOnSurfacesCommand(value: z.input<typeof placePartOnSurfacesSchema>): BuilderCommandResult {
+  try {
+    const parsed = placePartOnSurfacesSchema.parse(value)
+    const plan = previewSurfacePlacement(parsed.spreadId, parsed.definition, parsed.first, parsed.second)
+    if (!plan.ok) throw new Error(plan.detail)
+    return placePartCommand({ spreadId: parsed.spreadId, name: parsed.name, ...plan.instance })
+  } catch (error) { return fail('place-part', error) }
+}
 export function placePartCommand(value: z.input<typeof placePartSchema>): BuilderCommandResult {
   try {
     const parsed = placePartSchema.parse(value), state = useBuilderStore.getState()

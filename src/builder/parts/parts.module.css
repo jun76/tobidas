@@ -21,6 +21,7 @@
 .editor button,.palette button,.inspector button,.sidebar button { cursor:pointer; }
 .editor button,.palette button { border:1px solid #505464; border-radius:5px; background:#343744; color:#ececf2; padding:7px 10px; font:inherit; font-size:12px; display:inline-flex; align-items:center; gap:5px; justify-content:center; }
 .editor button:hover,.palette button:hover { background:#464d64; border-color:#8191b7; }
+.palette button[aria-pressed=true] { background:#354e79; border-color:#80b4ff; box-shadow:0 0 0 1px #80b4ff; }
 .editor button:disabled,.palette button:disabled { opacity:.4; cursor:default; }
 .editor select { background:#2b2c36; color:#ececf2; border:1px solid #505464; border-radius:4px; padding:5px; }
 .nodeList { list-style:none; padding:0; display:flex; flex-direction:column; gap:6px; }
@@ -41,6 +42,10 @@
 .palette h3 { font-size:12px; margin: 10px 0; color:#b9bbc8; }
 .grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 .grid button { padding:9px 6px; min-height:38px; }
+.placementBadge { position:absolute; left:14px; top:62px; z-index:6; max-width:min(410px,calc(100% - 95px)); padding:12px 14px; border:1px solid #6d9add; border-radius:8px; background:#182b48f5; color:#e8f2ff; font-size:12px; box-shadow:0 4px 15px #0003; }
+.placementBadge p { margin:6px 0; line-height:1.5; }
+.placementBadge[data-part-hover-valid=false] { border-color:#fa7e86; background:#44232bf5; }
+.placementBadge button { margin:4px 8px 0 0; border:1px solid #8cabc080; border-radius:4px; background:#ffffff10; color:inherit; padding:4px 8px; cursor:pointer; }
 .libraryItem { border:1px solid #434653; border-radius:5px; padding:10px; margin-bottom:8px; display:flex; flex-direction:column; gap:8px; }
 .libraryItem strong { font-size:13px; }
 .compactGrid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }

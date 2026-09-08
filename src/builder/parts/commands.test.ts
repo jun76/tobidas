@@ -8,7 +8,7 @@ import { faceCorners } from '../../parts/geometry'
 import { spreadCameraBounds } from '../../runtime/camera/bounds'
 import { useBuilderStore } from '../store'
 import { usePartEditorStore } from './store'
-import { placePartCommand, updatePlacedPartCommand } from './commands'
+import { placePartCommand, placePartOnSurfacesCommand, updatePlacedPartCommand } from './commands'
 import { addTimelineKeyCommand, moveElementCommand } from '../operations/commands'
 
 const gutter: PartBinding = { type: 'output', nodeId: '$book', portId: 'gutter' }
@@ -22,6 +22,23 @@ function placed(builtin: string, mount: PartBinding, parameters = {}) {
 }
 beforeEach(() => { useBuilderStore.getState().setProject(createBookProject('020検証'), 'import'); useBuilderStore.getState().setMode('edit'); usePartEditorStore.setState({ library: [] }) })
 describe('基本・カスタム部品の共通編集', () => {
+  it('クリック配置の不適合では変更せず、自動支持紙を含む一操作をundoとredoできる', () => {
+    const background = placed('backdrop', gutter, { width: 1, height: 2 })
+    const before = useBuilderStore.getState().project, history = useBuilderStore.getState().undoStack.length
+    const input = { spreadId: spread().id, name: '横へ張り出す看板', definition: { builtin: 'upright', version: 1 },
+      first: { surface: { nodeId: '$book', portId: 'right-page' }, point: [4.5, 2] as [number, number] } }
+    expect(placePartOnSurfacesCommand({ ...input, second: input.first }).ok).toBe(false)
+    expect(useBuilderStore.getState().project).toBe(before)
+    expect(useBuilderStore.getState().undoStack).toHaveLength(history)
+    const added = placePartOnSurfacesCommand({ ...input, second: { surface: { nodeId: background, portId: 'panel' }, point: [.5, 1] } })
+    expect(added.ok, added.message).toBe(true)
+    const instance = elements()[1].part
+    expect(instance.mount.type === 'pair' && instance.mount.extensions?.b?.panels?.length).toBeGreaterThan(0)
+    expect(useBuilderStore.getState().undoStack).toHaveLength(history + 1)
+    useBuilderStore.getState().undo(); expect(useBuilderStore.getState().project).toEqual(before)
+    useBuilderStore.getState().redo(); expect(elements()[1].part).toEqual(instance)
+    expect(validateBookParts(useBuilderStore.getState().project)).toEqual([])
+  })
   it('接続と実開口角を検査してから一操作で追加し、undoで戻す', () => {
     const background = placed('backdrop', gutter)
     const before = useBuilderStore.getState().project, history = useBuilderStore.getState().undoStack.length

@@ -81,7 +81,7 @@ export function MountField({ value, options, kind, onChange }: { value: PartBind
   return <>
     <label className={st.field}><span>{t.mount}</span><select aria-label={t.mount} value={selected} onChange={(event) => {
       const option = choices[Number(event.target.value)]; if (option) onChange(option.binding)
-    }}><option value={-1}>{t.choose}</option>{choices.map((option, index) => <option key={index} value={index}>{option.label}</option>)}</select></label>
+    }}><option value={-1}>{selected < 0 ? t.currentMount : t.choose}</option>{choices.map((option, index) => <option key={index} value={index}>{option.label}</option>)}</select></label>
     {kind !== 'surface' && <details open={advanced} onToggle={(event) => setAdvanced(event.currentTarget.open)}><summary>{t.pairFaces}</summary>
       <PairFields value={value} options={options.filter((option) => option.kind === 'surface')} onChange={onChange} />
     </details>}

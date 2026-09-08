@@ -22,6 +22,9 @@ import { SelectionGizmo } from './viewport/SelectionGizmo'
 import { useSoundCueDrop } from './viewport/useSoundCueDrop'
 import { useViewportPlayback } from './viewport/useViewportPlayback'
 import { selectActiveSpread } from './state/selectors'
+import { PartPlacementController } from './viewport/PartPlacementController'
+import { PlacementBadge } from './parts/PlacementBadge'
+import { usePartPlacementStore } from './parts/placementState'
 
 export const viewportGlRef: { current: THREE.WebGLRenderer | null } = { current: null }
 
@@ -31,6 +34,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
 } = {}) {
   const t = useT()
   const store = useBuilderStore()
+  const placingPart = usePartPlacementStore((state) => Boolean(state.tool))
   const dialogs = useDialogs()
   const [screenshotState, setScreenshotState] = useState<ScreenshotState>('idle')
   const editCameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -71,6 +75,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
   }, [hidden])
 
   const select = (selection: RuntimeSelection) => {
+    if (usePartPlacementStore.getState().tool) return
     // 見開きの切り替えはナビゲーターで行い、キャンバスでは編集中の対象だけを選ぶ。
     if (selection.spreadId !== store.activeSpreadId) return
     if (!didGizmoPress()) store.select(selection)
@@ -144,14 +149,16 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
       />
       {store.mode === 'edit' && <>
         <PageDropController />
+        <PartPlacementController />
         <OrbitControls
           ref={orbitRef}
           makeDefault
           target={store.project.book.camera.target}
           enableDamping
           dampingFactor={0.12}
+          mouseButtons={{ LEFT: placingPart ? undefined : THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: placingPart ? THREE.MOUSE.ROTATE : THREE.MOUSE.PAN }}
         />
-        <SelectionGizmo />
+        {!placingPart && <SelectionGizmo />}
         {!store.hidden.has(hiddenKey.camera) && <>
           <CameraPreview book={store.project.book} progress={playback.progress} />
           <SavedCameraMarkers />
@@ -159,6 +166,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
         {!store.hidden.has(hiddenKey.light) && <EditableLight lights={store.project.book.lights} />}
       </>}
     </Canvas>
+    {store.mode === 'edit' && <PlacementBadge />}
 
     {store.mode === 'edit' && viewTitle && <div className={st.viewportTitleBar}>
       <div className={st.viewportTitle}>{viewTitle}</div>

@@ -4,6 +4,10 @@ import type { PartInput, PartMaterial } from './schema'
 export interface PaperFace {
   id: string; origin: Vector3; u: Vector3; v: Vector3; width: number; height: number
   support: boolean; material: PartMaterial; outline?: [number, number][]
+  /** 一枚の絵を複数の剛体面へ分けるときの、画像横方向の担当範囲。 */
+  artworkSpan?: [number, number]
+  /** 仮想接続面を実際に覆う親面と支持紙。接着検査では空白を支持面とみなさない。 */
+  contactRegions?: PaperFace[]
 }
 export interface FoldPair {
   kind: 'fold-pair'; a: PaperFace; b: PaperFace; origin: Vector3; axis: Vector3
@@ -15,6 +19,8 @@ export interface PaperConnection {
 }
 export interface PaperEvaluation {
   faces: PaperFace[]; ports: Record<string, PartPort>; connections: PaperConnection[]
+  /** 親面と補完ブリッジが覆う接続領域。描画面とは分けて接着検査に使う。 */
+  contactSurfaces?: PaperFace[]
 }
 export const EPSILON = 1e-7
 export const pointOnFace = (face: PaperFace, u: number, v: number) => face.origin.clone().addScaledVector(face.u, u).addScaledVector(face.v, v)
@@ -34,6 +40,7 @@ export function faceContains(face: PaperFace, point: Vector3, epsilon = EPSILON)
   const delta = point.clone().sub(face.origin), u = delta.dot(face.u), v = delta.dot(face.v)
   if (Math.abs(delta.dot(face.u.clone().cross(face.v))) > epsilon
     || u < -epsilon || u > face.width + epsilon || v < -epsilon || v > face.height + epsilon) return false
+  if (face.contactRegions) return face.contactRegions.some((region) => faceContains(region, point, epsilon))
   if (!face.outline) return true
   let inside = false
   const points = face.outline.map(([x, y]) => [x * face.width, y * face.height])
@@ -49,18 +56,23 @@ export function faceContains(face: PaperFace, point: Vector3, epsilon = EPSILON)
 /** 輪郭を横切る全区間を調べ、接着線の途中だけが切り落とされることも拒否する。 */
 export function faceContainsLine(face: PaperFace, a: Vector3, b: Vector3): boolean {
   if (!faceContains(face, a) || !faceContains(face, b)) return false
-  if (!face.outline) return true
-  const delta = b.clone().sub(a), origin = a.clone().sub(face.origin)
-  const ux = origin.dot(face.u), uy = origin.dot(face.v), dx = delta.dot(face.u), dy = delta.dot(face.v), cuts = [0, 1]
-  const points = face.outline.map(([u, v]) => [u * face.width, v * face.height])
-  for (let i = 0; i < points.length; i++) {
-    const [ax, ay] = points[i], [bx, by] = points[(i + 1) % points.length], ex = bx - ax, ey = by - ay
-    const denominator = dx * ey - dy * ex
-    if (Math.abs(denominator) < EPSILON) continue
-    const t = ((ax - ux) * ey - (ay - uy) * ex) / denominator
-    const s = ((ax - ux) * dy - (ay - uy) * dx) / denominator
-    if (t > 0 && t < 1 && s >= 0 && s <= 1) cuts.push(t)
+  if (!face.outline && !face.contactRegions) return true
+  const delta = b.clone().sub(a), cuts = [0, 1]
+  const boundaries = (region: PaperFace) => {
+    const origin = a.clone().sub(region.origin), ux = origin.dot(region.u), uy = origin.dot(region.v)
+    const dx = delta.dot(region.u), dy = delta.dot(region.v)
+    const points = (region.outline ?? [[0, 0], [1, 0], [1, 1], [0, 1]]).map(([u, v]) => [u * region.width, v * region.height])
+    for (let i = 0; i < points.length; i++) {
+      const [ax, ay] = points[i], [bx, by] = points[(i + 1) % points.length], ex = bx - ax, ey = by - ay
+      const denominator = dx * ey - dy * ex
+      if (Math.abs(denominator) < EPSILON) continue
+      const t = ((ax - ux) * ey - (ay - uy) * ex) / denominator
+      const s = ((ax - ux) * dy - (ay - uy) * dx) / denominator
+      if (t > 0 && t < 1 && s >= 0 && s <= 1) cuts.push(t)
+    }
+    region.contactRegions?.forEach(boundaries)
   }
+  boundaries(face)
   cuts.sort((x, y) => x - y)
   return cuts.slice(1).every((end, i) => faceContains(face, a.clone().addScaledVector(delta, (cuts[i] + end) / 2)))
 }

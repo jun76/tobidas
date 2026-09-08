@@ -2,8 +2,9 @@ import { builtinPart } from './catalog'
 import { decorateFaces, evaluateBuiltin } from './builtins'
 import { bindingDependencies, evaluateExpression, parameterValues, type PartBinding, type PartDefinitions,
   type PartMaterial, type PartNode, type PartReference } from './schema'
-import { checkInput, EPSILON, faceContains, pointOnFace, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
+import { checkInput, EPSILON, faceContains, makeFace, pointOnFace, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
 import type { Vector3 } from 'three'
+import { extendPaperSurface } from './extensions'
 
 export interface EvaluatedPartGraph extends PaperEvaluation { nodes: Record<string, PaperEvaluation> }
 
@@ -21,19 +22,33 @@ function rayExtent(face: PaperFace, origin: Vector3, ray: Vector3): number {
   return Math.max(0, Math.min(...limits))
 }
 
-export function resolveBinding(binding: PartBinding, input: PartPort | undefined, output: (nodeId: string, portId: string) => PartPort): PartPort {
+export function resolveBinding(binding: PartBinding, input: PartPort | undefined, output: (nodeId: string, portId: string) => PartPort,
+  supports?: PaperEvaluation, prefix = 'mount'): PartPort {
   if (binding.type === 'input') {
     if (!input) throw new Error('Input is not connected to a real surface')
     if (!binding.face) return input
     if (input.kind !== 'fold-pair') throw new Error('Single surface input has no second face')
     return { kind: 'surface', face: input[binding.face] }
   }
-  if (binding.type === 'output') return output(binding.nodeId, binding.portId)
-  const a = resolveSurface(output(binding.a.nodeId, binding.a.portId))
-  const b = resolveSurface(output(binding.b.nodeId, binding.b.portId))
-  const pa = binding.hingeA.map(([u, v]) => pointOnFace(a, u, v)), pb = binding.hingeB.map(([u, v]) => pointOnFace(b, u, v))
-  if (pa.some((point, i) => point.distanceTo(pb[i]) > EPSILON) || !pa.every((point) => faceContains(a, point))
-    || !pb.every((point) => faceContains(b, point))) throw new Error('The two material hinge lines must coincide on the actual faces')
+  if (binding.type === 'output') {
+    const port = output(binding.nodeId, binding.portId)
+    if (!binding.extension && !binding.frame) return port
+    const source = resolveSurface(port), extended = extendPaperSurface(source, binding.extension, `${prefix}/surface`, supports)
+    if (!binding.frame) return { kind: 'surface', face: extended }
+    const { origin, width, height } = binding.frame
+    const face = makeFace(`${prefix}/frame`, pointOnFace(source, ...origin), source.u, source.v, width, height)
+    face.contactRegions = extended.contactRegions ?? [source]
+    if (supports) supports.contactSurfaces = [...supports.contactSurfaces ?? [], source, face]
+    return { kind: 'surface', face }
+  }
+  const sourceA = resolveSurface(output(binding.a.nodeId, binding.a.portId)), sourceB = resolveSurface(output(binding.b.nodeId, binding.b.portId))
+  const a = extendPaperSurface(sourceA, binding.extensions?.a, `${prefix}/a`, supports)
+  const b = extendPaperSurface(sourceB, binding.extensions?.b, `${prefix}/b`, supports)
+  const pa = binding.hingeA.map(([u, v]) => pointOnFace(sourceA, u, v)), pb = binding.hingeB.map(([u, v]) => pointOnFace(sourceB, u, v))
+  // 延長した二面の交線は仮想でもよいが、材料座標が全角度で一致する必要がある。
+  // 部品の接着辺は、下流のglueとinspectPaperが実際の支持紙まで検査する。
+  if (pa.some((point, i) => point.distanceTo(pb[i]) > EPSILON) || !pa.every((point) => faceContains({ ...a, contactRegions: undefined }, point))
+    || !pb.every((point) => faceContains({ ...b, contactRegions: undefined }, point))) throw new Error('The two material hinge lines must coincide on the actual faces')
   const width = pa[0].distanceTo(pa[1])
   if (width < EPSILON) throw new Error('Hinge line has zero length')
   const axis = pa[1].clone().sub(pa[0]).normalize()
@@ -44,11 +59,18 @@ export function resolveBinding(binding: PartBinding, input: PartPort | undefined
     foldSign: binding.foldSign }
 }
 
+/** 公開面を優先し、キャンバスで選んだ実面にも安定した材料面IDで接続する。 */
+export function evaluatedOutput(result: PaperEvaluation, portId: string, prefix: string): PartPort | undefined {
+  if (result.ports[portId]) return result.ports[portId]
+  const face = portId.startsWith('face:') && result.faces.find((item) => item.id === `${prefix}/${portId.slice(5)}`)
+  return face ? { kind: 'surface', face } : undefined
+}
+
 export function evaluatePartReference(reference: PartReference, input: PartPort, definitions: PartDefinitions,
   values: Record<string, number> = {}, materials: Record<string, PartMaterial> = {}, prefix = 'part', ancestors: string[] = []): PaperEvaluation {
   if ('builtin' in reference) {
     const builtin = builtinPart(reference.builtin, reference.version)
-    const evaluated = evaluateBuiltin(builtin.id, input, values, prefix)
+    const evaluated = evaluateBuiltin(builtin.id, input, values, prefix, builtin.version)
     decorateFaces(evaluated, materials)
     return evaluated
   }
@@ -66,11 +88,14 @@ export function evaluatePartReference(reference: PartReference, input: PartPort,
       if (input.kind === 'fold-pair' && (portId === 'a' || portId === 'b')) return { kind: 'surface', face: input[portId] }
       if (input.kind === 'surface' && portId === 'surface') return input
     }
-    const port = graph.nodes[nodeId]?.ports[portId]
+    const node = graph.nodes[nodeId]
+    const port = node && evaluatedOutput(node, portId, `${prefix}/${nodeId}`)
     if (!port) throw new Error(`Unknown output: ${nodeId}/${portId}`)
     return port
   }
-  return { ...graph, ports: Object.fromEntries(Object.entries(definition.outputs).map(([name, binding]) => [name, resolveBinding(binding, input, output)])) }
+  const ports = Object.fromEntries(Object.entries(definition.outputs).map(([name, binding]) =>
+    [name, resolveBinding(binding, input, output, graph, `${prefix}/output/${name}`)]))
+  return { ...graph, ports }
 }
 
 export function evaluatePartGraph(nodes: PartNode[], definitions: PartDefinitions, input?: PartPort,
@@ -86,7 +111,7 @@ export function evaluatePartGraph(nodes: PartNode[], definitions: PartDefinition
       if (input.kind === 'fold-pair' && (portId === 'a' || portId === 'b')) return { kind: 'surface', face: input[portId] }
       if (input.kind === 'surface' && portId === 'surface') return input
     }
-    const result = visit(nodeId), port = result.ports[portId]
+    const result = visit(nodeId), port = evaluatedOutput(result, portId, prefix ? `${prefix}/${nodeId}` : nodeId)
     if (!port) throw new Error(`Unknown output: ${nodeId}/${portId}`)
     return port
   }
@@ -96,13 +121,16 @@ export function evaluatePartGraph(nodes: PartNode[], definitions: PartDefinition
     const node = byId.get(id)
     if (!node) throw new Error(`Unknown part node: ${id}`)
     active.add(id)
-    const mount = resolveBinding(node.mount, input, output)
+    const supports: PaperEvaluation = { faces: [], connections: [], ports: {} }
+    const mount = resolveBinding(node.mount, input, output, supports, `${prefix ? `${prefix}/` : ''}${id}/mount`)
     const values = Object.fromEntries(Object.entries(node.parameters).map(([key, value]) => [key, evaluateExpression(value, parameters)]))
     const materials = Object.fromEntries(Object.entries(node.materials).map(([key, value]) => {
       if ('slot' in value && !slots[value.slot]) throw new Error(`Unknown material slot: ${value.slot}`)
       return [key, 'slot' in value ? slots[value.slot] : value]
     }))
     const result = evaluatePartReference(node.definition, mount, definitions, values, materials, prefix ? `${prefix}/${id}` : id, ancestors)
+    result.faces.push(...supports.faces); result.connections.push(...supports.connections)
+    result.contactSurfaces = [...result.contactSurfaces ?? [], ...supports.contactSurfaces ?? []]
     if (node.outline) {
       if (node.outline.some(([u, v]) => u < 0 || u > 1 || v < 0 || v > 1)) throw new Error('Outline must stay within the material face')
       decorateFaces(result, {}, node.outline)
@@ -112,7 +140,8 @@ export function evaluatePartGraph(nodes: PartNode[], definitions: PartDefinition
   }
   for (const node of nodes) visit(node.id)
   return { nodes: evaluated, faces: Object.values(evaluated).flatMap((value) => value.faces),
-    connections: Object.values(evaluated).flatMap((value) => value.connections), ports: {} }
+    connections: Object.values(evaluated).flatMap((value) => value.connections),
+    contactSurfaces: Object.values(evaluated).flatMap((value) => value.contactSurfaces ?? []), ports: {} }
 }
 
 export function dependentPartIds(nodes: Pick<PartNode, 'id' | 'mount'>[], id: string): Set<string> {

@@ -47,7 +47,7 @@ describe('WebMCP adapter', () => {
     const controller = new AbortController()
     expect(await registerTobidasWebMcpTools(context, controller.signal)).toBe(true)
     const names = registrations.map(({ tool }) => tool.name)
-    expect(names).toEqual(expect.arrayContaining(['tobidas-get-part-catalog', 'tobidas-place-part', 'tobidas-update-placed-part', 'tobidas-get-state']))
+    expect(names).toEqual(expect.arrayContaining(['tobidas-get-part-catalog', 'tobidas-place-part', 'tobidas-place-part-on-surfaces', 'tobidas-update-placed-part', 'tobidas-get-state']))
     expect(names).not.toContain('tobidas-create-mechanism')
     expect(names).not.toContain('tobidas-create-composition')
     expect(names).not.toContain('tobidas-place-asset')
@@ -88,6 +88,21 @@ describe('WebMCP adapter', () => {
     expect(payload(await invoke('tobidas-update-placed-part', { spreadId, elementId: child.target.id,
       changes: { mount: { type: 'output', nodeId: '$book', portId: 'gutter' } } })).ok).toBe(false)
     expect(useBuilderStore.getState().project).toBe(before)
+  })
+
+  it('キャンバスで選べる実面を公開し、一面・二面クリックと同じ検査とundo経路で配置する', async () => {
+    const spreadId = setup()
+    const mounts = payload(await invoke('tobidas-get-part-mounts', { spreadId }))
+    expect(mounts.surfaces).toEqual(expect.arrayContaining([expect.objectContaining({ reference: { nodeId: '$book', portId: 'right-page' } })]))
+    const first = { surface: { nodeId: '$book', portId: 'right-page' }, point: [3.2, 2] }
+    const placed = payload(await invoke('tobidas-place-part-on-surfaces', { spreadId, name: 'テキスト', definition: { builtin: 'text', version: 1 }, first }))
+    expect(placed.ok).toBe(true)
+    const before = useBuilderStore.getState().project
+    const rejected = payload(await invoke('tobidas-place-part-on-surfaces', { spreadId, name: '縦置き', definition: { builtin: 'upright', version: 1 }, first,
+      second: { surface: { nodeId: '$book', portId: 'left-page' }, point: [3.2, 2] } }))
+    expect(rejected.ok).toBe(false); expect(useBuilderStore.getState().project).toBe(before)
+    useBuilderStore.getState().undo()
+    expect(useBuilderStore.getState().project.book.spreads[0].elements).toHaveLength(0)
   })
 
   it('reads and updates the current work authoring guide', async () => {

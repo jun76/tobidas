@@ -8,9 +8,9 @@ import { inspectClosedLayout, inspectPaper, syncDefinitionRequirements, validate
 
 const pairAt = (angle: number, rotation = 0) => pagePorts(8, 10, (angle + rotation) * Math.PI / 180, rotation * Math.PI / 180).gutter as FoldPair
 describe('connected paper parts', () => {
-  it('keeps the backdrop rigid, glued to both real pages, and upright at full opening', () => {
+  it('第1改訂の四節起立と箱・台の内部リンクの接着と剛性を保つ', () => {
     for (const rotation of [0, 23, 91]) for (const angle of [0, .001, 15, 45, 90, 150, 180]) {
-      const result = evaluateBuiltin('backdrop', pairAt(angle, rotation), { height: 2, distance: 1, width: 3 })
+      const result = evaluateBuiltin('backdrop', pairAt(angle, rotation), { height: 2, distance: 1, width: 3 }, 'backdrop', 1)
       expect(inspectPaper(result)).toEqual([])
       const panel = result.faces[0]
       expect(faceCorners(panel)[0].distanceTo(faceCorners(panel)[3])).toBeCloseTo(2, 9)
@@ -19,9 +19,9 @@ describe('connected paper parts', () => {
       if (angle === 0) expect(inspectClosedLayout(result, 8, 10, pairAt(0, rotation).rayA)).toEqual([])
     }
   })
-  it('drives the upright through its actual backdrop support and stays flat at closure', () => {
+  it('第1改訂に接続済みの縦置きも実際の支持面から駆動する', () => {
     for (const angle of [0, 30, 90, 120, 180]) {
-      const background = evaluateBuiltin('backdrop', pairAt(angle), { height: 2, distance: 1, width: 3 })
+      const background = evaluateBuiltin('backdrop', pairAt(angle), { height: 2, distance: 1, width: 3 }, 'backdrop', 1)
       const mounting = background.ports['ground-backdrop'] as FoldPair
       const person = evaluateBuiltin('upright', mounting, { height: 1.5, supportHeight: 1, distance: 1 })
       expect(inspectPaper({ ...person, faces: [...background.faces, ...person.faces] })).toEqual([])
@@ -61,9 +61,9 @@ describe('connected paper parts', () => {
   })
   it('rejects detached dimensions and preserves the pose across evaluation order', () => {
     expect(() => evaluateBuiltin('upright', pairAt(90), { distance: 10 })).toThrow('exceeds surface')
-    const first = evaluateBuiltin('backdrop', pairAt(46))
-    evaluateBuiltin('backdrop', pairAt(180)); evaluateBuiltin('backdrop', pairAt(0))
-    expect(evaluateBuiltin('backdrop', pairAt(46)).faces.map(faceCorners)).toEqual(first.faces.map(faceCorners))
+    const first = evaluateBuiltin('backdrop', pairAt(46), {}, 'backdrop', 1)
+    evaluateBuiltin('backdrop', pairAt(180), {}, 'backdrop', 1); evaluateBuiltin('backdrop', pairAt(0), {}, 'backdrop', 1)
+    expect(evaluateBuiltin('backdrop', pairAt(46), {}, 'backdrop', 1).faces.map(faceCorners)).toEqual(first.faces.map(faceCorners))
     expect(first.faces[0].u).toEqual(new Vector3(0, 0, 1))
   })
   it('箱の90度姿勢を保ち、接着辺を切る輪郭と未公開の素材指定を拒否する', () => {

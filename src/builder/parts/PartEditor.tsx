@@ -98,7 +98,7 @@ export function PartEditor() {
 function AddNodeDialog({ onClose }: { onClose: () => void }) {
   const t = useT().parts, store = usePartEditorStore(), { bundle } = store
   const definitions = { ...bundle.definitions, ...Object.fromEntries(store.library.map((item) => [item.hash, item.bundle.definition])) }
-  const [reference, setReference] = useState<PartReference>({ builtin: 'backdrop', version: 1 })
+  const [reference, setReference] = useState<PartReference>({ builtin: 'backdrop', version: BUILTIN_PARTS.find((part) => part.id === 'backdrop')!.version })
   const definition = referenceDefinition(reference, definitions)
   const options = mountOptions(bundle.definition.nodes, definitions, bundle.definition.input)
   const [mount, setMount] = useState<PartBinding>({ type: 'input' }), [error, setError] = useState('')
@@ -108,7 +108,7 @@ function AddNodeDialog({ onClose }: { onClose: () => void }) {
     if (result.ok) onClose(); else setError(result.message)
   }}><div className={st.fields}>
     <label className={st.field}><span>{t.definition}</span><select aria-label={t.definition} value={'builtin' in reference ? `basic:${reference.builtin}` : reference.custom} onChange={(event) => {
-      const value = event.target.value, next = value.startsWith('basic:') ? { builtin: value.slice(6), version: 1 } : { custom: value }
+      const value = event.target.value, next = value.startsWith('basic:') ? { builtin: value.slice(6), version: BUILTIN_PARTS.find((part) => part.id === value.slice(6))!.version } : { custom: value }
       setReference(next)
       const kind = referenceDefinition(next, definitions).input.kind
       setMount(options.find((option) => option.kind === kind)?.binding ?? { type: 'input' })
@@ -142,7 +142,7 @@ function NodeInspector({ node }: { node: PartNode }) {
         let value = p.default
         try { value = evaluateExpression(node.parameters[key] ?? p.default, values) } catch { /* 公開項目を直せるよう既定値を表示する。 */ }
         const expression = node.parameters[key]
-        return <div key={key}><NumberField label={'custom' in node.definition ? p.label : parameterLabel(key)} value={value} min={p.min} max={p.max} step={p.type === 'integer' ? 1 : .05}
+        return <div key={key}><NumberField label={'custom' in node.definition ? p.label : parameterLabel(p.label)} value={value} min={p.min} max={p.max} step={p.type === 'integer' ? 1 : .05}
           onChange={(number) => update({ parameters: { ...node.parameters, [key]: number } })} />
           {expression && typeof expression !== 'number' && 'parameter' in expression && <p className={st.hint}>{t.exposedParameters}: {expression.parameter}</p>}
         </div>
@@ -150,13 +150,13 @@ function NodeInspector({ node }: { node: PartNode }) {
     </div></div>
     <details className={st.section}><summary>{t.exposedParameters}</summary><div className={st.fields}>
       <label className={st.field}><span>{t.dimensions}</span><select aria-label={t.exposedParameters} value={parameter} onChange={(event) => { setParameter(event.target.value); setPublicName(event.target.value) }}>
-        {Object.keys(definition.parameters).map((key) => <option key={key} value={key}>{parameterLabel(key)}</option>)}
+        {Object.entries(definition.parameters).map(([key, p]) => <option key={key} value={key}>{'custom' in node.definition ? p.label : parameterLabel(p.label)}</option>)}
       </select></label>
       <TextField label={t.parameterId} value={publicName} onChange={setPublicName} />
       <button type="button" onClick={() => {
         const p = definition.parameters[parameter]
         if (!p) return
-        const result = exposePartParameterCommand({ name: publicName, nodeId: node.id, parameter, specification: { ...p, label: parameterLabel(parameter), default: evaluateExpression(node.parameters[parameter] ?? p.default, values) } })
+        const result = exposePartParameterCommand({ name: publicName, nodeId: node.id, parameter, specification: { ...p, label: 'custom' in node.definition ? p.label : parameterLabel(p.label), default: evaluateExpression(node.parameters[parameter] ?? p.default, values) } })
         setError(result.ok ? '' : result.message)
       }}>{t.expose}</button>
     </div></details>

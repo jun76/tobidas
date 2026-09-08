@@ -20,6 +20,8 @@ try {
   const { projectFileJson, stripAuthoringGuide } = await server.ssrLoadModule('/src/package/serialize.ts')
   const { injectProjectJson } = await server.ssrLoadModule('/src/builder/io/siteExport.ts')
   const { compileBookBeats } = await server.ssrLoadModule('/src/runtime/signals.ts')
+  const { builtinPart } = await server.ssrLoadModule('/src/parts/catalog.ts')
+  const { backdropForBook } = await server.ssrLoadModule('/src/parts/backdrop.ts')
   await fs.mkdir(out, { recursive: true })
   await fs.writeFile(path.join(out, 'tobidas-part-v1.schema.json'), JSON.stringify(partDefinitionJsonSchema, null, 2))
   const bundles = {}
@@ -55,9 +57,10 @@ try {
     Object.assign(project.partDefinitions, bundle.definitions)
     for (const asset of bundle.assets) if (!project.assets.some((item) => item.id === asset.id)) project.assets.push(asset)
   }
-  const builtin = (id) => ({ builtin: id, version: 1 })
+  const builtin = (id) => ({ builtin: id, version: builtinPart(id).version })
   const output = (nodeId, portId) => ({ type: 'output', nodeId, portId })
   const gutter = output('$book', 'gutter')
+  const backgroundParameters = backdropForBook(project.book.format.pageWidth, project.book.format.pageWidth / project.book.format.pageAspect)
   const add = (spread, id, name, definition, mount, parameters = {}, materials = {}) => {
     const element = createStageElement('part', mount.nodeId === '$book' ? { type: mount.portId === 'left-page' ? 'left-page' : 'right-page' } : { type: 'element', elementId: mount.nodeId })
     element.id = id; element.name = name; element.part = { definition, mount, parameters, materials }; spread.elements.push(element)
@@ -70,16 +73,16 @@ try {
     return spread
   }
   const first = page('ground-backdrop', '01 背景と地面から家を起こす', '背景と地面の二面から、家を起こす。')
-  add(first, 'background', '背景パネル', builtin('backdrop'), gutter, { width: 5, height: 2.7, distance: .8 }, { panel: { color: '#8db8a8' }, support: { color: '#aeb997' } })
+  add(first, 'background', '背景パネル', builtin('backdrop'), gutter, backgroundParameters, { '*': { color: '#8db8a8' } })
   add(first, 'house', '家', { custom: bundles.house.hash }, output('background', 'ground-backdrop'), { width: 1.8, height: 2, distance: 1.5 })
-  add(first, 'small-house', '小さな家', { custom: bundles.house.hash }, output('background', 'ground-backdrop'), { width: 1.2, height: 1.5, distance: 3, offset: 1.7 })
+  add(first, 'small-house', '小さな家', { custom: bundles.house.hash }, output('background', 'ground-backdrop-b'), { width: 1.2, height: 1.5, distance: 1.5 })
   const second = page('full-box', '02 見開き180度の箱', '180°の見開きで、箱が開く。')
   add(second, 'cake', 'ケーキ', { custom: bundles.cake.hash }, gutter, { width: 3.1, height: 1.3, distance: 1.9 })
   const third = page('partial-box', '03 90度の接続先で半開き', '同じ箱でも、90°の接続先なら途中の姿勢。')
-  add(third, 'background', '背景パネル', builtin('backdrop'), gutter, { width: 5, height: 3.2, distance: .8 }, { panel: { color: '#88a2b8' } })
+  add(third, 'background', '背景パネル', builtin('backdrop'), gutter, backgroundParameters, { '*': { color: '#88a2b8' } })
   add(third, 'cake', '同じケーキ', { custom: bundles.cake.hash }, output('background', 'ground-backdrop'), { width: 3.1, height: 1.3, distance: 1.9 })
   const fourth = page('nested-parts', '04 面から面へつながる', '部品の接続口へ、次の部品をつなぐ。')
-  add(fourth, 'background', '背景パネル', builtin('backdrop'), gutter, { width: 4.5, height: 2.4, distance: .8 }, { panel: { color: '#9daf8a' } })
+  add(fourth, 'background', '背景パネル', builtin('backdrop'), gutter, backgroundParameters, { '*': { color: '#9daf8a' } })
   add(fourth, 'sign', '一段目の看板', builtin('upright'), output('background', 'ground-backdrop'), { width: 2.6, height: 1.8, distance: 1.3, supportHeight: 1 }, { panel: { color: '#bf846a', text: 'つながる' } })
   add(fourth, 'next-sign', '看板から支える小さな看板', builtin('upright'), output('sign', 'ground-panel'), { width: 1.4, height: 1, distance: 1.3, supportHeight: .5 }, { panel: { color: '#dfba6b', text: 'tobidas' } })
   const validation = validateBookProject(project)

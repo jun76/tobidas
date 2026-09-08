@@ -81,7 +81,11 @@ export function PageDropController() {
     }
   }, [camera, depth, gl, pointer, raycaster, scene, store, width])
 
-  return <group ref={marker} visible={false}>
+  return <PagePointerMarker markerRef={marker} />
+}
+
+export function PagePointerMarker({ markerRef }: { markerRef: React.Ref<THREE.Group> }) {
+  return <group ref={markerRef} visible={false}>
     <mesh renderOrder={30}>
       <sphereGeometry args={[0.055, 16, 12]} />
       <meshBasicMaterial color="#ff3344" depthTest />
