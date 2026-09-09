@@ -9,7 +9,7 @@ import { useT } from '../i18n'
 import { FormDialog } from '../ui/FormDialog'
 import { usePartEditorStore, useWorkspaceStore } from './store'
 import { addPartNodeCommand, createPartDraftCommand, deletePartNodeCommand, exposePartMaterialCommand, exposePartParameterCommand,
-  exposePartPortCommand, referenceDefinition, savePartLibraryCommand, updatePartDefinitionCommand, updatePartNodeCommand } from './commands'
+  exposePartPortCommand, exposePartEditHandleCommand, editPartNodeCommand, referenceDefinition, savePartLibraryCommand, updatePartDefinitionCommand, updatePartNodeCommand } from './commands'
 import { MaterialFields, MountField, NumberField, TextField, mountOptions, parameterLabel, portLabel, referenceName, referencePorts } from './fields'
 import { PartPreview } from './PartPreview'
 import { importPartSelection, savePartFolder, savePartZipFile } from './files'
@@ -81,7 +81,7 @@ export function PartEditor() {
           {bundle.assets.map((asset) => <p key={asset.id} className={st.hint}>{asset.name}</p>)}
         </div>
       </aside>
-      <PartPreview bundle={bundle} selected={store.selectedId ?? undefined} onSelect={store.select} />
+      <PartPreview bundle={bundle} selected={store.selectedId ?? undefined} onSelect={store.select} editable />
       <aside className={st.inspector}>{node ? <NodeInspector key={node.id} node={node} /> : <p className={st.hint}>{t.noneSelected}</p>}
         <details className={st.section} open={!validation.ok}><summary className={validation.ok ? st.success : undefined}>{validation.ok ? t.valid : t.invalid}</summary>
           <p className={st.hint}>{t.validationModel}</p>{validation.errors.slice(0, 6).map((message) => <p key={message} className={st.error}>{message}</p>)}
@@ -134,31 +134,44 @@ function NodeInspector({ node }: { node: PartNode }) {
   const active = ownSurfaces.includes(surface) ? surface : ownSurfaces[0]
   const materialValue = node.materials[active] ?? {}, slot = 'slot' in materialValue ? materialValue.slot : undefined
   const material = 'slot' in materialValue ? bundle.definition.materialSlots[materialValue.slot] ?? {} : materialValue
+  const parameterKey = definition.parameters[parameter] ? parameter : Object.keys(definition.parameters)[0]
+  const angleOperation = 'builtin' in node.definition ? ['splayAngle', 'tiltAngle', 'yawAngle'].find((id) => id === parameterKey)
+    : 'editHandles' in definition ? definition.editHandles?.find((handle) => handle.parameter === parameterKey)?.id : undefined
   return <div className={st.fields}>
     <h2>{node.name}</h2><TextField label={t.name} value={node.name} onChange={(name) => update({ name })} />
     <MountField value={node.mount} options={mountOptions(bundle.definition.nodes, bundle.definitions, bundle.definition.input, node.id)} kind={definition.input.kind} onChange={(mount) => update({ mount })} />
     <div className={st.section}><h2>{t.dimensions}</h2><div className={st.fields}>
+      <NumberField label={t.editing.scale} min={.01} max={100} value={node.uniformScale ?? 1} onChange={(value) => {
+        const result = editPartNodeCommand({ nodeId: node.id, intent: { type: 'scale', value } }); setError(result.ok ? '' : result.message)
+      }} />
       {Object.entries(definition.parameters).map(([key, p]) => {
         let value = p.default
         try { value = evaluateExpression(node.parameters[key] ?? p.default, values) } catch { /* 公開項目を直せるよう既定値を表示する。 */ }
         const expression = node.parameters[key]
         return <div key={key}><NumberField label={'custom' in node.definition ? p.label : parameterLabel(p.label)} value={value} min={p.min} max={p.max} step={p.type === 'integer' ? 1 : .05}
-          onChange={(number) => update({ parameters: { ...node.parameters, [key]: number } })} />
+          onChange={(number) => {
+            const result = editPartNodeCommand({ nodeId: node.id, intent: { type: 'parameters', values: { [key]: number } } })
+            setError(result.ok ? '' : result.message)
+          }} />
           {expression && typeof expression !== 'number' && 'parameter' in expression && <p className={st.hint}>{t.exposedParameters}: {expression.parameter}</p>}
         </div>
       })}
     </div></div>
     <details className={st.section}><summary>{t.exposedParameters}</summary><div className={st.fields}>
-      <label className={st.field}><span>{t.dimensions}</span><select aria-label={t.exposedParameters} value={parameter} onChange={(event) => { setParameter(event.target.value); setPublicName(event.target.value) }}>
+      <label className={st.field}><span>{t.dimensions}</span><select aria-label={t.exposedParameters} value={parameterKey} onChange={(event) => { setParameter(event.target.value); setPublicName(event.target.value) }}>
         {Object.entries(definition.parameters).map(([key, p]) => <option key={key} value={key}>{'custom' in node.definition ? p.label : parameterLabel(p.label)}</option>)}
       </select></label>
       <TextField label={t.parameterId} value={publicName} onChange={setPublicName} />
       <button type="button" onClick={() => {
-        const p = definition.parameters[parameter]
+        const p = definition.parameters[parameterKey]
         if (!p) return
-        const result = exposePartParameterCommand({ name: publicName, nodeId: node.id, parameter, specification: { ...p, label: 'custom' in node.definition ? p.label : parameterLabel(p.label), default: evaluateExpression(node.parameters[parameter] ?? p.default, values) } })
+        const result = exposePartParameterCommand({ name: publicName, nodeId: node.id, parameter: parameterKey, specification: { ...p, label: 'custom' in node.definition ? p.label : parameterLabel(p.label), default: evaluateExpression(node.parameters[parameterKey] ?? p.default, values) } })
         setError(result.ok ? '' : result.message)
       }}>{t.expose}</button>
+      {angleOperation && <button type="button" onClick={() => {
+        const result = exposePartEditHandleCommand({ name: publicName, label: 'custom' in node.definition ? definition.parameters[parameterKey].label : parameterLabel(parameterKey), nodeId: node.id, operation: angleOperation })
+        setError(result.ok ? '' : result.message)
+      }}>{t.editing.expose}</button>}
     </div></details>
     {active && <div className={st.section}><h2>{t.materials}</h2><label className={st.field}><span>{t.material}</span><select aria-label={t.material} value={active} onChange={(event) => setSurface(event.target.value)}>
       {ownSurfaces.map((name) => <option value={name} key={name}>{name === '*' ? t.title : portLabel(name)}</option>)}
@@ -188,6 +201,8 @@ function PublicParameters() {
     setError(result.ok ? '' : result.message)
   }
   return <div className={st.fields}>
+    {(bundle.definition.editHandles ?? []).map((handle) => <div className={st.buttons} key={handle.id}><span>{t.editing.handles}: {handle.label}</span>
+      <button type="button" onClick={() => updatePartDefinitionCommand({ editHandles: bundle.definition.editHandles?.filter((h) => h.id !== handle.id) })}>{t.remove}</button></div>)}
     {Object.entries(bundle.definition.parameters).map(([id, parameter]) => <fieldset key={id} className={`${st.fields} ${st.parameterSpec}`}><legend>{id}</legend>
       <TextField label={t.parameterLabel} value={parameter.label} onChange={(label) => update(id, { label })} />
       <NumberField label={t.parameterDefault} value={parameter.default} step={parameter.type === 'integer' ? 1 : .05} onChange={(value) => update(id, { default: value })} />

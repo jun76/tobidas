@@ -16,6 +16,7 @@ import { MaterialFields, MountField, NumberField, TextField, mountOptions, param
 import st from './parts.module.css'
 import { PlacementPreview } from './PlacementPreview'
 import { usePartPlacementStore } from './placementState'
+import { PartEditFields } from './PartEditFields'
 
 export function PartPalette() {
   const t = useT().parts, store = useBuilderStore(), library = usePartEditorStore((state) => state.library)
@@ -82,7 +83,7 @@ export function PartPlacementDialog({ reference, element, spreadId, onClose }: {
       : placePartCommand({ spreadId: spread.id, name, definition: reference, mount, parameters, materials: {} })
     if (result.ok) onClose(); else setError(result.message)
   }}><div className={st.fields}>
-    <PlacementPreview project={previewProject} spreadId={spread.id} elementId={element?.id} instance={{ definition: reference, mount, parameters, materials: element?.part.materials ?? {} }} />
+    <PlacementPreview project={previewProject} spreadId={spread.id} elementId={element?.id} instance={{ definition: reference, mount, parameters, materials: element?.part.materials ?? {}, uniformScale: element?.part.uniformScale }} />
     <TextField label={t.name} value={name} onChange={setName} />
     <p>{referenceName(reference, definitions)}</p>
     <MountField value={mount} options={definition.input.kind === 'fold-pair' ? [...compatible, ...options.filter((option) => option.kind === 'surface')] : compatible} kind={definition.input.kind} onChange={setMount} />
@@ -106,6 +107,7 @@ export function PlacedPartInspector({ element, spreadId }: { element: PartElemen
     const result = updatePlacedPartCommand({ spreadId, elementId: element.id, changes }); setError(result.ok ? '' : result.message)
   }
   return <section className={st.inspector} data-tobidas-kind="placed-part-inspector"><h2>{element.name}</h2><div className={st.fields}>
+    <PartEditFields spreadId={spreadId} elementId={element.id} />
     <button type="button" onClick={() => setEditing(true)}>{t.dimensions} / {t.mount}</button>
     {materialSlots.length > 0 && <>
       <label className={st.field}><span>{t.material}</span><select aria-label={t.material} value={active} onChange={(event) => setSurface(event.target.value)}>

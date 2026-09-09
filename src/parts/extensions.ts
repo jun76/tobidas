@@ -10,11 +10,22 @@ export function extendPaperSurface(parent: PaperFace, bounds: PartExtension | un
   const surface = makeFace(id, pointOnFace(parent, minU, minV), parent.u, parent.v, maxU - minU, maxV - minV, true)
   surface.surfaceStack = stackOnSurface(parent, id)
   const regions = [parent]
-  const strip = (name: string, u: number, v: number, width: number, height: number, seam: [[number, number], [number, number]]) => {
+  const strip = (name: string, u: number, v: number, width: number, height: number, seam: [[number, number], [number, number]], outline?: [number, number][]) => {
     if (width < 1e-7 || height < 1e-7) return
     const face = makeFace(`${id}/${name}`, pointOnFace(parent, u, v), parent.u, parent.v, width, height, true)
     face.surfaceStack = surface.surfaceStack
-    const edge = seam.map(([x, y]) => pointOnFace(parent, x, y))
+    face.outline = outline
+    let edge = seam.map(([x, y]) => pointOnFace(parent, x, y))
+    if (outline) {
+      const direction = edge[1].clone().sub(edge[0]).normalize(), length = edge[0].distanceTo(edge[1])
+      const points = outline.map(([x, y]) => pointOnFace(face, x * width, y * height))
+        .filter((point) => point.clone().sub(edge[0]).cross(direction).length() < 1e-6)
+        .map((point) => point.clone().sub(edge[0]).dot(direction))
+      if (points.length < 2) throw new Error('Support outline has no attachment edge')
+      const start = Math.max(0, Math.min(...points)), end = Math.min(length, Math.max(...points))
+      if (end - start < 1e-7) throw new Error('Support outline does not reach the parent edge')
+      edge = [edge[0].clone().addScaledVector(direction, start), edge[0].clone().addScaledVector(direction, end)]
+    }
     if (!faceContainsLine(parent, edge[0], edge[1]) || !faceContainsLine(face, edge[0], edge[1])) throw new Error('A cut-out face has no intact support attachment edge')
     regions.push(face)
     result?.faces.push(face)
@@ -31,7 +42,7 @@ export function extendPaperSurface(parent: PaperFace, bounds: PartExtension | un
       else if (endV <= 1e-7 && b > a) seam = [[a, 0], [b, 0]]
       else if (v >= parent.height - 1e-7 && b > a) seam = [[a, parent.height], [b, parent.height]]
       else throw new Error('Support panel must share an edge with its actual parent')
-      strip(`bridge-${index}`, u, v, endU - u, endV - v, seam)
+      strip(panel.id ?? `bridge-${index}`, u, v, endU - u, endV - v, seam, panel.outline)
     })
   } else {
     strip('left', minU, minV, -minU, maxV - minV, [[0, 0], [0, parent.height]])

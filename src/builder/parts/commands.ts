@@ -5,21 +5,38 @@ import type { PartElement } from '../../schema/stageElement'
 import { builtinPart } from '../../parts/catalog'
 import { dependentPartIds } from '../../parts/evaluate'
 import { validateBookParts, spreadPartNodes } from '../../parts/book'
-import { bindingDependencies, newPartDefinition, partBindingSchema, partInputSchema, partInstanceSchema, partMaterialSchema,
-  partNodeSchema, partParameterSchema, partReferenceSchema, partSurfaceRefSchema, type PartBinding, type PartBundle, type PartDefinition, type PartReference } from '../../parts/schema'
+import { bindingDependencies, evaluateExpression, newPartDefinition, partBindingSchema, partInputSchema, partInstanceSchema, partMaterialSchema,
+  partNodeSchema, partParameterSchema, partReferenceSchema, partSurfaceRefSchema, partEditHandleSchema, type PartBinding, type PartBundle, type PartDefinition, type PartReference } from '../../parts/schema'
 import { planPartPlacement, type SurfacePick } from '../../parts/placement'
-import { validatePartDefinition } from '../../parts/validate'
+import { fixtureInput, validatePartDefinition } from '../../parts/validate'
 import { useBuilderStore } from '../store'
 import { t } from '../i18n'
 import type { BuilderCommandResult } from '../operations/types'
 import { publishOperationResult } from '../operations/result'
 import { registerLibraryPart, forkPartBundle, type LibraryPart } from './repository'
 import { usePartEditorStore, useWorkspaceStore } from './store'
+import { evaluateEditScene, partEditIntentSchema, planPartEdit, type PartEditScene } from '../../parts/edit'
+import { faceCorners } from '../../parts/geometry'
+import { applyBookEditPlan, bookEditScene } from '../../parts/bookEdit'
 
 const fail = (action: string, error: unknown): BuilderCommandResult => publishOperationResult({ ok: false, action,
   message: error instanceof Error ? error.message : String(error), fieldErrors: {} })
 const done = (action: string, id: string, validation = { errors: 0, warnings: 0 }): BuilderCommandResult => publishOperationResult({ ok: true, action,
   message: t().parts.operationDone, target: { kind: 'part', id }, corrections: [], validation })
+export const editPlacedPartSchema = z.object({ spreadId: z.string(), elementId: z.string(), intent: partEditIntentSchema }).strict()
+export function editPlacedPartCommand(value: z.input<typeof editPlacedPartSchema>): BuilderCommandResult {
+  try {
+    const parsed = editPlacedPartSchema.parse(value), state = useBuilderStore.getState()
+    if (state.mode !== 'edit') throw new Error(t().operations.readOnly)
+    const plan = planPartEdit(bookEditScene(state.project, parsed.spreadId), parsed.elementId, parsed.intent)
+    if (!plan.ok) throw new Error(plan.detail)
+    const next = applyBookEditPlan(state.project, parsed.spreadId, plan)
+    const errors = validateBookParts(next)
+    if (errors.length) throw new Error(errors[0])
+    state.commit((project) => { project.book.spreads.find((item) => item.id === parsed.spreadId)!.elements = next.book.spreads.find((item) => item.id === parsed.spreadId)!.elements })
+    return done('edit-placed-part', parsed.elementId)
+  } catch (error) { return fail('edit-placed-part', error) }
+}
 function edit(action: string, mutate: (bundle: PartBundle) => void, id = ''): BuilderCommandResult {
   try {
     usePartEditorStore.getState().change(mutate)
@@ -38,7 +55,7 @@ export function createPartDraftCommand(value: z.input<typeof createPartDraftSche
   } catch (error) { return fail('create-part-draft', error) }
 }
 export const updatePartDefinitionSchema = z.object({ name: z.string().min(1).optional(), description: z.string().optional(), author: z.string().optional(),
-  license: z.string().optional(), input: partInputSchema.optional(), parameters: z.record(partParameterSchema).optional() }).strict()
+  license: z.string().optional(), input: partInputSchema.optional(), parameters: z.record(partParameterSchema).optional(), editHandles: z.array(partEditHandleSchema).optional() }).strict()
 export function updatePartDefinitionCommand(value: z.input<typeof updatePartDefinitionSchema>) {
   return edit('update-part-definition', (bundle) => { Object.assign(bundle.definition, updatePartDefinitionSchema.parse(value)) })
 }
@@ -68,10 +85,73 @@ export function updatePartNodeCommand(value: z.input<typeof updatePartNodeSchema
     Object.assign(node, parsed.changes)
   }, value.nodeId)
 }
+export function draftEditScene(bundle: PartBundle): PartEditScene {
+  const input = bundle.definition.input
+  return { nodes: bundle.definition.nodes, definitions: bundle.definitions, maxAngle: input.kind === 'fold-pair' ? input.maxOpeningAngleDeg : 0,
+    parameters: Object.fromEntries(Object.entries(bundle.definition.parameters).map(([id, p]) => [id, p.default])), slots: bundle.definition.materialSlots,
+    at: (angle) => ({ input: fixtureInput(input, angle, 8) }) }
+}
+export const editPartNodeSchema = z.object({ nodeId: z.string(), intent: partEditIntentSchema }).strict()
+export function editPartNodeCommand(value: z.input<typeof editPartNodeSchema>) {
+  try {
+    const parsed = editPartNodeSchema.parse(value), bundle = usePartEditorStore.getState().bundle
+    const plan = planPartEdit(draftEditScene(bundle), parsed.nodeId, parsed.intent)
+    if (!plan.ok) throw new Error(plan.detail)
+    const candidate = structuredClone(bundle), changedDefaults = new Map<string, number>()
+    candidate.definition.nodes = structuredClone(plan.nodes)
+    // 公開済みの直接参照は切断せず、作者が編集している既定値へ書き戻す。
+    for (const node of candidate.definition.nodes) {
+      const before = bundle.definition.nodes.find((item) => item.id === node.id)!
+      for (const [key, expression] of Object.entries(before.parameters)) {
+        const value = node.parameters[key]
+        if (typeof expression === 'number' || typeof value !== 'number') continue
+        const defaults = Object.fromEntries(Object.entries(bundle.definition.parameters).map(([id, p]) => [id, p.default]))
+        if (Math.abs(evaluateExpression(expression, defaults) - value) < 1e-8) { node.parameters[key] = expression; continue }
+        if (!('parameter' in expression)) throw new Error('This dimension is defined by a formula; edit its public parameters')
+        const previous = changedDefaults.get(expression.parameter)
+        if (previous !== undefined && Math.abs(previous - value) > 1e-7) throw new Error('The shared public parameter requires conflicting dimensions')
+        changedDefaults.set(expression.parameter, value)
+        const specification = candidate.definition.parameters[expression.parameter]
+        candidate.definition.parameters[expression.parameter] = partParameterSchema.parse({ ...specification, default: value })
+        node.parameters[key] = expression
+      }
+    }
+    if (changedDefaults.size) {
+      const validation = validatePartDefinition(candidate.definition, candidate.definitions)
+      if (!validation.ok) throw new Error(validation.errors[0])
+      // 同じ公開値を別の部品も使う場合、検査していない形状変更を確定しない。
+      for (const angle of plan.checkedAngles) {
+        const expected = evaluateEditScene(draftEditScene(bundle), plan.nodes, angle).faces.flatMap(faceCorners)
+        const actual = evaluateEditScene(draftEditScene(candidate), candidate.definition.nodes, angle).faces.flatMap(faceCorners)
+        if (expected.length !== actual.length || expected.some((point, i) => point.distanceTo(actual[i]) > 1e-6)) throw new Error('This public parameter also changes another part; edit the shared default explicitly')
+      }
+    }
+    return edit('edit-part-node', (target) => { target.definition = candidate.definition }, parsed.nodeId)
+  } catch (error) { return fail('edit-part-node', error) }
+}
+export const exposePartEditHandleSchema = z.object({ name: z.string().min(1), label: z.string().min(1), nodeId: z.string(), operation: z.string() }).strict()
+export function exposePartEditHandleCommand(value: z.input<typeof exposePartEditHandleSchema>) {
+  return edit('expose-part-edit-handle', (bundle) => {
+    const parsed = exposePartEditHandleSchema.parse(value), node = bundle.definition.nodes.find((item) => item.id === parsed.nodeId)
+    if (!node) throw new Error('Part node was not found')
+    const definition = referenceDefinition(node.definition, bundle.definitions)
+    const parameter = 'builtin' in node.definition ? parsed.operation
+      : bundle.definitions[node.definition.custom]?.editHandles?.find((h) => h.id === parsed.operation)?.parameter
+    const spec = parameter && definition.parameters[parameter]
+    if (!spec || spec.type !== 'angle' || 'builtin' in node.definition && !['splayAngle', 'tiltAngle', 'yawAngle'].includes(parsed.operation)) throw new Error('Unsupported design angle')
+    const previous = node.parameters[parameter!]
+    const defaults = Object.fromEntries(Object.entries(bundle.definition.parameters).map(([id, p]) => [id, p.default]))
+    bundle.definition.parameters[parsed.name] = { ...spec, label: parsed.label, default: evaluateExpression(previous ?? spec.default, defaults) }
+    node.parameters[parameter!] = { parameter: parsed.name }
+    bundle.definition.editHandles = [...bundle.definition.editHandles?.filter((h) => h.id !== parsed.name) ?? [],
+      { id: parsed.name, label: parsed.label, parameter: parsed.name, nodeId: node.id, operation: parsed.operation, kind: 'angle' }]
+  })
+}
 export function deletePartNodeCommand(nodeId: string) {
   return edit('delete-part-node', (bundle) => {
     const ids = dependentPartIds(bundle.definition.nodes, nodeId)
     bundle.definition.nodes = bundle.definition.nodes.filter((node) => !ids.has(node.id))
+    bundle.definition.editHandles = bundle.definition.editHandles?.filter((handle) => !ids.has(handle.nodeId))
     for (const [name, binding] of Object.entries(bundle.definition.outputs)) if (bindingDependencies(binding).some((id) => ids.has(id))) delete bundle.definition.outputs[name]
   }, nodeId)
 }
@@ -181,12 +261,28 @@ export const updatePlacedPartSchema = z.object({ spreadId: z.string(), elementId
   name: z.string().min(1).optional(), changes: partInstanceSchema.partial().strict() }).strict()
 export function updatePlacedPartCommand(value: z.input<typeof updatePlacedPartSchema>): BuilderCommandResult {
   try {
-    const parsed = updatePlacedPartSchema.parse(value), state = useBuilderStore.getState(), next = structuredClone(state.project)
+    const parsed = updatePlacedPartSchema.parse(value), state = useBuilderStore.getState()
+    let next = structuredClone(state.project)
     if (state.mode !== 'edit') throw new Error(t().operations.readOnly)
-    const element = next.book.spreads.find((item) => item.id === parsed.spreadId)?.elements.find((item) => item.id === parsed.elementId)
+    let element = next.book.spreads.find((item) => item.id === parsed.spreadId)?.elements.find((item) => item.id === parsed.elementId)
     if (element?.type !== 'part') throw new Error('Placed part was not found')
     if (parsed.changes.definition) embedDefinition(next, parsed.changes.definition)
-    element.part = partInstanceSchema.parse({ ...element.part, ...parsed.changes })
+    const sameMount = !parsed.changes.mount || JSON.stringify(parsed.changes.mount) === JSON.stringify(element.part.mount)
+    const sameDefinition = !parsed.changes.definition || JSON.stringify(parsed.changes.definition) === JSON.stringify(element.part.definition)
+    if (sameMount && sameDefinition && (parsed.changes.parameters || parsed.changes.uniformScale !== undefined)) {
+      const operations = [
+        ...(parsed.changes.parameters ? [{ type: 'parameters' as const, values: parsed.changes.parameters }] : []),
+        ...(parsed.changes.uniformScale !== undefined ? [{ type: 'scale' as const, value: parsed.changes.uniformScale }] : []),
+      ]
+      for (const intent of operations) {
+        const plan = planPartEdit(bookEditScene(next, parsed.spreadId), parsed.elementId, intent)
+        if (!plan.ok) throw new Error(plan.detail)
+        next = applyBookEditPlan(next, parsed.spreadId, plan)
+      }
+      element = next.book.spreads.find((item) => item.id === parsed.spreadId)!.elements.find((item) => item.id === parsed.elementId)!
+      if (element.type !== 'part') throw new Error('Placed part was not found')
+      if (parsed.changes.materials) element.part.materials = parsed.changes.materials
+    } else element.part = partInstanceSchema.parse({ ...element.part, ...parsed.changes })
     element.parent = ownership(element.part.mount)
     if (parsed.name) element.name = parsed.name
     const errors = validateBookParts(next)
@@ -194,7 +290,7 @@ export function updatePlacedPartCommand(value: z.input<typeof updatePlacedPartSc
     state.commit((project) => {
       project.partDefinitions = next.partDefinitions; project.assets = next.assets
       const spread = project.book.spreads.find((item) => item.id === parsed.spreadId)!
-      spread.elements[spread.elements.findIndex((item) => item.id === parsed.elementId)] = element
+      spread.elements = next.book.spreads.find((item) => item.id === parsed.spreadId)!.elements
     })
     return done('update-placed-part', element.id)
   } catch (error) { return fail('update-placed-part', error) }

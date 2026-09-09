@@ -8,7 +8,7 @@ import { faceCorners } from '../../parts/geometry'
 import { spreadCameraBounds } from '../../runtime/camera/bounds'
 import { useBuilderStore } from '../store'
 import { usePartEditorStore } from './store'
-import { placePartCommand, placePartOnSurfacesCommand, updatePlacedPartCommand } from './commands'
+import { createPartDraftCommand, addPartNodeCommand, exposePartEditHandleCommand, editPartNodeCommand, editPlacedPartCommand, placePartCommand, placePartOnSurfacesCommand, updatePlacedPartCommand } from './commands'
 import { addTimelineKeyCommand, moveElementCommand } from '../operations/commands'
 
 const gutter: PartBinding = { type: 'output', nodeId: '$book', portId: 'gutter' }
@@ -22,6 +22,48 @@ function placed(builtin: string, mount: PartBinding, parameters = {}) {
 }
 beforeEach(() => { useBuilderStore.getState().setProject(createBookProject('020検証'), 'import'); useBuilderStore.getState().setMode('edit'); usePartEditorStore.setState({ library: [] }) })
 describe('基本・カスタム部品の共通編集', () => {
+  it('補完した支持紙に貼った子を、役割の同じ面へ追従させる', () => {
+    const background = placed('backdrop', gutter, { width: 1, height: 2 })
+    const result = placePartOnSurfacesCommand({ spreadId: spread().id, name: '張り出す看板', definition: { builtin: 'upright', version: 1 },
+      first: { surface: { nodeId: '$book', portId: 'right-page' }, point: [4.5, 2] }, second: { surface: { nodeId: background, portId: 'panel' }, point: [.5, 1] } })
+    expect(result.ok, result.message).toBe(true)
+    if (!result.ok) return
+    const parent = result.target!.id
+    const face = evaluateBookParts(useBuilderStore.getState().project, spread(), Math.PI, 0).nodes[parent].faces.find((face) => face.id.includes('/mount/b/'))!
+    expect(face).toBeDefined()
+    const portId = `face:${face.id.slice(parent.length + 1)}`
+    const child = placed('flat', { type: 'output', nodeId: parent, portId }, { width: .05, height: .05, v: face.height / 2 })
+    const moved = editPlacedPartCommand({ spreadId: spread().id, elementId: parent, intent: { type: 'translate', delta: [.1, 0] } })
+    expect(moved.ok, moved.message).toBe(true)
+    const mount = elements().find((e) => e.id === child)!.part.mount
+    expect(mount.type === 'output' && mount.portId).toBe(portId)
+    expect(validateBookParts(useBuilderStore.getState().project)).toEqual([])
+  })
+  it('内部の公開角度を編集しても結び付けを保ち、一回のUndoで戻す', () => {
+    createPartDraftCommand({ name: '角度付き小物', input: { kind: 'fold-pair', maxOpeningAngleDeg: 90 } })
+    const result = addPartNodeCommand({ ...node('upright'), parameters: { width: 1, height: 1, distance: 1, supportHeight: .6 } })
+    expect(result.ok).toBe(true)
+    expect(exposePartEditHandleCommand({ name: 'lean', label: '傾き', nodeId: 'body', operation: 'tiltAngle' }).ok).toBe(true)
+    const before = usePartEditorStore.getState().bundle
+    const changed = editPartNodeCommand({ nodeId: 'body', intent: { type: 'rotate', handle: 'tiltAngle', value: 75 } })
+    expect(changed.ok, changed.message).toBe(true)
+    const bundle = usePartEditorStore.getState().bundle
+    expect(bundle.definition.nodes[0].parameters.tiltAngle).toEqual({ parameter: 'lean' })
+    expect(bundle.definition.parameters.lean.default).toBeCloseTo(75)
+    usePartEditorStore.getState().undoEdit()
+    expect(usePartEditorStore.getState().bundle).toEqual(before)
+  })
+  it('寸法フォームによる親の更新でも下流の再接続を一緒に保存する', () => {
+    const parent = placed('flat', { type: 'output', nodeId: '$book', portId: 'right-page' }, { width: 2, height: 2, v: 3 })
+    const child = placed('flat', { type: 'output', nodeId: parent, portId: 'face' }, { width: .4, height: .3, u: .4, v: 1.3 })
+    const before = useBuilderStore.getState().project
+    const changed = updatePlacedPartCommand({ spreadId: spread().id, elementId: parent, changes: { parameters: { width: 3 } } })
+    expect(changed.ok, changed.message).toBe(true)
+    const attached = elements().find((element) => element.id === child)!
+    expect(attached.part.mount.type === 'output' && attached.part.mount.frame).toBeDefined()
+    expect(validateBookParts(useBuilderStore.getState().project)).toEqual([])
+    useBuilderStore.getState().undo(); expect(useBuilderStore.getState().project).toEqual(before)
+  })
   it('クリック配置の不適合では変更せず、自動支持紙を含む一操作をundoとredoできる', () => {
     const background = placed('backdrop', gutter, { width: 1, height: 2 })
     const before = useBuilderStore.getState().project, history = useBuilderStore.getState().undoStack.length

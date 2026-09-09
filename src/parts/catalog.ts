@@ -1,6 +1,6 @@
 import type { PartInput, PartParameter } from './schema'
 
-export const BUILTIN_IDS = ['flat', 'text', 'backdrop', 'upright', 'v-fold', 'platform', 'folding-box', 'accordion', 'beak'] as const
+export const BUILTIN_IDS = ['flat', 'text', 'backdrop', 'upright', 'angled-upright', 'v-fold', 'platform', 'folding-box', 'accordion', 'beak'] as const
 export type BuiltinPartId = typeof BUILTIN_IDS[number]
 export interface BuiltinPart {
   id: BuiltinPartId; version: number; input: PartInput; parameters: Record<string, PartParameter>
@@ -29,9 +29,13 @@ export const BUILTIN_PARTS: BuiltinPart[] = [
   }, surfaces: ['panel', 'panel-b', 'ground', 'ground-b'], pairs: ['ground-backdrop', 'ground-backdrop-b'] },
   { id: 'upright', version: 1, input: { kind: 'fold-pair', maxOpeningAngleDeg: 90, referenceOpenAngleDeg: 90 }, parameters: {
     ...dimensions, supportHeight: length('supportHeight', 1), supportWidth: length('supportWidth', .3),
+    tiltAngle: { label: 'tiltAngle', type: 'angle', default: 90, min: 30, max: 150 },
   }, surfaces: ['panel', 'support', 'ground'], pairs: ['ground-panel'] },
   { id: 'v-fold', version: 1, input: pair, parameters: dimensions,
     surfaces: ['wing-a', 'wing-b'], pairs: ['ridge'] },
+  { id: 'angled-upright', version: 1, input: { kind: 'fold-pair', maxOpeningAngleDeg: 90, referenceOpenAngleDeg: 90 }, parameters: {
+    ...widths, height: length('height', 1.5), yawAngle: { label: 'yawAngle', type: 'angle', default: 30, min: 5, max: 70 },
+  }, surfaces: ['panel', 'support', 'ground'], pairs: ['ground-panel'] },
   { id: 'platform', version: 1, input: pair, parameters: dimensions,
     surfaces: ['panel', 'top', 'ground'], pairs: ['ground-panel', 'top-panel'] },
   // 両端が開いた四面の箱。端面を伸縮する旧モデルは使わない。

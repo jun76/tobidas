@@ -1,6 +1,7 @@
 import { Vector3 } from 'three'
 import type { PartInput, PartMaterial } from './schema'
 
+/** 寸法・輪郭は配置時の設計値。開閉中に変わるのはoriginと直交するu/vの姿勢だけ。 */
 export interface PaperFace {
   id: string; origin: Vector3; u: Vector3; v: Vector3; width: number; height: number
   support: boolean; material: PartMaterial; outline?: [number, number][]
@@ -16,11 +17,15 @@ export interface FoldPair {
   rayA: Vector3; rayB: Vector3; extentA: number; extentB: number; width: number; foldSign: 1 | -1
 }
 export type PartPort = { kind: 'surface'; face: PaperFace } | FoldPair
+/** 世界座標で返す接着線は、親と子それぞれの材料座標で開閉中ずっと同じ位置を指す。 */
 export interface PaperConnection {
   actual: Vector3[]; expected: Vector3[]; parentFace: string; childFace: string
 }
 export interface PaperEvaluation {
   faces: PaperFace[]; ports: Record<string, PartPort>; connections: PaperConnection[]
+  /** 編集ハンドルが参照する実入力。作品や交換形式には保存しない。 */
+  inputPort?: PartPort
+  nodes?: Record<string, PaperEvaluation>
   /** 親面と補完ブリッジが覆う接続領域。描画面とは分けて接着検査に使う。 */
   contactSurfaces?: PaperFace[]
 }

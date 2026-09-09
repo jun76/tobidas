@@ -13,13 +13,14 @@ export function TextField({ label, value, onChange, multiline = false }: { label
   return <label className={st.field}><span>{label}</span>{multiline ? <textarea {...props} rows={3} /> : <input {...props} />}</label>
 }
 export function NumberField({ label, value, onChange, min, max, step = .05 }: { label: string; value: number; onChange: (value: number) => void; min?: number; max?: number; step?: number }) {
-  const [draft, setDraft] = useState(String(value))
-  useEffect(() => setDraft(String(value)), [value])
+  const display = String(Number(value.toFixed(6)))
+  const [draft, setDraft] = useState(display)
+  useEffect(() => setDraft(display), [display])
   return <label className={st.field}><span>{label}</span><input type="number" aria-label={label} value={draft} min={min} max={max} step={step}
     onChange={(event) => setDraft(event.target.value)} onBlur={() => {
       const number = Number(draft)
-      if (draft.trim() && Number.isFinite(number) && number !== value) onChange(number)
-      else setDraft(String(value))
+      if (draft.trim() && draft !== display && Number.isFinite(number) && number !== value) onChange(number)
+      setDraft(display)
     }} /></label>
 }
 export function MaterialFields({ value, assets, onChange }: { value: PartMaterial; assets: Asset[]; onChange: (material: PartMaterial) => void }) {

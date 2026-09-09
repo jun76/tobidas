@@ -4,7 +4,7 @@ import type { PartElement } from '../schema/stageElement'
 import { evaluatePartGraph } from './evaluate'
 import { bindingDependencies, type PartNode, type PartMaterial } from './schema'
 import { faceCorners, pagePorts } from './geometry'
-import { inspectClosedLayout, inspectPaper, validationAngles } from './validate'
+import { createPaperMotionInspector, inspectClosedLayout, validationAngles } from './validate'
 
 export const spreadPartNodes = (spread: Spread): PartNode[] => spread.elements.filter((element): element is PartElement => element.type === 'part')
   .map((element) => ({ id: element.id, name: element.name, ...element.part }))
@@ -32,11 +32,16 @@ export function validateBookParts(project: BookProject): string[] {
         if (spread.timeline.tracks.some((track) => track.target.type === 'element' && track.target.elementId === element.id
           && !['opacity', 'visible'].includes(track.property))) throw new Error(`Part timeline must preserve its mount: ${element.id}`)
       }
-      for (const angle of validationAngles(180)) {
-        const result = evaluateBookParts(project, spread, angle * Math.PI / 180, 0)
-        errors.push(...inspectPaper(result).map((message) => `${spread.name}: ${message}`))
-        if (angle === 0) errors.push(...inspectClosedLayout(result, project.book.format.pageWidth,
-          project.book.format.pageWidth / project.book.format.pageAspect).map((message) => `${spread.name}: ${message}`))
+      const inspectMotion = createPaperMotionInspector()
+      const { pageWidth, pageAspect } = project.book.format
+      for (const side of ['left', 'right']) for (const angle of validationAngles(180)) {
+        const left = side === 'left' ? angle * Math.PI / 180 : Math.PI
+        const right = side === 'right' ? (180 - angle) * Math.PI / 180 : 0
+        const result = evaluateBookParts(project, spread, left, right)
+        const input = pagePorts(pageWidth, pageWidth / pageAspect, left, right).gutter
+        errors.push(...inspectMotion(result, [input]).map((message) => `${spread.name}: ${message}`))
+        if (angle === 0 && input.kind === 'fold-pair') errors.push(...inspectClosedLayout(result, pageWidth,
+          pageWidth / pageAspect, input.rayA).map((message) => `${spread.name}: ${message}`))
       }
     } catch (error) { errors.push(`${spread.name}: ${error instanceof Error ? error.message : String(error)}`) }
   }

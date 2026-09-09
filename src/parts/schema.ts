@@ -30,10 +30,12 @@ export const partMaterialValueSchema = z.union([partMaterialSchema, z.object({ s
 export const partSurfaceRefSchema = z.object({ nodeId: id, portId: id }).strict()
 const point2 = z.tuple([finite, finite])
 // 取り付け時に補完する支持面の範囲。親の材料座標に固定し、途中姿勢は保存しない。
-const extensionPanel = z.object({ min: point2, max: point2 }).strict()
+const extensionPanel = z.object({ min: point2, max: point2, id: id.optional(), outline: z.array(point2).min(3).max(128).optional() }).strict()
 export const partExtensionSchema = extensionPanel.extend({ panels: z.array(extensionPanel).max(16).optional() }).strict()
 // 一面カスタム部品の入力原点。仮想の紙を描かず、接着は実面と補完支持紙で検査する。
-export const partSurfaceFrameSchema = z.object({ origin: point2, width: finite.positive().max(160), height: finite.positive().max(160) }).strict()
+export const partSurfaceFrameSchema = z.object({ origin: point2, width: finite.positive().max(160), height: finite.positive().max(160), rotationDeg: finite.optional() }).strict()
+export const partEditHandleSchema = z.object({ id, kind: z.literal('angle'), parameter: id,
+  nodeId: id, operation: id, label: id }).strict()
 // 材料座標の線分を両面で指定する。描画用UVとは独立した接続である。
 export const partBindingSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('input'), face: z.enum(['a', 'b']).optional() }).strict(),
@@ -50,6 +52,7 @@ export const partNodeSchema = z.object({
   id, name: id, definition: partReferenceSchema, mount: partBindingSchema,
   parameters: z.record(partExpressionSchema).default({}),
   materials: z.record(partMaterialValueSchema).default({}),
+  uniformScale: finite.positive().max(100).optional(),
   // 切り抜き輪郭は面の寸法で正規化した材料座標。支持面の輪郭は変更しない。
   outline: z.array(point2).min(3).max(128).optional(),
 })
@@ -62,10 +65,12 @@ export const partDefinitionSchema = z.object({
   materialSlots: z.record(partMaterialSchema).default({}), nodes: z.array(partNodeSchema).max(200),
   outputs: z.record(partBindingSchema).default({}), dependencies: z.array(contentHashSchema).default([]),
   requiredBuiltins: z.record(z.number().int().positive()).default({}), assets: z.array(partAssetSchema).default([]),
+  editHandles: z.array(partEditHandleSchema).max(32).optional(),
 })
 export const partInstanceSchema = z.object({
   definition: partReferenceSchema, mount: partBindingSchema,
   parameters: z.record(finite).default({}), materials: z.record(partMaterialSchema).default({}),
+  uniformScale: finite.positive().max(100).optional(),
 })
 export type PartInput = z.infer<typeof partInputSchema>
 export type PartExtension = z.infer<typeof partExtensionSchema>

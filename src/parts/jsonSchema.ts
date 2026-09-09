@@ -14,8 +14,12 @@ export const partJsonDefinitions = {
   material: object({ color: { type: 'string', pattern: '^#[a-fA-F0-9]{6}$' }, image: string, backImage: string,
     text: { type: 'string', maxLength: 4000 }, textColor: { type: 'string', pattern: '^#[a-fA-F0-9]{6}$' } }, []),
   surfaceRef: object({ nodeId: string, portId: string }),
-  extension: object({ min: tuple2, max: tuple2, panels: { type: 'array', maxItems: 16, items: object({ min: tuple2, max: tuple2 }) } }, ['min', 'max']),
-  surfaceFrame: object({ origin: tuple2, width: { type: 'number', exclusiveMinimum: 0, maximum: 160 }, height: { type: 'number', exclusiveMinimum: 0, maximum: 160 } }),
+  extension: object({ min: tuple2, max: tuple2, panels: { type: 'array', maxItems: 16, items: object({ min: tuple2, max: tuple2, id: string, outline: ref('outline') }, ['min', 'max']) } }, ['min', 'max']),
+  surfaceFrame: object({ origin: tuple2, width: { type: 'number', exclusiveMinimum: 0, maximum: 160 }, height: { type: 'number', exclusiveMinimum: 0, maximum: 160 }, rotationDeg: number }, ['origin', 'width', 'height']),
+  uniformScale: { type: 'number', exclusiveMinimum: 0, maximum: 100 },
+  editHandle: object({ id: string, kind: { const: 'angle' }, parameter: string, nodeId: string, operation: string, label: string }),
+  editIntent: { oneOf: [object({ type: { const: 'translate' }, delta: tuple2 }), object({ type: { const: 'rotate' }, handle: string, value: number }),
+    object({ type: { const: 'scale' }, value: ref('uniformScale') }), object({ type: { const: 'parameters' }, values: record(number) })] },
   binding: { oneOf: [object({ type: { const: 'input' }, face: { enum: ['a', 'b'] } }, ['type']),
     object({ type: { const: 'output' }, nodeId: string, portId: string, extension: ref('extension'), frame: ref('surfaceFrame') }, ['type', 'nodeId', 'portId']),
     object({ type: { const: 'pair' }, a: ref('surfaceRef'), b: ref('surfaceRef'),
@@ -24,7 +28,7 @@ export const partJsonDefinitions = {
       extensions: object({ a: ref('extension'), b: ref('extension') }, []) }, ['type', 'a', 'b', 'hingeA', 'hingeB'])] },
   outline: { type: 'array', items: tuple2, minItems: 3, maxItems: 128 },
   node: object({ id: string, name: string, definition: ref('reference'), mount: ref('binding'), parameters: record(ref('expression')),
-    materials: record({ oneOf: [ref('material'), object({ slot: string })] }), outline: ref('outline') }, ['id', 'name', 'definition', 'mount']),
+    materials: record({ oneOf: [ref('material'), object({ slot: string })] }), outline: ref('outline'), uniformScale: ref('uniformScale') }, ['id', 'name', 'definition', 'mount']),
   asset: object({ id: string, name: string, type: { enum: ['image', 'svg'] }, mime: string, bytes: { type: 'integer', minimum: 0 },
     width: number, height: number, hash: { type: 'string', pattern: '^[a-f0-9]{64}$' } }, ['id', 'name', 'type', 'mime', 'bytes', 'hash']),
 }
@@ -34,7 +38,8 @@ export const partDefinitionJsonSchema = {
     name: string, description: string, author: string, license: string, derivedFrom: object({ id: string, revision: number, hash: string }),
     input: ref('input'), parameters: record(ref('parameter')), materialSlots: record(ref('material')), nodes: { type: 'array', items: ref('node'), maxItems: 200 },
     outputs: record(ref('binding')), dependencies: { type: 'array', items: { type: 'string', pattern: '^[a-f0-9]{64}$' } },
-    requiredBuiltins: record({ type: 'integer', minimum: 1 }), assets: { type: 'array', items: ref('asset') } }, ['format', 'schemaVersion', 'id', 'revision', 'name', 'input', 'nodes']),
+    requiredBuiltins: record({ type: 'integer', minimum: 1 }), assets: { type: 'array', items: ref('asset') },
+    editHandles: { type: 'array', items: ref('editHandle'), maxItems: 32 } }, ['format', 'schemaVersion', 'id', 'revision', 'name', 'input', 'nodes']),
 }
 export const partToolSchema = (properties: Record<string, unknown>, required = Object.keys(properties)) => {
   const schema = object(properties, required), definitions: Record<string, unknown> = {}

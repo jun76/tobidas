@@ -5,6 +5,7 @@ import { bindingDependencies, evaluateExpression, parameterValues, type PartBind
 import { checkInput, EPSILON, faceContains, makeFace, pointOnFace, stackOnSurface, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
 import type { Vector3 } from 'three'
 import { extendPaperSurface } from './extensions'
+import { paperSimilarity } from './similarity'
 
 export interface EvaluatedPartGraph extends PaperEvaluation { nodes: Record<string, PaperEvaluation> }
 
@@ -35,8 +36,11 @@ export function resolveBinding(binding: PartBinding, input: PartPort | undefined
     if (!binding.extension && !binding.frame) return port
     const source = resolveSurface(port), extended = extendPaperSurface(source, binding.extension, `${prefix}/surface`, supports)
     if (!binding.frame) return { kind: 'surface', face: extended }
-    const { origin, width, height } = binding.frame
-    const face = makeFace(`${prefix}/frame`, pointOnFace(source, ...origin), source.u, source.v, width, height)
+    const { origin, width, height, rotationDeg = 0 } = binding.frame
+    const angle = rotationDeg * Math.PI / 180
+    const u = source.u.clone().multiplyScalar(Math.cos(angle)).addScaledVector(source.v, Math.sin(angle))
+    const v = source.v.clone().multiplyScalar(Math.cos(angle)).addScaledVector(source.u, -Math.sin(angle))
+    const face = makeFace(`${prefix}/frame`, pointOnFace(source, ...origin), u, v, width, height)
     face.surfaceStack = stackOnSurface(extended)
     face.contactRegions = extended.contactRegions ?? [source]
     if (supports) supports.contactSurfaces = [...supports.contactSurfaces ?? [], source, face]
@@ -68,7 +72,13 @@ export function evaluatedOutput(result: PaperEvaluation, portId: string, prefix:
 }
 
 export function evaluatePartReference(reference: PartReference, input: PartPort, definitions: PartDefinitions,
-  values: Record<string, number> = {}, materials: Record<string, PartMaterial> = {}, prefix = 'part', ancestors: string[] = []): PaperEvaluation {
+  values: Record<string, number> = {}, materials: Record<string, PartMaterial> = {}, prefix = 'part', ancestors: string[] = [], uniformScale = 1): PaperEvaluation {
+  if (!Number.isFinite(uniformScale) || uniformScale <= 0 || uniformScale > 100) throw new Error('Invalid uniform part scale')
+  if (uniformScale !== 1) {
+    const center = input.kind === 'surface' ? input.face.origin : input.origin
+    const scaledInput = paperSimilarity(center, 1 / uniformScale).port(input)
+    return paperSimilarity(center, uniformScale).evaluation(evaluatePartReference(reference, scaledInput, definitions, values, materials, prefix, ancestors))
+  }
   if ('builtin' in reference) {
     const builtin = builtinPart(reference.builtin, reference.version)
     const evaluated = evaluateBuiltin(builtin.id, input, values, prefix, builtin.version)
@@ -129,7 +139,8 @@ export function evaluatePartGraph(nodes: PartNode[], definitions: PartDefinition
       if ('slot' in value && !slots[value.slot]) throw new Error(`Unknown material slot: ${value.slot}`)
       return [key, 'slot' in value ? slots[value.slot] : value]
     }))
-    const result = evaluatePartReference(node.definition, mount, definitions, values, materials, prefix ? `${prefix}/${id}` : id, ancestors)
+    const result = evaluatePartReference(node.definition, mount, definitions, values, materials, prefix ? `${prefix}/${id}` : id, ancestors, node.uniformScale)
+    result.inputPort = mount
     result.faces.push(...supports.faces); result.connections.push(...supports.connections)
     result.contactSurfaces = [...result.contactSurfaces ?? [], ...supports.contactSurfaces ?? []]
     if (node.outline) {

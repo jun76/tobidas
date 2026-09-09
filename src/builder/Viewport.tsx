@@ -25,6 +25,8 @@ import { selectActiveSpread } from './state/selectors'
 import { PartPlacementController } from './viewport/PartPlacementController'
 import { PlacementBadge } from './parts/PlacementBadge'
 import { usePartPlacementStore } from './parts/placementState'
+import { usePartEditStore } from './parts/editState'
+import { PartEditBadge } from './parts/PartEditFields'
 
 export const viewportGlRef: { current: THREE.WebGLRenderer | null } = { current: null }
 
@@ -35,6 +37,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
   const t = useT()
   const store = useBuilderStore()
   const placingPart = usePartPlacementStore((state) => Boolean(state.tool))
+  const partPreview = usePartEditStore((state) => state.session?.preview)
   const dialogs = useDialogs()
   const [screenshotState, setScreenshotState] = useState<ScreenshotState>('idle')
   const editCameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -137,7 +140,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
       }}
     >
       <BookRuntime
-        project={store.project}
+        project={partPreview ?? store.project}
         progress={playback.progress}
         showGuides={store.mode === 'edit'}
         selectionSpreadId={store.mode === 'edit' && !coverSide ? store.activeSpreadId : undefined}
@@ -167,6 +170,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
       </>}
     </Canvas>
     {store.mode === 'edit' && <PlacementBadge />}
+    {store.mode === 'edit' && !placingPart && <PartEditBadge />}
 
     {store.mode === 'edit' && viewTitle && <div className={st.viewportTitleBar}>
       <div className={st.viewportTitle}>{viewTitle}</div>

@@ -2,6 +2,7 @@ import { Vector3 } from 'three'
 import type { BuiltinPartId } from './catalog'
 import { builtinPart } from './catalog'
 import { evaluateBackdrop } from './backdrop'
+import { evaluateAngledUpright } from './angledUpright'
 import { parameterValues, type PartMaterial } from './schema'
 import { checkInput, EPSILON, faceContains, faceCorners, makeFace, pointOnFace, stackOnSurface,
   type FoldPair, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
@@ -11,6 +12,7 @@ export function evaluateBuiltin(id: BuiltinPartId, port: PartPort, overrides: Re
   const spec = builtinPart(id, version), p = parameterValues(spec.parameters, overrides)
   checkInput(spec.input, port)
   if (id === 'backdrop' && spec.version === 2 && port.kind === 'fold-pair') return evaluateBackdrop(port, p, prefix)
+  if (id === 'angled-upright' && port.kind === 'fold-pair') return evaluateAngledUpright(port, p, prefix)
   const result: PaperEvaluation = { faces: [], ports: {}, connections: [] }
   if ((id === 'platform' || id === 'folding-box') && port.kind === 'fold-pair') {
     // 本の二面から90°の背面を起こす支持を、台と箱の内部に含める。
@@ -130,14 +132,30 @@ export function evaluateBuiltin(id: BuiltinPartId, port: PartPort, overrides: Re
     const supportHeight = id === 'upright' ? p.supportHeight : p.height
     const supportWidth = id === 'upright' ? p.supportWidth : p.width
     if (supportHeight > p.height + EPSILON || supportWidth > p.width + EPSILON) throw new Error('Support must fit the upright face')
-    const backAnchor = o.clone().addScaledVector(rayB, supportHeight)
-    const top = a.clone().addScaledVector(rayB, p.height)
-    const panel = addPanel('panel', a, rayB, p.height)
-    const support = addPanel(id === 'upright' ? 'support' : 'top', backAnchor, rayA, p.distance, id === 'upright', supportWidth)
+    let panelRay = rayB, bridgeRay = rayA, bridgeLength = p.distance, backHeight = supportHeight
+    if (id === 'upright' && Math.abs(p.tiltAngle - 90) > 1e-8) {
+      // 90°入力での設計角から、閉状態で一直線になる四節リンクの長さを決める。
+      const theta = p.tiltAngle * Math.PI / 180
+      backHeight = p.distance * supportHeight * (1 - Math.cos(theta)) / (p.distance + supportHeight * (1 - Math.sin(theta)))
+      bridgeLength = p.distance + supportHeight - backHeight
+      if (backHeight <= EPSILON || bridgeLength <= EPSILON) throw new Error('Tilt linkage has no positive support length')
+      const b = o.clone().addScaledVector(rayB, backHeight), chord = b.clone().sub(a), gap = chord.length()
+      if (gap < EPSILON) throw new Error('Tilt linkage is singular')
+      const along = (supportHeight ** 2 - bridgeLength ** 2 + gap ** 2) / (2 * gap)
+      const square = supportHeight ** 2 - along ** 2
+      if (square < -EPSILON) throw new Error('Tilt linkage cannot reach its attachment')
+      const direction = chord.divideScalar(gap), perpendicular = axis.clone().cross(direction).multiplyScalar(-port.foldSign)
+      const contact = a.clone().addScaledVector(direction, along).addScaledVector(perpendicular, Math.sqrt(Math.max(0, square)))
+      panelRay = contact.clone().sub(a).normalize(); bridgeRay = contact.clone().sub(b).normalize()
+    }
+    const backAnchor = o.clone().addScaledVector(rayB, backHeight)
+    const top = a.clone().addScaledVector(panelRay, p.height)
+    const panel = addPanel('panel', a, panelRay, p.height)
+    const support = addPanel(id === 'upright' ? 'support' : 'top', backAnchor, bridgeRay, bridgeLength, id === 'upright', supportWidth)
     glue(panel, port.a, left(a), right(a)); glue(support, port.b, left(backAnchor, supportWidth), right(backAnchor, supportWidth))
-    const contact = a.clone().addScaledVector(rayB, supportHeight)
+    const contact = a.clone().addScaledVector(panelRay, supportHeight)
     glue(support, panel, left(contact, supportWidth), right(contact, supportWidth), 'top')
-    pair('ground-panel', port.a, panel, a, rayA, rayB, port.extentA - p.distance, p.height, port.foldSign)
+    pair('ground-panel', port.a, panel, a, rayA, panelRay, port.extentA - p.distance, p.height, port.foldSign)
     if (id !== 'upright') pair('top-panel', support, panel, top, rayA.clone().negate(), rayB.clone().negate(), p.distance, p.height, port.foldSign)
     if (id === 'folding-box') {
       const bottom = addPanel('bottom', o, rayA, p.distance, true)

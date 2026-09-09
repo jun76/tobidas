@@ -45,6 +45,8 @@
 .placementBadge { position:absolute; left:14px; top:62px; z-index:6; max-width:min(410px,calc(100% - 95px)); padding:12px 14px; border:1px solid #6d9add; border-radius:8px; background:#182b48f5; color:#e8f2ff; font-size:12px; box-shadow:0 4px 15px #0003; }
 .placementBadge p { margin:6px 0; line-height:1.5; }
 .placementBadge[data-part-hover-valid=false] { border-color:#fa7e86; background:#44232bf5; }
+.placementBadge[data-part-edit-valid=false] { border-color:#fa7e86; background:#44232bf5; }
+.placementBadge select { display:block; width:100%; margin-top:7px; color:inherit; background:#233b5c; padding:4px; border:1px solid #8cabc080; border-radius:4px; }
 .placementBadge button { margin:4px 8px 0 0; border:1px solid #8cabc080; border-radius:4px; background:#ffffff10; color:inherit; padding:4px 8px; cursor:pointer; }
 .libraryItem { border:1px solid #434653; border-radius:5px; padding:10px; margin-bottom:8px; display:flex; flex-direction:column; gap:8px; }
 .libraryItem strong { font-size:13px; }

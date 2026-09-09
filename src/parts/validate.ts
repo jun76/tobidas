@@ -3,6 +3,7 @@ import { builtinPart } from './catalog'
 import { evaluatePartReference } from './evaluate'
 import { checkInput, faceContains, faceContainsLine, faceCorners, pagePorts, type PaperEvaluation, type PartPort } from './geometry'
 import { parameterValues, partDefinitionSchema, type PartDefinition, type PartDefinitions, type PartInput } from './schema'
+import { capturePaperDesign, comparePaperDesign, paperMaterialSurfaces, type PaperDesign } from './materialDesign'
 
 export interface PartValidation { ok: boolean; errors: string[]; checkedAngles: number[]; model: 'rigid-faces-ideal-hinges-v1' }
 export const validationAngles = (max: number) => [...new Set([0, .001, .1, 1, ...Array.from({ length: 25 }, (_, i) => max * i / 24), max])].filter((angle) => angle <= max)
@@ -11,19 +12,24 @@ export function fixtureInput(input: PartInput, angle: number, size = 80): PartPo
   const ports = pagePorts(size, size, angle * Math.PI / 180, 0)
   return input.kind === 'surface' ? ports['right-page'] : ports.gutter
 }
-export function inspectPaper(result: PaperEvaluation): string[] {
+export function inspectPaper(result: PaperEvaluation, inputs: readonly PartPort[] = []): string[] {
   const errors: string[] = []
-  const surfaces = [...result.faces, ...result.contactSurfaces ?? []]
-  for (const face of result.faces) {
+  const surfaces = paperMaterialSurfaces(result, inputs)
+  for (const face of surfaces.values()) {
     if ([...face.origin, ...face.u, ...face.v, face.width, face.height].some((value) => !Number.isFinite(value))) errors.push(`Non-finite paper geometry: ${face.id}`)
+    if (face.width <= 0 || face.height <= 0) errors.push(`Invalid paper dimensions: ${face.id}`)
     if (Math.abs(face.u.length() - 1) > 1e-6 || Math.abs(face.v.length() - 1) > 1e-6 || Math.abs(face.u.dot(face.v)) > 1e-6) errors.push(`Paper face is not rigid: ${face.id}`)
-    if (face.outline?.some((point) => point.some((value) => value < 0 || value > 1))) errors.push(`Outline exceeds its material: ${face.id}`)
+    if (face.outline?.some((point) => point.some((value) => !Number.isFinite(value) || value < 0 || value > 1))) errors.push(`Outline exceeds its material: ${face.id}`)
   }
   for (const connection of result.connections) {
+    if (connection.actual.length < 2 || connection.actual.length !== connection.expected.length
+      || [...connection.actual, ...connection.expected].some((point) => [...point].some((value) => !Number.isFinite(value)))) {
+      errors.push(`Invalid paper connection: ${connection.childFace}`); continue
+    }
     if (connection.actual.some((point, i) => point.distanceTo(connection.expected[i]) > 1e-6)) errors.push(`Broken paper connection: ${connection.childFace}`)
-    const parent = surfaces.find((face) => face.id === connection.parentFace)
+    const parent = surfaces.get(connection.parentFace)
     if (parent && !connection.actual.every((point) => faceContains(parent, point))) errors.push(`Connection lies outside its supporting face: ${connection.childFace}`)
-    for (const face of [parent, result.faces.find((item) => item.id === connection.childFace)]) {
+    for (const face of [parent, surfaces.get(connection.childFace)]) {
       if (!face) continue
       for (let i = 1; i < connection.actual.length; i++) if (!faceContainsLine(face, connection.actual[i - 1], connection.actual[i])) {
         errors.push(`Outline cuts through an attachment: ${face.id}`)
@@ -31,6 +37,21 @@ export function inspectPaper(result: PaperEvaluation): string[] {
     }
   }
   return errors
+}
+
+/** 一回の配置検査で共有する。基準の形状を数値で写し、評価器による同一オブジェクトの更新も見逃さない。 */
+export function createPaperMotionInspector() {
+  let design: PaperDesign | undefined
+  return (result: PaperEvaluation, inputs: readonly PartPort[] = []): string[] => {
+    const errors = inspectPaper(result, inputs)
+    if (errors.length) return errors
+    try {
+      const candidate = capturePaperDesign(result, inputs)
+      if (design) errors.push(...comparePaperDesign(design, candidate))
+      else design = candidate
+    } catch (error) { errors.push(error instanceof Error ? error.message : String(error)) }
+    return errors
+  }
 }
 export function validatePartDefinition(value: unknown, definitions: PartDefinitions = {}): PartValidation {
   const parsed = partDefinitionSchema.safeParse(value)
@@ -41,6 +62,20 @@ export function validatePartDefinition(value: unknown, definitions: PartDefiniti
   if (def.input.kind === 'fold-pair' && (def.input.referenceOpenAngleDeg ?? 0) > def.input.maxOpeningAngleDeg) report.errors.push('Reference opening angle exceeds the input limit')
   try {
     parameterValues(def.parameters, {})
+    const handleIds = new Set<string>()
+    for (const handle of def.editHandles ?? []) {
+      if (handleIds.has(handle.id)) throw new Error(`Duplicate edit handle: ${handle.id}`)
+      handleIds.add(handle.id)
+      const node = def.nodes.find((item) => item.id === handle.nodeId), specification = def.parameters[handle.parameter]
+      if (!node || !specification || specification.type !== 'angle' || handle.kind !== 'angle') throw new Error(`Invalid edit handle: ${handle.id}`)
+      let parameter: string | undefined
+      if ('builtin' in node.definition) {
+        const builtin = builtinPart(node.definition.builtin, node.definition.version)
+        if (['splayAngle', 'tiltAngle', 'yawAngle'].includes(handle.operation) && builtin.parameters[handle.operation]?.type === 'angle') parameter = handle.operation
+      } else parameter = definitions[node.definition.custom]?.editHandles?.find((item) => item.id === handle.operation && item.kind === 'angle')?.parameter
+      const binding = parameter && node.parameters[parameter]
+      if (!binding || typeof binding !== 'object' || !('parameter' in binding) || binding.parameter !== handle.parameter) throw new Error(`Edit handle is not bound to a supported internal operation: ${handle.id}`)
+    }
     for (const [id, version] of Object.entries(def.requiredBuiltins)) builtinPart(id, version)
     for (const node of def.nodes) {
       if ('builtin' in node.definition) {
@@ -52,10 +87,11 @@ export function validatePartDefinition(value: unknown, definitions: PartDefiniti
     if (!report.errors.length) {
       const root = '__validation__'
       const all = { ...definitions, [root]: def }
+      const inspectMotion = createPaperMotionInspector()
       for (const angle of def.input.kind === 'fold-pair' ? validationAngles(def.input.maxOpeningAngleDeg) : [0]) {
-        const result = evaluatePartReference({ custom: root }, fixtureInput(def.input, angle), all)
+        const input = fixtureInput(def.input, angle), result = evaluatePartReference({ custom: root }, input, all)
         report.checkedAngles.push(angle)
-        report.errors.push(...inspectPaper(result))
+        report.errors.push(...inspectMotion(result, [input]))
       }
     }
   } catch (error) { report.errors.push(String(error instanceof Error ? error.message : error)) }

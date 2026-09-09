@@ -41,6 +41,8 @@ qa/
 shots/
 output/
 tmp/
+.tmp/
+.playwright-cli/
 
 # Locally exported works
 *.site.zip

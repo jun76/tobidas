@@ -3,7 +3,7 @@ import { createBookProject, createStageElement } from '../schema/bookDefaults'
 import type { BookProject } from '../schema/bookPackage'
 import type { PartElement } from '../schema/stageElement'
 import { evaluateBookParts, validateBookParts } from './book'
-import { inspectPaper, syncDefinitionRequirements } from './validate'
+import { createPaperMotionInspector, inspectPaper, syncDefinitionRequirements } from './validate'
 import { faceContains, faceCorners } from './geometry'
 import { planPartPlacement, type SurfacePick } from './placement'
 import { newPartDefinition, partInstanceSchema, type PartInstance } from './schema'
@@ -66,9 +66,10 @@ describe('本の上で面を選ぶ部品配置', () => {
     const dimensions = new Map(evaluateBookParts(project, spread, Math.PI, 0).nodes.upright.faces.map((face) => [face.id, [face.width, face.height]]))
     const bridges = evaluateBookParts(project, spread, Math.PI, 0).nodes.upright.faces.filter((face) => face.id.includes('/mount/'))
     expect(bridges.every((face) => face.support && face.height < .2)).toBe(true)
-    for (const angle of [0, 1, 45, 90, 135, 180]) {
-      const geometry = evaluateBookParts(project, spread, angle * Math.PI / 180, 0)
-      expect(inspectPaper(geometry)).toEqual([])
+    const inspectMotion = createPaperMotionInspector()
+    for (const side of ['left', 'right']) for (const angle of [180, 0, 1, 45, 90, 135, 180]) {
+      const geometry = evaluateBookParts(project, spread, side === 'left' ? angle * Math.PI / 180 : Math.PI, side === 'right' ? (180 - angle) * Math.PI / 180 : 0)
+      expect(inspectMotion(geometry)).toEqual([])
       for (const face of geometry.nodes.upright.faces) expect([face.width, face.height]).toEqual(dimensions.get(face.id))
     }
     const saved = JSON.parse(JSON.stringify(project)) as BookProject

@@ -51,6 +51,7 @@ export function TimelinePanel() {
   const spreadIndex = spread ? store.project.book.spreads.indexOf(spread) : -1
   const time = spreadIndex < 0 ? 0 : evaluateBookSignals(store.project.book, store.previewProgress).spreadTimes[spreadIndex]
   const lanes = spread ? collectTimelineLanes(spread, store.project.assets) : []
+  const selectedPart = store.selection.type === 'element' && spread?.elements.find((element) => store.selection.type === 'element' && element.id === store.selection.elementId)?.type === 'part'
 
   useEffect(() => { localStorage.setItem(HEIGHT_KEY, String(Math.round(height))) }, [height])
   useEffect(() => { localStorage.setItem(LABEL_KEY, String(Math.round(labelWidth))) }, [labelWidth])
@@ -129,7 +130,7 @@ export function TimelinePanel() {
     </div>
     <div className={st.timelineBody}>
       <div className={st.timelineRows}>
-        {!lanes.length && <div className={st.timelineEmpty}>{t.timeline.emptyHint}</div>}
+        {!lanes.length && <div className={st.timelineEmpty}>{selectedPart ? t.parts.editing.timelineHint : t.timeline.emptyHint}</div>}
         {lanes.map((lane) => <TrackRow key={lane.id} lane={lane} holdSeconds={spread.sequence.holdSeconds} />)}
       </div>
       {!!lanes.length && <LabelHandle onDelta={resizeLabel} />}

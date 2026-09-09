@@ -319,8 +319,9 @@ function OpenButton({ onInvoke }: { onInvoke?: () => void } = {}) {
       {t.toolbar.open}
     </button>
     <input ref={dirRef} hidden type="file" aria-label={t.toolbar.open} {...({ webkitdirectory: '' } as object)} onChange={(event) => {
-      const files = event.target.files
-      if (files?.length) {
+      // 入力欄のリセットでFileListが空になる前に、非同期読み込み用の一覧を確保する。
+      const files = Array.from(event.target.files ?? [])
+      if (files.length) {
         void run(async () => (await import('../io/packageImport')).importPackageFileList(files))
       }
       event.target.value = ''

@@ -67,6 +67,13 @@ BOOKナビゲーター、アセット、インスペクター、タイムライ�
 テキストなどの一面部品は1クリックで配置できます。
 選択中の段階を左上のバッジに表示し、触れている面を青、配置できない面を赤の網掛けで示します。
 必要な支持ブリッジは配置時に補完されます。Escで中止、右ドラッグで視点を回転できます。
+配置後はWで接続面上の移動、Eで対応する設計角度、Rで等比拡縮を操作できます。
+ギズモとインスペクターの「接続を保って配置を調整」は同じ検査を使い、支持紙と後付けの子の接続を更新します。
+支持紙の寸法と接着位置は配置編集時に決まり、再生中は同じ紙を折ります。開閉中に紙の形や接着位置が変わる候補は確定しません。
+Altでスナップを解除し、Escでドラッグ全体を取り消します。一回のドラッグは一回のUndoで戻せます。
+縦置きでは地面からの傾き、背景パネルでは屏風の開き角を編集します。
+地面上の向きを変える「斜め縦置き」は、背景との共通折り線を基準に三角の支持紙で駆動します。
+操作可能な範囲は接続先と寸法で決まり、収納や途中の交差を検査できない候補は確定しません。
 配置後の寸法や接続の詳細は、インスペクターの「寸法と配置 / 接続先」で開閉プレビューとともに編集します。
 画像と文字は配置後のインスペクターで指定します。
 アセットID、MIME type、正確なbyte数、参照数は、アセット行の情報ボタンから確認できます。
@@ -167,10 +174,12 @@ WebMCPを利用できる条件では、表示中のワークスペースに応�
 | 部品       | `tobidas-get-part-catalog` / `tobidas-get-part-mounts` | 基本部品の仕様、カスタムライブラリ、実際の面と接続口を取得する |
 | 部品       | `tobidas-place-part` / `tobidas-update-placed-part` | 接続・寸法・開口角・収納を検査して配置または変更する。カスタム定義と素材を絵本に同梱する |
 | 部品       | `tobidas-place-part-on-surfaces` | キャンバスと同様に一つまたは二つの実面と材料座標を指定する。支持紙を自動補完し、共通検査・undo経路で配置する |
+| 部品       | `tobidas-get-part-edit-controls` / `tobidas-edit-placed-part` | 実面に沿う操作軸・角度ハンドル・倍率を取得し、移動・設計角度・等比拡縮・寸法を接続を保って編集する |
 | 編集       | `tobidas-set-page-background`    | 取り込み済みの画像、SVG、動画を部品ではなくページ面の背景へ直接設定する。全面ページ画像には平積み部品ではなくこのツールを使う                         |
 | 編集       | `tobidas-clear-page-background`  | ページ背景と背景動画の音声設定を解除する                                                                                                              |
 | 部品編集 | `tobidas-get-part-draft` / `tobidas-create-part-draft` / `tobidas-update-part-definition` | 絵本と独立した下書きを取得・作成し、説明、入力角度、公開寸法を編集する |
 | 部品編集 | `tobidas-add-part-node` / `tobidas-update-part-node` / `tobidas-delete-part-node` | 内部部品と接続グラフを型付きコマンドで編集する |
+| 部品編集 | `tobidas-edit-part-node` / `tobidas-expose-part-edit-handle` | 内部部品にも接続を保つ編集を適用し、基本部品または入れ子部品の角度操作を公開する |
 | 部品編集 | `tobidas-expose-part-parameter` / `tobidas-expose-part-material` / `tobidas-expose-part-port` | 寸法、素材、面・接続口を公開する |
 | 部品編集 | `tobidas-save-part-library` / `tobidas-open-part-library` / `tobidas-part-undo` / `tobidas-part-redo` | 不変の改訂を保存し、編集・コピーと部品専用の履歴を扱う |
 | 編集       | `tobidas-update-element`         | レイアウト補正と検証を通して部品を更新する。入力は型付きの全体更新であり任意JSON置換ではなく、省略した項目は現在値を保つ                              |
