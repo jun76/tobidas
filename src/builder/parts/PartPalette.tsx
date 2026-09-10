@@ -16,6 +16,7 @@ import { MaterialFields, MountField, NumberField, TextField, mountOptions, param
 import st from './parts.module.css'
 import { PlacementPreview } from './PlacementPreview'
 import { usePartPlacementStore } from './placementState'
+import { ShapeFields } from './ContentFields'
 import { PartEditFields } from './PartEditFields'
 
 export function PartPalette() {
@@ -44,7 +45,7 @@ export function PartPalette() {
       if (files) void importPartSelection(files).catch((caught) => setError(String(caught)))
     }} />
     <h3>{t.effects}</h3><div className={st.buttons}>
-      <button type="button" onClick={() => store.addPresetVisual(store.activeSpreadId, 'right', 'light-particles')}>{useT().presets['light-particles']}</button>
+      {(['decal', 'fiction', 'particle'] as const).map((kind) => <button type="button" key={kind} aria-pressed={placement.tool?.content === kind} onClick={() => placement.startContent(kind)}>{t.content[kind]}</button>)}
       <button type="button" onClick={() => store.setPlacement(store.placement === 'sound-cue' ? null : 'sound-cue')}>{useT().presets.soundCue}</button>
     </div>
     {error && <p className={st.error} role="alert">{error}</p>}
@@ -114,6 +115,7 @@ export function PlacedPartInspector({ element, spreadId }: { element: PartElemen
         {materialSlots.map((name) => <option key={name} value={name}>{name === '*' ? t.title : portLabel(name)}</option>)}
       </select></label><MaterialFields assets={store.project.assets} value={material} onChange={(value) => update({ materials: { ...element.part.materials, [active]: value } })} />
     </>}
+    <ShapeFields faceIds={evaluateBookParts(store.project, store.project.book.spreads.find((item) => item.id === spreadId)!, Math.PI, 0).nodes[element.id].faces.filter((face) => !face.support).map((face) => face.id.slice(element.id.length + 1))} shapes={element.part.shapes} onChange={(face, shape) => { const shapes = { ...element.part.shapes }; if (shape) shapes[face] = shape; else delete shapes[face]; update({ shapes }) }} />
     {'custom' in element.part.definition && <button type="button" onClick={() => {
       if (!('revision' in definition)) return
       const next = library.filter((item) => item.bundle.definition.id === definition.id && item.bundle.definition.revision > definition.revision)

@@ -15,6 +15,15 @@ const projectPath = fs.existsSync(resolved) && fs.statSync(resolved).isDirectory
 if (!fs.existsSync(projectPath)) throw new Error(`project.json がありません: ${projectPath}`)
 
 const project = JSON.parse(fs.readFileSync(projectPath, 'utf8'))
+if (project.book.spreads.some((spread) => spread.elements.some((element) => element.type === 'part' || element.attachment))) {
+  const { connectedRuntime } = await import('./lib/connectedRuntime.mjs'), runtime = await connectedRuntime()
+  try { const result = runtime.api.validateBookProject(project)
+    console.log(`接続する紙と演出: エラー ${result.errors.length}、警告 ${result.warnings.length}`)
+    for (const error of result.errors) console.log(error)
+    if (strict && !result.ok) process.exitCode = 1
+  } finally { await runtime.close() }
+  process.exit(process.exitCode ?? 0)
+}
 const pageWidth = project.book.format.pageWidth
 const findings = []
 const POSITION_EPSILON = Math.max(.08, pageWidth * .01)

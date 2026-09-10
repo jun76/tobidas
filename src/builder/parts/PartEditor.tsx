@@ -11,6 +11,8 @@ import { usePartEditorStore, useWorkspaceStore } from './store'
 import { addPartNodeCommand, createPartDraftCommand, deletePartNodeCommand, exposePartMaterialCommand, exposePartParameterCommand,
   exposePartPortCommand, exposePartEditHandleCommand, editPartNodeCommand, referenceDefinition, savePartLibraryCommand, updatePartDefinitionCommand, updatePartNodeCommand } from './commands'
 import { MaterialFields, MountField, NumberField, TextField, mountOptions, parameterLabel, portLabel, referenceName, referencePorts } from './fields'
+import { PartContentEditor, ShapeFields } from './ContentFields'
+import { setPartShapeCommand } from './contentCommands'
 import { PartPreview } from './PartPreview'
 import { importPartSelection, savePartFolder, savePartZipFile } from './files'
 import st from './parts.module.css'
@@ -64,6 +66,7 @@ export function PartEditor() {
         <div className={st.section}><h2>{t.structure}</h2><button type="button" onClick={() => setAdding(true)}>{t.add}</button>
           <ul className={st.nodeList}>{bundle.definition.nodes.map((item) => <li key={item.id}><button type="button" aria-pressed={item.id === store.selectedId} onClick={() => store.select(item.id)}>{item.name}</button></li>)}</ul>
         </div>
+        <PartContentEditor />
         <details className={st.section}><summary>{t.author}</summary><div className={st.fields}>
           <TextField label={t.author} value={bundle.definition.author} onChange={(author) => updatePartDefinitionCommand({ author })} />
           <TextField label={t.license} value={bundle.definition.license} onChange={(license) => updatePartDefinitionCommand({ license })} />
@@ -71,7 +74,7 @@ export function PartEditor() {
         <details className={st.section}><summary>{t.exposedParameters}</summary><PublicParameters /></details>
         <details className={st.section}><summary>{t.publicPorts}</summary><PublicPorts /></details>
         <div className={st.section}><h2>{t.materials}</h2><button type="button" onClick={() => assetRef.current?.click()}>{t.upload}</button>
-          <input ref={assetRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" multiple hidden aria-label={t.upload} onChange={(event) => {
+          <input ref={assetRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml,video/mp4,video/webm" multiple hidden aria-label={t.upload} onChange={(event) => {
             const files = Array.from(event.target.files ?? []); event.target.value = ''
             void run(async () => { const assets = [...bundle.assets]
               for (const file of files) assets.push(await fileToAsset(file, new Set(assets.map((asset) => asset.id))))
@@ -138,6 +141,7 @@ function NodeInspector({ node }: { node: PartNode }) {
   const angleOperation = 'builtin' in node.definition ? ['splayAngle', 'tiltAngle', 'yawAngle'].find((id) => id === parameterKey)
     : 'editHandles' in definition ? definition.editHandles?.find((handle) => handle.parameter === parameterKey)?.id : undefined
   return <div className={st.fields}>
+    <ShapeFields faceIds={referencePorts(node.definition, bundle.definitions).filter((port) => port.kind === 'surface' && !['support', 'ground', 'ground-b'].includes(port.name)).map((port) => port.name)} shapes={node.shapes} onChange={(faceId, shape) => { const result = setPartShapeCommand({ nodeId: node.id, faceId, shape }); setError(result.ok ? '' : result.message) }} />
     <h2>{node.name}</h2><TextField label={t.name} value={node.name} onChange={(name) => update({ name })} />
     <MountField value={node.mount} options={mountOptions(bundle.definition.nodes, bundle.definitions, bundle.definition.input, node.id)} kind={definition.input.kind} onChange={(mount) => update({ mount })} />
     <div className={st.section}><h2>{t.dimensions}</h2><div className={st.fields}>

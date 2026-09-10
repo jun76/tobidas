@@ -724,7 +724,7 @@ export function createTobidasWebMcpTools(screen: ToolScreen = 'book'): WebMcpToo
   if (screen !== 'book') return tools.filter((tool) => shared.includes(tool.name))
   const partNames = new Set(makePartTools().map((tool) => tool.name))
   return tools.filter((tool) => !partNames.has(tool.name) || shared.includes(tool.name)
-    || ['tobidas-get-part-mounts', 'tobidas-get-part-edit-controls', 'tobidas-edit-placed-part', 'tobidas-place-part', 'tobidas-place-part-on-surfaces', 'tobidas-update-placed-part'].includes(tool.name))
+    || ['tobidas-get-part-mounts', 'tobidas-get-part-edit-controls', 'tobidas-edit-placed-part', 'tobidas-place-part', 'tobidas-place-part-on-surfaces', 'tobidas-update-placed-part', 'tobidas-place-content', 'tobidas-edit-connected-content'].includes(tool.name))
 }
 
 export async function registerTobidasWebMcpTools(

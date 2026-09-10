@@ -4,10 +4,35 @@ import { evaluateBuiltin } from './builtins'
 import { evaluatePartReference } from './evaluate'
 import { faceCorners, openingAngle, pagePorts, type FoldPair } from './geometry'
 import { newPartDefinition } from './schema'
-import { inspectClosedLayout, inspectPaper, syncDefinitionRequirements, validatePartDefinition } from './validate'
+import { createPaperMotionInspector, inspectClosedLayout, inspectPaper, syncDefinitionRequirements, validatePartDefinition } from './validate'
 
 const pairAt = (angle: number, rotation = 0) => pagePorts(8, 10, (angle + rotation) * Math.PI / 180, rotation * Math.PI / 180).gutter as FoldPair
 describe('connected paper parts', () => {
+  it('家の裏からずらした支持を延ばし、孫の紙も同じ接着位置と材料で折る', () => {
+    const inspect = createPaperMotionInspector()
+    for (const angle of [180, 150, 90, 30, 0, 90, 180]) {
+      const input = pairAt(angle)
+      const background = evaluateBuiltin('backdrop', input, { width: 12, height: 2, offset: -2, splayAngle: 150 }, 'background', 2)
+      const house = evaluateBuiltin('upright', background.ports['ground-backdrop'],
+        { width: 2.4, height: 1.4, distance: .7, supportHeight: .6, supportWidth: .2 }, 'house')
+      const tree = evaluateBuiltin('upright', house.ports['ground-panel'],
+        { width: 1.2, height: 1, distance: .8, supportHeight: .4, supportWidth: .12, supportOffset: -.3 }, 'tree')
+      const combined = { faces: [...background.faces, ...house.faces, ...tree.faces], ports: {},
+        connections: [...background.connections, ...house.connections, ...tree.connections] }
+      expect(inspect(combined, [input])).toEqual([])
+      const support = tree.faces.find((face) => face.id === 'tree/support')!
+      expect(support.width).toBeCloseTo(.12)
+      expect(support.height).toBeCloseTo(.8)
+      expect(tree.connections.some((edge) => edge.parentFace === 'house/panel' && edge.childFace === support.id)).toBe(true)
+      const panel = tree.faces.find((face) => face.id === 'tree/panel')!
+      const contact = tree.connections.find((edge) => edge.parentFace === panel.id)!.expected[0]
+      expect(contact.clone().sub(panel.origin).dot(panel.u)).toBeCloseTo(.24)
+    }
+  })
+  it('支持の横移動で紙から接着辺が外れる場合は拒否する', () => {
+    expect(() => evaluateBuiltin('upright', pairAt(90), { width: 1, supportWidth: .3, supportOffset: .4 })).toThrow('Support must fit')
+    expect(() => evaluateBuiltin('upright', pairAt(90), { width: 1, supportWidth: .3, supportOffset: -.4 })).toThrow('Support must fit')
+  })
   it('第1改訂の四節起立と箱・台の内部リンクの接着と剛性を保つ', () => {
     for (const rotation of [0, 23, 91]) for (const angle of [0, .001, 15, 45, 90, 150, 180]) {
       const result = evaluateBuiltin('backdrop', pairAt(angle, rotation), { height: 2, distance: 1, width: 3 }, 'backdrop', 1)

@@ -1,15 +1,19 @@
 import { Box3, Vector3 } from 'three'
-import { faceContains, pointOnFace, type PaperEvaluation, type PaperFace } from './geometry'
+import { faceContains, faceShape, pointOnFace, type PaperEvaluation, type PaperFace } from './geometry'
+
+import { shapeRings } from './shape'
 
 const tolerance = 1e-6
-const polygon = (face: PaperFace) => (face.outline ?? [[0, 0], [1, 0], [1, 1], [0, 1]]).map(([u, v]) => pointOnFace(face, u * face.width, v * face.height))
+const polygon = (face: PaperFace) => faceShape(face).outer.map(([u, v]) => pointOnFace(face, u * face.width, v * face.height))
 function interior(face: PaperFace, point: Vector3) {
   if (!faceContains(face, point, tolerance)) return false
-  const vertices = polygon(face)
+  for (const ring of shapeRings(faceShape(face))) {
+  const vertices = ring.map(([u, v]) => pointOnFace(face, u * face.width, v * face.height))
   for (let i = 0; i < vertices.length; i++) {
     const a = vertices[i], edge = vertices[(i + 1) % vertices.length].clone().sub(a), length = edge.lengthSq()
     const t = length ? Math.max(0, Math.min(1, point.clone().sub(a).dot(edge) / length)) : 0
     if (a.clone().addScaledVector(edge, t).distanceTo(point) < tolerance) return false
+  }
   }
   return true
 }
@@ -21,13 +25,15 @@ export function facesCross(a: PaperFace, b: PaperFace): boolean {
     .addScaledVector(cross.clone().cross(na), nb.dot(b.origin)).divideScalar(cross.lengthSq())
   const axis = cross.normalize(), cuts: number[] = []
   for (const [face, other, normal] of [[a, b, nb], [b, a, na]] as const) {
-    const points = polygon(face)
+    for (const ring of shapeRings(faceShape(face))) {
+    const points = ring.map(([u, v]) => pointOnFace(face, u * face.width, v * face.height))
     for (let i = 0; i < points.length; i++) {
       const p = points[i], q = points[(i + 1) % points.length]
       const da = p.clone().sub(other.origin).dot(normal), db = q.clone().sub(other.origin).dot(normal)
       if (Math.abs(da) < tolerance) cuts.push(p.clone().sub(origin).dot(axis))
       if (da * db < 0) cuts.push(p.clone().lerp(q, da / (da - db)).sub(origin).dot(axis))
     }
+  }
   }
   cuts.sort((x, y) => x - y)
   return cuts.slice(1).some((end, i) => end - cuts[i] > tolerance && (() => {

@@ -132,7 +132,7 @@ function ElementRow({ id, spreadId, collapsed, toggle }: { id: string; spreadId:
   const key = `element:${id}`
   const expanded = !collapsed.has(key)
   return <div style={{ paddingLeft: 12 }}>
-    <Row label={element.name} tag={element.type === 'assembly' ? t.mechanisms.kinds[element.mechanism.kind] : element.type === 'particle' ? t.presets['light-particles'] : element.type === 'visual' ? t.presets.groupVisual : 'group'}
+    <Row label={element.name} tag={element.type === 'part' ? ('builtin' in element.part.definition ? t.parts.basic : t.parts.custom) : element.type === 'assembly' ? t.mechanisms.kinds[element.mechanism.kind] : element.type === 'particle' ? t.presets['light-particles'] : element.type === 'visual' ? t.presets.groupVisual : 'group'}
       active={store.selection.type === 'element' && store.selection.elementId === id}
       dataKind="element" dataId={id}
       onClick={() => store.select({ type: 'element', spreadId, elementId: id })}

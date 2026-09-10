@@ -19,6 +19,7 @@ export function paperSimilarity(center: Vector3, ratio: number) {
     : { ...source, a: face(source.a), b: face(source.b), origin: point(source.origin),
       width: source.width * ratio, extentA: source.extentA * ratio, extentB: source.extentB * ratio }
   const evaluation = (source: PaperEvaluation): PaperEvaluation => ({ ...source,
+    contents: source.contents?.map((item) => ({ ...item, face: item.face && face(item.face), unitScale: item.unitScale * ratio })),
     ...(source.nodes ? { nodes: Object.fromEntries(Object.entries(source.nodes).map(([id, node]) => [id, evaluation(node)])) } : {}),
     ...(source.inputPort ? { inputPort: port(source.inputPort) } : {}), faces: source.faces.map(face),
     ports: Object.fromEntries(Object.entries(source.ports).map(([key, value]) => [key, port(value)])),

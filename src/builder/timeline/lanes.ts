@@ -25,6 +25,7 @@ export function collectTimelineLanes(spread: Spread, assets: readonly Asset[] = 
     track,
     targetName: track.target.type === 'element'
       ? elementNames.get(track.target.elementId) ?? track.target.elementId
+      : track.target.type === 'part-content' ? `${elementNames.get(track.target.elementId) ?? track.target.elementId} / ${track.target.path.join('/')}`
       : track.target.type === 'sound' ? assetNames.get(track.target.assetId) ?? track.target.assetId
       : track.target.type === 'camera' ? t().timeline.laneCamera : t().timeline.laneEnvironment,
     discrete: DISCRETE_PROPERTIES.has(track.property),

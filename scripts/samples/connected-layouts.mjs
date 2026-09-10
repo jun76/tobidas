@@ -1,0 +1,51 @@
+/** 022の配置設計。高さは収納できる紙の寸法、演出の大きさは原作の値を保つ。 */
+export const CONNECTED_LAYOUTS = {
+  forest_lantern: {
+    background: ['canopy', 'canopy', 'ridge', 'great-tree', 'canopy'],
+    backgroundSize: [[10.4, 2.8], [10.4, 2.5], [10.4, 2.3], [7.45, 5.65], [10.4, 2.7]],
+    scale: .76, backgroundOffset: [-1.7, -1.7, -1.7, -2.65, -1.7],
+    paper: {
+      'spread-1-far-line-l': { x: -5.25 }, 'spread-1-far-line-r': { x: 5.25 },
+      'spread-4-far-line-l': { x: -3.6 }, 'spread-4-far-line-r': { x: 3.6 },
+      'spread-1-fox': { x: -1.1, z: 1.5, parent: 'spread-1-rabbit' },
+      'spread-2-tree': { z: .15 },
+      'spread-4-mushroom': { x: -4.3, parent: 'spread-4-tree-a' },
+      'spread-5-house-dark-4': { z: 1.0 }, 'spread-5-house-lit-4': { z: 1.0 },
+      // 羽根の回転範囲に接しない上限。交換した部品を逆向きの入力へ置いても支持と交差させない。
+      'spread-3-windmill': { scale: .66, x: 3.1, z: -.1, supportCeiling: .54 },
+      'spread-3-hill-mid-r': { x: 5.4, parent: 'spread-3-far-hill-r' },
+      'spread-4-tree-a': { scale: .66, x: -4.3, z: .35 },
+      'spread-4-tree-b': { scale: .66, x: 4.3, z: .35 },
+    },
+    fiction: { 'spread-1-ember': { x: 1.6 }, 'spread-4-halo': { x: 1.6 }, 'spread-5-halo': { x: 2 },
+      'spread-4-lantern': { x: .9 }, 'spread-5-lantern': { x: 1.1 } },
+  },
+  morning_walk: {
+    background: ['skyline', 'far-row', 'far-row', 'mountain', 'window'],
+    backgroundSize: [[14.4, 3.25], [14.4, 3.35], [14.4, 3.2], [14.4, 3.25], [14.2, 3.8]],
+    scale: .74, backgroundOffset: -1.8,
+    paper: { 'spread-4-school': { scale: .72, backdrop: true, z: -.9 },
+      'spread-1-house-3': { z: -.5 },
+      ...Object.fromEntries(['spread-1-pole-1', 'spread-1-pole-2', 'spread-1-pole-3', 'spread-3-pole', 'spread-4-pole-1', 'spread-4-pole-2'].map((id) => [id, { z: -1.3 }])),
+      'spread-3-signal': { z: .1 },
+      'spread-1-cherry': { parent: 'spread-1-house-1' },
+      'spread-4-house-1': { z: .35 },
+      'spread-4-house-4': { z: .35 },
+    },
+    fiction: { 'spread-3-train': { x: -4.8, scale: .58, travel: [-.3, 1.2], parent: 'spread-3-far-row' },
+      'spread-5-curtain-l': { parent: 'spread-5-window' }, 'spread-5-curtain-r': { parent: 'spread-5-window' },
+      'spread-4-climber': { x: 2.5, travel: [.7, -.7], parent: 'spread-4-cherry-2' }, 'spread-5-sunbeam': { x: 1.9 } },
+  },
+  four_seasons: {
+    background: ['window', 'window', 'window', 'window', 'window'],
+    backgroundSize: Array.from({ length: 5 }, () => [7.03, 3.61]),
+    scale: .76, backgroundOffset: -.9,
+    paper: { 'spread-5-keepsake-4': { x: -3.1, z: 1.65, parent: 'spread-5-keepsake-2' }, 'spread-5-keepsake-3': { x: 3.1 } },
+  },
+  crooked_castle: {
+    background: [], backgroundSize: [], scale: .83, backgroundOffset: -2.2,
+    paper: { 'front-left-1': { z: 1.25 }, 'front-right-1': { z: 1.25 },
+      'front-left-2': { x: -5.45, parent: 'near-left-4-anchor' }, 'front-right-2': { x: 5.95, parent: 'near-right-5-anchor' } },
+    fiction: { 'bat-swarm': { x: 2.3 }, 'central-twin': { x: 2.5 }, 'back-right-1': { x: 1.7 }, 'mid-right-1': { x: 1.6 } },
+  },
+}

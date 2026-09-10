@@ -96,6 +96,8 @@ export const en: Dict = {
     edit: 'Edit',
     language: 'Language',
     open: 'Open',
+    openZip: 'Open project ZIP',
+    projectZip: 'Editable project ZIP',
     openHint: 'Pick a working folder and load the book',
     save: 'Save',
     saveHint: 'Pick a folder and write the book into it',

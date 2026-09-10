@@ -289,6 +289,7 @@ function Page({ side, embedded = false }: { side: 'left' | 'right'; embedded?: b
   </PropertySection>
 }
 
+import { ContentAttachmentFields } from '../parts/ContentFields'
 import { PlacedPartInspector } from '../parts/PartPalette'
 
 function Element({ element, embedded = false }: { element: StageElement; embedded?: boolean }) {
@@ -305,13 +306,14 @@ function Element({ element, embedded = false }: { element: StageElement; embedde
     store.upsertTimelineKey(selection.spreadId, { type: 'element', elementId: element.id }, property, time, value)
 
   return <PropertySection title={t.properties.element(element.type === 'particle' ? t.presets['light-particles'] : element.type)} embedded={embedded}>
-    <InspectorGroup title={t.app.inspectorBasic} action={<button type="button" className={st.ghostBtn}
+    {element.attachment && <ContentAttachmentFields spreadId={selection.spreadId} elementId={element.id} />}
+    <InspectorGroup title={t.app.inspectorBasic} action={!element.attachment && <button type="button" className={st.ghostBtn}
       data-tobidas-action="change-element-parent" aria-label={t.properties.changeParent}
       title={t.properties.changeParentHint} onClick={(event) => { event.preventDefault(); event.stopPropagation(); setParentDialogOpen(true) }}>
       <Icon as={Link} />
     </button>}>
       <Text label={t.properties.name} value={element.name} onChange={(value) => update((item) => { item.name = value })} />
-      <button type="button" data-tobidas-action="attach-to-surface" onClick={() => setSurfaceDialogOpen(true)}>{t.mechanisms.attach}</button>
+      {!element.attachment && <button type="button" data-tobidas-action="attach-to-surface" onClick={() => setSurfaceDialogOpen(true)}>{t.mechanisms.attach}</button>}
       <Num label={t.properties.layer} value={element.layer} onChange={(value) => update((item) => { item.layer = Math.round(value) })} />
       <div className={st.row}><span className={st.rowLabel}>{t.properties.visible}</span><label>
         <input type="checkbox" aria-label={t.properties.visible} checked={element.visible} onChange={(event) => update((item) => { item.visible = event.target.checked })} />

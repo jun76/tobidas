@@ -43,7 +43,7 @@ export function evaluateContentMotion(motions: ContentMotion[], time: number): M
     const angle = time * Math.PI * 2 / motion.period + motion.phase
     switch (motion.type) {
       case 'bob':
-        delta.position[1] += Math.sin(angle) * motion.amplitude
+        delta.position[motion.axis === 'x' ? 0 : motion.axis === 'z' ? 2 : 1] += Math.sin(angle) * motion.amplitude
         break
       case 'sway':
         delta.rotationDeg[2] += Math.sin(angle) * motion.amplitude

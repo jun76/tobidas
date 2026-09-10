@@ -9,6 +9,11 @@ import type { BuilderCommandResult } from './types'
 import { COLOR_PROPERTIES, DISCRETE_PROPERTIES, NUMBER_PROPERTIES, VEC3_PROPERTIES, type TimelineKey, type TimelineProperty, type TimelineTarget, type TimelineValue } from '../../schema/timeline'
 import { AUTHORING_GUIDE_KEYS, authoringGuideLocaleSchema, type AuthoringGuideLocale, type AuthoringGuideKey } from '../../schema/authoringGuide'
 import { updateMechanismCommand } from './mechanisms'
+import { evaluateBookParts } from '../../parts/book'
+import { contentTargetId } from '../../parts/contents'
+import { validateBookProject } from '../../schema/bookValidate'
+import { upsertProjectTimelineKey } from '../state/timelineProject'
+import { timelineTargetKey } from '../../schema/timeline'
 export { createMechanismCommand, updateMechanismCommand, setMechanismSurfaceCommand, attachToSurfaceCommand, placeSurfaceAssetCommand, createCompositionCommand, updateCompositionCommand } from './mechanisms'
 export * from '../parts/commands'
 
@@ -25,11 +30,21 @@ export const ENVIRONMENT_TIMELINE_PROPERTIES: readonly TimelineProperty[] = [
 ]
 export const CAMERA_TIMELINE_PROPERTIES: readonly TimelineProperty[] = ['position', 'target', 'fov']
 
-export function timelinePropertiesForTarget(target: TimelineTarget): readonly TimelineProperty[] {
+export function timelinePropertiesForTarget(target: TimelineTarget, spreadId?: string): readonly TimelineProperty[] {
   if (target.type === 'environment') return ENVIRONMENT_TIMELINE_PROPERTIES
   if (target.type === 'camera') return CAMERA_TIMELINE_PROPERTIES
   if (target.type === 'sound') return ['cue']
-  return ELEMENT_TIMELINE_PROPERTIES
+  const state = useBuilderStore.getState(), spread = state.project.book.spreads.find((item) => item.id === spreadId)
+  let element: StageElement | import('../../schema/content').ConnectedContent | undefined
+  if (target.type === 'element') element = spread?.elements.find((item) => item.id === target.elementId)
+  else if (target.type === 'part-content' && spread) {
+    try { element = evaluateBookParts(state.project, spread, Math.PI, 0).contents?.find((item) => item.id === contentTargetId(target.elementId, target.path))?.element } catch { return [] }
+    if (!element) return []
+  }
+  if (element?.type === 'part') return ['opacity', 'visible']
+  if (element?.presentation?.kind === 'decal') return ['opacity', 'visible', 'visual.image', 'visual.foregroundColor', 'visual.backgroundColor']
+  return ELEMENT_TIMELINE_PROPERTIES.filter((property) => !element?.attachment || (!property.startsWith('visual.') ||
+    (element.type === 'visual' ? !property.startsWith('visual.particles.') || element.particles.enabled : element.type === 'particle' && property.startsWith('visual.particles.'))))
 }
 
 const failure = (action: string, message: string, fieldErrors: Record<string, string> = {}): BuilderCommandResult => ({
@@ -233,6 +248,7 @@ export function updateElementCommand(spreadId: string, elementId: string, input:
       if (input.motion !== undefined) target.motion = structuredClone(input.motion)
     }
   })
+  if (state.project === useBuilderStore.getState().project) return failure(action, useBuilderStore.getState().issues.errors[0] ?? t().operations.invalidInput)
   const after = useBuilderStore.getState().project.book.spreads.find((spread) => spread.id === spreadId)
     ?.elements.find((item) => item.id === elementId)
   const requested = input.position.join(',')
@@ -327,7 +343,7 @@ export function addTimelineKeyCommand(input: {
   if (!Number.isFinite(input.time) || input.time < 0 || input.time > spread.sequence.holdSeconds) {
     errors.time = t().operations.timelineTimeRange
   }
-  if (!timelinePropertiesForTarget(input.target).includes(input.property)) errors.property = t().operations.invalidInput
+  if (!timelinePropertiesForTarget(input.target, input.spreadId).includes(input.property)) errors.property = t().operations.invalidInput
   if (input.target.type === 'element') {
     const elementId = input.target.elementId
     if (!spread.elements.some((element) => element.id === elementId)) errors.target = t().operations.notFound
@@ -343,14 +359,14 @@ export function addTimelineKeyCommand(input: {
   if (valueError) errors.value = valueError
   if (Object.keys(errors).length) return failure(action, t().operations.invalidInput, errors)
 
-  state.upsertTimelineKey(input.spreadId, input.target, input.property, input.time, input.value)
-  if (input.ease) {
-    const current = useBuilderStore.getState()
-    const track = current.project.book.spreads.find((item) => item.id === input.spreadId)?.timeline.tracks
-      .find((item) => JSON.stringify(item.target) === JSON.stringify(input.target) && item.property === input.property)
-    const key = track?.keys.find((item) => Math.abs(item.time - input.time) < .001)
-    if (track && key) current.setTimelineKeyEase(input.spreadId, track.id, key.id, input.ease)
-  }
+  const candidate = structuredClone(state.project)
+  upsertProjectTimelineKey(candidate, input.spreadId, input.target, input.property, input.time, input.value)
+  const timeline = candidate.book.spreads.find((item) => item.id === input.spreadId)!.timeline
+  const track = timeline.tracks.find((item) => timelineTargetKey(item.target) === timelineTargetKey(input.target) && item.property === input.property)!
+  if (input.ease) track.keys.find((item) => Math.abs(item.time - input.time) < .001)!.ease = DISCRETE_PROPERTIES.has(input.property) ? 'hold' : input.ease
+  const validation = validateBookProject(candidate)
+  if (!validation.ok) return failure(action, validation.errors[0])
+  state.commit((project) => { project.book.spreads.find((item) => item.id === input.spreadId)!.timeline = timeline })
   return success(action, t().operations.timelineKeyAdded, {
     kind: 'timeline',
     id: `${timelineTargetValue(input.target)}:${input.property}:${input.time}`,
@@ -394,6 +410,7 @@ export function updateTimelineKeyCommand(input: {
       targetTrack.keys.sort((a, b) => a.time - b.time)
     }
   })
+  if (state.project === useBuilderStore.getState().project) return failure(action, useBuilderStore.getState().issues.errors[0] ?? t().operations.invalidInput)
   return success(action, t().operations.timelineKeyUpdated, { kind: 'timeline', id: input.keyId })
 }
 
@@ -524,6 +541,7 @@ export function redoCommand(): BuilderCommandResult {
 
 function timelineTargetValue(target: TimelineTarget): string {
   if (target.type === 'element') return `element:${target.elementId}`
+  if (target.type === 'part-content') return `part-content:${target.elementId}/${target.path.join('/')}`
   if (target.type === 'sound') return `sound:${target.assetId}`
   return target.type
 }
@@ -569,3 +587,5 @@ export function visualElement(element: StageElement | undefined): element is Ext
 export function particleElement(element: StageElement | undefined): element is ParticleElement {
   return element?.type === 'particle'
 }
+
+export * from '../parts/contentCommands'

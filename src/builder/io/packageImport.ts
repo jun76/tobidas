@@ -5,6 +5,14 @@ import { bytesToDataUrl } from '../../package/serialize'
 import { validateBookProject } from '../../schema/bookValidate'
 import type { PickerWindow } from './browserFiles'
 import { readMediaMetadata } from '../assets/ingest'
+import { readProjectArchive } from './projectArchive'
+
+export async function importProjectZip(file: File): Promise<ImportResult> {
+  if (file.size > MAX_IMPORT_BYTES) throw new Error(t().io.packageTooLarge)
+  const result = await readProjectArchive(await file.arrayBuffer())
+  await assertStorageCapacity(result.project.assets.reduce((sum, asset) => sum + (asset.bytes ?? 0), 0))
+  return result
+}
 
 const MAX_IMPORT_BYTES = 512 * 1024 * 1024
 const MAX_IMPORT_FILES = 2000

@@ -56,6 +56,8 @@ export function elementDescendantIds(spread: Spread, id: string): Set<string> {
   const visit = (parentId: string) => {
     for (const element of spread.elements) {
       const follows = element.parent.type === 'element' && element.parent.elementId === parentId
+        || element.attachment?.type === 'surface' && element.attachment.surface.nodeId === parentId
+        || element.attachment?.type === 'visual' && element.attachment.elementId === parentId
         || element.type === 'part' && bindingDependencies(element.part.mount).includes(parentId)
       if (!follows || found.has(element.id)) continue
       found.add(element.id)
@@ -82,7 +84,7 @@ export function containerElementIds(spread: Spread, parentType: RootParentType):
 export function reparentElement(spread: Spread, id: string, nextParent: ParentSpace, pageWidth: number): boolean {
   const element = spread.elements.find((item) => item.id === id)
   if (!element) return false
-  if (element.type === 'assembly' || element.type === 'part') return false
+  if (element.attachment || element.type === 'assembly' || element.type === 'part') return false
   if (nextParent.type === 'element' && spread.elements.some((item) => item.id === nextParent.elementId && (item.type === 'assembly' || item.type === 'part'))) return false
   if (nextParent.type === 'element' && (nextParent.elementId === id || elementDescendantIds(spread, id).has(nextParent.elementId))) return false
 

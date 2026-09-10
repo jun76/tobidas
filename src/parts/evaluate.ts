@@ -2,10 +2,11 @@ import { builtinPart } from './catalog'
 import { decorateFaces, evaluateBuiltin } from './builtins'
 import { bindingDependencies, evaluateExpression, parameterValues, type PartBinding, type PartDefinitions,
   type PartMaterial, type PartNode, type PartReference } from './schema'
-import { checkInput, EPSILON, faceContains, makeFace, pointOnFace, stackOnSurface, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
+import { checkInput, EPSILON, faceContains, makeFace, pointOnFace, stackOnSurface, type BoundPaperContent, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
 import type { Vector3 } from 'three'
 import { extendPaperSurface } from './extensions'
 import { paperSimilarity } from './similarity'
+import { inspectShape } from './shape'
 
 export interface EvaluatedPartGraph extends PaperEvaluation { nodes: Record<string, PaperEvaluation> }
 
@@ -106,7 +107,13 @@ export function evaluatePartReference(reference: PartReference, input: PartPort,
   }
   const ports = Object.fromEntries(Object.entries(definition.outputs).map(([name, binding]) =>
     [name, resolveBinding(binding, input, output, graph, `${prefix}/output/${name}`)]))
-  return { ...graph, ports }
+  const contents: BoundPaperContent[] = (definition.contents ?? []).map(({ element, tracks }) => {
+    const attachment = element.attachment
+    const face = attachment.type === 'surface' ? resolveSurface(output(attachment.surface.nodeId, attachment.surface.portId)) : undefined
+    return { id: prefix + '/content/' + element.id, ownerId: prefix.split('/')[0], element, tracks, face, unitScale: 1,
+      parentId: attachment.type === 'visual' ? prefix + '/content/' + attachment.elementId : undefined }
+  })
+  return { ...graph, ports, contents: [...graph.contents ?? [], ...contents] }
 }
 
 export function evaluatePartGraph(nodes: PartNode[], definitions: PartDefinitions, input?: PartPort,
@@ -147,11 +154,17 @@ export function evaluatePartGraph(nodes: PartNode[], definitions: PartDefinition
       if (node.outline.some(([u, v]) => u < 0 || u > 1 || v < 0 || v > 1)) throw new Error('Outline must stay within the material face')
       decorateFaces(result, {}, node.outline)
     }
+    for (const [faceId, shape] of Object.entries(node.shapes ?? {})) {
+      const target = result.faces.find((face) => face.id === (prefix ? prefix + '/' : '') + id + '/' + faceId)
+      if (!target || target.support) throw new Error('Unknown or supporting material face: ' + faceId)
+      const errors = inspectShape(shape); if (errors.length) throw new Error(errors.join('; '))
+      target.shape = shape
+    }
     active.delete(id); evaluated[id] = result
     return result
   }
   for (const node of nodes) visit(node.id)
-  return { nodes: evaluated, faces: Object.values(evaluated).flatMap((value) => value.faces),
+  return { nodes: evaluated, contents: Object.values(evaluated).flatMap((value) => value.contents ?? []), faces: Object.values(evaluated).flatMap((value) => value.faces),
     connections: Object.values(evaluated).flatMap((value) => value.connections),
     contactSurfaces: Object.values(evaluated).flatMap((value) => value.contactSurfaces ?? []), ports: {} }
 }

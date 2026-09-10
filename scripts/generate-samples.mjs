@@ -7,15 +7,18 @@
  *
  * ここで作らない作品も `projects/` には入る。catalog.json の登録は残す。
  */
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { build as forestLantern } from './samples/forest-lantern.mjs'
-import { build as morningWalk } from './samples/morning-walk.mjs'
-import { build as fourSeasons } from './samples/four-seasons.mjs'
+import { BUILDERS as REGISTRY } from './samples/registry.mjs'
 import { applyOverrides, loadOverrides } from './samples/overrides.mjs'
+import { writeSampleFolder } from './lib/sampleOutput.mjs'
 
-const ROOT = 'projects'
-const BUILDERS = [forestLantern, morningWalk, fourSeasons]
+// 新方式は実験用ルートへ生成する。原本の再生成は明示した --legacy だけに限定する。
+if (!process.argv.includes('--legacy')) { await import('./generate-connected-samples.mjs'); process.exit(0) }
+const arg = (name, fallback) => process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1] : fallback
+const ROOT = arg('--out-root', 'projects')
+const selected = arg('--work', 'all')
+const BUILDERS = Object.entries(REGISTRY).filter(([id]) => selected === 'all' || selected.split(',').includes(id)).map(([, build]) => build)
 // 公開サンプルはソース管理する生成物なので、同じ generator から同じJSONを得る。
 // 内容を更新したときだけ、この値も generator の変更として明示的に進める。
 const updatedAt = '2026-07-26T00:00:00.000Z'
@@ -28,12 +31,9 @@ for (const builder of BUILDERS) {
   // 調整を project.json へ直に入れると、次の生成で消えてしまう
   const patch = applyOverrides(project, loadOverrides(project.id))
   const files = work.files()
-  const dir = join(ROOT, project.id)
-  rmSync(dir, { recursive: true, force: true })
-  mkdirSync(join(dir, 'assets'), { recursive: true })
   const kept = new Set(project.assets.map((asset) => asset.id))
-  for (const [name, content] of files) if (kept.has(name)) writeFileSync(join(dir, 'assets', name), content)
-  writeFileSync(join(dir, 'project.json'), JSON.stringify(project, null, 2) + '\n')
+  writeSampleFolder(ROOT, project.id, new Map([['project.json', JSON.stringify(project, null, 2) + '\n'],
+    ...[...files].filter(([name]) => kept.has(name)).map(([name, content]) => ['assets/' + name, content])]))
 
   const bytes = project.assets.reduce((total, asset) => total + (asset.bytes ?? 0), 0)
   const elements = project.book.spreads.reduce((total, spread) => total + spread.elements.length, 0)

@@ -5,8 +5,18 @@ import {
   pageClickTargetLift,
   pageLeafRestHeight,
   paperStackSupportThickness,
+  visibleInteriorSheets,
 } from './pageStack'
 import { STOW_HIDDEN_DEG, stowIsDrawn } from './stow/evaluate'
+
+describe('visibleInteriorSheets', () => {
+  it('保持の境界では閉じた前の葉を除き、順逆で床画像が入れ替わらない', () => {
+    expect(visibleInteriorSheets([0, 0, 0, 0, 1])).toEqual([4])
+    expect(visibleInteriorSheets([0, 0, 0, .5, .5])).toEqual([3, 4])
+    expect(visibleInteriorSheets([0, 0, 0, 0, 1])).toEqual([4])
+    expect(visibleInteriorSheets([0, 0, 0, 0, 0])).toEqual([])
+  })
+})
 
 describe('frontCoverRestHeight', () => {
   const paper = 0.015

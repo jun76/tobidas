@@ -32,6 +32,8 @@ export interface ElementSummary {
   text?: string
   particles?: boolean
   particleSettings?: ParticleElement['particles']
+  attachment?: import('../../schema/content').ContentAttachment
+  presentation?: import('../../schema/content').Presentation
   part?: import('../../parts/schema').PartInstance
   mechanism?: import('../../schema/mechanism').MechanismSpec
   surfaces?: string[]

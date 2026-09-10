@@ -1,9 +1,12 @@
 import { Vector3 } from 'three'
 import { builtinPart } from './catalog'
 import { evaluatePartReference } from './evaluate'
-import { checkInput, faceContains, faceContainsLine, faceCorners, pagePorts, type PaperEvaluation, type PartPort } from './geometry'
+import { checkInput, faceShape, faceContains, faceContainsLine, faceCorners, pagePorts, type PaperEvaluation, type PartPort } from './geometry'
 import { parameterValues, partDefinitionSchema, type PartDefinition, type PartDefinitions, type PartInput } from './schema'
 import { capturePaperDesign, comparePaperDesign, paperMaterialSurfaces, type PaperDesign } from './materialDesign'
+
+import { inspectContentBindings, inspectContentsAt, inspectContentMotion } from './contentValidation'
+import { inspectShape } from './shape'
 
 export interface PartValidation { ok: boolean; errors: string[]; checkedAngles: number[]; model: 'rigid-faces-ideal-hinges-v1' }
 export const validationAngles = (max: number) => [...new Set([0, .001, .1, 1, ...Array.from({ length: 25 }, (_, i) => max * i / 24), max])].filter((angle) => angle <= max)
@@ -16,6 +19,7 @@ export function inspectPaper(result: PaperEvaluation, inputs: readonly PartPort[
   const errors: string[] = []
   const surfaces = paperMaterialSurfaces(result, inputs)
   for (const face of surfaces.values()) {
+    errors.push(...inspectShape(faceShape(face)).map((message) => `${message}: ${face.id}`))
     if ([...face.origin, ...face.u, ...face.v, face.width, face.height].some((value) => !Number.isFinite(value))) errors.push(`Non-finite paper geometry: ${face.id}`)
     if (face.width <= 0 || face.height <= 0) errors.push(`Invalid paper dimensions: ${face.id}`)
     if (Math.abs(face.u.length() - 1) > 1e-6 || Math.abs(face.v.length() - 1) > 1e-6 || Math.abs(face.u.dot(face.v)) > 1e-6) errors.push(`Paper face is not rigid: ${face.id}`)
@@ -90,6 +94,12 @@ export function validatePartDefinition(value: unknown, definitions: PartDefiniti
       const inspectMotion = createPaperMotionInspector()
       for (const angle of def.input.kind === 'fold-pair' ? validationAngles(def.input.maxOpeningAngleDeg) : [0]) {
         const input = fixtureInput(def.input, angle), result = evaluatePartReference({ custom: root }, input, all)
+        report.errors.push(...inspectContentBindings(result.contents ?? []), ...inspectContentsAt(result.contents ?? [], { openingAngleDeg: angle, maxOpeningAngleDeg: def.input.kind === 'fold-pair' ? def.input.maxOpeningAngleDeg : 180, holdTime: 0 }))
+        if (angle === 0 || def.input.kind === 'fold-pair' && angle === def.input.maxOpeningAngleDeg || angle % 15 === 0) {
+          const hold = Math.max(1, ...result.contents?.flatMap((bound) => bound.tracks.flatMap((track) => track.keys.map((key) => key.time))) ?? [])
+          report.errors.push(...inspectContentMotion(result.contents ?? [], [...result.faces, ...(input.kind === 'surface' ? [input.face] : [input.a, input.b])],
+            { openingAngleDeg: def.input.kind === 'surface' ? 180 : angle, maxOpeningAngleDeg: def.input.kind === 'surface' ? 180 : def.input.maxOpeningAngleDeg }, hold))
+        }
         report.checkedAngles.push(angle)
         report.errors.push(...inspectMotion(result, [input]))
       }

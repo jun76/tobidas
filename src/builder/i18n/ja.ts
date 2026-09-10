@@ -99,6 +99,8 @@ export const ja = {
     edit: '編集',
     language: '表示言語',
     open: '開く',
+    openZip: '作品ZIPを開く',
+    projectZip: '編集用の作品ZIP',
     openHint: '作業フォルダを選んで作品を読み込む',
     save: '保存',
     saveHint: '保存先フォルダを選んで作品を書き出す',

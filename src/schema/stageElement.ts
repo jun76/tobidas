@@ -1,27 +1,13 @@
 import { z } from 'zod'
-import { vec3Schema } from './geometry'
-import { embeddedVideoAudioSchema } from './audio'
+import { transformSchema, contentMotionSchema, textFontSchema, particleSettingsSchema, visualFields, contentAttachmentSchema, presentationSchema } from './content'
+export { transformSchema, contentMotionSchema, textFontSchema, particleSettingsSchema, particleLayerSchema } from './content'
 import { mechanismSchema } from './mechanism'
 import { partInstanceSchema } from '../parts/schema'
-
-export const transformSchema = z.object({
-  position: vec3Schema,
-  rotation: vec3Schema,
-  scale: vec3Schema,
-})
 
 export const parentSpaceSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('left-page') }),
   z.object({ type: z.literal('right-page') }),
   z.object({ type: z.literal('element'), elementId: z.string().min(1) }),
-])
-
-export const contentMotionSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('bob'), amplitude: z.number(), period: z.number().positive(), phase: z.number().default(0) }),
-  z.object({ type: z.literal('sway'), amplitude: z.number(), period: z.number().positive(), phase: z.number().default(0) }),
-  z.object({ type: z.literal('drift'), amplitude: vec3Schema, period: z.number().positive(), phase: z.number().default(0) }),
-  z.object({ type: z.literal('spin'), axis: z.enum(['x', 'y', 'z']), speed: z.number() }),
-  z.object({ type: z.literal('pulse'), amplitude: z.number(), period: z.number().positive(), phase: z.number().default(0) }),
 ])
 
 export const stowHintSchema = z.object({
@@ -58,6 +44,8 @@ const common = {
   visible: z.boolean(),
   opacity: z.number().min(0).max(1),
   parent: parentSpaceSchema,
+  attachment: contentAttachmentSchema.optional(),
+  presentation: presentationSchema.optional(),
   /** 複合部品の面に取り付ける位置。親IDはparentが保持する。 */
   surfaceAttachment: z.object({
     surfaceId: z.string().min(1), u: z.number().min(0).max(1), v: z.number().min(0).max(1),
@@ -78,61 +66,11 @@ const common = {
  * フォントを外から取りに行けず、同梱すると日本語書体は数MB級で作品の容量を食う。
  * だから作品が持つのは「どの系統か」だけにして、実物は端末のものを使う。
  */
-export const textFontSchema = z.enum(['rounded', 'sans', 'serif', 'mono'])
-
-/**
- * 文字の装飾。既定値は追加前の描画 (丸ゴシックの太字) に一致させてあるので、
- * これらを持たない既存の作品を読んでも見た目は変わらない。
- */
-const textStyleFields = {
-  font: textFontSchema.default('rounded'),
-  bold: z.boolean().default(true),
-  italic: z.boolean().default(false),
-  underline: z.boolean().default(false),
-}
-
-export const particleLayerSchema = z.object({
-  enabled: z.boolean().default(false),
-  color: z.string().default('#fff3a0'),
-  count: z.number().int().min(1).max(200).default(6),
-  size: z.number().positive().default(.45),
-  drift: z.number().nonnegative().default(.05),
-  period: z.number().positive().default(11),
-})
-
-/** 独立したパーティクル部品の設定。表示のON/OFFは部品の存在で表す。 */
-export const particleSettingsSchema = z.object({
-  color: z.string().default('#fff3a0'),
-  count: z.number().int().min(1).max(200).default(6),
-  size: z.number().positive().default(.45),
-  drift: z.number().nonnegative().default(.05),
-  period: z.number().positive().default(11),
-})
-
-const defaultParticleSettings = {
-  color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11,
-}
-
 const currentStageElementSchema = z.discriminatedUnion('type', [
   z.object({
     ...common,
     type: z.literal('visual'),
-    width: z.number().positive(),
-    height: z.number().positive(),
-    billboard: z.boolean().default(false),
-    backgroundColor: z.string().default('#00000000'),
-    foregroundColor: z.string().default('#2e241b'),
-    image: z.string().min(1).optional(),
-    backImage: z.string().min(1).optional(),
-    videoAudio: embeddedVideoAudioSchema.optional(),
-    backVideoAudio: embeddedVideoAudioSchema.optional(),
-    text: z.string().default(''),
-    fontSize: z.number().positive().default(.35),
-    align: z.enum(['left', 'center', 'right']).default('center'),
-    ...textStyleFields,
-    particles: particleLayerSchema.default(() => ({
-      enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11,
-    })),
+    ...visualFields,
   }),
   z.object({
     ...common,
@@ -140,7 +78,7 @@ const currentStageElementSchema = z.discriminatedUnion('type', [
     width: z.number().positive(),
     height: z.number().positive(),
     billboard: z.boolean().default(false),
-    particles: particleSettingsSchema.default(() => ({ ...defaultParticleSettings })),
+    particles: particleSettingsSchema.default(() => ({ color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 })),
   }),
   z.object({ ...common, type: z.literal('group') }),
   z.object({ ...common, type: z.literal('part'), part: partInstanceSchema }),
@@ -160,6 +98,24 @@ const currentStageElementSchema = z.discriminatedUnion('type', [
 export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown {
   if (!value || typeof value !== 'object') return value
   const input = structuredClone(value) as Record<string, unknown>
+  const parsedAttachment = contentAttachmentSchema.safeParse(input.attachment)
+  if (parsedAttachment.success) {
+    const attachment = parsedAttachment.data
+    const nodeId = attachment.type === 'surface' ? attachment.surface.nodeId : attachment.elementId
+    input.parent = nodeId === '$book' && attachment.type === 'surface'
+      ? { type: attachment.surface.portId === 'left-page' ? 'left-page' : 'right-page' }
+      : { type: 'element', elementId: nodeId }
+    delete input.surfaceAttachment; delete input.stowFlourish
+  }
+  if (input.type === 'part' && !input.parent) {
+    const part = partInstanceSchema.safeParse(input.part)
+    if (part.success) {
+      const mount = part.data.mount
+      input.parent = mount.type === 'output' && mount.nodeId !== '$book'
+        ? { type: 'element', elementId: mount.nodeId }
+        : { type: mount.type === 'output' && mount.portId === 'left-page' ? 'left-page' : 'right-page' }
+    }
+  }
   const transform = input.baseTransform as { position?: unknown } | undefined
   const position = Array.isArray(transform?.position) ? [...transform.position] : undefined
   const parent = input.parent as { type?: string; elementId?: string } | undefined
@@ -204,7 +160,7 @@ export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown
       backImage: input.backAsset,
       backgroundColor: '#00000000', foregroundColor: '#2e241b', text: '',
       fontSize: .35, align: 'center', font: 'rounded', bold: true, italic: false, underline: false,
-      particles: { enabled: false, ...defaultParticleSettings },
+      particles: { enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
     }
   }
   if (input.type === 'text') {
@@ -213,7 +169,7 @@ export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown
       ...base,
       billboard: false,
       backgroundColor: '#00000000', foregroundColor: input.color ?? '#2e241b',
-      particles: { enabled: false, ...defaultParticleSettings },
+      particles: { enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
     }
   }
   if (input.type === 'effect') {

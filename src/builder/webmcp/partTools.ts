@@ -34,9 +34,19 @@ export function makePartTools(): WebMcpTool[] {
     },
   })
   const node = { id: string, name: string, definition: ref('reference'), mount: ref('binding'), parameters: record(ref('expression')),
-    materials: record({ oneOf: [ref('material'), object({ slot: string })] }), outline: ref('outline'), uniformScale: ref('uniformScale') }
-  const instance = { definition: ref('reference'), mount: ref('binding'), parameters: record(number), materials: record(ref('material')), uniformScale: ref('uniformScale') }
+    materials: record({ oneOf: [ref('material'), object({ slot: string })] }), outline: ref('outline'), shapes: record(ref('shape')), uniformScale: ref('uniformScale') }
+  const instance = { definition: ref('reference'), mount: ref('binding'), parameters: record(number), materials: record(ref('material')), shapes: record(ref('shape')), uniformScale: ref('uniformScale') }
   return [
+    tool('place-content', 'Attach a printed decal, moving visual, or particles to a real material point. Point coordinates are material distances. Holes are not attachable. Uses shared validation, undo and autosave.', commands.placeContentSchema,
+      { spreadId: string, element: ref('connectedContent') }, ['spreadId', 'element'], commands.placeContentCommand),
+    tool('edit-connected-content', 'Move a material anchor, change its side or parent face, or edit the local presentation transform. Placement does not change animation keys. The entire connection path is validated.', commands.editConnectedContentSchema,
+      { spreadId: string, elementId: string, intent: ref('contentEditIntent') }, ['spreadId', 'elementId', 'intent'], commands.editConnectedContentCommand),
+    tool('upsert-part-content', 'Add or edit one typed attached content and its own local tracks in the custom-part editor. External targets and executable code are unsupported.', commands.upsertPartContentSchema,
+      { content: ref('partContent') }, ['content'], commands.upsertPartContentCommand),
+    tool('delete-part-content', 'Delete one attached content and its dependent contents in the custom-part editor, with undo.', z.object({ id: z.string() }),
+      { id: string }, ['id'], ({ id }) => commands.deletePartContentCommand(id)),
+    tool('set-part-shape', 'Set or clear the real outer contour and holes of one material face. Coordinates are normalized from zero to one; existing glue lines and content anchors must remain on material.', commands.setPartShapeSchema,
+      { nodeId: string, faceId: string, shape: { oneOf: [ref('shape'), { type: 'null' }] } }, ['nodeId', 'faceId', 'shape'], commands.setPartShapeCommand),
     { name: 'tobidas-get-part-edit-controls', description: 'Read connected placement controls, actual placement axes, design angles, uniform scale and bounds. Translation uses these material axes; it never creates animation keys.',
       inputSchema: object({ spreadId: string, elementId: string }), annotations: { readOnlyHint: true }, execute: (input) => {
         try { const d = describePartEdit(bookEditScene(useBuilderStore.getState().project, String(input.spreadId)), String(input.elementId))
@@ -56,7 +66,7 @@ export function makePartTools(): WebMcpTool[] {
         if (!spread) return response({ ok: false, error: 'Spread not found' })
         try { const result = evaluateBookParts(project, spread, Math.PI, 0)
           return response({ book: { nodeId: '$book', ports: ['gutter', 'left-page', 'right-page'] },
-            surfaces: placementSurfaces(project, spread).map(({ reference, face }) => ({ reference, width: face.width, height: face.height, outline: face.outline })),
+            surfaces: placementSurfaces(project, spread).map(({ reference, face }) => ({ reference, width: face.width, height: face.height, outline: face.outline, shape: face.shape })),
             nodes: Object.fromEntries(Object.entries(result.nodes).map(([id, node]) => [id, Object.fromEntries(Object.entries(node.ports).map(([key, port]) => [key, portSummary(port)]))])) })
         } catch (error) { return response({ ok: false, error: String(error) }) }
       } },
@@ -67,7 +77,7 @@ export function makePartTools(): WebMcpTool[] {
     tool('add-part-node', 'Add a built-in or library part to the draft graph. Bind to input, an upstream public output, or two coincident material hinge lines. Use get-part-catalog first. Assets must already be imported in the standard UI.', commands.addPartNodeSchema,
       node, ['name', 'definition', 'mount'], commands.addPartNodeCommand),
     tool('update-part-node', 'Edit an internal node through the same typed command, undo and autosave as the inspector. Parameters allow literals, public parameter references, addition and multiplication; no executable code.', commands.updatePartNodeSchema,
-      { nodeId: string, changes: object({ name: node.name, mount: node.mount, parameters: node.parameters, materials: node.materials, outline: node.outline, uniformScale: node.uniformScale }, []) }, ['nodeId', 'changes'], commands.updatePartNodeCommand),
+      { nodeId: string, changes: object({ name: node.name, mount: node.mount, parameters: node.parameters, materials: node.materials, outline: node.outline, shapes: node.shapes, uniformScale: node.uniformScale }, []) }, ['nodeId', 'changes'], commands.updatePartNodeCommand),
     tool('edit-part-node', 'Edit connected placement in the custom-part editor with the same movement, design rotation and uniform scale planner used by canvas gizmos. Preserves real input faces and validates dependent nodes.', commands.editPartNodeSchema,
       { nodeId: string, intent: ref('editIntent') }, ['nodeId', 'intent'], commands.editPartNodeCommand),
     tool('expose-part-edit-handle', 'Declare an angle handle bound to a supported internal part operation. Stores a portable declaration and binds its public parameter; never stores executable code.', commands.exposePartEditHandleSchema,

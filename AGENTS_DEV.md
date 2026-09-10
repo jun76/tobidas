@@ -165,6 +165,26 @@ UIとWebMCPは `builder/parts/commands.ts` の型付き操作を共有し、`bui
 確認作品は `node scripts/generate-gizmo-example.mjs` で `.tmp/021-preview/` へ生成します。
 生成器は共通編集計画、部品交換、作品の保存・再読み込み、単一HTMLの書き出しを通します。
 
+### 022の紙面の装飾とフィクション
+
+紙に印刷する内容は `presentation.kind: 'decal'`、自由な動きは `fiction` と明示し、どちらも実面へ到達する `attachment` を持ちます。
+紙部品を演出の子や演出の支持面へ接続しません。新要素の保存に旧parent・stow・surfaceAttachmentを重ねず、表示ツリーの所属は接続から導出します。
+`parts/contents.ts` が実面から基準座標を解決し、Builder・Player・部品プレビューで同じ評価を使います。
+退場係数はフィクションの根の並進と大きさへ一度だけ掛け、自転角と支持紙へ掛けません。
+外周と穴は面IDごとの材料形状で、描画、面選択、接着、交差、材料不変性に共用します。
+形状や演出を含むカスタム部品はschemaVersion 2で交換し、contentsと内部トラックも内容ハッシュへ含めます。
+型付きの編集は `builder/parts/contentCommands.ts` へまとめ、キーの変位と面上の基準点の変更を区別します。
+周期の包絡とキー間を含めた検査を行いますが、有限角度の結果を連続した無衝突証明とは呼びません。
+
+022のサンプルは `scripts/samples/connected.mjs`、`connected-layouts.mjs`、`paper-shapes.json` から生成します。
+`rear-supports.mjs` は背後の家・木・机などの実面から支持候補を選び、接着箇所と開閉・収納を検査します。専用の横断接続帯を生成しません。
+支持の取り付け高さは部品の50%を基準にし、親までの距離を理由に下げません。輪郭と穴を避ける横位置を求め、親の高さや回転部の明示的な干渉上限に合わせる場合だけ低くします。
+縦置きの `supportOffset` は支持紙の横位置を設計時に決める値で、再生中の材料寸法は変えません。
+`npm run samples:generate -- --export` の既定出力は `.tmp/022-samples` です。比較用の `projects/` 原本を上書きしません。
+指定先への実験出力には `--out-root`、確認画像の同梱には `--shots` を使います。
+標準画面の受け入れ検査は `scripts/verify-connected-samples.mjs` と `scripts/verify-connected-part.mjs`、新方式の構造検査は `npm run samples:check` を使います。
+公開サンプルの差し替えを明示された場合だけ、配布先の更新へ進みます。
+
 ### 従来データに残る019の経路
 
 以下は既存のvisual・assemblyデータを読む経路の規約です。020の新規部品へ自動補正を流用しません。

@@ -36,6 +36,11 @@ export function loadOverrides(workId) {
  */
 export function applyOverrides(project, overrides) {
   if (!overrides) return { patched: 0, removed: 0, dropped: 0 }
+  const allowed = new Set([...FIELDS, ...DIRECT, 'asset', 'remove'])
+  for (const [key, patch] of Object.entries(overrides)) {
+    const unknown = Object.keys(patch).filter((field) => !allowed.has(field))
+    if (unknown.length) throw new Error(`${project.id}: 未対応の上書き項目 ${key}: ${unknown.join(', ')}`)
+  }
   const seen = new Set()
   let patched = 0
   let removed = 0

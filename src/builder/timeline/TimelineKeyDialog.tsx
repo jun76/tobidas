@@ -17,6 +17,7 @@ import { useBuilderStore } from '../store'
 import { useT } from '../i18n'
 import { FormDialog } from '../ui/FormDialog'
 import st from '../builder.module.css'
+import { evaluateBookParts } from '../../parts/book'
 
 type TargetOption = { value: string; label: string; target: TimelineTarget }
 
@@ -36,18 +37,22 @@ export function TimelineKeyDialog({ spreadId, initialTime, onClose }: {
       label: `${t.timeline.elementTarget}: ${element.name}`,
       target: { type: 'element' as const, elementId: element.id },
     })),
+    ...(() => { try { return (evaluateBookParts(store.project, spread, Math.PI, 0).contents ?? []).map((content) => ({
+      value: `part-content:${content.id}`, label: `${spread.elements.find((item) => item.id === content.ownerId)?.name ?? content.ownerId} / ${content.element.name}`,
+      target: { type: 'part-content' as const, elementId: content.ownerId, path: [...content.id.split('/').slice(1, -2), content.id.split('/').at(-1)!] },
+    })) } catch { return [] } })(),
     ...store.project.assets.filter((asset) => asset.type === 'audio').map((asset) => ({
       value: `sound:${asset.id}`,
       label: `${t.timeline.soundTarget}: ${asset.name}`,
       target: { type: 'sound' as const, assetId: asset.id },
     })),
-  ], [spread.elements, store.project.assets, t])
+  ], [spread, store.project, t])
   const selectedElement = store.selection.type === 'element' && store.selection.spreadId === spreadId
     ? `element:${store.selection.elementId}`
     : 'environment'
   const [targetValue, setTargetValue] = useState(targets.some((item) => item.value === selectedElement) ? selectedElement : targets[0].value)
   const target = targets.find((item) => item.value === targetValue)?.target ?? targets[0].target
-  const properties = timelinePropertiesForTarget(target)
+  const properties = timelinePropertiesForTarget(target, spreadId)
   const [property, setProperty] = useState<TimelineProperty>(properties[0])
   const activeProperty = properties.includes(property) ? property : properties[0]
   const [time, setTime] = useState(initialTime)
@@ -57,7 +62,7 @@ export function TimelineKeyDialog({ spreadId, initialTime, onClose }: {
 
   const chooseTarget = (value: string) => {
     const next = targets.find((item) => item.value === value)?.target ?? targets[0].target
-    const nextProperty = timelinePropertiesForTarget(next)[0]
+    const nextProperty = timelinePropertiesForTarget(next, spreadId)[0]
     setTargetValue(value)
     setProperty(nextProperty)
     setValueText(defaultValueText(nextProperty, store.project.assets))

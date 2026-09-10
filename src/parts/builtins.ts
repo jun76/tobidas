@@ -131,7 +131,8 @@ export function evaluateBuiltin(id: BuiltinPartId, port: PartPort, overrides: Re
   } else {
     const supportHeight = id === 'upright' ? p.supportHeight : p.height
     const supportWidth = id === 'upright' ? p.supportWidth : p.width
-    if (supportHeight > p.height + EPSILON || supportWidth > p.width + EPSILON) throw new Error('Support must fit the upright face')
+    const supportOffset = id === 'upright' ? p.supportOffset : 0
+    if (supportHeight > p.height + EPSILON || Math.abs(supportOffset) + supportWidth / 2 > p.width / 2 + EPSILON) throw new Error('Support must fit the upright face')
     let panelRay = rayB, bridgeRay = rayA, bridgeLength = p.distance, backHeight = supportHeight
     if (id === 'upright' && Math.abs(p.tiltAngle - 90) > 1e-8) {
       // 90°入力での設計角から、閉状態で一直線になる四節リンクの長さを決める。
@@ -148,12 +149,13 @@ export function evaluateBuiltin(id: BuiltinPartId, port: PartPort, overrides: Re
       const contact = a.clone().addScaledVector(direction, along).addScaledVector(perpendicular, Math.sqrt(Math.max(0, square)))
       panelRay = contact.clone().sub(a).normalize(); bridgeRay = contact.clone().sub(b).normalize()
     }
-    const backAnchor = o.clone().addScaledVector(rayB, backHeight)
+    // 支持を絵の裏の接着可能な場所へ寄せる。紙の幅・長さ・接着位置は開閉中に変えない。
+    const backAnchor = o.clone().addScaledVector(rayB, backHeight).addScaledVector(axis, supportOffset)
     const top = a.clone().addScaledVector(panelRay, p.height)
     const panel = addPanel('panel', a, panelRay, p.height)
     const support = addPanel(id === 'upright' ? 'support' : 'top', backAnchor, bridgeRay, bridgeLength, id === 'upright', supportWidth)
     glue(panel, port.a, left(a), right(a)); glue(support, port.b, left(backAnchor, supportWidth), right(backAnchor, supportWidth))
-    const contact = a.clone().addScaledVector(panelRay, supportHeight)
+    const contact = a.clone().addScaledVector(panelRay, supportHeight).addScaledVector(axis, supportOffset)
     glue(support, panel, left(contact, supportWidth), right(contact, supportWidth), 'top')
     pair('ground-panel', port.a, panel, a, rayA, panelRay, port.extentA - p.distance, p.height, port.foldSign)
     if (id !== 'upright') pair('top-panel', support, panel, top, rayA.clone().negate(), rayB.clone().negate(), p.distance, p.height, port.foldSign)

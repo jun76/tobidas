@@ -3,6 +3,7 @@ import { vec3Schema } from './geometry'
 
 export const timelineTargetSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('element'), elementId: z.string().min(1) }),
+  z.object({ type: z.literal('part-content'), elementId: z.string().min(1), path: z.array(z.string().min(1)).min(1) }),
   z.object({ type: z.literal('environment') }),
   z.object({ type: z.literal('camera') }),
   // 効果音は紙面の部品ではなくタイムラインの点。
@@ -81,6 +82,7 @@ export const VEC3_PROPERTIES = new Set<TimelineProperty>(['position', 'target'])
 
 export function timelineTargetKey(target: TimelineTarget): string {
   if (target.type === 'element') return `element:${target.elementId}`
+  if (target.type === 'part-content') return `part-content:${target.elementId}/${target.path.join('/')}`
   if (target.type === 'sound') return `sound:${target.assetId}`
   return target.type
 }

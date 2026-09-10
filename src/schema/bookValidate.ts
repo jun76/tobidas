@@ -75,7 +75,14 @@ export function validateBookProject(data: unknown): BookValidationResult {
   }
   useAsset(project.audio?.bgmAsset, ['audio'], 'BGM')
   for (const definition of Object.values(project.partDefinitions ?? {})) {
-    for (const asset of definition.assets) useAsset(asset.id, ['image', 'svg'], definition.name)
+    for (const asset of definition.assets) useAsset(asset.id, ['image', 'svg', 'video'], definition.name)
+    for (const { element, tracks } of definition.contents ?? []) {
+      if (element.type === 'visual') {
+        useAsset(element.image, ['image', 'svg', 'video'], definition.name + '/' + element.id)
+        useAsset(element.backImage, ['image', 'svg', 'video'], definition.name + '/' + element.id)
+      }
+      for (const track of tracks) if (track.property === 'visual.image') for (const key of track.keys) useAsset(String(key.value), ['image', 'svg', 'video'], definition.name + '/' + element.id)
+    }
   }
   const visualTypes = ['image', 'svg', 'video']
   useAsset(project.book.frontCover.frontAsset, visualTypes, 'front cover')

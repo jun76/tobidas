@@ -1,6 +1,7 @@
 import { Plane, ShapeUtils, Vector2, Vector3 } from 'three'
 import { PAPER_SURFACE_LIFT, pageLeafRestHeight } from '../runtime/pageStack'
-import type { PaperFace } from './geometry'
+import { faceShape, type PaperFace } from './geometry'
+import { shapeRings } from './shape'
 
 const CONTACT_LIFT = .001
 const MAX_STACK_LIFT = .006
@@ -72,8 +73,9 @@ export function paperDisplayFaces(faces: PaperFace[], display?: BookPaperDisplay
   })
 }
 
-interface Vertex { point: Vector3; uv: Vector2 }
-function clip(polygon: Vertex[], plane: Plane, sign: 1 | -1): Vertex[] {
+export interface DisplayVertex { point: Vector3; uv: Vector2 }
+type Vertex = DisplayVertex
+export function clipDisplayPolygon(polygon: Vertex[], plane: Plane, sign: 1 | -1): Vertex[] {
   const result: Vertex[] = []
   for (let i = 0; i < polygon.length; i++) {
     const a = polygon[i], b = polygon[(i + 1) % polygon.length]
@@ -88,13 +90,13 @@ function clip(polygon: Vertex[], plane: Plane, sign: 1 | -1): Vertex[] {
 }
 
 /** 紙の幅から外れる部分は残し、実紙面の裏へ入った部分だけを遮る。 */
-function subtractPaper(polygon: Vertex[], volume: Plane[]): Vertex[][] {
+export function subtractPaper(polygon: Vertex[], volume: Plane[]): Vertex[][] {
   let inside = polygon
   const outside: Vertex[][] = []
   for (const boundary of volume) {
-    const remainder = clip(inside, boundary, -1)
+    const remainder = clipDisplayPolygon(inside, boundary, -1)
     if (remainder.length >= 3) outside.push(remainder)
-    inside = clip(inside, boundary, 1)
+    inside = clipDisplayPolygon(inside, boundary, 1)
     if (inside.length < 3) break
   }
   return outside
@@ -102,10 +104,11 @@ function subtractPaper(polygon: Vertex[], volume: Plane[]): Vertex[][] {
 
 /** 本体・裏面・文字・影に同じ描画頂点を渡す。切断点のUVは元の材料座標を補間する。 */
 export function paperMeshData(face: PaperFace, surfaces: BookPaperSurface[] = []): { positions: number[]; uvs: number[] } {
-  const outline = (face.outline ?? [[0, 0], [1, 0], [1, 1], [0, 1]]).map(([u, v]) => new Vector2(u, v))
+  const rings = shapeRings(faceShape(face)).map((ring) => ring.map(([u, v]) => new Vector2(u, v)))
+  const outline = rings.flat()
   const vertices: Vertex[] = outline.map((uv) => ({ uv, point: face.origin.clone()
     .addScaledVector(face.u, uv.x * face.width).addScaledVector(face.v, uv.y * face.height) }))
-  let polygons = ShapeUtils.triangulateShape(outline, []).map((triangle) => triangle.map((index) => vertices[index]))
+  let polygons = ShapeUtils.triangulateShape(rings[0], rings.slice(1)).map((triangle) => triangle.map((index) => vertices[index]))
   for (const surface of surfaces) polygons = polygons.flatMap((polygon) => subtractPaper(polygon, surface.occluded))
   const positions: number[] = [], uvs: number[] = []
   for (const polygon of polygons) for (let i = 1; i + 1 < polygon.length; i++) {

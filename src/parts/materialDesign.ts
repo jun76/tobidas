@@ -1,10 +1,11 @@
 import type { Vector3 } from 'three'
-import type { PaperEvaluation, PaperFace, PartPort } from './geometry'
+import { faceShape, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
+import { shapeRings } from './shape'
 
 type MaterialPoint = readonly [number, number, number]
 interface MaterialFace {
   readonly width: number; readonly height: number; readonly support: boolean
-  readonly outline: readonly (readonly [number, number])[]
+  readonly outline: readonly (readonly [number, number])[]; readonly ringLengths: readonly number[]
 }
 interface MaterialAttachment {
   readonly parent: readonly MaterialPoint[]; readonly child: readonly MaterialPoint[]
@@ -44,7 +45,8 @@ export function capturePaperDesign(result: PaperEvaluation, inputs: readonly Par
   const surfaces = new Map<string, MaterialFace>(), attachments = new Map<string, MaterialAttachment[]>()
   for (const [id, face] of faces) surfaces.set(id, {
     width: face.width, height: face.height, support: face.support,
-    outline: (face.outline ?? [[0, 0], [1, 0], [1, 1], [0, 1]]).map(([u, v]) => [u * face.width, v * face.height]),
+    outline: shapeRings(faceShape(face)).flat().map(([u, v]) => [u * face.width, v * face.height]),
+    ringLengths: shapeRings(faceShape(face)).map((ring) => ring.length),
   })
   const materialPoint = (face: PaperFace, point: Vector3): MaterialPoint => {
     const delta = point.clone().sub(face.origin)
@@ -84,7 +86,7 @@ export function comparePaperDesign(reference: PaperDesign, candidate: PaperDesig
     const after = candidate.surfaces.get(id)
     if (!after) continue
     if (!equalNumbers([before.width, before.height], [after.width, after.height]) || before.support !== after.support
-      || before.outline.length !== after.outline.length || before.outline.some((point, i) => !equalNumbers(point, after.outline[i]))) {
+      || !equalNumbers(before.ringLengths, after.ringLengths) || before.outline.length !== after.outline.length || before.outline.some((point, i) => !equalNumbers(point, after.outline[i]))) {
       errors.push(`Paper material changes during folding: ${id}`)
     }
   }

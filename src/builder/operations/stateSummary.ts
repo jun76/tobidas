@@ -57,7 +57,7 @@ function elementSummary(element: StageElement, spreadId: string, trackIds: strin
     id: element.id,
     name: element.name,
     type: element.type,
-    parent: element.parent,
+    parent: element.parent, attachment: element.attachment, presentation: element.presentation,
     spreadId,
     position: [...element.baseTransform.position],
     rotation: [...element.baseTransform.rotation],

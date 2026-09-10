@@ -1,10 +1,13 @@
 import { Vector3 } from 'three'
 import type { PartInput, PartMaterial } from './schema'
+import type { ConnectedContent } from '../schema/content'
+import type { TimelineTrack } from '../schema/timeline'
+import { rectangleShape, shapeContains, shapeRings, type PaperShape } from './shape'
 
 /** 寸法・輪郭は配置時の設計値。開閉中に変わるのはoriginと直交するu/vの姿勢だけ。 */
 export interface PaperFace {
   id: string; origin: Vector3; u: Vector3; v: Vector3; width: number; height: number
-  support: boolean; material: PartMaterial; outline?: [number, number][]
+  support: boolean; material: PartMaterial; outline?: [number, number][]; shape?: PaperShape
   /** 一枚の絵を複数の剛体面へ分けるときの、画像横方向の担当範囲。 */
   artworkSpan?: [number, number]
   /** 仮想接続面を実際に覆う親面と支持紙。接着検査では空白を支持面とみなさない。 */
@@ -21,7 +24,13 @@ export type PartPort = { kind: 'surface'; face: PaperFace } | FoldPair
 export interface PaperConnection {
   actual: Vector3[]; expected: Vector3[]; parentFace: string; childFace: string
 }
+export interface BoundPaperContent {
+  id: string; ownerId: string; element: ConnectedContent; tracks: TimelineTrack[]
+  face?: PaperFace; parentId?: string; unitScale: number
+}
+export const faceShape = (face: PaperFace): PaperShape => face.shape ?? { outer: face.outline ?? rectangleShape().outer, holes: [] }
 export interface PaperEvaluation {
+  contents?: BoundPaperContent[]
   faces: PaperFace[]; ports: Record<string, PartPort>; connections: PaperConnection[]
   /** 編集ハンドルが参照する実入力。作品や交換形式には保存しない。 */
   inputPort?: PartPort
@@ -53,27 +62,19 @@ export function faceContains(face: PaperFace, point: Vector3, epsilon = EPSILON)
   if (Math.abs(delta.dot(face.u.clone().cross(face.v))) > epsilon
     || u < -epsilon || u > face.width + epsilon || v < -epsilon || v > face.height + epsilon) return false
   if (face.contactRegions) return face.contactRegions.some((region) => faceContains(region, point, epsilon))
-  if (!face.outline) return true
-  let inside = false
-  const points = face.outline.map(([x, y]) => [x * face.width, y * face.height])
-  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-    const [ax, ay] = points[j], [bx, by] = points[i], dx = bx - ax, dy = by - ay
-    const length = Math.hypot(dx, dy)
-    if (length > 0 && Math.abs((u - ax) * dy - (v - ay) * dx) <= epsilon * length
-      && (u - ax) * (u - bx) + (v - ay) * (v - by) <= epsilon) return true
-    if ((ay > v) !== (by > v) && u < (bx - ax) * (v - ay) / (by - ay) + ax) inside = !inside
-  }
-  return inside
+  if (!face.shape && !face.outline) return true
+  return shapeContains(faceShape(face), [Math.max(0, Math.min(1, u / face.width)), Math.max(0, Math.min(1, v / face.height))])
 }
 /** 輪郭を横切る全区間を調べ、接着線の途中だけが切り落とされることも拒否する。 */
 export function faceContainsLine(face: PaperFace, a: Vector3, b: Vector3): boolean {
   if (!faceContains(face, a) || !faceContains(face, b)) return false
-  if (!face.outline && !face.contactRegions) return true
+  if (!face.outline && !face.shape && !face.contactRegions) return true
   const delta = b.clone().sub(a), cuts = [0, 1]
   const boundaries = (region: PaperFace) => {
     const origin = a.clone().sub(region.origin), ux = origin.dot(region.u), uy = origin.dot(region.v)
     const dx = delta.dot(region.u), dy = delta.dot(region.v)
-    const points = (region.outline ?? [[0, 0], [1, 0], [1, 1], [0, 1]]).map(([u, v]) => [u * region.width, v * region.height])
+    for (const ring of shapeRings(faceShape(region))) {
+    const points = ring.map(([u, v]) => [u * region.width, v * region.height])
     for (let i = 0; i < points.length; i++) {
       const [ax, ay] = points[i], [bx, by] = points[(i + 1) % points.length], ex = bx - ax, ey = by - ay
       const denominator = dx * ey - dy * ex
@@ -81,6 +82,7 @@ export function faceContainsLine(face: PaperFace, a: Vector3, b: Vector3): boole
       const t = ((ax - ux) * ey - (ay - uy) * ex) / denominator
       const s = ((ax - ux) * dy - (ay - uy) * dx) / denominator
       if (t > 0 && t < 1 && s >= 0 && s <= 1) cuts.push(t)
+    }
     }
     region.contactRegions?.forEach(boundaries)
   }

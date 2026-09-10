@@ -23,7 +23,7 @@ export type BookCamera = z.infer<typeof cameraSchema>
 
 /** 新規プロジェクトで使う光源の既定値。 */
 export const DEFAULT_BOOK_LIGHTS = {
-  ambient: { color: '#ffffff', intensity: 1.2 },
+  ambient: { color: '#ffffff', intensity: 2.6 },
   directional: { color: '#ffffff', intensity: 1.8, position: [-4, 10, 6] as [number, number, number] },
 }
 

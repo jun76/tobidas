@@ -7,12 +7,13 @@ import { placementProject, referenceDefinition } from './commands'
 import { t } from '../i18n'
 
 interface PlacementState {
-  tool: { reference: PartReference; name: string; faces: 1 | 2 } | null
+  tool: { reference?: PartReference; content?: 'decal' | 'fiction' | 'particle'; name: string; faces: 1 | 2 } | null
   first: SurfacePick | null
   hover: string | null
   reason: PlacementFailure | null
   error: string
   start(reference: PartReference): void
+  startContent(kind: 'decal' | 'fiction' | 'particle'): void
   cancel(): void
   chooseFirst(first: SurfacePick): void
   back(): void
@@ -30,6 +31,12 @@ export const usePartPlacementStore = create<PlacementState>((set, get) => ({
     state.setActiveSpread(state.activeSpreadId); state.setPlacement(null)
     const name = 'builtin' in reference ? t().parts.names[reference.builtin as keyof ReturnType<typeof t>['parts']['names']] : project.partDefinitions![reference.custom].name
     set({ ...empty, tool: { reference, name, faces: definition.input.kind === 'surface' ? 1 : 2 } })
+  },
+  startContent: (kind) => {
+    if (get().tool?.content === kind) { set(empty); return }
+    const state = useBuilderStore.getState(); if (state.mode !== 'edit') return
+    state.setActiveSpread(state.activeSpreadId); state.setPlacement(null)
+    set({ ...empty, tool: { content: kind, name: t().parts.content[kind], faces: 1 } })
   },
   cancel: () => set(empty),
   chooseFirst: (first) => set({ first, hover: null, reason: null, error: '' }),

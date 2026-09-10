@@ -49,12 +49,20 @@ function materialAssetIds(definition: PartDefinition): Set<string> {
   const add = (material: PartMaterial) => { if (material.image) ids.add(material.image); if (material.backImage) ids.add(material.backImage) }
   Object.values(definition.materialSlots).forEach(add)
   for (const node of definition.nodes) for (const material of Object.values(node.materials)) if (!('slot' in material)) add(material)
+  for (const { element, tracks } of definition.contents ?? []) {
+    if (element.type === 'visual') { if (element.image) ids.add(element.image); if (element.backImage) ids.add(element.backImage) }
+    for (const track of tracks) if (track.property === 'visual.image') for (const key of track.keys) if (typeof key.value === 'string') ids.add(key.value)
+  }
   return ids
 }
 function remapMaterials(definition: PartDefinition, aliases: Map<string, string>): void {
   const remap = (material: PartMaterial) => {
     if (material.image) material.image = aliases.get(material.image) ?? material.image
     if (material.backImage) material.backImage = aliases.get(material.backImage) ?? material.backImage
+  }
+  for (const { element, tracks } of definition.contents ?? []) {
+    if (element.type === 'visual') { if (element.image) element.image = aliases.get(element.image) ?? element.image; if (element.backImage) element.backImage = aliases.get(element.backImage) ?? element.backImage }
+    for (const track of tracks) if (track.property === 'visual.image') for (const key of track.keys) if (typeof key.value === 'string') key.value = aliases.get(key.value) ?? key.value
   }
   Object.values(definition.materialSlots).forEach(remap)
   for (const node of definition.nodes) Object.values(node.materials).forEach((material) => { if (!('slot' in material)) remap(material) })
@@ -63,11 +71,24 @@ function remapMaterials(definition: PartDefinition, aliases: Map<string, string>
 /** 素材名と依存参照を内容ハッシュへ固定し、他の作品へ独立して持ち運べる形にする。 */
 export async function snapshotPartBundle(source: PartBundle): Promise<PartBundle & { hash: string }> {
   const aliases = new Map<string, string>(), assets = new Map<string, Asset>(), hashes = new Map<string, string>()
+  // 作品全体から渡された素材のうち、この部品と依存部品が実際に使うものだけを同梱する。
+  const neededAssets = new Set<string>(), visited = new Set<PartDefinition>()
+  const collect = (definition: PartDefinition) => {
+    if (visited.has(definition)) return
+    visited.add(definition)
+    materialAssetIds(definition).forEach((id) => neededAssets.add(id))
+    for (const node of definition.nodes) if ('custom' in node.definition) {
+      const dependency = source.definitions[node.definition.custom]
+      if (!dependency) throw new Error(`Missing dependency: ${node.definition.custom}`)
+      collect(dependency)
+    }
+  }
+  collect(source.definition)
   let totalBytes = 0
-  for (const asset of source.assets) {
-    if (!['image', 'svg'].includes(asset.type)) throw new Error('Paper parts support image and SVG assets')
+  for (const asset of source.assets.filter((asset) => neededAssets.has(asset.id))) {
+    if (!['image', 'svg', 'video'].includes(asset.type)) throw new Error('Part contents support image, SVG and video assets')
     const bytes = await assetBytes(asset), hash = await contentHash(bytes)
-    const extension = asset.type === 'svg' ? 'svg' : asset.mime === 'image/webp' ? 'webp' : asset.mime === 'image/jpeg' ? 'jpg' : 'png'
+    const extension = asset.type === 'video' ? asset.mime === 'video/webm' ? 'webm' : 'mp4' : asset.type === 'svg' ? 'svg' : asset.mime === 'image/webp' ? 'webp' : asset.mime === 'image/jpeg' ? 'jpg' : 'png'
     const id = `part-${hash}.${extension}`
     if (aliases.has(asset.id) && aliases.get(asset.id) !== id) throw new Error(`Conflicting asset id: ${asset.id}`)
     aliases.set(asset.id, id); hashes.set(id, hash)
@@ -142,7 +163,7 @@ export async function importPartFiles(files: Map<string, Uint8Array>): Promise<P
     for (const meta of def.assets) {
       const bytes = files.get(checkedPath(`assets/${meta.id}`))
       if (!bytes || await contentHash(bytes) !== meta.hash) throw new Error(`Asset hash mismatch: ${meta.id}`)
-      if (!['image', 'svg'].includes(meta.type)) throw new Error('Unsupported part asset type')
+      if (!['image', 'svg', 'video'].includes(meta.type)) throw new Error('Unsupported part asset type')
       const existing = assets.get(meta.id)
       if (existing && await contentHash(await assetBytes(existing)) !== meta.hash) throw new Error(`Asset id conflict: ${meta.id}`)
       const { hash: _hash, ...assetMeta } = meta

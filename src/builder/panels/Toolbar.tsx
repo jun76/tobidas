@@ -292,14 +292,14 @@ function Dropdown({ label, title, children }: { label: string; title?: string; c
 }
 
 /**
- * 作業フォルダを開く。作品はフォルダ (`project.json` + `assets/`) の一形式だけ。
+ * 作業フォルダ、または同じ project.json と assets をまとめた作品ZIPを開く。
  * ピッカーを持たないブラウザだけ、フォルダ選択の input へ落とす。
  */
 function OpenButton({ onInvoke }: { onInvoke?: () => void } = {}) {
   const t = useT()
   const dialogs = useDialogs()
   const setProject = useBuilderStore((state) => state.setProject)
-  const dirRef = useRef<HTMLInputElement>(null)
+  const dirRef = useRef<HTMLInputElement>(null), zipRef = useRef<HTMLInputElement>(null)
   const apply = (result: ImportResult) => {
     setProject(result.project, 'import')
     if (result.notices.length) dialogs.showMessage(t.dialog.importNoticeTitle, result.notices.join('\n'))
@@ -318,6 +318,11 @@ function OpenButton({ onInvoke }: { onInvoke?: () => void } = {}) {
     }}>
       {t.toolbar.open}
     </button>
+    <button onClick={() => zipRef.current?.click()}>{t.toolbar.openZip}</button>
+    <input ref={zipRef} type="file" hidden accept=".zip" aria-label={t.toolbar.openZip} onChange={(event) => {
+      const file = event.target.files?.[0]; event.target.value = ''
+      if (file) void run(async () => (await import('../io/packageImport')).importProjectZip(file))
+    }} />
     <input ref={dirRef} hidden type="file" aria-label={t.toolbar.open} {...({ webkitdirectory: '' } as object)} onChange={(event) => {
       // 入力欄のリセットでFileListが空になる前に、非同期読み込み用の一覧を確保する。
       const files = Array.from(event.target.files ?? [])
@@ -376,6 +381,7 @@ function ExportMenu({ inline = false, onClose }: { inline?: boolean; onClose?: (
         <button onClick={() => runAndClose(async () => (await import('../io/siteExport')).exportSiteZip(project))}>
           {t.toolbar.exportSiteZip}
         </button>
+        <button onClick={() => runAndClose(async () => (await import('../io/packageExport')).exportProjectZip(project))}>{t.toolbar.projectZip}</button>
     </>
   }
   return <>

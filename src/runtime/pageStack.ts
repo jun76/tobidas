@@ -47,6 +47,17 @@ export function pageLeafRestHeight(pageThickness: number): number {
   return Math.max(0, pageThickness) / 2
 }
 
+/** 実際に開いている見開きの両側だけを描く。閉じた隣の葉を同一平面へ重ねない。 */
+export function visibleInteriorSheets(openness: readonly number[]): number[] {
+  const visible = new Set<number>()
+  openness.forEach((angle, index) => {
+    if (angle <= 1e-8) return
+    if (index >= 1) visible.add(index)
+    if (index + 1 < openness.length) visible.add(index + 1)
+  })
+  return [...visible].sort((a, b) => a - b)
+}
+
 /**
  * ページのクリック判定面へ与える、重なり順ぶんの微小な持ち上げ。
  *

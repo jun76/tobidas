@@ -25,6 +25,7 @@ import { selectActiveSpread } from './state/selectors'
 import { PartPlacementController } from './viewport/PartPlacementController'
 import { PlacementBadge } from './parts/PlacementBadge'
 import { usePartPlacementStore } from './parts/placementState'
+import { useContentEditStore } from './parts/contentEditState'
 import { usePartEditStore } from './parts/editState'
 import { PartEditBadge } from './parts/PartEditFields'
 
@@ -37,6 +38,8 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
   const t = useT()
   const store = useBuilderStore()
   const placingPart = usePartPlacementStore((state) => Boolean(state.tool))
+  const contentPreview = useContentEditStore((state) => state.session?.preview)
+  const contentError = useContentEditStore((state) => state.error)
   const partPreview = usePartEditStore((state) => state.session?.preview)
   const dialogs = useDialogs()
   const [screenshotState, setScreenshotState] = useState<ScreenshotState>('idle')
@@ -140,7 +143,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
       }}
     >
       <BookRuntime
-        project={partPreview ?? store.project}
+        project={contentPreview ?? partPreview ?? store.project}
         progress={playback.progress}
         showGuides={store.mode === 'edit'}
         selectionSpreadId={store.mode === 'edit' && !coverSide ? store.activeSpreadId : undefined}
@@ -170,7 +173,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
       </>}
     </Canvas>
     {store.mode === 'edit' && <PlacementBadge />}
-    {store.mode === 'edit' && !placingPart && <PartEditBadge />}
+    {store.mode === 'edit' && !placingPart && <><PartEditBadge />{contentError && <div role="status">{contentError}</div>}</>}
 
     {store.mode === 'edit' && viewTitle && <div className={st.viewportTitleBar}>
       <div className={st.viewportTitle}>{viewTitle}</div>

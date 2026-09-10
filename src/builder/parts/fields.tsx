@@ -23,13 +23,13 @@ export function NumberField({ label, value, onChange, min, max, step = .05 }: { 
       setDraft(display)
     }} /></label>
 }
-export function MaterialFields({ value, assets, onChange }: { value: PartMaterial; assets: Asset[]; onChange: (material: PartMaterial) => void }) {
+export function MaterialFields({ value, assets, onChange, allowVideo = false }: { value: PartMaterial; assets: Asset[]; onChange: (material: PartMaterial) => void; allowVideo?: boolean }) {
   const t = useT().parts
   return <div className={st.fields}>
     <label className={st.field}><span>{t.color}</span><input type="color" aria-label={t.color} value={value.color ?? '#e3b476'} onChange={(event) => onChange({ ...value, color: event.target.value })} /></label>
     {(['image', 'backImage'] as const).map((key) => <label className={st.field} key={key}><span>{t[key]}</span>
       <select aria-label={t[key]} value={value[key] ?? ''} onChange={(event) => onChange({ ...value, [key]: event.target.value || undefined })}>
-        <option value="">{t.noImage}</option>{assets.filter((asset) => ['image', 'svg'].includes(asset.type)).map((asset) => <option key={asset.id} value={asset.id}>{asset.name}</option>)}
+        <option value="">{t.noImage}</option>{assets.filter((asset) => ['image', 'svg'].includes(asset.type) || allowVideo && asset.type === 'video').map((asset) => <option key={asset.id} value={asset.id}>{asset.name}</option>)}
       </select></label>)}
     <TextField label={t.text} multiline value={value.text ?? ''} onChange={(text) => onChange({ ...value, text })} />
     <label className={st.field}><span>{t.textColor}</span><input type="color" aria-label={t.textColor} value={value.textColor ?? '#322719'} onChange={(event) => onChange({ ...value, textColor: event.target.value })} /></label>

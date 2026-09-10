@@ -21,7 +21,7 @@ export function compileSpreadStow(book: Book, spread: Spread): CompiledSpreadSto
     const seen = new Set<string>()
     let current: StageElement | undefined = element
     while (current && !seen.has(current.id)) {
-      if (current.type === 'assembly' || current.type === 'part') return true
+      if (current.type === 'assembly' || current.type === 'part' || current.attachment) return true
       seen.add(current.id)
       current = current.parent.type === 'element' ? byId.get(current.parent.elementId) : undefined
     }

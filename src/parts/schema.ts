@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { assetSchema, type Asset } from '../schema/assets'
+import { partContentSchema } from '../schema/content'
+import { paperShapeSchema } from './shape'
 
 const finite = z.number().finite()
 const id = z.string().min(1).max(200)
@@ -55,10 +57,11 @@ export const partNodeSchema = z.object({
   uniformScale: finite.positive().max(100).optional(),
   // 切り抜き輪郭は面の寸法で正規化した材料座標。支持面の輪郭は変更しない。
   outline: z.array(point2).min(3).max(128).optional(),
+  shapes: z.record(paperShapeSchema).optional(),
 })
 export const partAssetSchema = assetSchema.extend({ hash: contentHashSchema })
 export const partDefinitionSchema = z.object({
-  format: z.literal('tobidas-part'), schemaVersion: z.literal(1), id, revision: z.number().int().positive(),
+  format: z.literal('tobidas-part'), schemaVersion: z.union([z.literal(1), z.literal(2)]), id, revision: z.number().int().positive(),
   name: id, description: z.string().default(''), author: z.string().default(''), license: z.string().default(''),
   derivedFrom: z.object({ id, revision: z.number().int().positive(), hash: contentHashSchema }).optional(),
   input: partInputSchema, parameters: z.record(partParameterSchema).default({}),
@@ -66,11 +69,17 @@ export const partDefinitionSchema = z.object({
   outputs: z.record(partBindingSchema).default({}), dependencies: z.array(contentHashSchema).default([]),
   requiredBuiltins: z.record(z.number().int().positive()).default({}), assets: z.array(partAssetSchema).default([]),
   editHandles: z.array(partEditHandleSchema).max(32).optional(),
+  contents: z.array(partContentSchema).max(400).optional(),
+}).superRefine((definition, context) => {
+  if (definition.schemaVersion === 1 && (definition.contents?.length || definition.nodes.some((node) => node.shapes))) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: 'Contents and material shapes require part schema version 2' })
+  }
 })
 export const partInstanceSchema = z.object({
   definition: partReferenceSchema, mount: partBindingSchema,
   parameters: z.record(finite).default({}), materials: z.record(partMaterialSchema).default({}),
   uniformScale: finite.positive().max(100).optional(),
+  shapes: z.record(paperShapeSchema).optional(),
 })
 export type PartInput = z.infer<typeof partInputSchema>
 export type PartExtension = z.infer<typeof partExtensionSchema>
@@ -86,7 +95,7 @@ export type PartDefinitions = Record<string, PartDefinition>
 export interface PartBundle { definition: PartDefinition; definitions: PartDefinitions; assets: Asset[] }
 
 export function newPartDefinition(name: string, input: PartInput = { kind: 'fold-pair', maxOpeningAngleDeg: 180 }): PartDefinition {
-  return partDefinitionSchema.parse({ format: 'tobidas-part', schemaVersion: 1, id: crypto.randomUUID(), revision: 1, name, input, nodes: [] })
+  return partDefinitionSchema.parse({ format: 'tobidas-part', schemaVersion: 2, id: crypto.randomUUID(), revision: 1, name, input, nodes: [] })
 }
 
 export function bindingDependencies(binding: PartBinding): string[] {

@@ -1,10 +1,17 @@
 import { assetDataToBytes, projectFileJson } from '../../package/serialize'
 import type { BookProject } from '../../schema/bookPackage'
-import { base64ToBlob, type PickerWindow } from './browserFiles'
+import { base64ToBlob, safeFileName, saveBlobAs, type PickerWindow } from './browserFiles'
+import { writeProjectArchive } from './projectArchive'
+import { t } from '../i18n'
+
+export async function exportProjectZip(project: BookProject): Promise<void> {
+  const bytes = await writeProjectArchive(project)
+  await saveBlobAs(new Blob([bytes.slice().buffer], { type: 'application/zip' }), safeFileName(project.name) + '.tobidas.zip', t().toolbar.projectZip)
+}
 
 /**
  * 保存先フォルダへ `project.json` + `assets/` を書く。作品はこの一形式だけで、
- * ZIP に束ねた表現は持たない (書き出しは公開用の2通りが担う)。
+ * 編集用ZIPも同じ project.json と assets の構造を使う。
  */
 export async function exportPackageToDirectory(project: BookProject): Promise<boolean> {
   const picker = (window as PickerWindow).showDirectoryPicker

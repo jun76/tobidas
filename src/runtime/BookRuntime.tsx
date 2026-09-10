@@ -11,6 +11,7 @@ import {
   pageClickTargetLift,
   pageLeafRestHeight,
   paperStackSupportThickness,
+  visibleInteriorSheets,
 } from './pageStack'
 import { clamp01, evaluateBookSignals } from './signals'
 import { bookShadowSettings } from './shadows'
@@ -47,6 +48,7 @@ export function BookRuntime({
   audioActive = false,
   audioMuted = true,
   playing = true,
+  contentTime,
 }: BookRuntimeProps) {
   const { book } = project
   useLayoutEffect(() => {
@@ -57,6 +59,7 @@ export function BookRuntime({
   const signals = useMemo(() => evaluateBookSignals(book, progress), [book, progress])
   const gates = useMemo(() => new GateSet(GATE_THRESHOLDS), [project.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const clocks = useMemo(() => new ClockStore(), [project.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  clocks.sampleTime = contentTime
   const assets = useMemo(() => new Map(project.assets.map((asset) => [asset.id, asset])), [project.assets])
   const stageBackgroundAsset = assetFor(assets, book.appearance.backgroundAsset)
   const stageBackgroundImage = useImageTexture(stageBackgroundAsset?.type === 'image' ? stageBackgroundAsset : undefined)
@@ -104,17 +107,7 @@ export function BookRuntime({
     }
   })
 
-  const interiorSheets = useMemo(() => {
-    const visible = new Set<number>()
-    for (const frame of frames) {
-      if (frame.t > 0.004 || frame.open || frame.index === signals.activeSpreadIndex) {
-        if (frame.index >= 1) visible.add(frame.index)
-        if (frame.index + 1 <= spreadCount - 1) visible.add(frame.index + 1)
-      }
-    }
-    return [...visible].sort((a, b) => a - b)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [book, progress, foldOverride])
+  const interiorSheets = visibleInteriorSheets(frames.map((frame) => frame.t))
 
   const environment = useMemo(() => evaluateTimelineEnvironment(book, progress), [book, progress])
   const shadow = useMemo(() => bookShadowSettings(book, environment.lights.directional.position),
@@ -274,14 +267,14 @@ export function BookRuntime({
           spreadTime={frame.spreadTime} {...shared} />
       })}
 
-      {frames.filter((frame) => frame.open && frame.spread.elements.some((element) => element.type === 'part')).map((frame) => {
+      {frames.filter((frame) => frame.t > 1e-8 && frame.spread.elements.some((element) => element.type === 'part' || element.attachment)).map((frame) => {
         const override = foldOverride?.spreadId === frame.spread.id
         const leftAngle = override ? Math.PI : Math.PI * sheetAngles[frame.index]
         const rightAngle = override ? (1 - frame.t) * Math.PI : Math.PI * sheetAngles[frame.index + 1]
         return <BookPartsRenderer key={`parts-${frame.spread.id}`} project={project} spread={frame.spread} spreadTime={frame.spreadTime}
           leftAngle={leftAngle} rightAngle={rightAngle}
           paperDisplay={bookPaperDisplay({ width, depth, thickness: pageThickness, index: frame.index, count: spreadCount, leftAngle, rightAngle, frontCoverY: frontCoverRestY })}
-          assets={assets} isHidden={isHidden} onSelect={onSelect} />
+          assets={assets} isHidden={isHidden} onSelect={onSelect} clocks={clocks} playing={playing} />
       })}
 
       {showGuides && <gridHelper args={[width * 2, 16, '#6d7cff', '#d9d9e8']}

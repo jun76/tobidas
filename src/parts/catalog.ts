@@ -29,6 +29,7 @@ export const BUILTIN_PARTS: BuiltinPart[] = [
   }, surfaces: ['panel', 'panel-b', 'ground', 'ground-b'], pairs: ['ground-backdrop', 'ground-backdrop-b'] },
   { id: 'upright', version: 1, input: { kind: 'fold-pair', maxOpeningAngleDeg: 90, referenceOpenAngleDeg: 90 }, parameters: {
     ...dimensions, supportHeight: length('supportHeight', 1), supportWidth: length('supportWidth', .3),
+    supportOffset: number('supportOffset', 0, -40, 40),
     tiltAngle: { label: 'tiltAngle', type: 'angle', default: 90, min: 30, max: 150 },
   }, surfaces: ['panel', 'support', 'ground'], pairs: ['ground-panel'] },
   { id: 'v-fold', version: 1, input: pair, parameters: dimensions,

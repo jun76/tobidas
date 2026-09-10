@@ -19,6 +19,7 @@ export interface PartEditScene {
   nodes: PartNode[]; definitions: PartDefinitions
   at: (angle: number) => { input?: PartPort; external?: Record<string, Record<string, PartPort>> }
   maxAngle: number; closedBounds?: { width: number; depth: number }
+  validateContents?: (result: PaperEvaluation, nodes: PartNode[], angle: number) => string[]
   parameters?: Record<string, number>; slots?: Record<string, PartMaterial>
 }
 export interface PartEditAngle {
@@ -297,6 +298,7 @@ export function planPartEdit(scene: PartEditScene, id: string, raw: PartEditInte
         errors.push(...inspectIntersections(withParents, affected))
         if (thorough) nearby.set(angle, nearbyPaperPairs(withParents, affected))
       }
+      errors.push(...scene.validateContents?.(result, nodes, angle) ?? [])
       if (errors.length) throw new Error(errors[0])
       const points = result.faces.flatMap(faceCorners); checked.set(angle, points)
       return points

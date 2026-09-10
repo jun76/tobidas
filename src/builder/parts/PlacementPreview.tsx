@@ -30,7 +30,7 @@ export function PlacementPreview({ project, spreadId, instance, elementId }: { p
   const assets = useMemo(() => new Map(project.assets.map((asset) => [asset.id, asset])), [project.assets])
   return <section aria-label={t.preview} className={st.placementPreview}>
     <div style={{ height: 240 }}><Canvas camera={{ position: [width * .7, width, width * 1.5], fov: 44 }}>
-      <color attach="background" args={['#cbbd9f']} /><ambientLight intensity={1.8} /><directionalLight position={[4, 10, 8]} intensity={2} />
+      <color attach="background" args={['#cbbd9f']} /><ambientLight intensity={2.6} /><directionalLight position={[4, 10, 8]} intensity={1.8} />
       <PaperMeshes faces={paper} assets={assets} /><PaperMeshes faces={paperDisplayFaces(faces)} assets={assets} />
       <OrbitControls target={[0, .5, 0]} />
     </Canvas></div>

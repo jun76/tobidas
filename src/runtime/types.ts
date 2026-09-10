@@ -22,6 +22,8 @@ export interface BookRuntimeProps {
   audioMuted?: boolean
   /** 本の再生が一時停止中か。音声ONなら動画は内蔵音声を保つため再生を続ける。 */
   playing?: boolean
+  /** QAの固定位相。実行時の入力であり、作品や自動保存には含めない。 */
+  contentTime?: number
 }
 
 export interface RenderSpreadFrame {

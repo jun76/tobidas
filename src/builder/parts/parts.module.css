@@ -28,7 +28,8 @@
 .nodeList button { width:100%; text-align:left; padding:10px; background:#30323c; border:1px solid #474a58; border-radius:5px; color:#e7e7ed; }
 .nodeList button[aria-pressed=true] { background:#414968; border-color:#8295cc; }
 .preview { position:relative; min-height:0; min-width:0; display:flex; flex-direction:column; }
-.canvas { min-height:200px; flex:1; }
+.canvas { position:relative; min-height:200px; flex:1; }
+.placementBadge { position:absolute; z-index:2; top:12px; left:12px; max-width:calc(100% - 24px); padding:8px 10px; border-radius:6px; background:#253f68ed; color:#fff; font-size:12px; }
 .previewControls { display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:12px; background:#2b2d37; border-top:1px solid #41424f; }
 .previewControls label { display:flex; align-items:center; gap:8px; font-size:11px; }
 .previewControls output { min-width:42px; }

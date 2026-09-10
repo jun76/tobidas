@@ -8,7 +8,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 /** QA用に立てる dev サーバー。開発用の 5174 とぶつからないよう空き番号を取る */
-export const QA_SERVER = { port: 0 }
+export const QA_SERVER = { port: 0, strictPort: false, hmr: false }
 
 /**
  * HMRのwebsocket失敗だけを落とすふるい。

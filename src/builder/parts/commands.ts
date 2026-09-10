@@ -3,12 +3,13 @@ import type { BookProject } from '../../schema/bookPackage'
 import { createStageElement } from '../../schema/bookDefaults'
 import type { PartElement } from '../../schema/stageElement'
 import { builtinPart } from '../../parts/catalog'
+import { elementDescendantIds } from '../hierarchy'
 import { dependentPartIds } from '../../parts/evaluate'
 import { validateBookParts, spreadPartNodes } from '../../parts/book'
 import { bindingDependencies, evaluateExpression, newPartDefinition, partBindingSchema, partInputSchema, partInstanceSchema, partMaterialSchema,
   partNodeSchema, partParameterSchema, partReferenceSchema, partSurfaceRefSchema, partEditHandleSchema, type PartBinding, type PartBundle, type PartDefinition, type PartReference } from '../../parts/schema'
 import { planPartPlacement, type SurfacePick } from '../../parts/placement'
-import { fixtureInput, validatePartDefinition } from '../../parts/validate'
+import { fixtureInput, syncDefinitionRequirements, validatePartDefinition } from '../../parts/validate'
 import { useBuilderStore } from '../store'
 import { t } from '../i18n'
 import type { BuilderCommandResult } from '../operations/types'
@@ -39,7 +40,15 @@ export function editPlacedPartCommand(value: z.input<typeof editPlacedPartSchema
 }
 function edit(action: string, mutate: (bundle: PartBundle) => void, id = ''): BuilderCommandResult {
   try {
-    usePartEditorStore.getState().change(mutate)
+    const previous = usePartEditorStore.getState().bundle
+    if (previous.definition.contents?.length || Object.values(previous.definitions).some((definition) => definition.contents?.length)) {
+      const candidate = structuredClone(previous); mutate(candidate); syncDefinitionRequirements(candidate.definition)
+      if (candidate.definition.nodes.length) {
+        const validation = validatePartDefinition(candidate.definition, candidate.definitions)
+        if (!validation.ok) throw new Error(validation.errors[0])
+      }
+      usePartEditorStore.getState().change((bundle) => { Object.assign(bundle, candidate) })
+    } else usePartEditorStore.getState().change(mutate)
     const { bundle } = usePartEditorStore.getState(), validation = validatePartDefinition(bundle.definition, bundle.definitions)
     return done(action, id, { errors: validation.errors.length, warnings: 0 })
   } catch (error) { return fail(action, error) }
@@ -150,6 +159,13 @@ export function exposePartEditHandleCommand(value: z.input<typeof exposePartEdit
 export function deletePartNodeCommand(nodeId: string) {
   return edit('delete-part-node', (bundle) => {
     const ids = dependentPartIds(bundle.definition.nodes, nodeId)
+    const removedContents = new Set<string>()
+    let more = true
+    while (more) { more = false; for (const { element } of bundle.definition.contents ?? []) {
+      const attachment = element.attachment
+      if (!removedContents.has(element.id) && (attachment.type === 'surface' ? ids.has(attachment.surface.nodeId) : removedContents.has(attachment.elementId))) { removedContents.add(element.id); more = true }
+    } }
+    bundle.definition.contents = bundle.definition.contents?.filter((item) => !removedContents.has(item.element.id))
     bundle.definition.nodes = bundle.definition.nodes.filter((node) => !ids.has(node.id))
     bundle.definition.editHandles = bundle.definition.editHandles?.filter((handle) => !ids.has(handle.nodeId))
     for (const [name, binding] of Object.entries(bundle.definition.outputs)) if (bindingDependencies(binding).some((id) => ids.has(id))) delete bundle.definition.outputs[name]
@@ -301,11 +317,11 @@ export function deletePlacedPartCommand(spreadId: string, elementId: string) {
     if (state.mode !== 'edit') throw new Error(t().operations.readOnly)
     const spread = state.project.book.spreads.find((item) => item.id === spreadId)
     if (!spread) throw new Error('Spread was not found')
-    const ids = dependentPartIds(spreadPartNodes(spread), elementId)
+    const ids = new Set([elementId, ...elementDescendantIds(spread, elementId)])
     state.commit((project) => {
       const target = project.book.spreads.find((item) => item.id === spreadId)!
       target.elements = target.elements.filter((element) => !ids.has(element.id))
-      target.timeline.tracks = target.timeline.tracks.filter((track) => track.target.type !== 'element' || !ids.has(track.target.elementId))
+      target.timeline.tracks = target.timeline.tracks.filter((track) => (track.target.type !== 'element' && track.target.type !== 'part-content') || !ids.has(track.target.elementId))
     })
     state.select({ type: 'spread', spreadId }); return done('delete-placed-part', elementId)
   } catch (error) { return fail('delete-placed-part', error) }

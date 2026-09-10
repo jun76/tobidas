@@ -5,6 +5,8 @@ import { placementSurfaces, type PartPlacementPlan, type SurfacePick } from '../
 import { useBuilderStore } from '../store'
 import { usePartPlacementStore } from '../parts/placementState'
 import { placePartOnSurfacesCommand, previewSurfacePlacement } from '../parts/commands'
+import { newConnectedContent, placeContentCommand } from '../parts/contentCommands'
+import { faceContains, pointOnFace } from '../../parts/geometry'
 import { PagePointerMarker } from './PageDropController'
 
 export function PartPlacementController() {
@@ -54,17 +56,20 @@ export function PartPlacementController() {
         // 描画用の紙厚補正を取り除き、実際に触れた材料座標を保存する。
         const local = mesh.worldToLocal(hit.point.clone())
         const pick: SurfacePick = { surface: target.reference, point: data.partSurfaceTarget ? [local.x, local.y] : [delta.dot(target.face.u), delta.dot(target.face.v)] }
+        if (!faceContains(target.face, pointOnFace(target.face, ...pick.point), 1e-6)) continue
+        const materialNormal = target.face.u.clone().cross(target.face.v)
+        const side = materialNormal.dot(raycaster.ray.direction) < 0 ? 'front' as const : 'back' as const
         const normal = hit.face!.normal.clone().transformDirection(mesh.matrixWorld)
         if (normal.dot(raycaster.ray.direction) > 0) normal.negate()
-        return { mesh, pick, point: hit.point.clone().addScaledVector(normal, .025), normal }
+        return { mesh, pick, side, point: hit.point.clone().addScaledVector(normal, .025), normal }
       }
       return null
     }
     const update = (x: number, y: number) => {
       const hit = hitAt(x, y)
       if (!hit) { hide(); return null }
-      const plan: PartPlacementPlan | undefined = first ? previewSurfacePlacement(spread.id, tool.reference, first, hit.pick)
-        : tool.faces === 1 ? previewSurfacePlacement(spread.id, tool.reference, hit.pick) : undefined
+      const plan: PartPlacementPlan | undefined = tool.reference && first ? previewSurfacePlacement(spread.id, tool.reference, first, hit.pick)
+        : tool.reference && tool.faces === 1 ? previewSurfacePlacement(spread.id, tool.reference, hit.pick) : undefined
       const invalid = plan && !plan.ok
       if (hover.current) {
         hover.current.geometry = hit.mesh.geometry
@@ -100,7 +105,7 @@ export function PartPlacementController() {
         }
         usePartPlacementStore.getState().chooseFirst(hit.pick); return
       }
-      const result = placePartOnSurfacesCommand({ spreadId: spread.id, name: tool.name, definition: tool.reference,
+      const result = tool.content ? placeContentCommand({ spreadId: spread.id, element: newConnectedContent(tool.content, { type: 'surface', surface: hit.pick.surface, point: hit.pick.point, side: hit.side }) }) : placePartOnSurfacesCommand({ spreadId: spread.id, name: tool.name, definition: tool.reference!,
         first: first ?? hit.pick, second: first ? hit.pick : undefined })
       if (result.ok) usePartPlacementStore.getState().cancel()
       else usePartPlacementStore.setState({ error: result.message })

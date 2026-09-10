@@ -99,12 +99,14 @@ const initializeBuilder: StateCreator<EditorState> = (set, get) => {
     const previous = get().project
     const next = clone(previous)
     change(next)
+    const validation = validateBookProject(next)
+    if (next.book.spreads.some((spread) => spread.elements.some((element) => element.attachment || element.type === 'part')) && !validation.ok) { set({ issues: validation }); return }
     next.updatedAt = new Date().toISOString()
     set({
       project: next,
       undoStack: [...get().undoStack, previous].slice(-LIMIT),
       redoStack: [],
-      issues: validateBookProject(next),
+      issues: validation,
     })
     autosave.schedule(next)
   }
@@ -337,6 +339,8 @@ const initializeBuilder: StateCreator<EditorState> = (set, get) => {
       copy.elements.forEach((element) => {
         element.id = remap.get(element.id)!
         if (element.parent.type === 'element') element.parent.elementId = remap.get(element.parent.elementId) ?? element.parent.elementId
+        if (element.attachment?.type === 'surface') element.attachment.surface.nodeId = remap.get(element.attachment.surface.nodeId) ?? element.attachment.surface.nodeId
+        if (element.attachment?.type === 'visual') element.attachment.elementId = remap.get(element.attachment.elementId) ?? element.attachment.elementId
         if (element.type === 'part') {
           const mount = element.part.mount
           if (mount.type === 'output') mount.nodeId = remap.get(mount.nodeId) ?? mount.nodeId
@@ -347,7 +351,7 @@ const initializeBuilder: StateCreator<EditorState> = (set, get) => {
       copy.timeline.tracks.forEach((track) => {
         track.id = bookId('track')
         track.keys.forEach((key) => { key.id = bookId('key') })
-        if (track.target.type === 'element') track.target.elementId = remap.get(track.target.elementId) ?? track.target.elementId
+        if (track.target.type === 'element' || track.target.type === 'part-content') track.target.elementId = remap.get(track.target.elementId) ?? track.target.elementId
       })
       commit((project) => {
         project.book.spreads.splice(project.book.spreads.findIndex((spread) => spread.id === id) + 1, 0, copy)
@@ -419,7 +423,7 @@ const initializeBuilder: StateCreator<EditorState> = (set, get) => {
         removed.add(id)
         spread.elements = spread.elements.filter((element) => !removed.has(element.id))
         spread.timeline.tracks = spread.timeline.tracks.filter(
-          (track) => track.target.type !== 'element' || !removed.has(track.target.elementId),
+          (track) => (track.target.type !== 'element' && track.target.type !== 'part-content') || !removed.has(track.target.elementId),
         )
       })
       set({ selection: { type: 'spread', spreadId } })
@@ -431,7 +435,7 @@ const initializeBuilder: StateCreator<EditorState> = (set, get) => {
         const removed = containerElementIds(spread, parentType)
         spread.elements = spread.elements.filter((element) => !removed.has(element.id))
         spread.timeline.tracks = spread.timeline.tracks.filter(
-          (track) => track.target.type !== 'element' || !removed.has(track.target.elementId),
+          (track) => (track.target.type !== 'element' && track.target.type !== 'part-content') || !removed.has(track.target.elementId),
         )
       })
       set({ selection: { type: 'page', spreadId, side: parentType === 'left-page' ? 'left' : 'right' } })

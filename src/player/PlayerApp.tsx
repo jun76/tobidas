@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Pause, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react'
 import { Icon } from '../ui/Icon'
-import type { BookProject } from '../schema/bookPackage'
+import { bookProjectSchema, type BookProject } from '../schema/bookPackage'
 import { validateBookProject } from '../schema/bookValidate'
 import { BookRuntime } from '../runtime/BookRuntime'
 import { hasEmbeddedVideoAudio, unlockVideoAudio } from '../runtime/videoAudio'
@@ -30,6 +30,7 @@ export function PlayerApp() {
   /** 音声ボタンで消したか。BGMも効果音もまとめて黙らせる */
   const [audioMuted, setAudioMuted] = useState(false)
   const [playing, setPlaying] = useState(false)
+  const [contentTime, setContentTime] = useState<number | undefined>()
   const playingRef = useRef(false)
   const target = useRef(initialProgress)
   const drag = useRef<number | null>(null)
@@ -49,7 +50,8 @@ export function PlayerApp() {
       const data: unknown = JSON.parse(embedded)
       const validation = validateBookProject(data)
       if (!validation.ok) throw new Error('Book validation failed:\n' + validation.errors.join('\n'))
-      setProject(data as BookProject)
+      // 保存時に省略した所有ページなどを編集用フォルダーと同じスキーマで導出する。
+      setProject({ ...bookProjectSchema.parse(data), assets: (data as BookProject).assets })
     } catch (reason) { setError(String(reason)) }
   }, [])
 
@@ -106,6 +108,9 @@ export function PlayerApp() {
    * 音声ボタンの消音だけを反映する。
    */
   useEffect(() => {
+    ;(window as unknown as { __tobiSetContentTime?: (value?: number) => void }).__tobiSetContentTime = (value) => {
+      if (value === undefined || Number.isFinite(value) && value >= 0) setContentTime(value)
+    }
     const gate = audioGate({ active: true, playing, muted: audioMuted })
     bgm.setMuted(gate.bgmMuted, gate.bgmMuted ? 0 : .25)
     bgm.setPaused(gate.bgmPaused)
@@ -201,7 +206,7 @@ export function PlayerApp() {
     <Canvas dpr={[1, 2]} shadows gl={VIEW_GL}
       camera={{ position: project.book.camera.position, fov: project.book.camera.fov, ...VIEW_CLIP }}
       onCreated={({ camera }) => camera.lookAt(...project.book.camera.target)}>
-      <BookRuntime project={project} progress={progress} playing={playing} audioActive audioMuted={audioMuted} />
+      <BookRuntime project={project} progress={progress} playing={playing} contentTime={contentTime} audioActive audioMuted={audioMuted} />
     </Canvas>
     <style>{BAR_CSS}</style>
     <div className="tobiBar" data-audio={hasAudio ? '' : 'none'}>

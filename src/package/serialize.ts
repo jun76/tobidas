@@ -5,7 +5,7 @@ import type { BookProject, BookProjectFile } from '../schema/bookPackage'
 export type PublishedBookProject = Omit<BookProject, 'authoringGuide'>
 
 export function stripAssetData(project: BookProject): BookProjectFile {
-  return { ...project, assets: project.assets.map(({ data: _data, ...metadata }) => metadata) }
+  return { ...serializedConnections(project), assets: project.assets.map(({ data: _data, ...metadata }) => metadata) }
 }
 
 export function projectFileJson(project: BookProject): string {
@@ -14,7 +14,16 @@ export function projectFileJson(project: BookProject): string {
 
 export function stripAuthoringGuide(project: BookProject): PublishedBookProject {
   const { authoringGuide: _authoringGuide, ...published } = project
-  return published
+  return serializedConnections(published)
+}
+
+/** 新方式の保存には、取り付けから導ける旧parentや収納ヒントを重ねて持たせない。 */
+export function serializedConnections<T extends Pick<BookProject, 'book'>>(project: T): T {
+  return { ...project, book: { ...project.book, spreads: project.book.spreads.map((spread) => ({ ...spread, elements: spread.elements.map((element) => {
+    if (!element.attachment && element.type !== 'part') return element
+    const { parent: _parent, stow: _stow, stowFlourish: _flourish, surfaceAttachment: _old, ...content } = element
+    return content as typeof element
+  }) })) } }
 }
 
 export interface ExternalizedAssets {
@@ -90,4 +99,3 @@ export function bytesToDataUrl(buffer: ArrayBuffer, mime: string): string {
   }
   return `data:${mime};base64,${btoa(binary)}`
 }
-

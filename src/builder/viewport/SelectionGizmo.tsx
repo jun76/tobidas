@@ -9,6 +9,7 @@ import { useBuilderStore } from '../store'
 import { emphasizeHoveredAxis } from './gizmoHighlight'
 import { markGizmoPress } from './gizmoInteraction'
 import { fixFlippedTranslationArrows } from './SceneGuides'
+import { ContentGizmo } from './ContentGizmo'
 import { PartGizmo } from './PartGizmo'
 
 export function SelectionGizmo() {
@@ -75,6 +76,7 @@ export function SelectionGizmo() {
   if (editableOpen && selection.type === 'element' && spread?.elements.find((item) => item.id === selection.elementId)?.type === 'part') {
     return <PartGizmo spreadId={selection.spreadId} elementId={selection.elementId} />
   }
+  if (editableOpen && selection.type === 'element' && spread?.elements.find((item) => item.id === selection.elementId)?.attachment) return <ContentGizmo spreadId={selection.spreadId} elementId={selection.elementId} />
   if (!pose || selection.type !== 'element' || !editableOpen) return null
   const save = () => {
     const position: [number, number, number] = [

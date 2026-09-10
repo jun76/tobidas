@@ -5,7 +5,7 @@ import { childrenByParent, constrainAbovePaper, updatePageOwnership } from '../.
 /** 編集後の部品ツリーへ、紙面床と左右ページ所有の不変条件を適用する。 */
 export function normalizeElementLayout(spread: Spread, elementId: string, pageWidth: number): void {
   const initial = spread.elements.find((element) => element.id === elementId)
-  if (!initial) return
+  if (!initial || initial.attachment) return
   if (initial.type === 'part') {
     initial.baseTransform = { position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] }
     initial.motion = []
