@@ -17,6 +17,8 @@ export function ContentMeshes({ bindings, context, assets, clocks, clockPrefix, 
   clockPrefix: string; playing?: boolean; surfaces?: BookPaperSurface[]; onSelect?: (id: string, contentId: string) => void
 }) {
   const camera = useThree((state) => state.camera)
+  // 同じlayerでは作品内の後の要素を手前へ描く。不可視の間も順番を確保し、フェードで入れ替えない。
+  const orders = new Map([...bindings].sort((a, b) => a.element.layer - b.element.layer).map((item, index) => [item.id, index]))
   const evaluate = () => evaluateContents(bindings, { ...context, billboardQuaternion: camera.quaternion, clock: (id, mode) => mode === 'story-time' ? clocks.storyTime : clocks.peek(`${clockPrefix}/${id}`) })
   const snapshots = useRef(new Map<string, EvaluatedContent>())
   const initial = evaluate(); snapshots.current = new Map(initial.map((item) => [item.id, item]))
@@ -26,14 +28,14 @@ export function ContentMeshes({ bindings, context, assets, clocks, clockPrefix, 
     snapshots.current = new Map(evaluate().map((item) => [item.id, item]))
   }, -1)
   return <group>{initial.map((item) => <ContentMesh key={item.id} initial={item} current={() => snapshots.current.get(item.id) ?? item}
-    assets={assets} surfaces={surfaces} onSelect={onSelect} />)}</group>
+    assets={assets} surfaces={surfaces} order={orders.get(item.id)!} onSelect={onSelect} />)}</group>
 }
 const artworkKey = (element: ConnectedContent) => element.type !== 'visual' ? '' : JSON.stringify([
   element.image, element.backImage, element.text, element.fontSize, element.font, element.bold, element.italic, element.underline,
   element.align, element.width, element.height, element.foregroundColor, element.backgroundColor,
 ])
-function ContentMesh({ initial, current, assets, surfaces, onSelect }: {
-  initial: EvaluatedContent; current: () => EvaluatedContent; assets: Map<string, Asset>; surfaces: BookPaperSurface[]; onSelect?: (id: string, contentId: string) => void
+function ContentMesh({ initial, current, assets, surfaces, order: index, onSelect }: {
+  initial: EvaluatedContent; current: () => EvaluatedContent; assets: Map<string, Asset>; surfaces: BookPaperSurface[]; order: number; onSelect?: (id: string, contentId: string) => void
 }) {
   const [art, setArt] = useState(initial.element), lastArt = useRef(artworkKey(art)), group = useRef<Group>(null), audioRoot = useRef<Group>(null)
   const visual = art.type === 'visual' ? contentAsStage(art) as VisualElement : undefined
@@ -75,19 +77,23 @@ function ContentMesh({ initial, current, assets, surfaces, onSelect }: {
   useLayoutEffect(update)
   useFrame(update)
   if (art.type === 'group') return null
-  const decal = art.presentation.kind === 'decal', order = 110 + art.layer
+  const decal = art.presentation.kind === 'decal', order = 1000 + index * 2
+  // 印刷は実紙の深度で遮蔽し、インク同士は描画順で合成する。
+  // 独立して動く画像は深度を書き、同一平面の重なりだけを層ごとの定数補正で安定させる。
+  const depth = { depthWrite: !decal, polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: decal ? -4 : -4 - index * 4 }
   return <group ref={group} onClick={(event) => { if (onSelect) { event.stopPropagation(); onSelect(initial.ownerId, initial.id) } }}>
     <group ref={audioRoot}><VideoAudioSource video={front?.video} settings={visual?.videoAudio} active={initial.visible} />
       <VideoAudioSource video={backVideo?.video} settings={visual?.backVideoAudio} active={initial.visible} /></group>
     {art.type === 'visual' && <mesh ref={(mesh) => { meshes.current[0] = mesh }} geometry={geometries[0]} renderOrder={order} frustumCulled={false}>
       <meshBasicMaterial key={Boolean(front?.texture) ? 'textured' : 'plain'} map={front?.texture} color="#ffffff" side={decal || back ? FrontSide : DoubleSide} transparent opacity={initial.opacity} alphaTest={.02} toneMapped={false}
-        polygonOffset polygonOffsetFactor={0} polygonOffsetUnits={-4} />
+        {...depth} />
     </mesh>}
     {back && <mesh ref={(mesh) => { meshes.current[1] = mesh }} geometry={geometries[0]} renderOrder={order} frustumCulled={false}>
-      <meshBasicMaterial map={back} side={BackSide} transparent opacity={initial.opacity} alphaTest={.02} toneMapped={false} polygonOffset polygonOffsetFactor={0} polygonOffsetUnits={-4} />
+      <meshBasicMaterial map={back} side={BackSide} transparent opacity={initial.opacity} alphaTest={.02} toneMapped={false} {...depth} />
     </mesh>}
     <mesh ref={(mesh) => { meshes.current[2] = mesh }} geometry={geometries[1]} renderOrder={order + 1} frustumCulled={false}>
-      <meshBasicMaterial map={sparkle} side={DoubleSide} transparent opacity={initial.opacity} depthWrite={false} alphaTest={.01} toneMapped={false} />
+      <meshBasicMaterial map={sparkle} side={DoubleSide} transparent opacity={initial.opacity} {...depth} depthWrite={false}
+        polygonOffsetUnits={depth.polygonOffsetUnits - 2} alphaTest={.01} toneMapped={false} />
     </mesh>
   </group>
 }

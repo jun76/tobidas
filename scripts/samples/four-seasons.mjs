@@ -260,7 +260,7 @@ export function build(updatedAt) {
    * 組み替わって見え、移ろったのが季節なのか部屋なのかが読めなくなる。
    * 窓の外だけが移ろう本なので、部屋の側は一年を通して動かさない。
    *
-   * カーテンは窓の見かけの幅 (片翼 6.0 = u .75) のすぐ外側へ左右一対で吊る。
+   * カーテンは窓の左右に延ばした壁の手前へ一対で立てる。
    * 鉢は窓辺の奥列 (v=.40) の背側。ここを先に押さえ、残りへ季節の小物を配る。
    */
   const ROOM = {
@@ -268,16 +268,12 @@ export function build(updatedAt) {
     plant: { u: .18, v: .40, width: sill(.38), height: sill(.45) },
   }
 
-  /**
-   * 部屋の道具を一式立てる。左右のカーテンは周期をずらし、同じ拍で
-   * 揺れないようにする (対になった二枚が一枚の板に見えるのを避ける)。
-   */
+  /** 部屋の道具を一式立てる。カーテンも一定寸法の紙として窓の壁と連動させる。 */
   const placeRoom = (s) => {
-    for (const [page, asset, period, phase] of [['left', curtainWarm, 5.2, 0], ['right', curtainCool, 4.6, 1.4]]) {
+    for (const [page, asset] of [['left', curtainWarm], ['right', curtainCool]]) {
       s.stand(page, {
         id: `curtain-${page}`, name: `カーテン (${page === 'left' ? '左' : '右'})`, asset,
         ...ROOM.curtain, fall: 'back', layer: 6,
-        motion: [{ type: 'sway', amplitude: 2.6, period, phase }],
       })
     }
     s.stand('left', { id: 'plant', name: '窓辺の鉢', asset: plantArt, ...ROOM.plant, fall: 'back', layer: 8 })
@@ -372,13 +368,10 @@ export function build(updatedAt) {
       })
     }
     s.stand('right', { id: 'window', name: '窓枠', asset: window, u: 0, width: 7.03, height: 3.61, v: .28, layer: 4 })
-    // 部屋の道具は季節によらず同じ場所。カーテンは窓枠のすぐ外へ、壁ぎわに
-    // 束ねた一枚として立てる。窓のV折りの真下は蓋になっていて背の高い立ち板を
-    // 畳めないので、窓の見かけの幅の外側で、かつ紙面の内側に収まる u を使う。
-    // 空中へ置ける部品は見開きあたり4個までで、そこは落ちる粒子の二層が使う
+    // 部屋の道具は季節によらず同じ場所。カーテンは窓の左右の壁から支持する紙にする。
     placeRoom(s)
 
-    // 窓辺の小物。その季節のものが、頭から少し遅れて一つずつ並ぶ
+    // 季節の小物は支持なしの演出。透明度と拡大で一つずつ現す。
     PROP_SLOTS.forEach((slot, order) => {
       const item = season.props[slot.of ?? order]
       const shrink = slot.scale ?? 1
@@ -387,7 +380,8 @@ export function build(updatedAt) {
         id: `prop-${order + 1}`, name: item.name, asset: item.asset,
         u: slot.u, v: slot.v, width: size(item.width), height: size(item.height), fall: 'back', layer: slot.layer,
       })
-      s.track(id, 'opacity', [[0, 0], [PROP_RISE + order * .35, 0], [PROP_RISE + .9 + order * .35, 1]])
+      // 季節の演出は次のページをめくる前に退場する。紙として窓と一緒に畳まない。
+      s.track(id, 'opacity', [[0, 0], [PROP_RISE + order * .35, 0], [PROP_RISE + .9 + order * .35, 1], [6.05, 1], [6.5, 0]])
       s.track(id, 'scale', [[0, .6], [PROP_RISE + order * .35, .6], [PROP_RISE + .9 + order * .35, 1]])
     })
 

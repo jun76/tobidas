@@ -12,7 +12,7 @@ fs.mkdirSync(out, { recursive: true })
 const cases = [
   { id: 'forest-lantern', spread: 'spread-1', child: 'spread-1-ember', liveSpread: 2, livePhase: .3 },
   { id: 'morning-walk', spread: 'spread-2', child: 'spread-2-shutter-1', liveSpread: 2, livePhase: .15 },
-  { id: 'four-seasons', spread: 'spread-1', child: 'spread-1-curtain-left', liveSpread: 4, livePhase: .15 },
+  { id: 'four-seasons', spread: 'spread-1', child: 'spread-1-particle-far', liveSpread: 4, livePhase: .15 },
   { id: 'crooked-castle', spread: 'spread-1', child: 'back-left-1', liveSpread: 0, livePhase: .05 },
 ].filter((work) => !args.includes('--work') || flag('--work').split(',').includes(work.id))
 if (args.includes('--classroom')) cases.push({ id: 'morning-walk', spread: 'spread-5', child: 'spread-5-sunbeam', liveSpread: 4, livePhase: .2 })
@@ -52,15 +52,19 @@ try {
     const undo = page.getByRole('button', { name: '元に戻す', exact: true })
     check(await undo.isEnabled(), work.id + ': 基準点の編集がUndoに入りません')
     await undo.click(); await select(page, work.child); await valueIs(page.getByLabel('面上の基準点 X', { exact: true }), before)
-    await select(page, parent)
-    const parentStart = performance.now()
-    await page.getByLabel('横方向の移動量', { exact: true }).fill('.002')
-    await page.getByRole('button', { name: '移動する', exact: true }).click()
-    await undo.waitFor(); check(await undo.isEnabled(), work.id + ': 親の移動が確定できません')
-    const parentEditMs = performance.now() - parentStart
-    await select(page, work.child); await valueIs(page.getByLabel('面上の基準点 X', { exact: true }), before)
+    let parentEditMs
+    // 実ページへ直接付ける演出には、移動可能な親部品がない。
+    if (parent !== '$book') {
+      await select(page, parent)
+      const parentStart = performance.now()
+      await page.getByLabel('横方向の移動量', { exact: true }).fill('.002')
+      await page.getByRole('button', { name: '移動する', exact: true }).click()
+      await undo.waitFor(); check(await undo.isEnabled(), work.id + ': 親の移動が確定できません')
+      parentEditMs = performance.now() - parentStart
+      await select(page, work.child); await valueIs(page.getByLabel('面上の基準点 X', { exact: true }), before)
+    }
     await page.screenshot({ path: path.join(out, work.id + '-builder.png') })
-    await undo.click()
+    if (parent !== '$book') await undo.click()
     // UIの書き出しを読み戻し、Undo後の基準点と参照が残っていることを確認する。
     await page.getByRole('button', { name: 'エクスポート', exact: true }).click()
     const download = page.waitForEvent('download', { timeout: 60000 })
@@ -70,8 +74,8 @@ try {
     await page.locator('[data-tobidas-selection-kind="spread"]').waitFor({ timeout: 60000 })
     await row(page, 'spread', work.spread).click(); await select(page, work.child)
     await valueIs(page.getByLabel('面上の基準点 X', { exact: true }), before)
-    results.push({ id: work.id, spreadId: work.spread, editedContent: work.child, folderImport: true, zipImport: true, childEditUndo: true, parentMoveUndo: true, importMs, childEditMs, parentEditMs })
-    console.log(work.id + ': フォルダー・作品ZIP、親子の移動とUndo OK')
+    results.push({ id: work.id, spreadId: work.spread, editedContent: work.child, folderImport: true, zipImport: true, childEditUndo: true, parentMoveUndo: parent !== '$book' ? true : '実ページへの直接接続', importMs, childEditMs, parentEditMs })
+    console.log(work.id + ': フォルダー・作品ZIP、接続点の編集とUndo OK')
     await context.close()
 
     const offlineContext = await browser.newContext({ viewport: { width: 1280, height: 800 } }), offline = await offlineContext.newPage()

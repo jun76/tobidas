@@ -549,22 +549,24 @@ export function build(updatedAt) {
     s.flat('left', { id: 'rails', name: '線路 (左)', asset: railArt, u: .5, v: .40, width: RAIL_WIDTH, depth: 1.39, layer: 1 })
     s.flat('right', { id: 'rails-r', name: '線路 (右)', asset: railArt, u: .5, v: .40, width: RAIL_WIDTH, depth: 1.39, layer: 1 })
 
-    // 遮断機: 支柱は紙に立ち、腕は支柱の先端へ取り付けた子部品として回る
+    // 遮断機: 支柱は紙に立ち、腕は駆動箱へ取り付けた子部品として回る。
     const POST_HEIGHT = crossing(3.6)
     const ARM_WIDTH = crossing(4.6)
+    // バーの支点は警報灯の上ではなく、支柱下部の駆動箱へ合わせる。
+    const ARM_PIVOT_HEIGHT = POST_HEIGHT * .30
     const postL = s.stand('left', { id: 'post-l', name: '遮断機の柱 (左)', asset: postArt, u: .30, v: .62, width: wide(POST_HEIGHT, postArt), height: POST_HEIGHT, fall: 'back', layer: 6 })
     const armL = s.hover({
       id: 'arm-l', name: '遮断機の腕 (左)', asset: armArt, parent: { type: 'element', elementId: postL },
-      x: .12, y: POST_HEIGHT * .85, z: .02, width: ARM_WIDTH, height: Math.round(ARM_WIDTH * 3 / 32 * 100) / 100, layer: 7,
+      x: .16, y: ARM_PIVOT_HEIGHT, z: .02, width: ARM_WIDTH, height: Math.round(ARM_WIDTH * 3 / 32 * 100) / 100, layer: 7,
     })
     const postR = s.stand('right', { id: 'post-r', name: '遮断機の柱 (右)', asset: postArt, u: .30, v: .62, width: wide(POST_HEIGHT, postArt), height: POST_HEIGHT, fall: 'back', layer: 6 })
     const armR = s.hover({
       id: 'arm-r', name: '遮断機の腕 (右)', asset: armArt, parent: { type: 'element', elementId: postR },
-      x: .12, y: POST_HEIGHT * .85, z: .02, width: ARM_WIDTH, height: Math.round(ARM_WIDTH * 3 / 32 * 100) / 100, layer: 7,
+      x: -.14, y: ARM_PIVOT_HEIGHT, z: .02, width: ARM_WIDTH, height: Math.round(ARM_WIDTH * 3 / 32 * 100) / 100, layer: 7,
     })
-    // 腕は左端を軸に、垂直から水平へ下りる
-    for (const arm of [armL, armR]) {
-      s.track(arm, 'rotation.z', [[0, 88], [.8, 88], [2.0, 2]])
+    // バーの根元を軸に、左右の支柱から中央へ向かって下ろす。
+    for (const [arm, raised, lowered] of [[armL, 88, 2], [armR, 92, 178]]) {
+      s.track(arm, 'rotation.z', [[0, raised], [.8, raised], [2.0, lowered]])
     }
 
     // 電車は透明支持片で運ぶ唯一の部品。本の輪郭の内側を端から端まで通る
@@ -680,7 +682,7 @@ export function build(updatedAt) {
       })
     }
 
-    // 机と椅子は前後3列・左右4列に整列させる。椅子は机の奥、かばんは足元へ置く
+    // 机と椅子は前後3列・左右6列に整列させる。椅子は机の奥、かばんは足元へ置く
     const seats = []
     for (const page of ['left', 'right']) {
       for (const [row, v] of [[0, .54], [1, .72], [2, .90]]) {
@@ -703,7 +705,8 @@ export function build(updatedAt) {
     const pupil = s.stand('right', {
       id: 'pupil', name: '窓ぎわの子', asset: childRed, u: .22, v: .48, width: wide(room(REAL.child), childRed), height: room(REAL.child), fall: 'back', layer: 35,
     })
-    s.track(pupil, 'position.z', [[0, .9], [7, .5]])
+    // 通路へ入ったところで立ち止まり、残りの時間はその場に留まる。
+    s.track(pupil, 'position.z', [[0, .9], [2.8, .5], [7, .5]])
 
     const sun = s.sparkle({ id: 'sunbeam', name: '差し込む朝日', x: 0, y: 2.0, z: .2, color: '#ffe6b0', size: 1.2 })
     s.track(sun, 'effect.size', [[0, 1.0], [7, 3.2]])

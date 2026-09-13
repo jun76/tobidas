@@ -24,7 +24,9 @@ export function shapeContains(shape: PaperShape, p: Point2): boolean {
 }
 const segmentsMeet = (a: Point2, b: Point2, c: Point2, d: Point2) => {
   const signs = [cross(a, b, c), cross(a, b, d), cross(c, d, a), cross(c, d, b)]
-  return signs[0] * signs[1] <= epsilon && signs[2] * signs[3] <= epsilon
+    .map(value => Math.abs(value) <= epsilon ? 0 : Math.sign(value))
+  // 外積の積へ許容差を掛けると、小さな凹部の平行な辺まで交差と誤認する。
+  return signs[0] * signs[1] <= 0 && signs[2] * signs[3] <= 0
     && Math.max(Math.min(a[0], b[0]), Math.min(c[0], d[0])) <= Math.min(Math.max(a[0], b[0]), Math.max(c[0], d[0])) + epsilon
     && Math.max(Math.min(a[1], b[1]), Math.min(c[1], d[1])) <= Math.min(Math.max(a[1], b[1]), Math.max(c[1], d[1])) + epsilon
 }

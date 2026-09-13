@@ -17,6 +17,10 @@ export function evaluateBookParts(project: Pick<BookProject, 'book' | 'partDefin
     { $book: pagePorts(pageWidth, pageWidth / pageAspect, leftAngle, rightAngle) })
 }
 
+/** 絵本の保持時計は全開時だけ進む。開き途中は冒頭、閉じ途中は末尾の姿勢で周期演出だけが続く。 */
+export const bookContentHoldTime = (angle: number, movingSide: 'left' | 'right', hold: number): number | undefined =>
+  angle >= 180 - 1e-8 ? undefined : movingSide === 'left' ? 0 : hold
+
 // 候補の検査、commit、Undoで同じ設計を再検査しない。参照同一性ではなく設計内容を鍵にする。
 // 素材の存在確認はこのキャッシュの外で毎回行う。保存・再生データには含めない。
 const spreadInspections = new Map<string, string[]>()
@@ -50,16 +54,17 @@ export function validateBookParts(project: BookProject): string[] {
       for (const element of spread.elements) if (Boolean(element.attachment) !== Boolean(element.presentation)) throw new Error('Content attachment and presentation must be specified together: ' + element.id)
       const inspectMotion = createPaperMotionInspector()
       const { pageWidth, pageAspect } = project.book.format
-      for (const side of ['left', 'right']) for (const angle of validationAngles(180)) {
+      for (const side of ['left', 'right'] as const) for (const angle of validationAngles(180)) {
         const left = side === 'left' ? angle * Math.PI / 180 : Math.PI
         const right = side === 'right' ? (180 - angle) * Math.PI / 180 : 0
         const result = evaluateBookParts(project, spread, left, right)
         const bindings = bindBookContents(project, spread, result, left, right)
         if (side === 'left' && angle === 0) errors.push(...inspectContentBindings(bindings))
-        for (const time of [0, spread.sequence.holdSeconds / 2, spread.sequence.holdSeconds]) errors.push(...inspectContentsAt(bindings, { openingAngleDeg: angle, maxOpeningAngleDeg: 180, holdTime: time }))
+        const holdTime = bookContentHoldTime(angle, side, spread.sequence.holdSeconds)
+        for (const time of holdTime === undefined ? [0, spread.sequence.holdSeconds / 2, spread.sequence.holdSeconds] : [holdTime]) errors.push(...inspectContentsAt(bindings, { openingAngleDeg: angle, maxOpeningAngleDeg: 180, holdTime: time }))
         const input = pagePorts(pageWidth, pageWidth / pageAspect, left, right).gutter
         if ([0, 15, 30, 60, 90, 120, 150, 172.5, 180].includes(angle) && input.kind === 'fold-pair') errors.push(...inspectContentMotion(bindings,
-          [...result.faces, input.a, input.b], { openingAngleDeg: angle, maxOpeningAngleDeg: 180 }, spread.sequence.holdSeconds))
+          [...result.faces, input.a, input.b], { openingAngleDeg: angle, maxOpeningAngleDeg: 180 }, spread.sequence.holdSeconds, holdTime))
         errors.push(...inspectMotion(result, [input]).map((message) => `${spread.name}: ${message}`))
         if (angle === 0 && input.kind === 'fold-pair') errors.push(...inspectClosedLayout(result, pageWidth,
           pageWidth / pageAspect, input.rayA).map((message) => `${spread.name}: ${message}`))

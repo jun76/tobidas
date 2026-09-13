@@ -94,7 +94,8 @@ export function evaluateContents(bindings: BoundPaperContent[], context: Content
     if (!fiction) {
       if (element.type !== 'visual' || element.billboard || Math.abs(rotation[0]) > 1e-8 || Math.abs(rotation[1]) > 1e-8
         || Math.abs(element.baseTransform.position[2]) > 1e-8 || element.motion.length) throw new Error(`Printed content must stay on its material plane: ${id}`)
-      position.z = .001 + Math.max(0, element.layer) * .00005
+      // 印刷の枚数やlayer値を紙の厚みに変えない。貼り紙より薄い一定のリフトだけを持たせる。
+      position.z = .0005
     }
     const scale = new Vector3(...element.baseTransform.scale).multiplyScalar(ratio * g * motion.scaleMul)
     const matrix = anchor.clone().multiply(new Matrix4().compose(position, new Quaternion().setFromEuler(new Euler(rotation[0], rotation[1], rotation[2])), scale))

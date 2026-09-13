@@ -7,6 +7,8 @@ import { connectedRuntime } from './lib/connectedRuntime.mjs'
 import { directoryHashes, hashBytes, writeSampleFolder } from './lib/sampleOutput.mjs'
 import JSZip from 'jszip'
 import { sampleReviewIndex } from './lib/sampleReview.mjs'
+import { inspectSampleOverlaps, inspectSampleDimensions } from './lib/sampleSceneAudit.mjs'
+import { CONNECTED_LAYOUTS } from './samples/connected-layouts.mjs'
 
 const args = process.argv.slice(2), flag = (name, fallback) => args.includes(name) ? args[args.indexOf(name) + 1] : fallback
 const canonical = (value) => JSON.stringify(value, (_, v) => v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.keys(v).sort().map((key) => [key, v[key]])) : v)
@@ -36,7 +38,8 @@ try {
           if (errors.length) crossings.push({ spreadId: spread.id, side, angle, errors })
           const bindings = api.bindBookContents(project, spread, paper, left, right)
           const pages = api.pagePorts(8, 6.4, left, right)
-          const times = api.contentSampleTimes(bindings, spread.sequence.holdSeconds)
+          const holdTime = api.bookContentHoldTime(angle, side, spread.sequence.holdSeconds)
+          const times = holdTime === undefined ? api.contentSampleTimes(bindings, spread.sequence.holdSeconds) : [holdTime]
           for (const time of times) {
             const contents = api.evaluateContents(bindings, { openingAngleDeg: angle, maxOpeningAngleDeg: 180, holdTime: Math.min(time, spread.sequence.holdSeconds), clock: () => time })
             const contentErrors = api.inspectContentIntersections(contents, [...paper.faces, pages['left-page'].face, pages['right-page'].face], true)
@@ -45,6 +48,7 @@ try {
         } catch (error) { referenceErrors.push({ spreadId: spread.id, side, angle, error: error.message }) }
       }
     }
+    const sceneAudit = { ...inspectSampleOverlaps(project, api), ...inspectSampleDimensions(project, entries, CONNECTED_LAYOUTS[id]) }
     const body = api.projectFileJson(project)
     const output = new Map([['project.json', body], ...project.assets.map((asset) => [`assets/${asset.id}`, files.get(asset.id)])])
     const sourceRaw = api.bookProjectSchema.parse(JSON.parse(readFileSync(resolve('projects', id, 'project.json'), 'utf8')))
@@ -72,18 +76,19 @@ try {
     if (legacyCount) throw new Error(`${id}: 旧収納の要素が${legacyCount}件残っています`)
     const report = { sourceId: id, projectId: project.id, title: project.name, spreadCount: project.book.spreads.length, authoringGuideHash: hashBytes(JSON.stringify(source.authoringGuide)), assetHashes,
       sourceElementCount: source.book.spreads.reduce((n, spread) => n + spread.elements.length, 0), entries, overrideResult, overrides,
-      validation, validationMs, crossings, contentCrossings, referenceErrors, legacyCount, folderRoundTrip: true,
-      checkedAngles: angleSamples, checkedDirections: ['left', 'right'], phaseCoverage: 'Key times, key midpoints, hold endpoints, and independent interval envelopes for all periodic motion and particle drift. Finite angles and timeline samples, not a continuous collision proof.',
+      validation, validationMs, crossings, contentCrossings, referenceErrors, sceneAudit, legacyCount, folderRoundTrip: true,
+      checkedAngles: angleSamples, checkedDirections: ['left', 'right'], phaseCoverage: 'At full opening: key times, key midpoints, and hold endpoints. During opening/closing: the first/last authored pose, as in the book player. Independent interval envelopes for periodic motion and particle drift at every inspected pose. Finite angles and timeline samples, not a continuous collision proof.',
       preservation: { guide: true, assets: true, author: JSON.stringify(project.author) === JSON.stringify(sourceRaw.author), audio: JSON.stringify(project.audio) === JSON.stringify(sourceRaw.audio),
         lightingChanges: ['画像を貼った紙の拡散照明に合わせ、環境光を明るく中立色へ調整。明暗変化の時刻を維持。'],
         supportChanges: ['正面から隠れやすい後方支持へ変更。家・木・机などの既存面を使い、横断する接続帯を廃止。'],
         cameraChanges: id === 'four_seasons' ? ['最後の紙の2%拡大を、同時刻のカメラ接近へ置換'] : [] } }
     reports.push(report)
-    const unsafe = validation.errors.length || referenceErrors.length || crossings.length || contentCrossings.length
+    const unsafe = validation.errors.length || referenceErrors.length || crossings.length || contentCrossings.length || sceneAudit.physicalOverlaps.length || sceneAudit.errors.length
     if (unsafe && !root.startsWith(resolve('.tmp') + '\\')) throw new Error(`${id}: 未解決の診断があるためDocumentsには出力しません`)
     if (exporting) {
       if (unsafe) throw new Error(`${id}: 未解決の診断があるため公開用ファイルは生成できません\n${[...new Set([
         ...validation.errors, ...referenceErrors.map((item) => item.error), ...crossings.flatMap((item) => item.errors), ...contentCrossings.flatMap((item) => item.errors),
+        ...sceneAudit.errors, ...sceneAudit.physicalOverlaps.map(item => `Coincident paper: ${item.a} / ${item.b}`),
       ])].slice(0, 8).join('\n')}`)
       const zip = await api.buildProjectZip(restored.project), roundTrip = await api.readProjectZip(zip)
       if (canonical(JSON.parse(api.projectFileJson(roundTrip.project))) !== canonical(JSON.parse(body))) throw new Error(`${id}: ZIPの読み込みで作品が変わっています`)
@@ -103,7 +108,7 @@ try {
       }
     }
     writeSampleFolder(root, project.id, output)
-    console.log(`${id}: ${entries.length}要素 / ${project.book.spreads.length}見開き / 検証${Math.round(validationMs)}ms / エラー${validation.errors.length} / 紙交差${crossings.length} / 演出交差${contentCrossings.length}`)
+    console.log(`${id}: ${entries.length}要素 / ${project.book.spreads.length}見開き / 検証${Math.round(validationMs)}ms / エラー${validation.errors.length} / 紙交差${crossings.length} / 演出交差${contentCrossings.length} / 共面の紙${sceneAudit.physicalOverlaps.length} / 寸法エラー${sceneAudit.errors.length}`)
     if (validation.errors.length) console.log(validation.errors.slice(0, 8))
     if (crossings.length) console.log(crossings.slice(0, 2))
     if (contentCrossings.length) console.log([...new Set(contentCrossings.flatMap((item) => item.errors))].slice(0, 20))

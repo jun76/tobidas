@@ -293,7 +293,6 @@ export function build(updatedAt) {
       s.stand(tree.page, {
         id: `tree-${index + 1}`, name: `起き上がる木 ${index + 1}`, asset: tree.asset,
         u: tree.u, v: tree.v, width: tree.w, height: tree.h, fall: 'back', layer: 3 + index,
-        motion: [{ type: 'sway', amplitude: 1.1, period: 4.2 + index * .4, phase: index * .7 }],
       })
     })
     s.stand('right', { id: 'owl', name: '枝のフクロウ', asset: owlArt, u: .14, v: .74, width: wide(forest(.75), owlArt), height: forest(.75), fall: 'back', layer: 8 })

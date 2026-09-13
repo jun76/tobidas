@@ -15,7 +15,7 @@ import { capturePaperDesign, comparePaperDesign } from './materialDesign'
 import { paperMeshData } from './paperDisplay'
 import { newPartDefinition, type PartNode } from './schema'
 import { importPartFiles, partBundleFiles, snapshotPartBundle } from './package'
-import { inspectContentBindings, inspectContentIntersections } from './contentValidation'
+import { inspectContentBindings, inspectContentIntersections, inspectContentMotion } from './contentValidation'
 import { contentMotionEnvelopes } from './contentEnvelope'
 import { contentTriangles } from './contentDisplay'
 import { ClockStore } from '../runtime/clock'
@@ -29,11 +29,31 @@ const binding = (id = 'rotor'): BoundPaperContent => ({ id, ownerId: id, element
 const context = (angle = 180, time = 0) => ({ openingAngleDeg: angle, maxOpeningAngleDeg: 180, holdTime: 0, clock: () => time })
 
 describe('paper shape and attached content', () => {
+  it('印刷の層番号や裏面指定で紙厚を増やさず、貼り紙の下に収まる', () => {
+    const face = makeFace('paper', new Vector3(3, 2, -4), new Vector3(1, 0, 0), new Vector3(0, 1, 0), 4, 4)
+    for (const side of ['front', 'back'] as const) {
+      const bindings = [-100, 0, 0, 100000].map((layer, i) => {
+        const bound = binding(`ink-${i}`); bound.face = face
+        bound.element.presentation = { kind: 'decal' }; bound.element.layer = layer
+        bound.element.baseTransform.position = [0, 0, 0]
+        bound.element.attachment = { type: 'surface', surface: { nodeId: 'paper', portId: 'face' }, point: [2, 2], side }
+        return bound
+      })
+      const items = evaluateContents(bindings, context()), sign = side === 'front' ? 1 : -1
+      const positions = items.map((item) => new Vector3().setFromMatrixPosition(item.matrix))
+      expect(positions.every((p) => p.distanceTo(positions[0]) < 1e-12)).toBe(true)
+      expect((positions[0].z - face.origin.z) * sign).toBeGreaterThan(0)
+      expect((positions[0].z - face.origin.z) * sign).toBeLessThan(.001)
+      expect(face.origin.toArray()).toEqual([3, 2, -4])
+    }
+  })
   it('周期運動の包絡に紙全体が入る場合も干渉として検出する', () => {
     const bound = binding(); bound.element.baseTransform.position = [0, 0, 0]
     bound.element.motion = [{ type: 'drift', amplitude: [2, 2, 2], period: 3, phase: 0 }]
     const solid = makeFace('inside', new Vector3(0, 0, .5), new Vector3(1, 0, 0), new Vector3(0, 1, 0), .2, .2)
     expect(inspectContentIntersections(evaluateContents([bound], context()), [solid], true)).toEqual(['Content crosses paper: rotor / inside'])
+    // 保持時計を固定した開閉途中でも、表示経過時間で動く演出の全振幅を検査する。
+    expect(inspectContentMotion([bound], [solid], { openingAngleDeg: 180, maxOpeningAngleDeg: 180 }, 7, 0)).toEqual(['Content crosses paper: rotor / inside'])
   })
   it('独立な周期と粒子の全振幅を包絡し、実測位相の頂点を取りこぼさない', () => {
     const bound = binding(); bound.element.motion = [{ type: 'drift', amplitude: [.2, .1, 0], period: 3.7, phase: .5 }, { type: 'sway', amplitude: 12, period: 5.3, phase: 1 }]

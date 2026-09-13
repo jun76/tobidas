@@ -77,7 +77,7 @@ export function inspectContentsAt(bindings: BoundPaperContent[], context: Omit<C
 }
 
 /** 確定操作用の有限検査。角度は呼び出し側で共有し、保持時刻ごとに全周期の包絡を調べる。 */
-export function inspectContentMotion(bindings: BoundPaperContent[], faces: PaperFace[], context: Omit<ContentContext, 'clock' | 'holdTime'>, hold: number): string[] {
+export function inspectContentMotion(bindings: BoundPaperContent[], faces: PaperFace[], context: Omit<ContentContext, 'clock' | 'holdTime'>, hold: number, fixedHoldTime?: number): string[] {
   const errors = new Set<string>()
   let samples = 0
   const byId = new Map(bindings.map((bound) => [bound.id, bound]))
@@ -89,7 +89,7 @@ export function inspectContentMotion(bindings: BoundPaperContent[], faces: Paper
       const parent = byId.get(parentId); if (!parent) break
       family.push(parent); seen.add(parentId); parentId = parent.parentId
     }
-    const times = contentSampleTimes(family, hold).filter((time) => time <= hold)
+    const times = fixedHoldTime === undefined ? contentSampleTimes(family, hold).filter((time) => time <= hold) : [fixedHoldTime]
     samples += times.length * family.length
     if (samples > 20000) return [...errors, 'Content motion is unverified: inspection budget exceeded']
     for (const holdTime of times) {

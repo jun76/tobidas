@@ -56,7 +56,7 @@ function mountAt(paper, pages, pair, target, width) {
 }
 
 /** 正面の絵を遮らない後方支持を設計し、同じ材料の開閉と収納を評価してから採用する。 */
-export function placeBehindScene(project, spread, api, element, { x, z, parentId, contour, supportCeiling = Infinity }) {
+export function placeBehindScene(project, spread, api, element, { x, z, parentId, contour, supportCeiling = Infinity, supportHeight: requestedHeight, supportOffset: requestedOffset = 0 }) {
   const paper = api.evaluateBookParts(project, spread, Math.PI, 0)
   const { pageWidth: w, pageAspect } = project.book.format, depth = w / pageAspect
   const pages = api.pagePorts(w, depth, Math.PI, 0)
@@ -65,8 +65,16 @@ export function placeBehindScene(project, spread, api, element, { x, z, parentId
   if (contour) {
     // 地面の接着辺だけを残し、上側は素材の実輪郭に合わせる。
     const base = Math.min(.06 / height, .1)
-    template.shapes = { panel: { outer: [[0, 0], [1, 0], [1, base], ...contour.right.filter((p) => p[1] > base).reverse(),
-      ...contour.left.filter((p) => p[1] > base), [0, base]].filter((p, i, all) => !i || p[0] !== all[i - 1][0] || p[1] !== all[i - 1][1]), holes: [] } }
+    // 下端の頂点を捨てるだけでは、細い柄から接着帯へ大きな三角形が生じる。帯との交点を残す。
+    const aboveBase = (edge) => edge.flatMap((point, i) => {
+      const next = edge[i + 1], clipped = point[1] > base ? [point] : []
+      if (next && (point[1] - base) * (next[1] - base) < 0) clipped.push([
+        point[0] + (next[0] - point[0]) * (base - point[1]) / (next[1] - point[1]), base,
+      ])
+      return clipped
+    })
+    template.shapes = { panel: { outer: [[0, 0], [1, 0], [1, base], ...aboveBase(contour.right).reverse(),
+      ...aboveBase(contour.left), [0, base]].filter((p, i, all) => !i || p[0] !== all[i - 1][0] || p[1] !== all[i - 1][1]), holes: [] } }
   }
   for (const [nodeId, node] of Object.entries(paper.nodes)) {
     if (parentId && nodeId !== parentId) continue
@@ -74,10 +82,10 @@ export function placeBehindScene(project, spread, api, element, { x, z, parentId
       if (pair.kind !== 'fold-pair' || pair.rayA.z < .85 || Math.abs(pair.rayA.y) > 1e-5 || pair.b.support) continue
       const target = new Vector3(x, 0, z), d = target.clone().sub(pair.origin).dot(pair.rayA)
       if (d < .065) continue
-      const supportWidth = Math.max(.05, Math.min(.12, width * .18))
+      let supportWidth = Math.max(.05, Math.min(.12, width * .18))
       // 高さの半分を基準とし、親の上端や回転部の明示した上限に収める。
       // 支持の長さや収納を理由に足元へ下げず、接着できる親と横位置を探す。
-      const supportHeight = round(Math.max(.05, Math.min(height * .5, pair.b.height - .03, supportCeiling)))
+      const supportHeight = round(Math.max(.05, Math.min(requestedHeight ?? height * .5, height - .03, pair.b.height - .03, supportCeiling)))
       const o = pair.origin.clone().addScaledVector(pair.axis, target.clone().sub(pair.origin).dot(pair.axis))
       const foot = o.clone().addScaledVector(pair.rayA, d)
       const panel = api.makeFace(element.id + '/panel', foot.clone().addScaledVector(pair.axis, -width / 2), pair.axis, pair.rayB, width, height)
@@ -85,9 +93,14 @@ export function placeBehindScene(project, spread, api, element, { x, z, parentId
       const parentIntervals = attachmentIntervals(api, pair.b, o.clone().addScaledVector(pair.rayB, supportHeight), pair.axis, pair.rayB)
       const childIntervals = attachmentIntervals(api, panel, foot.clone().addScaledVector(pair.rayB, supportHeight), pair.axis, pair.rayB)
       const offsets = []
-      for (const a of parentIntervals) for (const b of childIntervals) {
-        const lo = Math.max(a[0], b[0]) + supportWidth / 2 + 1e-5, hi = Math.min(a[1], b[1]) - supportWidth / 2 - 1e-5
-        if (lo <= hi) offsets.push(Math.max(lo, Math.min(hi, 0)), (lo + hi) / 2, lo, hi)
+      // 支柱が細いときも取り付け高さを下げず、接着できる幅の支持紙を設計する。
+      for (const candidateWidth of [...new Set([supportWidth, Math.min(supportWidth, .05)])]) {
+        supportWidth = candidateWidth
+        for (const a of parentIntervals) for (const b of childIntervals) {
+          const lo = Math.max(a[0], b[0]) + supportWidth / 2 + 1e-5, hi = Math.min(a[1], b[1]) - supportWidth / 2 - 1e-5
+          if (lo <= hi) offsets.push(Math.max(lo, Math.min(hi, requestedOffset)), (lo + hi) / 2, lo, hi)
+        }
+        if (offsets.length) break
       }
       if (!offsets.length) failures.add(`基準高さの接着幅が不足: ${nodeId}/${portId}`)
       for (const supportOffset of [...new Set(offsets.map(round))]) {
@@ -101,7 +114,7 @@ export function placeBehindScene(project, spread, api, element, { x, z, parentId
           if (errors.length) throw new Error(errors[0])
           const crossings = api.inspectIntersections(evaluated).filter((s) => s.includes(element.id + '/'))
           if (crossings.length) throw new Error(crossings[0])
-          candidates.push({ candidate, parent: nodeId, portId, heightGap: Math.max(0, .5 - supportHeight / height), score: d + Math.abs(supportOffset) * .25 })
+          candidates.push({ candidate, parent: nodeId, portId, heightGap: Math.max(0, .5 - supportHeight / height), score: d + Math.abs(supportOffset - requestedOffset) * .25 })
         } catch (error) { failures.add(error.message) }
       }
     }
