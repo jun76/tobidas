@@ -25,7 +25,7 @@ describe('基本・カスタム部品の共通編集', () => {
   it('補完した支持紙に貼った子を、役割の同じ面へ追従させる', () => {
     const background = placed('backdrop', gutter, { width: 1, height: 2 })
     const result = placePartOnSurfacesCommand({ spreadId: spread().id, name: '張り出す看板', definition: { builtin: 'upright', version: 1 },
-      first: { surface: { nodeId: '$book', portId: 'right-page' }, point: [4.5, 2] }, second: { surface: { nodeId: background, portId: 'panel' }, point: [.5, 1] } })
+      first: { surface: { nodeId: '$book', portId: 'right-page' }, point: [5.2, 2] }, second: { surface: { nodeId: background, portId: 'panel' }, point: [.5, 1] } })
     expect(result.ok, result.message).toBe(true)
     if (!result.ok) return
     const parent = result.target!.id
@@ -68,7 +68,7 @@ describe('基本・カスタム部品の共通編集', () => {
     const background = placed('backdrop', gutter, { width: 1, height: 2 })
     const before = useBuilderStore.getState().project, history = useBuilderStore.getState().undoStack.length
     const input = { spreadId: spread().id, name: '横へ張り出す看板', definition: { builtin: 'upright', version: 1 },
-      first: { surface: { nodeId: '$book', portId: 'right-page' }, point: [4.5, 2] as [number, number] } }
+      first: { surface: { nodeId: '$book', portId: 'right-page' }, point: [5.2, 2] as [number, number] } }
     expect(placePartOnSurfacesCommand({ ...input, second: input.first }).ok).toBe(false)
     expect(useBuilderStore.getState().project).toBe(before)
     expect(useBuilderStore.getState().undoStack).toHaveLength(history)

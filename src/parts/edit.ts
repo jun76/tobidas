@@ -4,7 +4,7 @@ import { builtinPart } from './catalog'
 import { dependentPartIds, evaluatedOutput, evaluatePartGraph, evaluatePartReference, resolveBinding } from './evaluate'
 import { faceCorners, makeFace, openingAngle, pointOnFace, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
 import { bindingDependencies, evaluateExpression, parameterValues, type PartDefinitions, type PartNode, type PartSurfaceRef, type PartMaterial } from './schema'
-import { extensionFor, materialPoint } from './placement'
+import { extensionFor, materialPoint } from './mountGeometry'
 import { createPaperMotionInspector, inspectClosedLayout, validationAngles } from './validate'
 import { inspectIntersections, nearbyPaperPairs } from './intersections'
 
@@ -20,6 +20,7 @@ export interface PartEditScene {
   at: (angle: number) => { input?: PartPort; external?: Record<string, Record<string, PartPort>> }
   maxAngle: number; closedBounds?: { width: number; depth: number }
   validateContents?: (result: PaperEvaluation, nodes: PartNode[], angle: number) => string[]
+  redesignSupports?: (nodes: PartNode[], affected: Set<string>) => void
   parameters?: Record<string, number>; slots?: Record<string, PartMaterial>
 }
 export interface PartEditAngle {
@@ -250,7 +251,10 @@ export function planPartEdit(scene: PartEditScene, id: string, raw: PartEditInte
       if (affected.has(node.id)) {
         if (node.id === id) {
           if (intent.type === 'scale') node.uniformScale = intent.value
-          if (intent.type === 'parameters') node.parameters = { ...node.parameters, ...intent.values }
+          if (intent.type === 'parameters') {
+            node.parameters = { ...node.parameters, ...intent.values }
+            if (Object.keys(intent.values).some(key => /^support(Height|Width|Offset)$/.test(key))) delete node.supportDesign
+          }
           if (intent.type === 'rotate') {
             const handle = description.angles.find((item) => item.id === intent.handle)
             if (!handle || intent.value < handle.min || intent.value > handle.max) throw new Error('Unsupported design angle')
@@ -278,6 +282,7 @@ export function planPartEdit(scene: PartEditScene, id: string, raw: PartEditInte
       ready.push(node); visiting.delete(node.id)
     }
     nodes.forEach(visit)
+    scene.redesignSupports?.(nodes, affected)
     if (intent.type === 'rotate' && description.angles.find((angle) => angle.id === intent.handle)?.tilt) {
       const actual = describePartEdit({ ...scene, nodes }, id).angles.find((angle) => angle.id === intent.handle)!.value
       if (Math.abs(actual - intent.value) > 1e-5) throw new Error('The requested tilt is on a different folding branch')

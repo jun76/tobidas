@@ -1,8 +1,9 @@
 import { Color, Euler, Matrix4, Quaternion, Vector3 } from 'three'
 import { readFileSync } from 'node:fs'
+import { requiresFiction } from '../../src/parts/presentation.ts'
+export { requiresFiction } from '../../src/parts/presentation.ts'
 import { CONNECTED_LAYOUTS } from './connected-layouts.mjs'
-import { placeBehindScene } from './rear-supports.mjs'
-import { CASTLE_PAPER_SUPPORTS } from './castle-paper-supports.mjs'
+import { applyPaperContour } from './paperContour.mjs'
 const SHAPES = JSON.parse(readFileSync(new URL('./paper-shapes.json', import.meta.url), 'utf8'))
 
 const radians = Math.PI / 180, round = (n) => Math.round(n * 1e7) / 1e7
@@ -12,10 +13,6 @@ const worldPosition = (element) => {
   return p
 }
 const sizeOf = (e) => [e.width * e.baseTransform.scale[0], e.height * e.baseTransform.scale[1]]
-/** 本体の変位と出現・消失はフィクション。印刷差分の透明度は紙の存在を変えない。 */
-export const requiresFiction = (e, tracks, printed = false) => Boolean(e.motion.length || e.type === 'particle' || e.parent.type === 'element'
-  || tracks.some((t) => /^(position|rotation|scale|visual\.(width|height))/.test(t.property)
-    || !printed && ['opacity', 'visible'].includes(t.property) && new Set(t.keys.map(k => JSON.stringify(k.value))).size > 1))
 const identity = () => ({ position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] })
 const windowShapes = (work) => Object.fromEntries(['panel', 'panel-b'].map((face) => {
   const start = face === 'panel' ? .5 : 0
@@ -26,6 +23,7 @@ const windowShapes = (work) => Object.fromEntries(['panel', 'panel-b'].map((face
 async function embedPart(project, api, values) {
   const definition = api.partDefinitionSchema.parse({ format: 'tobidas-part', schemaVersion: 2, revision: 1, ...values })
   api.syncDefinitionRequirements(definition)
+  api.designAutomaticDefinitionSupports(definition, project.partDefinitions)
   const used = new Set()
   const walk = (value) => { if (!value || typeof value !== 'object') return
     for (const [key, v] of Object.entries(value)) {
@@ -57,10 +55,10 @@ export async function remakeConnected(source, api) {
   const sourceIds = new Set(source.book.spreads.flatMap((spread) => spread.elements.map((element) => element.id)))
   for (const kind of ['paper', 'fiction']) for (const [id, design] of Object.entries(config[kind] ?? {})) {
     if (!sourceIds.has(id)) throw new Error(`接続設計の対象がありません: ${source.id}/${id}`)
-    checkFields(design, kind === 'paper' ? ['x', 'z', 'scale', 'backdrop', 'parent', 'supportCeiling', 'supportHeight', 'supportOffset'] : ['x', 'position', 'pageAnchor', 'scale', 'route', 'parent'], id)
+    checkFields(design, kind === 'paper' ? ['x', 'z', 'scale', 'backdrop'] : ['x', 'z', 'position', 'pageAnchor', 'scale', 'route'], id)
     if (design.position && (!Array.isArray(design.position) || design.position.length !== 3 || design.position.some(n => !Number.isFinite(n)))) throw new Error(`演出の位置が不正です: ${id}`)
     if (design.pageAnchor && (!design.position || design.parent || design.route || !Array.isArray(design.pageAnchor) || design.pageAnchor.length !== 2 || design.pageAnchor.some(n => !Number.isFinite(n)))) throw new Error(`演出のページ接続が不正です: ${id}`)
-    for (const key of ['x', 'z', 'scale', 'supportHeight', 'supportCeiling', 'supportOffset']) if (design[key] !== undefined && (!Number.isFinite(design[key]) || key === 'scale' && design[key] <= 0)) throw new Error(`接続設計の寸法が不正です: ${id}/${key}`)
+    for (const key of ['x', 'z', 'scale']) if (design[key] !== undefined && (!Number.isFinite(design[key]) || key === 'scale' && design[key] <= 0)) throw new Error(`接続設計の寸法が不正です: ${id}/${key}`)
     if (design.route) {
       checkFields(design.route, ['from', 'to', 'rotation'], id + '/route')
       if (['from', 'to', 'rotation'].some((key) => !Array.isArray(design.route[key]) || design.route[key].length !== 3 || design.route[key].some((n) => !Number.isFinite(n)))) throw new Error(`移動経路が不正です: ${id}`)
@@ -102,21 +100,6 @@ export async function remakeConnected(source, api) {
         const classroom = source.id === 'morning_walk'
         const frame = { id: 'frame', name: '窓枠', ...background.part, mount: { type: 'input' } }
         const contents = []
-        if (!classroom) {
-          // 窓の絵と穴は原寸のまま、同じ紙の左右を壁として延ばす。カーテンはこの実面から支持する。
-          const windowWidth = frame.parameters.width, wallWidth = 14.8, ratio = windowWidth / wallWidth
-          frame.name = '窓と左右の壁'; frame.parameters = { ...frame.parameters, width: wallWidth }
-          frame.materials = { '*': { color: '#efe2cc' } }
-          for (const portId of ['panel', 'panel-b']) {
-            const left = portId === 'panel-b', shape = frame.shapes[portId]
-            shape.holes = shape.holes.map(ring => ring.map(([u, v]) => [left ? 1 - (1 - u) * ratio : u * ratio, v]))
-            const element = api.connectedContentSchema.parse({ ...api.createStageElement('visual'), id: `window-art-${portId}`, name: '窓枠の印刷',
-              image: bg.image, width: windowWidth, height: frame.parameters.height, pivot: [.5, 0], layer: 1,
-              baseTransform: identity(), presentation: { kind: 'decal' },
-              attachment: { type: 'surface', surface: { nodeId: 'frame', portId }, point: [left ? wallWidth / 2 : 0, 0], side: 'front' } })
-            contents.push({ element, tracks: [] })
-          }
-        }
         const view = { id: 'view', name: '窓の外の紙', ...screen('', '', classroom ? 14.4 : 7.46, classroom ? 3.25 : 2.6, classroom ? -2.55 : -2.1).part, mount: { type: 'input' } }
         if (classroom) view.materials = { '*': { color: '#c8e2ed' } }
         const outputs = Object.fromEntries(['panel', 'panel-b', 'ground-backdrop', 'ground-backdrop-b'].map((portId) => [portId, { type: 'output', nodeId: 'frame', portId }]))
@@ -155,14 +138,7 @@ export async function remakeConnected(source, api) {
     // 同じ家の画像差分は一枚に印刷する。面のIDは暗い家の旧IDを基に固定する。
     const merged = new Map()
     const placements = originals.map(old => ({ old, z: plannedZ(old) }))
-    if (source.id === 'crooked_castle') placements.push(...CASTLE_PAPER_SUPPORTS.map(support => ({ support, z: support.z })))
-    for (const { old, support } of placements.sort((a, b) => a.z - b.z)) {
-      if (support) {
-        // 実紙の構造は演出要素と独立して配置する。城の絵を削除しても壁・柵の支持を失わない。
-        const base = part(support.id, '前景の壁と柵の支持台', 'upright', '$book', 'gutter', { width: support.width, height: .2 }, { '*': { color: '#888472' } })
-        elements.push(placeBehindScene(project, { ...spread, elements }, api, base, { ...support, parentId: support.parent }))
-        continue
-      }
+    for (const { old } of placements.sort((a, b) => a.z - b.z)) {
       if (old.id === bgId) continue
       if (source.id === 'crooked_castle' && old.id.startsWith('forest-')) continue
       if (source.id === 'morning_walk' && index === 4 && /^(mountain|town|cherry)-(left|right)$/.test(suffix(old))) {
@@ -181,7 +157,6 @@ export async function remakeConnected(source, api) {
       const hasLayers = /house-dark-|^layer-/.test(key)
       const flat = Math.abs(Math.abs(old.baseTransform.rotation[0]) - 90) < .001
       if (flat) continue
-      const scaffold = source.id === 'crooked_castle' && CASTLE_PAPER_SUPPORTS.find(s => s.id === `${old.id}-anchor`)
       if (requiresFiction(old, ownTracks, hasLayers)) {
         if (old.parent.type !== 'element' && !/^shutter-/.test(suffix(old)) && !(source.id === 'four_seasons' && /^particle-/.test(suffix(old)))) {
           const p = worldPosition(old), design = config.fiction?.[old.id] ?? {}
@@ -190,8 +165,10 @@ export async function remakeConnected(source, api) {
           const z = source.id === 'crooked_castle' ? castleDepth.get(old.id)
             : /^curtain/.test(suffix(old)) ? .1 : Math.max(-1.4, Math.min(1.7, p[2] * .68))
           // 演出のためだけの支持紙は作らない。既存の実面を座標の基準にする。
-          fictionPlans.set(old.id, { position: [p[0], p[1], z],
-            ...source.id === 'crooked_castle' ? scaffold ? { parent: scaffold.id } : { parent: 'castle-forest', positioned: true } : {}, ...design })
+          const ground = source.id === 'crooked_castle' && old.type === 'visual' && old.pivot[1] === 0
+          const x = p[0], atZ = design.z !== undefined ? design.z - (ground ? Math.abs(x) * Math.tan(5 * radians) : 0) : z
+          fictionPlans.set(old.id, { position: [x, p[1], atZ],
+            ...ground ? { pageAnchor: [x, atZ] } : source.id === 'crooked_castle' ? { positioned: true } : {}, ...design })
         }
         continue
       }
@@ -206,7 +183,8 @@ export async function remakeConnected(source, api) {
       } else {
         el = part(old.id, old.name, 'upright', '$book', 'gutter', { width, height },
           old.image ? { panel: { image: old.image } } : { panel: { color: old.backgroundColor.slice(0, 7), text: old.text, textColor: old.foregroundColor } })
-        el = placeBehindScene(project, { ...spread, elements }, api, el, { x, z, parentId: design.parent, supportCeiling: design.supportCeiling, supportHeight: design.supportHeight, supportOffset: design.supportOffset, contour: old.image && SHAPES[source.id][old.image] })
+        applyPaperContour(el, old.image && SHAPES[source.id][old.image])
+        el = api.planSupportedPart(project, { ...spread, elements }, el, { position: [x, 0, z] })
       }
       if (hasLayers) { el.id = `${old.id}-paper`; el.part.materials = { panel: { color: '#ead8b5' } } }
       elements.push(el); plans.set(old.id, { element: el, scale: factor, merged: hasLayers }); merged.set(key, old.id)
@@ -283,7 +261,7 @@ export async function remakeConnected(source, api) {
       if (fictional?.route) {
         // 経路は見開き全開時の足元で設計し、実面の材料座標へ写す。奥行きを横移動へ置換しない。
         const route = fictional.route, left = route.from[0] < 0, portId = left ? 'left-page' : 'right-page'
-        const terminal = fictional.parent && surfaceFor(plans.get(fictional.parent), route.to[0])
+        const terminal = ownTracks.some(track => track.property === 'visible') ? undefined : api.nearestContentSurface(paper, route.to)
         const face = terminal ? terminal.face : api.pagePorts(8, 6.4, Math.PI, 0)[portId].face
         const destination = new Vector3(...route.to).sub(face.origin)
         const wanted = [destination.dot(face.u), destination.dot(face.v)]
@@ -329,16 +307,9 @@ export async function remakeConnected(source, api) {
       if (fictional) {
         p.splice(0, 3, ...fictional.position)
         const candidates = []
-        for (const [nodeId, node] of Object.entries(fictional.pageAnchor ? {} : paper.nodes)) for (const [portId, port] of Object.entries(node.ports)) {
-          if (fictional.parent && nodeId !== fictional.parent || portId.startsWith('view-')) continue
-          if (port.kind !== 'surface' || port.face.support || port.face.v.y < .9 || port.face.u.clone().cross(port.face.v).z < .8) continue
-          const face = port.face
-          for (const h of [p[1], face.height * .7, .3, .1]) {
-            const point = [Math.max(.04, Math.min(face.width - .04, new Vector3(...p).sub(face.origin).dot(face.u))), Math.min(h, face.height * .8)]
-            if (!api.faceContains(face, api.pointOnFace(face, ...point))) continue
-            const at = api.pointOnFace(face, ...point)
-            candidates.push({ face, point, reference: { nodeId, portId }, at, side: 'front', score: Math.abs(at.x - p[0]) * 4 + Math.abs(at.z - p[2]) + Math.abs(at.y - p[1]) * .1 })
-          }
+        if (!fictional.pageAnchor) {
+          const nearest = api.nearestContentSurface(paper, p, 2)
+          if (nearest) candidates.push({ ...nearest, at: api.pointOnFace(nearest.face, ...nearest.point), side: 'front' })
         }
         if (fictional.pageAnchor) {
           const [x, z] = fictional.pageAnchor, portId = x < 0 ? 'left-page' : 'right-page'
@@ -385,13 +356,6 @@ export async function remakeConnected(source, api) {
             }
             return track
           })
-        if (source.id === 'crooked_castle' && old.type === 'visual' && !ownTracks.some(t => t.property === 'opacity')) {
-          // 幻の城はページを閉じる前に退場する。前景の実紙はその後も物理的に折り畳む。
-          const end = spread.sequence.holdSeconds
-          const fade = { id: `${old.id}-exit`, target: { type: 'element', elementId: old.id }, property: 'opacity',
-            keys: [[0, 1], [end - .45, 1], [end, 0]].map(([time, value], i) => ({ id: `${old.id}-exit-${i}`, time, value, ease: 'easeInOut' })) }
-          tracks.push(fade); mappings.get(old.id).trackIds.push(fade.id)
-        }
         continue
       }
       // ページへ固定する印刷と演出は同じ材料座標を使う。旧ページ座標の軸を正確に写す。
@@ -426,6 +390,8 @@ export async function remakeConnected(source, api) {
       if (track.property === 'ambient.intensity') track.keys.forEach((key) => { key.value = fill(key.value) })
       if (track.property === 'ambient.color') track.keys.forEach((key) => { key.value = neutral(key.value) })
     }
+    api.replanAutomaticSupports(project, spread)
+    elements.splice(0, elements.length, ...spread.elements)
     if (source.id === 'forest_lantern' && index === 2) {
       const tower = elements.find((e) => e.id === `${spread.id}-windmill`), rotor = elements.find((e) => e.id === `${spread.id}-windmill-rotor`)
       const content = api.connectedContentSchema.parse({ ...rotor, id: 'rotor', attachment: { ...rotor.attachment, surface: { nodeId: 'tower', portId: 'panel' } } })

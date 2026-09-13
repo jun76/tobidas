@@ -4,7 +4,7 @@ import { builtinPart } from './catalog'
 import { evaluateBackdrop } from './backdrop'
 import { evaluateAngledUpright } from './angledUpright'
 import { parameterValues, type PartMaterial } from './schema'
-import { checkInput, EPSILON, faceContains, faceCorners, makeFace, pointOnFace, stackOnSurface,
+import { checkInput, EPSILON, faceContains, faceCorners, faceShape, makeFace, pointOnFace, stackOnSurface,
   type FoldPair, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
 
 /** 紙面は全て剛体。角度の換算や面の伸縮で解を作らない。 */
@@ -165,6 +165,29 @@ export function evaluateBuiltin(id: BuiltinPartId, port: PartPort, overrides: Re
     }
   }
   return result
+}
+
+/** 縦置きの接地辺は、輪郭の足が残る区間だけにする。背面支持の接着線は切り詰めない。 */
+export function fitUprightGroundContacts(result: PaperEvaluation): void {
+  const panel = result.ports.panel, ground = result.ports.ground
+  if (panel?.kind !== 'surface' || ground?.kind !== 'surface' || !panel.face.shape && !panel.face.outline) return
+  const ring = faceShape(panel.face).outer
+  const intervals = ring.flatMap(([u, v], i): [number, number][] => {
+    const [nextU, nextV] = ring[(i + 1) % ring.length]
+    return v === 0 && nextV === 0 && Math.abs(nextU - u) > EPSILON ? [[Math.min(u, nextU), Math.max(u, nextU)]] : []
+  }).sort((a, b) => a[0] - b[0])
+  if (!intervals.length) throw new Error('Upright outline must retain a ground attachment edge')
+  const feet: [number, number][] = []
+  for (const interval of intervals) {
+    const previous = feet[feet.length - 1]
+    if (previous && interval[0] <= previous[1]) previous[1] = Math.max(previous[1], interval[1])
+    else feet.push([...interval])
+  }
+  result.connections = result.connections.flatMap(connection => connection.childFace === panel.face.id && connection.parentFace === ground.face.id
+    ? feet.map(([start, end]) => ({ ...connection,
+      actual: [start, end].map(t => connection.actual[0].clone().lerp(connection.actual[1], t)),
+      expected: [start, end].map(t => connection.expected[0].clone().lerp(connection.expected[1], t)),
+    })) : [connection])
 }
 
 export function decorateFaces(result: PaperEvaluation, materials: Record<string, PartMaterial>, outline?: [number, number][]): void {

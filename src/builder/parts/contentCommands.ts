@@ -3,6 +3,7 @@ import { connectedContentSchema, partContentSchema, type ConnectedContent } from
 import { createStageElement } from '../../schema/bookDefaults'
 import { validateBookProject } from '../../schema/bookValidate'
 import { contentAsStage } from '../../parts/contents'
+import { replanAutomaticSupports, designAutomaticDefinitionSupports } from '../../parts/supportPlanning'
 import { contentEditIntentSchema, planContentEdit } from '../../parts/contentEdit'
 import { paperShapeSchema } from '../../parts/shape'
 import { validatePartDefinition } from '../../parts/validate'
@@ -24,8 +25,9 @@ export function placeContentCommand(value: z.input<typeof placeContentSchema>): 
     const candidate = structuredClone(state.project), spread = candidate.book.spreads.find((item) => item.id === parsed.spreadId)
     if (!spread || spread.elements.some((item) => item.id === parsed.element.id)) throw new Error('Spread missing or content ID already exists')
     const element = contentAsStage(parsed.element); spread.elements.push(element)
+    replanAutomaticSupports(candidate, spread, { preserveConnections: true, floatingIds: new Set([element.id]) })
     const validation = validateBookProject(candidate); if (!validation.ok) throw new Error(validation.errors[0])
-    state.commit((project) => { project.book.spreads.find((item) => item.id === spread.id)!.elements.push(element) })
+    state.commit((project) => { const target = project.book.spreads.find(item => item.id === spread.id)!; target.elements = spread.elements; target.timeline.tracks = spread.timeline.tracks })
     state.select({ type: 'element', spreadId: spread.id, elementId: element.id })
     return done('place-content', element.id)
   } catch (error) { return fail('place-content', error) }
@@ -36,7 +38,7 @@ export function editConnectedContentCommand(value: z.input<typeof editConnectedC
     const parsed = editConnectedContentSchema.parse(value), state = useBuilderStore.getState()
     if (state.mode !== 'edit') throw new Error(t().operations.readOnly)
     const next = planContentEdit(state.project, parsed.spreadId, parsed.elementId, parsed.intent)
-    state.commit((project) => { project.book.spreads.find((item) => item.id === parsed.spreadId)!.elements = next.book.spreads.find((item) => item.id === parsed.spreadId)!.elements })
+    state.commit((project) => { const target = project.book.spreads.find(item => item.id === parsed.spreadId)!; const source = next.book.spreads.find(item => item.id === parsed.spreadId)!; target.elements = source.elements; target.timeline.tracks = source.timeline.tracks })
     return done('edit-connected-content', parsed.elementId)
   } catch (error) { return fail('edit-connected-content', error) }
 }
@@ -47,6 +49,7 @@ export function upsertPartContentCommand(value: z.input<typeof upsertPartContent
     const candidate = structuredClone(store.bundle)
     candidate.definition.schemaVersion = 2
     candidate.definition.contents = [...candidate.definition.contents?.filter((item) => item.element.id !== content.element.id) ?? [], content]
+    designAutomaticDefinitionSupports(candidate.definition, candidate.definitions)
     const validation = validatePartDefinition(candidate.definition, candidate.definitions)
     if (!validation.ok) throw new Error(validation.errors[0])
     store.change((bundle) => { bundle.definition = candidate.definition })
@@ -71,6 +74,7 @@ export function setPartShapeCommand(value: z.input<typeof setPartShapeSchema>): 
     if (!node) throw new Error('Material node not found')
     candidate.definition.schemaVersion = 2; node.shapes = { ...node.shapes }
     if (shape) node.shapes[faceId] = shape; else delete node.shapes[faceId]
+    designAutomaticDefinitionSupports(candidate.definition, candidate.definitions)
     const validation = validatePartDefinition(candidate.definition, candidate.definitions)
     if (!validation.ok) throw new Error(validation.errors[0])
     store.change((bundle) => { bundle.definition = candidate.definition })

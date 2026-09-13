@@ -4,10 +4,38 @@ import { evaluateBuiltin } from './builtins'
 import { evaluatePartReference } from './evaluate'
 import { faceCorners, openingAngle, pagePorts, type FoldPair } from './geometry'
 import { newPartDefinition } from './schema'
+import type { PaperShape } from './shape'
 import { createPaperMotionInspector, inspectClosedLayout, inspectPaper, syncDefinitionRequirements, validatePartDefinition } from './validate'
 
 const pairAt = (angle: number, rotation = 0) => pagePorts(8, 10, (angle + rotation) * Math.PI / 180, rotation * Math.PI / 180).gutter as FoldPair
 describe('connected paper parts', () => {
+  it('二本の足だけを接地させ、入れ子・拡縮・開閉でも同じ紙と接着区間を保つ', () => {
+    const definition = newPartDefinition('机', { kind: 'fold-pair', maxOpeningAngleDeg: 90 })
+    const shape: PaperShape = { outer: [[.1, 0], [.2, 0], [.2, .3], [.7, .3], [.7, 0], [.9, 0], [.9, 1], [.1, 1]], holes: [] }
+    definition.nodes.push({ id: 'desk', name: '机', definition: { builtin: 'upright', version: 1 }, mount: { type: 'input' },
+      parameters: { width: 2, height: 2, distance: 1, supportHeight: 1, supportWidth: .2 }, materials: {}, shapes: { panel: shape } })
+    syncDefinitionRequirements(definition)
+    for (const scale of [1, 1.7]) for (const rotation of [0, 36]) {
+      const inspect = createPaperMotionInspector()
+      for (const angle of [90, 60, 15, 0, 30, 90]) {
+        const input = pairAt(angle, rotation)
+        const result = evaluatePartReference({ custom: 'desk' }, input, { desk: definition }, {}, {}, 'scene', [], scale)
+        expect(inspect(result, [input])).toEqual([])
+        const panel = result.faces.find(face => face.id === 'scene/desk/panel')!
+        expect(panel.shape).toEqual(shape)
+        const feet = result.connections.filter(connection => connection.childFace === panel.id)
+        expect(feet).toHaveLength(2)
+        expect(feet.map(foot => foot.actual[0].distanceTo(foot.actual[1]))).toEqual([expect.closeTo(.2 * scale), expect.closeTo(.4 * scale)])
+        const support = result.faces.find(face => face.support)!
+        expect(support.width).toBeCloseTo(.2 * scale)
+        expect(result.connections.filter(connection => connection.childFace === support.id)).toHaveLength(2)
+      }
+    }
+    definition.nodes[0].shapes!.panel = { ...shape, holes: [[[.45, .45], [.55, .45], [.55, .55], [.45, .55]]] }
+    expect(validatePartDefinition(definition).errors).toContainEqual(expect.stringContaining('Outline cuts through an attachment'))
+    definition.nodes[0].shapes!.panel = { outer: [[.1, .1], [.9, .1], [.9, 1], [.1, 1]], holes: [] }
+    expect(validatePartDefinition(definition).errors).toContainEqual(expect.stringContaining('ground attachment edge'))
+  })
   it('家の裏からずらした支持を延ばし、孫の紙も同じ接着位置と材料で折る', () => {
     const inspect = createPaperMotionInspector()
     for (const angle of [180, 150, 90, 30, 0, 90, 180]) {
@@ -28,6 +56,20 @@ describe('connected paper parts', () => {
       const contact = tree.connections.find((edge) => edge.parentFace === panel.id)!.expected[0]
       expect(contact.clone().sub(panel.origin).dot(panel.u)).toBeCloseTo(.24)
     }
+  })
+  it('親の足の隙間を通る仮想交線を許可しても、背面支持が穴へ接着する配置は拒否する', () => {
+    const definition = newPartDefinition('机と小物', { kind: 'fold-pair', maxOpeningAngleDeg: 90 })
+    definition.nodes.push(
+      { id: 'desk', name: '机', definition: { builtin: 'upright', version: 1 }, mount: { type: 'input' }, parameters: { width: 2, height: 2, distance: 1 }, materials: {},
+        shapes: { panel: { outer: [[.1, 0], [.2, 0], [.2, .3], [.8, .3], [.8, 0], [.9, 0], [.9, 1], [.1, 1]], holes: [] } } },
+      { id: 'child', name: '小物', definition: { builtin: 'upright', version: 1 }, materials: {}, parameters: { width: 1, height: 1, distance: 1, supportHeight: .8 },
+        mount: { type: 'pair', a: { nodeId: '$input', portId: 'a' }, b: { nodeId: 'desk', portId: 'panel' },
+          hingeA: [[4.5, 1], [5.5, 1]], hingeB: [[.5, 0], [1.5, 0]], directionA: 'positive', directionB: 'positive', foldSign: 1 } },
+    )
+    const input = pairAt(90), result = () => evaluatePartReference({ custom: 'scene' }, input, { scene: definition })
+    expect(inspectPaper(result(), [input])).toEqual([])
+    definition.nodes[1].parameters.supportHeight = .2
+    expect(() => result()).toThrow('Attachment exceeds surface')
   })
   it('支持の横移動で紙から接着辺が外れる場合は拒否する', () => {
     expect(() => evaluateBuiltin('upright', pairAt(90), { width: 1, supportWidth: .3, supportOffset: .4 })).toThrow('Support must fit')
@@ -91,7 +133,7 @@ describe('connected paper parts', () => {
     expect(evaluateBuiltin('backdrop', pairAt(46), {}, 'backdrop', 1).faces.map(faceCorners)).toEqual(first.faces.map(faceCorners))
     expect(first.faces[0].u).toEqual(new Vector3(0, 0, 1))
   })
-  it('箱の90度姿勢を保ち、接着辺を切る輪郭と未公開の素材指定を拒否する', () => {
+  it('箱の90度姿勢を保ち、縦置きの足を分けた輪郭を許可し、未公開の素材指定を拒否する', () => {
     const definition = newPartDefinition('箱')
     definition.nodes.push({ id: 'box', name: '箱', definition: { builtin: 'folding-box', version: 1 }, mount: { type: 'input' }, parameters: {}, materials: {} })
     syncDefinitionRequirements(definition)
@@ -103,6 +145,6 @@ describe('connected paper parts', () => {
     definition.nodes[0].definition = { builtin: 'upright', version: 1 }
     definition.nodes[0].outline = [[0, 0], [.3, 0], [.5, .4], [.7, 0], [1, 0], [1, 1], [0, 1]]
     syncDefinitionRequirements(definition)
-    expect(validatePartDefinition(definition).errors).toContainEqual(expect.stringContaining('Outline cuts through an attachment'))
+    expect(validatePartDefinition(definition).errors).toEqual([])
   })
 })

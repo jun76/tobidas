@@ -59,7 +59,10 @@ try {
       const parentStart = performance.now()
       await page.getByLabel('横方向の移動量', { exact: true }).fill('.002')
       await page.getByRole('button', { name: '移動する', exact: true }).click()
-      await undo.waitFor(); check(await undo.isEnabled(), work.id + ': 親の移動が確定できません')
+      // 支持の再設計・検査とReactの描画が終わるまで、操作の完了を待つ。
+      await page.waitForFunction(() => [...document.querySelectorAll('button')].some(button =>
+        button.getAttribute('aria-label') === '元に戻す' && !button.disabled), undefined, { timeout: 30000 })
+      check(await undo.isEnabled(), work.id + ': 親の移動が確定できません')
       parentEditMs = performance.now() - parentStart
       await select(page, work.child); await valueIs(page.getByLabel('面上の基準点 X', { exact: true }), before)
     }

@@ -55,6 +55,7 @@ export const partNodeSchema = z.object({
   parameters: z.record(partExpressionSchema).default({}),
   materials: z.record(partMaterialValueSchema).default({}),
   uniformScale: finite.positive().max(100).optional(),
+  supportDesign: z.literal('automatic').optional(),
   // 切り抜き輪郭は面の寸法で正規化した材料座標。支持面の輪郭は変更しない。
   outline: z.array(point2).min(3).max(128).optional(),
   shapes: z.record(paperShapeSchema).optional(),
@@ -79,6 +80,7 @@ export const partInstanceSchema = z.object({
   definition: partReferenceSchema, mount: partBindingSchema,
   parameters: z.record(finite).default({}), materials: z.record(partMaterialSchema).default({}),
   uniformScale: finite.positive().max(100).optional(),
+  supportDesign: z.literal('automatic').optional(),
   shapes: z.record(paperShapeSchema).optional(),
 })
 export type PartInput = z.infer<typeof partInputSchema>

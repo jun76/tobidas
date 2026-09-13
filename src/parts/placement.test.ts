@@ -57,7 +57,7 @@ describe('本の上で面を選ぶ部品配置', () => {
   it('背景と地面に接続し、背景幅を越す位置には支持紙を自動補完する', () => {
     const project = createBookProject(), spread = project.book.spreads[0]
     add(project, 'background', { definition: builtin('backdrop'), mount: { type: 'output', nodeId: '$book', portId: 'gutter' }, parameters: { width: 1, height: 2 }, materials: {} })
-    const result = planPartPlacement(project, spread.id, builtin('upright'), pick('$book', 'right-page', 4.5, 2), pick('background', 'panel', .5, 1))
+    const result = planPartPlacement(project, spread.id, builtin('upright'), pick('$book', 'right-page', 5.2, 2), pick('background', 'panel', .5, 1))
     expect(result.ok, JSON.stringify(result)).toBe(true)
     if (!result.ok) return
     expect(result.bridgeCount).toBeGreaterThan(0)

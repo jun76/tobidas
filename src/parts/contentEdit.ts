@@ -3,6 +3,7 @@ import type { BookProject } from '../schema/bookPackage'
 import { contentAttachmentSchema, type ConnectedContent } from '../schema/content'
 import { bindBookContents, evaluateContents, contentAsStage } from './contents'
 import { evaluateBookParts, validateBookParts } from './book'
+import { replanAutomaticSupports } from './supportPlanning'
 
 const vector = z.tuple([z.number().finite(), z.number().finite(), z.number().finite()])
 export const contentEditIntentSchema = z.discriminatedUnion('type', [
@@ -31,6 +32,7 @@ export function planContentEdit(project: BookProject, spreadId: string, id: stri
   if (!spread || !element?.attachment || !element.presentation || !['visual', 'particle', 'group'].includes(element.type)) throw new Error('Connected content was not found')
   editContentValue(element as ConnectedContent, contentEditIntentSchema.parse(intent))
   spread.elements[spread.elements.indexOf(element)] = contentAsStage(element as ConnectedContent)
+  if (thorough) replanAutomaticSupports(next, spread, { preserveConnections: true, floatingIds: new Set([id]) })
   const errors = thorough ? validateBookParts(next) : []
   if (!thorough) evaluateContents(bindBookContents(next, spread, evaluateBookParts(next, spread, Math.PI, 0), Math.PI, 0), { openingAngleDeg: 180, maxOpeningAngleDeg: 180, holdTime: 0, clock: () => 0 })
   if (errors.length) throw new Error(errors[0])

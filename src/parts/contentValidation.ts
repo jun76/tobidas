@@ -5,11 +5,13 @@ import { contentTriangles } from './contentDisplay'
 import { faceShape, makeFace, pointOnFace, type BoundPaperContent, type PaperFace } from './geometry'
 import { facesCross } from './intersections'
 import { contentMotionEnvelopes } from './contentEnvelope'
+import { requiresFiction } from './presentation'
 
 export function inspectContentBindings(bindings: BoundPaperContent[]): string[] {
   const errors: string[] = []
   for (const { id, element, tracks } of bindings) {
     if (element.presentation.kind === 'decal' && element.attachment.type !== 'surface') errors.push(`Decal requires a material surface: ${id}`)
+    if (element.presentation.kind === 'decal' && requiresFiction(element, tracks, true)) errors.push(`Animated placement requires fiction presentation: ${id}`)
     const seen = new Set<string>()
     for (const track of tracks) {
       if (track.target.type !== 'element' || track.target.elementId !== element.id) errors.push(`Content track must target its own element: ${id}`)

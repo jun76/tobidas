@@ -20,24 +20,18 @@ try {
     if (project.book.spreads.some((spread) => spread.elements.some((element) => element.type !== 'part' && !element.attachment))) throw new Error('旧方式の要素が残っています')
     for (const spread of project.book.spreads) {
       if (spread.elements.some((element) => element.id.includes('support-row-'))) throw new Error(`${spread.id}: 作品を横切る接続帯が残っています`)
-      // 支持台は実紙の構造として必要なものだけを許す。演出の参照だけでは必要と見なさない。
-      const needed = new Set(), byId = new Map(spread.elements.map(e => [e.id, e]))
-      const visit = id => {
-        if (needed.has(id)) return
-        needed.add(id)
-        const mount = byId.get(id)?.part?.mount
-        if (mount?.type === 'pair') { visit(mount.a.nodeId); visit(mount.b.nodeId) }
-        else if (mount?.type === 'output') visit(mount.nodeId)
+      for (const e of spread.elements) {
+        if (e.id.endsWith('-anchor')) throw new Error(`${e.id}: 作品固有の支持台が残っています`)
+        if (e.type === 'part' && e.part.definition.builtin === 'upright' && e.part.supportDesign !== 'automatic') throw new Error(`${e.id}: 支持が共通処理で設計されていません`)
       }
-      spread.elements.filter(e => e.type === 'part' && !e.id.endsWith('-anchor')).forEach(e => visit(e.id))
-      for (const e of spread.elements) if (e.id.endsWith('-anchor') && !needed.has(e.id)) throw new Error(`${e.id}: 演出専用の不要な支持紙です`)
       if (entry.sourceId === 'four_seasons' && spread.id !== 'spread-5') {
         for (const e of spread.elements.filter(e => /-prop-\d$/.test(e.id))) {
           if (e.type === 'part' || e.presentation?.kind !== 'fiction' || e.attachment?.surface?.nodeId !== '$book') throw new Error(`${e.id}: 季節の小物に支持が補完されています`)
         }
       }
       for (const face of runtime.api.evaluateBookParts(project, spread, Math.PI, 0).faces) {
-        if (face.support && Math.abs(face.v.z) < .85) throw new Error(`${face.id}: 支持紙が鑑賞方向の奥へ向いていません`)
+        // 主支持は後方へ伸ばす。親面の幅外を補う延長紙は横向きになり、通常の接着・収納検査で確認する。
+        if (face.support && !face.id.includes('/mount/') && Math.abs(face.v.z) < .85) throw new Error(`${face.id}: 支持紙が鑑賞方向の奥へ向いていません`)
       }
     }
     console.log(`${entry.projectId}: ${project.book.spreads.length}見開き、接続・材料・収納・演出・共面の紙・${dimensions.dimensions.length}部品の寸法・埋め込み部品 OK`)

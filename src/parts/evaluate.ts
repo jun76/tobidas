@@ -1,5 +1,5 @@
 import { builtinPart } from './catalog'
-import { decorateFaces, evaluateBuiltin } from './builtins'
+import { decorateFaces, evaluateBuiltin, fitUprightGroundContacts } from './builtins'
 import { bindingDependencies, evaluateExpression, parameterValues, type PartBinding, type PartDefinitions,
   type PartMaterial, type PartNode, type PartReference } from './schema'
 import { checkInput, EPSILON, faceContains, makeFace, pointOnFace, stackOnSurface, type BoundPaperContent, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
@@ -53,8 +53,10 @@ export function resolveBinding(binding: PartBinding, input: PartPort | undefined
   const pa = binding.hingeA.map(([u, v]) => pointOnFace(sourceA, u, v)), pb = binding.hingeB.map(([u, v]) => pointOnFace(sourceB, u, v))
   // 延長した二面の交線は仮想でもよいが、材料座標が全角度で一致する必要がある。
   // 部品の接着辺は、下流のglueとinspectPaperが実際の支持紙まで検査する。
-  if (pa.some((point, i) => point.distanceTo(pb[i]) > EPSILON) || !pa.every((point) => faceContains({ ...a, contactRegions: undefined }, point))
-    || !pb.every((point) => faceContains({ ...b, contactRegions: undefined }, point))) throw new Error('The two material hinge lines must coincide on the actual faces')
+  // 交線は駆動を定義する仮想線。足の間の切り抜きを横切ってもよく、実接着は下流で別途検査する。
+  const hingeWithin = (face: PaperFace, point: Vector3) => faceContains({ ...face, contactRegions: undefined, shape: undefined, outline: undefined }, point)
+  if (pa.some((point, i) => point.distanceTo(pb[i]) > EPSILON) || !pa.every((point) => hingeWithin(a, point))
+    || !pb.every((point) => hingeWithin(b, point))) throw new Error('The two material hinge lines must coincide on the actual faces')
   const width = pa[0].distanceTo(pa[1])
   if (width < EPSILON) throw new Error('Hinge line has zero length')
   const axis = pa[1].clone().sub(pa[0]).normalize()
@@ -160,6 +162,7 @@ export function evaluatePartGraph(nodes: PartNode[], definitions: PartDefinition
       const errors = inspectShape(shape); if (errors.length) throw new Error(errors.join('; '))
       target.shape = shape
     }
+    if ('builtin' in node.definition && node.definition.builtin === 'upright') fitUprightGroundContacts(result)
     active.delete(id); evaluated[id] = result
     return result
   }

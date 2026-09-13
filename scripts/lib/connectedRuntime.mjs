@@ -6,7 +6,7 @@ export async function connectedRuntime() {
     optimizeDeps: { noDiscovery: true, entries: [] }, appType: 'custom', logLevel: 'error' })
   const api = {}
   for (const name of ['schema/bookDefaults', 'schema/bookPackage', 'schema/bookValidate', 'schema/content', 'schema/stageElement',
-    'parts/schema', 'parts/book', 'parts/geometry', 'parts/contents', 'parts/evaluate', 'parts/validate', 'parts/intersections', 'parts/overlap',
+    'parts/supportPlanning', 'parts/contentPlacement', 'parts/schema', 'parts/book', 'parts/geometry', 'parts/contents', 'parts/evaluate', 'parts/validate', 'parts/intersections', 'parts/overlap',
     'parts/contentValidation', 'parts/contentDisplay', 'parts/package', 'parts/bookEdit', 'parts/edit', 'runtime/stow/assign', 'package/serialize', 'package/assemble', 'package/zip', 'builder/io/siteExport', 'runtime/timeline/evaluate', 'runtime/signals']) {
     Object.assign(api, await server.ssrLoadModule(`/src/${name}.ts`))
   }

@@ -5,7 +5,8 @@ import type { PartElement } from '../../schema/stageElement'
 import { builtinPart } from '../../parts/catalog'
 import { elementDescendantIds } from '../hierarchy'
 import { dependentPartIds } from '../../parts/evaluate'
-import { validateBookParts, spreadPartNodes } from '../../parts/book'
+import { validateBookParts, spreadPartNodes, evaluateBookParts } from '../../parts/book'
+import { planSupportedPart } from '../../parts/supportPlanning'
 import { bindingDependencies, evaluateExpression, newPartDefinition, partBindingSchema, partInputSchema, partInstanceSchema, partMaterialSchema,
   partNodeSchema, partParameterSchema, partReferenceSchema, partSurfaceRefSchema, partEditHandleSchema, type PartBinding, type PartBundle, type PartDefinition, type PartReference } from '../../parts/schema'
 import { planPartPlacement, type SurfacePick } from '../../parts/placement'
@@ -17,7 +18,7 @@ import { publishOperationResult } from '../operations/result'
 import { registerLibraryPart, forkPartBundle, type LibraryPart } from './repository'
 import { usePartEditorStore, useWorkspaceStore } from './store'
 import { evaluateEditScene, partEditIntentSchema, planPartEdit, type PartEditScene } from '../../parts/edit'
-import { faceCorners } from '../../parts/geometry'
+import { faceCorners, pointOnFace } from '../../parts/geometry'
 import { applyBookEditPlan, bookEditScene } from '../../parts/bookEdit'
 
 const fail = (action: string, error: unknown): BuilderCommandResult => publishOperationResult({ ok: false, action,
@@ -299,6 +300,15 @@ export function updatePlacedPartCommand(value: z.input<typeof updatePlacedPartSc
       if (element.type !== 'part') throw new Error('Placed part was not found')
       if (parsed.changes.materials) element.part.materials = parsed.changes.materials
     } else element.part = partInstanceSchema.parse({ ...element.part, ...parsed.changes })
+    if (parsed.changes.shapes && element.part.supportDesign === 'automatic' && 'builtin' in element.part.definition && element.part.definition.builtin === 'upright') {
+      const original = state.project.book.spreads.find(item => item.id === parsed.spreadId)!
+      const panel = evaluateBookParts(state.project, original, Math.PI, 0).nodes[element.id].ports.panel
+      if (panel.kind !== 'surface') throw new Error('Upright panel is missing')
+      const mount = element.part.mount
+      const planned = planSupportedPart(next, original, { ...element, part: { ...element.part, shapes: parsed.changes.shapes } }, {
+        position: pointOnFace(panel.face, panel.face.width / 2, 0).toArray(), surfaces: mount.type === 'pair' ? [mount.a, mount.b] : undefined })
+      element.part = planned.part
+    }
     element.parent = ownership(element.part.mount)
     if (parsed.name) element.name = parsed.name
     const errors = validateBookParts(next)
