@@ -1,6 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { BackSide, BufferGeometry, CanvasTexture, DoubleSide, Float32BufferAttribute, FrontSide, Group, Mesh, MeshBasicMaterial } from 'three'
+import { BackSide, BufferGeometry, CanvasTexture, DoubleSide, FrontSide, Group, Mesh, MeshBasicMaterial } from 'three'
 import type { Asset } from '../schema/assets'
 import type { ConnectedContent } from '../schema/content'
 import type { VisualElement } from '../schema/stageElement'
@@ -9,6 +9,7 @@ import { ClockStore } from '../runtime/clock'
 import { VideoAudioSource } from '../runtime/videoAudio'
 import { contentAsStage, evaluateContents, type ContentContext, type EvaluatedContent } from './contents'
 import { contentMeshData } from './contentDisplay'
+import { updateContentGeometry } from './contentGeometry'
 import type { BoundPaperContent } from './geometry'
 import type { BookPaperSurface } from './paperDisplay'
 
@@ -62,9 +63,7 @@ function ContentMesh({ initial, current, assets, surfaces, order: index, onSelec
     const hasParticles = element.type === 'particle' || element.particles.enabled
     for (let i = 0; i < 2; i++) {
       const data = (i === 0 && element.type !== 'visual') || (i === 1 && !hasParticles) ? { positions: [], uvs: [] } : contentMeshData(item, surfaces, i === 1)
-      const geometry = geometries[i]
-      geometry.setAttribute('position', new Float32BufferAttribute(data.positions, 3)); geometry.setAttribute('uv', new Float32BufferAttribute(data.uvs, 2))
-      geometry.computeBoundingSphere()
+      updateContentGeometry(geometries[i], data)
     }
     for (const mesh of meshes.current) if (mesh) {
       const material = mesh.material as MeshBasicMaterial
