@@ -68,10 +68,10 @@ describe('接続を保つ部品の設計編集', () => {
     expect(face.width).toBeCloseTo(1); expect(face.height).toBeCloseTo(.5)
     expect(next.partDefinitions).toEqual(project.partDefinitions)
   })
-  it('収納できない拡大と非対応軸を確定しない', () => {
+  it('紙面より大きい相似拡大を許可し、非対応軸は確定しない', () => {
     const project = projectWith([{ definition: { builtin: 'folding-box', version: 1 }, mount: gutter }])
     const scene = bookEditScene(project, project.book.spreads[0].id)
-    expect(planPartEdit(scene, 'node0', { type: 'scale', value: 20 }).ok).toBe(false)
+    expect(planPartEdit(scene, 'node0', { type: 'scale', value: 20 }).ok).toBe(true)
     expect(planPartEdit(scene, 'node0', { type: 'translate', delta: [0, 1] }).ok).toBe(false)
     expect((project.book.spreads[0].elements[0] as PartElement).part.uniformScale).toBeUndefined()
   })

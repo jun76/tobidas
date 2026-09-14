@@ -7,6 +7,7 @@ import type { Vector3 } from 'three'
 import { extendPaperSurface } from './extensions'
 import { paperSimilarity } from './similarity'
 import { inspectShape } from './shape'
+import { rootPanelShape } from './rootUpright'
 
 export interface EvaluatedPartGraph extends PaperEvaluation { nodes: Record<string, PaperEvaluation> }
 
@@ -15,6 +16,7 @@ function resolveSurface(port: PartPort): PaperFace {
   return port.face
 }
 function rayExtent(face: PaperFace, origin: Vector3, ray: Vector3): number {
+  if (face.infinitePage) return ray.dot(face.v) < -EPSILON ? origin.clone().sub(face.origin).dot(face.v) / -ray.dot(face.v) : Infinity
   const delta = origin.clone().sub(face.origin), limits: number[] = []
   for (const [axis, size] of [[face.u, face.width], [face.v, face.height]] as const) {
     const rate = ray.dot(axis), position = delta.dot(axis)
@@ -85,7 +87,14 @@ export function evaluatePartReference(reference: PartReference, input: PartPort,
   if ('builtin' in reference) {
     const builtin = builtinPart(reference.builtin, reference.version)
     const evaluated = evaluateBuiltin(builtin.id, input, values, prefix, builtin.version)
-    decorateFaces(evaluated, materials)
+    if (builtin.id === 'root-upright') {
+      // 自動的に二枚へ分かれても、縦置きに指定した一枚の絵を分担する。
+      for (const face of evaluated.faces) {
+        const name = face.id.slice(face.id.lastIndexOf('/') + 1)
+        face.material = face.support ? { ...face.material, ...materials.support }
+          : { ...face.material, ...materials['*'], ...materials.panel, ...name === 'panel-b' ? materials['panel-b'] : {} }
+      }
+    } else decorateFaces(evaluated, materials)
     return evaluated
   }
   const definition = definitions[reference.custom]
@@ -157,12 +166,27 @@ export function evaluatePartGraph(nodes: PartNode[], definitions: PartDefinition
       decorateFaces(result, {}, node.outline)
     }
     for (const [faceId, shape] of Object.entries(node.shapes ?? {})) {
+      if ('builtin' in node.definition && node.definition.builtin === 'root-upright' && faceId === 'panel') {
+        for (const face of result.faces.filter(face => !face.support)) {
+          face.shape = rootPanelShape(shape, face.artworkSpan)
+          const errors = inspectShape(face.shape); if (errors.length) throw new Error(errors.join('; '))
+        }
+        continue
+      }
       const target = result.faces.find((face) => face.id === (prefix ? prefix + '/' : '') + id + '/' + faceId)
       if (!target || target.support) throw new Error('Unknown or supporting material face: ' + faceId)
       const errors = inspectShape(shape); if (errors.length) throw new Error(errors.join('; '))
       target.shape = shape
     }
     if ('builtin' in node.definition && node.definition.builtin === 'upright') fitUprightGroundContacts(result)
+    if ('builtin' in node.definition && node.definition.builtin === 'root-upright') {
+      for (const [panelId, groundId] of [['panel', 'ground'], ['panel-b', 'ground-b']]) {
+        const panel = result.ports[panelId], ground = result.ports[groundId]
+        if (panel?.kind !== 'surface' || ground?.kind !== 'surface' || !result.connections.some(edge => edge.parentFace === ground.face.id && edge.childFace === panel.face.id)) continue
+        const fitted = { ...result, ports: { panel, ground } }; fitUprightGroundContacts(fitted)
+        result.connections = fitted.connections
+      }
+    }
     active.delete(id); evaluated[id] = result
     return result
   }

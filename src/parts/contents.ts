@@ -32,7 +32,8 @@ export function bindBookContents(project: Pick<BookProject, 'book'>, spread: Spr
       if (port?.kind !== 'surface') throw new Error(`Missing content surface: ${element.id} -> ${nodeId}/${portId}`)
     }
     result.push({ id: element.id, ownerId: element.id, element: element as ConnectedContent,
-      face: port?.kind === 'surface' ? port.face : undefined, unitScale: 1,
+      face: port?.kind === 'surface' ? port.face : undefined,
+      unitScale: attachment.type === 'surface' && attachment.surface.nodeId !== '$book' ? paper.deploymentScale ?? 1 : 1,
       parentId: attachment.type === 'visual' ? attachment.elementId : undefined,
       tracks: spread.timeline.tracks.filter((track) => track.target.type === 'element' && track.target.elementId === element.id) })
   }
@@ -42,6 +43,15 @@ export function bindBookContents(project: Pick<BookProject, 'book'>, spread: Spr
     if (!bound) throw new Error(`Missing internal content target: ${id}`)
     bound.tracks = [...bound.tracks.filter((item) => item.property !== track.property), { ...track, target: { type: 'element', elementId: bound.element.id } }]
   }
+  const byId = new Map(result.map(bound => [bound.id, bound]))
+  const inheritScale = (bound: BoundPaperContent, seen = new Set<string>()): number => {
+    if (!bound.parentId || seen.has(bound.id)) return bound.unitScale
+    seen.add(bound.id)
+    const parent = byId.get(bound.parentId)
+    if (parent && bound.id === bound.ownerId) bound.unitScale = inheritScale(parent, seen)
+    return bound.unitScale
+  }
+  result.forEach(bound => inheritScale(bound))
   return result
 }
 

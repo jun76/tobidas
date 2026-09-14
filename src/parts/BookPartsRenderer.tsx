@@ -2,7 +2,7 @@ import type { BookProject } from '../schema/bookPackage'
 import type { Spread } from '../schema/book'
 import type { Asset } from '../schema/assets'
 import type { BookRuntimeProps } from '../runtime/types'
-import { evaluateBookParts, partIsVisible } from './book'
+import { evaluateBookParts, deployBookParts, partIsVisible } from './book'
 import { PaperMeshes } from './PaperMeshes'
 import { evaluateElementTimeline } from '../runtime/timeline/evaluate'
 import { ContentMeshes } from './ContentMeshes'
@@ -18,7 +18,7 @@ export function BookPartsRenderer({ project, spread: source, spreadTime, leftAng
 }) {
   try {
     const spread = { ...source, elements: source.elements.map((element) => evaluateElementTimeline(element, source, spreadTime)) }
-    const evaluated = evaluateBookParts(project, spread, leftAngle, rightAngle)
+    const evaluated = deployBookParts(project, spread, evaluateBookParts(project, spread, leftAngle, rightAngle), leftAngle, rightAngle)
     const displayed = new Map(paperDisplayFaces(evaluated.faces, paperDisplay).map((face) => [face.id, face]))
     const bindings = bindBookContents(project, spread, evaluated, leftAngle, rightAngle)
     const hidden = (id: string) => !partIsVisible(spread, id, (key) => Boolean(isHidden?.(spread.id, spread.elements.find((item) => item.id === key)!)))

@@ -5,7 +5,9 @@ import { evaluatePartGraph } from './evaluate'
 import { bindingDependencies, type PartNode, type PartMaterial } from './schema'
 import { bindBookContents } from './contents'
 import { inspectContentBindings, inspectContentsAt, inspectContentMotion } from './contentValidation'
-import { faceCorners, pagePorts } from './geometry'
+import { faceCorners, logicalPagePorts as pagePorts } from './geometry'
+import { deployPaper, planPaperStow, type PaperStowFit } from './deployment'
+import { Vector3 } from 'three'
 import { createPaperMotionInspector, inspectClosedLayout, validationAngles } from './validate'
 
 export const spreadPartNodes = (spread: Spread): PartNode[] => spread.elements.filter((element): element is PartElement => element.type === 'part')
@@ -15,6 +17,24 @@ export function evaluateBookParts(project: Pick<BookProject, 'book' | 'partDefin
   const { pageWidth, pageAspect } = project.book.format
   return evaluatePartGraph(spreadPartNodes(spread), project.partDefinitions ?? {}, undefined,
     { $book: pagePorts(pageWidth, pageWidth / pageAspect, leftAngle, rightAngle) })
+}
+
+const stowFits = new Map<string, [PaperStowFit, PaperStowFit]>()
+export function deployBookParts(project: Pick<BookProject, 'book' | 'partDefinitions'>, spread: Spread,
+  result: ReturnType<typeof evaluateBookParts>, left: number, right: number) {
+  const angle = Math.abs(left - right) * 180 / Math.PI
+  if (angle >= 180 - 1e-8) return result
+  const { pageWidth: width, pageAspect } = project.book.format, depth = width / pageAspect
+  const key = JSON.stringify([width, depth, spreadPartNodes(spread), Object.keys(project.partDefinitions ?? {})])
+  let fits = stowFits.get(key)
+  if (!fits) {
+    fits = [planPaperStow(evaluateBookParts(project, spread, 0, 0), width, depth),
+      planPaperStow(evaluateBookParts(project, spread, Math.PI, Math.PI), width, depth, new Vector3(-1, 0, 0))]
+    stowFits.set(key, fits)
+    while (stowFits.size > 16) stowFits.delete(stowFits.keys().next().value!)
+  }
+  const closingLeft = right < 1e-8
+  return deployPaper(result, fits[closingLeft ? 0 : 1], angle, new Vector3(closingLeft ? 1 : -1, 0, 0))
 }
 
 /** 絵本の保持時計は全開時だけ進む。開き途中は冒頭、閉じ途中は末尾の姿勢で周期演出だけが続く。 */
@@ -66,7 +86,7 @@ export function validateBookParts(project: BookProject): string[] {
         if ([0, 15, 30, 60, 90, 120, 150, 172.5, 180].includes(angle) && input.kind === 'fold-pair') errors.push(...inspectContentMotion(bindings,
           [...result.faces, input.a, input.b], { openingAngleDeg: angle, maxOpeningAngleDeg: 180 }, spread.sequence.holdSeconds, holdTime))
         errors.push(...inspectMotion(result, [input]).map((message) => `${spread.name}: ${message}`))
-        if (angle === 0 && input.kind === 'fold-pair') errors.push(...inspectClosedLayout(result, pageWidth,
+        if (angle === 0 && input.kind === 'fold-pair') errors.push(...inspectClosedLayout(deployBookParts(project, spread, result, left, right), pageWidth,
           pageWidth / pageAspect, input.rayA).map((message) => `${spread.name}: ${message}`))
       }
     } catch (error) { errors.push(`${spread.name}: ${error instanceof Error ? error.message : String(error)}`) }

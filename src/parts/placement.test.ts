@@ -37,7 +37,7 @@ describe('本の上で面を選ぶ部品配置', () => {
     add(project, 'flat', { definition: builtin('flat'), mount: { type: 'output', nodeId: '$book', portId: 'right-page' }, parameters: {}, materials: {} })
     expect(planPartPlacement(project, spread.id, builtin('backdrop'), a, pick('flat', 'face', 1, .5))).toMatchObject({ ok: false, reason: 'noHinge' })
   })
-  it('背景パネルは左右ページの端を指定しても寸法を保って収納できる位置へ寄せる', () => {
+  it('背景パネルは紙端を指定しても位置と寸法を保ち、収納だけを縮小で収める', () => {
     for (const sides of [['right-page', 'left-page'], ['left-page', 'right-page']]) {
       for (const [u, v] of [[.02, .02], [6.38, 7.98], [3.2, 7.5], [6.2, 4], [.2, 4], [3.2, 4]]) {
         const project = createBookProject(), spread = project.book.spreads[0]
@@ -50,7 +50,7 @@ describe('本の上で面を選ぶ部品配置', () => {
         const face = geometry.nodes.background.ports.panel
         expect(face.kind === 'surface' && [face.face.width, face.face.height]).toEqual([2, 1.5])
         expect(validateBookParts(project)).toEqual([])
-        expect(result.instance.parameters.distance).toBeCloseTo(Math.max(.05, Math.min(6.5, v)))
+        expect(result.instance.parameters.distance).toBeCloseTo(Math.max(.05, v))
       }
     }
   })
@@ -102,13 +102,13 @@ describe('本の上で面を選ぶ部品配置', () => {
     expect(validateBookParts(project)).toEqual([])
     expect(JSON.stringify(definition)).toBe(original)
   })
-  it('小さい貼付先を一面ブリッジで延長し、閉じた本からはみ出す配置を拒否する', () => {
+  it('実部品への貼付は支持紙で延長し、論理ページの紙端は配置を制限しない', () => {
     const project = createBookProject(), spread = project.book.spreads[0]
     add(project, 'flat', { definition: builtin('flat'), mount: { type: 'output', nodeId: '$book', portId: 'right-page' }, parameters: { width: .6, height: .6, v: 2 }, materials: {} })
     const result = planPartPlacement(project, spread.id, builtin('text'), pick('flat', 'face', .3, .3))
     expect(result.ok, JSON.stringify(result)).toBe(true)
     if (result.ok) expect(result.bridgeCount).toBe(2)
-    expect(planPartPlacement(project, spread.id, builtin('text'), pick('$book', 'right-page', .01, 7.9))).toMatchObject({ ok: false, reason: 'stow' })
+    expect(planPartPlacement(project, spread.id, builtin('text'), pick('$book', 'right-page', .01, 7.9))).toMatchObject({ ok: true, bridgeCount: 0 })
   })
   it('平積みとテキストを四隅に貼っても、支持紙が外周の縁としてはみ出さない', () => {
     for (const id of ['flat', 'text']) for (const [u, v] of [[.05, .05], [1.9, .05], [.05, 1.4], [1.9, 1.4]]) {

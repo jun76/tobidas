@@ -3,6 +3,8 @@ import type { BuiltinPartId } from './catalog'
 import { builtinPart } from './catalog'
 import { evaluateBackdrop } from './backdrop'
 import { evaluateAngledUpright } from './angledUpright'
+import { evaluateRootUpright } from './rootUpright'
+import { evaluateSideUpright } from './sideUpright'
 import { parameterValues, type PartMaterial } from './schema'
 import { checkInput, EPSILON, faceContains, faceCorners, faceShape, makeFace, pointOnFace, stackOnSurface,
   type FoldPair, type PaperEvaluation, type PaperFace, type PartPort } from './geometry'
@@ -11,6 +13,8 @@ import { checkInput, EPSILON, faceContains, faceCorners, faceShape, makeFace, po
 export function evaluateBuiltin(id: BuiltinPartId, port: PartPort, overrides: Record<string, number> = {}, prefix: string = id, version?: number): PaperEvaluation {
   const spec = builtinPart(id, version), p = parameterValues(spec.parameters, overrides)
   checkInput(spec.input, port)
+  if (id === 'root-upright' && port.kind === 'fold-pair') return evaluateRootUpright(port, p, prefix)
+  if (id === 'side-upright' && port.kind === 'surface') return evaluateSideUpright(port.face, p, prefix)
   if (id === 'backdrop' && spec.version === 2 && port.kind === 'fold-pair') return evaluateBackdrop(port, p, prefix)
   if (id === 'angled-upright' && port.kind === 'fold-pair') return evaluateAngledUpright(port, p, prefix)
   const result: PaperEvaluation = { faces: [], ports: {}, connections: [] }

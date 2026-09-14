@@ -22,6 +22,16 @@ function placed(builtin: string, mount: PartBinding, parameters = {}) {
 }
 beforeEach(() => { useBuilderStore.getState().setProject(createBookProject('020検証'), 'import'); useBuilderStore.getState().setMode('edit'); usePartEditorStore.setState({ library: [] }) })
 describe('基本・カスタム部品の共通編集', () => {
+  it('紙面外の一面指定で自立部品を配置し、一回のUndoで戻す', () => {
+    const before = elements().length, undo = useBuilderStore.getState().undoStack.length
+    const placed = placePartOnSurfacesCommand({ spreadId: spread().id, name: '遠景', definition: { builtin: 'upright', version: 1 },
+      first: { surface: { nodeId: '$book', portId: 'right-page' }, point: [-8, 3] } })
+    expect(placed.ok, placed.message).toBe(true)
+    expect(elements().at(-1)?.part.definition).toEqual({ builtin: 'root-upright', version: 1 })
+    expect(useBuilderStore.getState().undoStack).toHaveLength(undo + 1)
+    useBuilderStore.getState().undo()
+    expect(elements()).toHaveLength(before)
+  })
   it('補完した支持紙に貼った子を、役割の同じ面へ追従させる', () => {
     const background = placed('backdrop', gutter, { width: 1, height: 2 })
     const result = placePartOnSurfacesCommand({ spreadId: spread().id, name: '張り出す看板', definition: { builtin: 'upright', version: 1 },

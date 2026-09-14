@@ -55,7 +55,7 @@ export function makePartTools(): WebMcpTool[] {
       } },
     tool('edit-placed-part', 'Move, rotate an exposed design angle, or uniformly scale a part while preserving its real attachment faces. Rebuilds supports and downstream connections, checks the folding path and stowage, and commits one undo step.', commands.editPlacedPartSchema,
       { spreadId: string, elementId: string, intent: ref('editIntent') }, ['spreadId', 'elementId', 'intent'], commands.editPlacedPartCommand),
-    { name: 'tobidas-get-part-catalog', description: 'Read built-in parts, typed dimensions, input angle capacities, public ports, and the user library (initially empty). All folding parts require two real connected faces. No binary assets.',
+    { name: 'tobidas-get-part-catalog', description: 'Read built-in parts, typed dimensions, input angle capacities, public ports, and the user library (initially empty). Paper mechanisms use connected faces; rear standing parts may rise independently outside the visible pages. Open-page placement is unbounded, with automatic similarity fitting only during stowage. No binary assets.',
       inputSchema: object({}), annotations: { readOnlyHint: true }, execute: () => response({ builtins: BUILTIN_PARTS,
         library: usePartEditorStore.getState().library.map(({ hash, bundle }) => ({ hash, definition: bundle.definition, validation: validatePartDefinition(bundle.definition, bundle.definitions) })) }) },
     { name: 'tobidas-get-part-draft', description: 'Read the separate custom-part editor document, typed graph, public parameters and material slots, asset metadata, undo state, and physical-model diagnostics.',
@@ -66,7 +66,7 @@ export function makePartTools(): WebMcpTool[] {
         if (!spread) return response({ ok: false, error: 'Spread not found' })
         try { const result = evaluateBookParts(project, spread, Math.PI, 0)
           return response({ book: { nodeId: '$book', ports: ['gutter', 'left-page', 'right-page'] },
-            surfaces: placementSurfaces(project, spread).map(({ reference, face }) => ({ reference, width: face.width, height: face.height, outline: face.outline, shape: face.shape })),
+            surfaces: placementSurfaces(project, spread).map(({ reference, face }) => ({ reference, placementDomain: face.infinitePage ? 'infinite-page' : 'material', width: face.width, height: face.height, outline: face.outline, shape: face.shape })),
             nodes: Object.fromEntries(Object.entries(result.nodes).map(([id, node]) => [id, Object.fromEntries(Object.entries(node.ports).map(([key, port]) => [key, portSummary(port)]))])) })
         } catch (error) { return response({ ok: false, error: String(error) }) }
       } },
@@ -93,9 +93,9 @@ export function makePartTools(): WebMcpTool[] {
     tool('save-part-library', 'Validate the draft and register an immutable local library revision. File import/export uses the standard UI, not WebMCP payloads.', z.object({}), {}, [], commands.savePartLibraryCommand),
     tool('open-part-library', 'Open an existing library definition in the separate editor. copy=true creates a new identity and preserves source attribution.', z.object({ hash: z.string(), copy: z.boolean().default(false) }),
       { hash: string, copy: { type: 'boolean' } }, ['hash'], ({ hash, copy }) => commands.openPartLibraryCommand(hash, copy)),
-    tool('place-part', 'Place a built-in or custom library part on real book faces. Checks all opening angles, connections and closed-page fit before a single commit. Custom definitions and assets are embedded immutably in the book.', commands.placePartSchema,
+    tool('place-part', 'Place a built-in or custom library part on book material faces or the infinite logical pages. Preserve the open position and dimensions; closed-page fit uses automatic similarity stowage. Checks opening angles and connections before a single commit. Custom definitions and assets are embedded immutably in the book.', commands.placePartSchema,
       { spreadId: string, name: string, ...instance }, ['spreadId', 'name', 'definition', 'mount'], commands.placePartCommand),
-    tool('place-part-on-surfaces', 'Choose one or two actual faces and material points, just like clicking in the canvas. Automatically completes attachment bridges, checks the full opening path, and places the part in one undo step. Read surface references with get-part-mounts first.', commands.placePartOnSurfacesSchema,
+    tool('place-part-on-surfaces', 'Choose material points, just like clicking in the canvas. Upright accepts one ground point and automatically chooses rear support, then lateral support, or a rear standing root. Book page coordinates may extend beyond the visible page; keep the intended open position and dimensions. An explicit second face fixes the support choice. Checks the opening path and automatic similarity stowage in one undo step. Read surface references with get-part-mounts first.', commands.placePartOnSurfacesSchema,
       { spreadId: string, name: string, definition: ref('reference'),
         first: object({ surface: ref('surfaceRef'), point: { type: 'array', items: number, minItems: 2, maxItems: 2 } }),
         second: object({ surface: ref('surfaceRef'), point: { type: 'array', items: number, minItems: 2, maxItems: 2 } }) },

@@ -30,7 +30,8 @@ export const usePartPlacementStore = create<PlacementState>((set, get) => ({
     // 面を選ぶ間は対象の見開きを全開に固定する。作品には操作中の状態を保存しない。
     state.setActiveSpread(state.activeSpreadId); state.setPlacement(null)
     const name = 'builtin' in reference ? t().parts.names[reference.builtin as keyof ReturnType<typeof t>['parts']['names']] : project.partDefinitions![reference.custom].name
-    set({ ...empty, tool: { reference, name, faces: definition.input.kind === 'surface' ? 1 : 2 } })
+    set({ ...empty, tool: { reference, name, faces: definition.input.kind === 'surface'
+      || 'builtin' in reference && ['upright', 'root-upright'].includes(reference.builtin) ? 1 : 2 } })
   },
   startContent: (kind) => {
     if (get().tool?.content === kind) { set(empty); return }

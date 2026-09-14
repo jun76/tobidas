@@ -63,6 +63,15 @@ export function PartPlacementController() {
         if (normal.dot(raycaster.ray.direction) > 0) normal.negate()
         return { mesh, pick, side, point: hit.point.clone().addScaledVector(normal, .025), normal }
       }
+      if (tool.reference) {
+        const point = raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), new THREE.Vector3())
+        const target = point && faces.find(item => item.reference.nodeId === '$book' && item.reference.portId === (point.x >= 0 ? 'right-page' : 'left-page'))
+        if (point && target) {
+          const delta = point.clone().sub(target.face.origin)
+          const pick: SurfacePick = { surface: target.reference, point: [delta.dot(target.face.u), delta.dot(target.face.v)] }
+          return { mesh: null, pick, side: 'front' as const, point: point.add(new THREE.Vector3(0, .025, 0)), normal: new THREE.Vector3(0, 1, 0) }
+        }
+      }
       return null
     }
     const update = (x: number, y: number) => {
@@ -71,13 +80,13 @@ export function PartPlacementController() {
       const plan: PartPlacementPlan | undefined = tool.reference && first ? previewSurfacePlacement(spread.id, tool.reference, first, hit.pick)
         : tool.reference && tool.faces === 1 ? previewSurfacePlacement(spread.id, tool.reference, hit.pick) : undefined
       const invalid = plan && !plan.ok
-      if (hover.current) {
+      if (hover.current && hit.mesh) {
         hover.current.geometry = hit.mesh.geometry
         hover.current.matrix.copy(hit.mesh.matrixWorld)
         hover.current.matrix.setPosition(new THREE.Vector3().setFromMatrixPosition(hit.mesh.matrixWorld).addScaledVector(hit.normal, .012))
         ;(hover.current.material as THREE.MeshBasicMaterial).color.set(invalid ? '#ff5260' : '#529dff')
         hover.current.visible = true
-      }
+      } else if (hover.current) hover.current.visible = false
       if (marker.current) { marker.current.position.copy(hit.point); marker.current.visible = true }
       usePartPlacementStore.getState().showHover(`${hit.pick.surface.nodeId}/${hit.pick.surface.portId}`, invalid ? plan.reason : null)
       return { ...hit, plan }

@@ -8,6 +8,8 @@ import { rectangleShape, shapeContains, shapeRings, type PaperShape } from './sh
 export interface PaperFace {
   id: string; origin: Vector3; u: Vector3; v: Vector3; width: number; height: number
   support: boolean; material: PartMaterial; outline?: [number, number][]; shape?: PaperShape
+  /** 本の論理ページ。綴じ目の外側へ無限に延び、実紙の輪郭は描画・収納で別に扱う。 */
+  infinitePage?: boolean
   /** 一枚の絵を複数の剛体面へ分けるときの、画像横方向の担当範囲。 */
   artworkSpan?: [number, number]
   /** 仮想接続面を実際に覆う親面と支持紙。接着検査では空白を支持面とみなさない。 */
@@ -30,6 +32,8 @@ export interface BoundPaperContent {
 }
 export const faceShape = (face: PaperFace): PaperShape => face.shape ?? { outer: face.outline ?? rectangleShape().outer, holes: [] }
 export interface PaperEvaluation {
+  deploymentScale?: number
+  rootSupport?: 'pages' | 'independent'
   contents?: BoundPaperContent[]
   faces: PaperFace[]; ports: Record<string, PartPort>; connections: PaperConnection[]
   /** 編集ハンドルが参照する実入力。作品や交換形式には保存しない。 */
@@ -59,6 +63,7 @@ export function faceCorners(face: PaperFace): Vector3[] {
 }
 export function faceContains(face: PaperFace, point: Vector3, epsilon = EPSILON): boolean {
   const delta = point.clone().sub(face.origin), u = delta.dot(face.u), v = delta.dot(face.v)
+  if (face.infinitePage) return Math.abs(delta.dot(face.u.clone().cross(face.v))) <= epsilon && v >= -epsilon
   if (Math.abs(delta.dot(face.u.clone().cross(face.v))) > epsilon
     || u < -epsilon || u > face.width + epsilon || v < -epsilon || v > face.height + epsilon) return false
   if (face.contactRegions) return face.contactRegions.some((region) => faceContains(region, point, epsilon))
@@ -104,4 +109,13 @@ export function pagePorts(width: number, depth: number, leftAngle: number, right
   const b = makeFace('$book/left', origin, axis, left, depth, width)
   return { 'right-page': { kind: 'surface', face: a }, 'left-page': { kind: 'surface', face: b },
     gutter: { kind: 'fold-pair', a, b, origin: new Vector3(), axis, rayA: right, rayB: left, extentA: width, extentB: width, width: depth, foldSign: 1 } }
+}
+
+/** ページの材料原点は有限ページと同じ。紙部品だけが無限の配置領域を使う。 */
+export function logicalPagePorts(width: number, depth: number, leftAngle: number, rightAngle: number): Record<string, PartPort> {
+  const ports = pagePorts(width, depth, leftAngle, rightAngle)
+  for (const port of Object.values(ports)) if (port.kind === 'surface') port.face.infinitePage = true
+  const gutter = ports.gutter as FoldPair
+  gutter.width = gutter.extentA = gutter.extentB = Infinity
+  return ports
 }

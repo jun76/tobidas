@@ -6,7 +6,7 @@ import { builtinPart } from './catalog'
 import { backdropForBook } from './backdrop'
 import { evaluateBookParts, validateBookParts } from './book'
 import { evaluatePartReference, evaluatedOutput } from './evaluate'
-import { faceContains, faceCorners, makeFace, pagePorts, pointOnFace, type PaperFace, type PartPort, type FoldPair } from './geometry'
+import { faceContains, faceCorners, makeFace, logicalPagePorts as pagePorts, pointOnFace, type PaperFace, type PartPort, type FoldPair } from './geometry'
 import { parameterValues, type PartBinding, type PartInstance, type PartReference, type PartSurfaceRef } from './schema'
 import { createStageElement } from '../schema/bookDefaults'
 import type { BookProject } from '../schema/bookPackage'
@@ -60,6 +60,14 @@ export function planPartPlacement(project: BookProject, spreadId: string, refere
     if (!definition) throw new Error('Part definition is missing')
     const sourceA = surfaceAt(project, spread, first.surface, Math.PI)
     if (!faceContains(sourceA, pointOnFace(sourceA, ...first.point))) throw new Error('Placement point is outside its surface')
+    if ('builtin' in reference && ['upright', 'root-upright'].includes(reference.builtin) && !second) {
+      if (Math.abs(sourceA.u.clone().cross(sourceA.v).y) < .99) throw new Error('Choose a ground surface for automatic standing placement')
+      const candidate = { ...createStageElement('part'), id: '__placement__', type: 'part' as const, part: {
+        definition: reference, mount: { type: 'output' as const, nodeId: '$book', portId: 'gutter' }, parameters: {}, materials: {} } }
+      const planned = planSupportedPart(project, spread, candidate, { position: pointOnFace(sourceA, ...first.point).toArray() })
+      const result = evaluateBookParts(project, { ...spread, elements: [...spread.elements, planned] }, Math.PI, 0)
+      return { ok: true, instance: planned.part, bridgeCount: result.nodes.__placement__.faces.filter(face => face.support).length }
+    }
     let mount: PartBinding, parameters: Record<string, number> = {}
     if ('builtin' in reference && reference.builtin === 'upright' && second) {
       const sourceB = surfaceAt(project, spread, second.surface, Math.PI)
@@ -102,16 +110,7 @@ export function planPartPlacement(project: BookProject, spreadId: string, refere
         mount = { type: 'output', nodeId: '$book', portId: 'gutter' }
         parameters = backdropForBook(project.book.format.pageWidth, project.book.format.pageWidth / project.book.format.pageAspect)
       } else {
-        let firstPoint = first.point
-        if ('builtin' in reference && reference.builtin === 'backdrop'
-          && [first.surface, second.surface].every((face) => face.nodeId === '$book' && ['left-page', 'right-page'].includes(face.portId))) {
-          // 左右ページの指定は接続面の選択。紙端を触っても、背景と支持紙が収納できる位置へ寄せる。
-          // 背景は閉状態で地面の接着位置から高さ分だけ外へ倒れる。寸法や途中姿勢は変えない。
-          const { width, height, distance } = definition.parameters
-          const minU = width.default / 2, maxU = sourceA.width - minU, maxV = sourceA.height - height.default
-          if (minU > maxU || distance.min > maxV) throw new Error('Backdrop dimensions exceed the closed page bounds')
-          firstPoint = [Math.max(minU, Math.min(maxU, first.point[0])), Math.max(distance.min, Math.min(maxV, first.point[1]))]
-        }
+        const firstPoint = first.point
         // 全開時に平行な面でも、途中姿勢の材料座標から実際の共通折り線を求められる。
         let pair: { a: PaperFace; b: PaperFace; axis: Vector3; origin: Vector3 } | undefined
         for (const angle of [150, 120, 90, 60]) {

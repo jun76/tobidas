@@ -5,7 +5,7 @@ import type { BookProject } from '../../schema/bookPackage'
 import type { PartInstance } from '../../parts/schema'
 import type { PartElement } from '../../schema/stageElement'
 import { createStageElement } from '../../schema/bookDefaults'
-import { evaluateBookParts, validateBookParts } from '../../parts/book'
+import { evaluateBookParts, deployBookParts, validateBookParts } from '../../parts/book'
 import { PaperMeshes } from '../../parts/PaperMeshes'
 import { paperDisplayFaces } from '../../parts/paperDisplay'
 import { pagePorts, type PaperFace } from '../../parts/geometry'
@@ -26,7 +26,10 @@ export function PlacementPreview({ project, spreadId, instance, elementId }: { p
   const paper = ports.gutter.kind === 'fold-pair' ? [ports.gutter.a, ports.gutter.b] : []
   for (const face of paper) face.material = { color: '#e8dec9' }
   let faces: PaperFace[] = []
-  try { faces = evaluateBookParts(candidate, spread, Math.PI, Math.PI - angle * Math.PI / 180).faces } catch { /* 検査結果をプレビューの下に表示する。 */ }
+  try {
+    const right = Math.PI - angle * Math.PI / 180
+    faces = deployBookParts(candidate, spread, evaluateBookParts(candidate, spread, Math.PI, right), Math.PI, right).faces
+  } catch { /* 検査結果をプレビューの下に表示する。 */ }
   const assets = useMemo(() => new Map(project.assets.map((asset) => [asset.id, asset])), [project.assets])
   return <section aria-label={t.preview} className={st.placementPreview}>
     <div style={{ height: 240 }}><Canvas camera={{ position: [width * .7, width, width * 1.5], fov: 44 }}>

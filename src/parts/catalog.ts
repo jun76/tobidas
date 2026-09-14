@@ -1,6 +1,6 @@
 import type { PartInput, PartParameter } from './schema'
 
-export const BUILTIN_IDS = ['flat', 'text', 'backdrop', 'upright', 'angled-upright', 'v-fold', 'platform', 'folding-box', 'accordion', 'beak'] as const
+export const BUILTIN_IDS = ['flat', 'text', 'backdrop', 'upright', 'root-upright', 'side-upright', 'angled-upright', 'v-fold', 'platform', 'folding-box', 'accordion', 'beak'] as const
 export type BuiltinPartId = typeof BUILTIN_IDS[number]
 export interface BuiltinPart {
   id: BuiltinPartId; version: number; input: PartInput; parameters: Record<string, PartParameter>
@@ -15,6 +15,10 @@ const pair: PartInput = { kind: 'fold-pair', maxOpeningAngleDeg: 180 }
 const backdropV1: BuiltinPart = { id: 'backdrop', version: 1, input: pair, parameters: dimensions,
   surfaces: ['panel', 'support', 'ground'], pairs: ['ground-backdrop'] }
 export const BUILTIN_PARTS: BuiltinPart[] = [
+  { id: 'side-upright', version: 1, input: { kind: 'surface' }, parameters: { width: length('width', 2), height: length('height', 1.5),
+    u: number('u', -3, -100, 100), v: number('v', 0, -100, 100) }, surfaces: ['panel', 'support'], pairs: [] },
+  { id: 'root-upright', version: 1, input: pair, parameters: { ...widths, height: length('height', 1.5), centerX: number('centerX', 0, -100, 100) },
+    surfaces: ['panel', 'panel-b', 'ground', 'ground-b'], pairs: ['ground-panel', 'ground-panel-b'] },
   { id: 'flat', version: 1, input: { kind: 'surface' }, parameters: {
     width: length('width', 2), height: length('height', 1.5), u: number('u', 0, -40, 40), v: number('v', 1, -40, 40),
     rotation: { label: 'rotation', type: 'angle', default: 0, min: -180, max: 180 },

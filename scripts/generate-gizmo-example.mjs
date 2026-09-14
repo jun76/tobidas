@@ -113,7 +113,7 @@ try {
 
   const validation = validateBookProject(project)
   if (!validation.ok) throw new Error(validation.errors.join('\n'))
-  const refused = planPartEdit(bookEditScene(project, third), 'large-box', { type: 'scale', value: 30 })
+  const refused = planPartEdit(bookEditScene(project, third), 'large-box', { type: 'scale', value: 101 })
   if (refused.ok) throw new Error('The invalid enlargement was accepted')
   const json = projectFileJson(project), restored = (await assemblePackage(json, new Map())).project
   if (JSON.stringify(restored.book.spreads.map((s) => s.elements.map((e) => e.part))) !== JSON.stringify(project.book.spreads.map((s) => s.elements.map((e) => e.part)))) throw new Error('The saved placement changed on import')

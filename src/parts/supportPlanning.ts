@@ -2,11 +2,11 @@ import { Vector3 } from 'three'
 import type { BookProject } from '../schema/bookPackage'
 import type { Spread } from '../schema/book'
 import type { PartElement } from '../schema/stageElement'
-import { evaluateBookParts, bookContentHoldTime } from './book'
+import { evaluateBookParts, deployBookParts, validateBookParts, bookContentHoldTime } from './book'
 import { bindBookContents } from './contents'
 import { inspectContentMotion } from './contentValidation'
 import { dependentPartIds, evaluatedOutput } from './evaluate'
-import { faceShape, faceContains, makeFace, pagePorts, pointOnFace, type PaperFace, type FoldPair, type PartPort } from './geometry'
+import { faceShape, faceContains, makeFace, logicalPagePorts as pagePorts, pointOnFace, type PaperFace, type FoldPair, type PartPort } from './geometry'
 import { inspectIntersections } from './intersections'
 import { createPaperMotionInspector, inspectClosedLayout, validatePartDefinition } from './validate'
 import type { PartBinding, PartInstance, PartSurfaceRef, PartDefinition, PartDefinitions } from './schema'
@@ -135,6 +135,17 @@ function sources(project: BookProject, spread: Spread, excluded: Set<string>, se
       const a = reference(pair.a), b = reference(pair.b)
       if (!excluded.has(a.nodeId) && !excluded.has(b.nodeId) && !found.some(s => s.pair.a.id === pair.a.id && s.pair.b.id === pair.b.id)) found.push({ pair, a, b })
     }
+    // 公開二面口のない側方部品や複合部品も、接地した実面から候補を作る。
+    for (const face of node.faces) {
+      if (face.support || face.v.y < .85 || Math.abs(face.origin.y) > 1e-6 || Math.abs(face.u.y) > 1e-6 || found.some(s => s.pair.b.id === face.id)) continue
+      const rayA = face.u.clone().cross(face.v); if (rayA.z < 0) rayA.negate()
+      if (rayA.z < .85) continue
+      const origin = pointOnFace(face, face.width / 2, 0), pageId = (target?.x ?? origin.x) >= 0 ? 'right-page' : 'left-page'
+      const page = pages[pageId]; if (page.kind !== 'surface') continue
+      found.push({ a: { nodeId: '$book', portId: pageId }, b: reference(face), pair: { kind: 'fold-pair', a: page.face, b: face,
+        origin, axis: face.u, rayA, rayB: face.v, extentA: Infinity, extentB: face.height, width: face.width,
+        foldSign: face.u.dot(rayA.clone().cross(face.v)) < 0 ? -1 : 1 } })
+    }
   }
   return found
 }
@@ -156,20 +167,22 @@ function mountAt(source: SupportSource, target: Vector3, width: number, height: 
 
 /** 寸法と接続先を配置時に決める。再生器は保存された一組の紙を折るだけ。 */
 export function planSupportedPart(project: BookProject, spread: Spread, element: PartElement, placement: SupportPlacement): PartElement {
-  if (!('builtin' in element.part.definition) || element.part.definition.builtin !== 'upright') throw new Error('Automatic support requires an upright part')
+  if (!('builtin' in element.part.definition) || !['upright', 'root-upright', 'side-upright'].includes(element.part.definition.builtin)) throw new Error('Automatic support requires an upright part')
   const existing = spread.elements.some(e => e.id === element.id)
   const excluded = existing ? dependentPartIds(spread.elements.filter((e): e is PartElement => e.type === 'part').map(e => ({ id: e.id, name: e.name, ...e.part })), element.id) : new Set([element.id])
   const { pageWidth: w, pageAspect } = project.book.format, depth = w / pageAspect
-  const parameters = parameterValues(builtinPart('upright', 1).parameters, element.part.parameters)
+  const parameters = parameterValues(builtinPart(element.part.definition.builtin, 1).parameters, element.part.parameters)
   const unit = element.part.uniformScale ?? 1, width = parameters.width * unit, height = parameters.height * unit
   const target = new Vector3(...placement.position), failures = new Set<string>()
   const replace = (candidate: PartElement): Spread => ({ ...spread, elements: existing ? spread.elements.map(e => e.id === element.id ? candidate : e) : [...spread.elements, candidate] })
   const choices: { candidate: PartElement; score: number }[] = []
+  let rearCandidate = false
   for (const source of sources(project, spread, excluded, placement.surfaces, target)) {
     const { pair } = source
     if (placement.surfaces && !(same(source.a, placement.surfaces[0]) && same(source.b, placement.surfaces[1]))) continue
     const distance = target.clone().sub(pair.origin).dot(pair.rayA)
     if (distance < .065 || Math.abs(target.clone().sub(pair.origin).dot(pair.rayA.clone().cross(pair.axis))) > 1e-5) continue
+    rearCandidate = true
     const origin = pair.origin.clone().addScaledVector(pair.axis, target.clone().sub(pair.origin).dot(pair.axis))
     const foot = origin.clone().addScaledVector(pair.rayA, distance)
     const panel = makeFace(element.id + '/panel', foot.clone().addScaledVector(pair.axis, -width / 2), pair.axis, pair.rayB, width, height)
@@ -200,12 +213,29 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
           if (uv[0] < 0 || uv[0] > pair.b.width) offsets.push({ offset, extension: Math.max(-uv[0], uv[0] - pair.b.width) })
         }
         for (const { offset, extension } of offsets) {
-          const instance: PartInstance = { ...structuredClone(element.part), supportDesign: 'automatic',
-            parameters: { ...element.part.parameters, distance: distance / unit, offset: 0, supportHeight: h / unit, supportWidth: supportWidth / unit, supportOffset: offset / unit },
+          const instance: PartInstance = { ...structuredClone(element.part), supportDesign: 'automatic', definition: { builtin: 'upright', version: 1 },
+            parameters: { width: width / unit, height: height / unit, distance: distance / unit, offset: 0, supportHeight: h / unit, supportWidth: supportWidth / unit, supportOffset: offset / unit },
             mount: mountAt(source, target, width, h, supportWidth, offset) }
           const candidate = { ...element, part: instance }
-          choices.push({ candidate, score: Math.abs(h - baseline) * 20 + distance + Math.abs(offset) * .25 + extension * 4 })
+          choices.push({ candidate, score: (extension > 0 ? 10000 : 0) + Math.abs(h - baseline) * 20 + distance + Math.abs(offset) * .25 + extension * 4 })
         }
+      }
+    }
+  }
+  if (!placement.surfaces) {
+    const paper = evaluateBookParts(project, spread, Math.PI, 0)
+    // 同じ奥行きにある側方の紙は、水平の連結紙で親と一緒に寝かせる。
+    for (const [nodeId, evaluated] of Object.entries(paper.nodes)) {
+      if (excluded.has(nodeId)) continue
+      for (const [portId, port] of Object.entries(evaluated.ports)) {
+        if (port.kind !== 'surface' || port.face.support || port.face.v.y < .99) continue
+        const face = port.face, uv = materialPoint(face, target), normal = face.u.clone().cross(face.v)
+        if (Math.abs(target.clone().sub(face.origin).dot(normal)) > 1e-5) continue
+        const u = uv[0] - width / 2, gap = u > face.width ? u - face.width : u + width < 0 ? -u - width : -1
+        if (gap < .001) continue
+        const candidate = { ...element, part: { ...element.part, definition: { builtin: 'side-upright', version: 1 }, supportDesign: 'automatic' as const,
+          mount: { type: 'output' as const, nodeId, portId }, parameters: { width: width / unit, height: height / unit, u: u / unit, v: uv[1] / unit } } }
+        choices.push({ candidate, score: 9000 + gap })
       }
     }
   }
@@ -220,13 +250,22 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
         const left = side === 'left' ? angle * Math.PI / 180 : Math.PI, right = side === 'right' ? (180 - angle) * Math.PI / 180 : 0
         const result = evaluateBookParts(project, next, left, right), input = pagePorts(w, depth, left, right).gutter
         const errors = [...inspect(result, [input]), ...inspectIntersections(result).filter(s => s.includes(element.id + '/'))]
-        if (angle === 0 && input.kind === 'fold-pair') errors.push(...inspectClosedLayout(result.nodes[element.id], w, depth, input.rayA))
+        if (angle === 0 && input.kind === 'fold-pair') errors.push(...inspectClosedLayout(deployBookParts(project, next, result, left, right).nodes[element.id], w, depth, input.rayA))
         if (!errors.length) errors.push(...inspectContentMotion(bindBookContents(project, next, result, left, right), result.nodes[element.id].faces,
           { openingAngleDeg: angle, maxOpeningAngleDeg: 180 }, spread.sequence.holdSeconds, bookContentHoldTime(angle, side, spread.sequence.holdSeconds)))
         if (errors.length) throw new Error(errors[0])
       }
       return candidate
     } catch (error) { failures.add(error instanceof Error ? error.message : String(error)) }
+  }
+  // 背後や側方に候補があるのに接続が不成立の場合は、勝手に支持を切らない。
+  if (!placement.surfaces && !choices.length && !rearCandidate) {
+    const candidate: PartElement = { ...element, part: { ...element.part, definition: { builtin: 'root-upright', version: 1 },
+      supportDesign: 'automatic', mount: { type: 'output', nodeId: '$book', portId: 'gutter' },
+      parameters: { width: width / unit, height: height / unit, centerX: target.x / unit, offset: target.z / unit } } }
+    const next = replace(candidate), errors = validateBookParts({ ...project, book: { ...project.book, spreads: [next] } })
+    if (!errors.length) return candidate
+    errors.forEach(error => failures.add(error))
   }
   throw new Error(`${element.name}: No valid automatic support at ${placement.position.join(', ')}\n${[...failures].slice(0, 6).join('\n')}`)
 }

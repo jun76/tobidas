@@ -9,6 +9,7 @@ export const materialPoint = (face: PaperFace, point: Vector3): [number, number]
 export function extensionFor(face: PaperFace, points: [number, number][], { hinge = [], margin = .04, footprint }: {
   hinge?: [number, number][]; margin?: number; footprint?: [number, number][]
 } = {}): PartExtension | undefined {
+  if (face.infinitePage && [...points, ...hinge].every(p => p[1] >= -1e-7)) return undefined
   const bounds = { min: [0, 0], max: [face.width, face.height] } as PartExtension
   const panels: NonNullable<PartExtension['panels']> = []
   if (points.length) {

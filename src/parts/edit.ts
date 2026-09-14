@@ -7,6 +7,7 @@ import { bindingDependencies, evaluateExpression, parameterValues, type PartDefi
 import { extensionFor, materialPoint } from './mountGeometry'
 import { createPaperMotionInspector, inspectClosedLayout, validationAngles } from './validate'
 import { inspectIntersections, nearbyPaperPairs } from './intersections'
+import { deployPaper, planPaperStow } from './deployment'
 
 export const partEditIntentSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('translate'), delta: z.tuple([z.number().finite(), z.number().finite()]) }).strict(),
@@ -18,7 +19,7 @@ export type PartEditIntent = z.infer<typeof partEditIntentSchema>
 export interface PartEditScene {
   nodes: PartNode[]; definitions: PartDefinitions
   at: (angle: number) => { input?: PartPort; external?: Record<string, Record<string, PartPort>> }
-  maxAngle: number; closedBounds?: { width: number; depth: number }
+  maxAngle: number; closedBounds?: { width: number; depth: number; shrink?: boolean }
   validateContents?: (result: PaperEvaluation, nodes: PartNode[], angle: number) => string[]
   redesignSupports?: (nodes: PartNode[], affected: Set<string>) => void
   parameters?: Record<string, number>; slots?: Record<string, PartMaterial>
@@ -102,8 +103,9 @@ export function describePartEdit(scene: PartEditScene, id: string): PartEditDesc
   const x = basis ? basis.u.clone() : port.kind === 'fold-pair' ? port.axis.clone() : port.face.u.clone()
   const y = basis ? basis.v.clone() : port.kind === 'fold-pair' ? port.rayA.clone() : port.face.v.clone()
   if (port.kind === 'fold-pair') pivot.addScaledVector(x, (p.offset ?? 0) * scale)
-  const upright = 'builtin' in node.definition && node.definition.builtin === 'upright'
-  if (port.kind === 'fold-pair' && upright) pivot.addScaledVector(y, p.distance * scale)
+  const root = 'builtin' in node.definition && node.definition.builtin === 'root-upright'
+  const upright = 'builtin' in node.definition && ['upright', 'root-upright'].includes(node.definition.builtin)
+  if (port.kind === 'fold-pair' && upright) pivot.addScaledVector(y, (root ? p.centerX : p.distance) * scale)
   const angles: PartEditAngle[] = []
   if (port.kind === 'surface') angles.push({ id: 'surface-angle', label: 'surfaceAngle', value: (node.mount.type === 'output' ? node.mount.frame?.rotationDeg ?? 0 : 0) + (p.rotation ?? 0), min: -180, max: 180 })
   if ('builtin' in node.definition) {
@@ -152,6 +154,24 @@ function remount(scene: PartEditScene, node: PartNode, prior: PartNode, ready: P
   const next = resolver(scene, ready, scene.maxAngle)
   const oldPort = resolveBinding(prior.mount, original.input, original.output)
   const p = numeric(scene, node), scale = node.uniformScale ?? 1
+  if ('builtin' in node.definition && node.definition.builtin === 'root-upright') {
+    if (edit?.type === 'translate') {
+      node.parameters.offset = p.offset + edit.delta[0] / scale
+      node.parameters.centerX = p.centerX + edit.delta[1] / scale
+    }
+    if (edit?.type === 'scale') {
+      node.parameters.offset = p.offset * (prior.uniformScale ?? 1) / scale
+      node.parameters.centerX = p.centerX * (prior.uniformScale ?? 1) / scale
+    }
+    return
+  }
+  if ('builtin' in node.definition && node.definition.builtin === 'side-upright') {
+    if (edit?.type === 'translate') {
+      node.parameters.u = p.u + edit.delta[0] / scale
+      node.parameters.v = p.v + edit.delta[1] / scale
+    }
+    return
+  }
   const evaluate = (port: PartPort) => evaluatePartReference(node.definition, port, scene.definitions, p, {}, node.id, [], scale)
   if (oldPort.kind === 'surface') {
     const ref = prior.mount.type === 'output' ? { nodeId: prior.mount.nodeId, portId: prior.mount.portId } : sourceRef(oldPort.face, scene, original)
@@ -296,7 +316,10 @@ export function planPartEdit(scene: PartEditScene, id: string, raw: PartEditInte
       const context = scene.at(angle), roots = Object.values(context.external ?? {}).flatMap((ports) => Object.values(ports))
       if (context.input) roots.push(context.input)
       const result = evaluateEditScene(scene, nodes, angle), errors = inspectMotion(result, roots)
-      if (angle === 0 && scene.closedBounds) errors.push(...inspectClosedLayout(result, scene.closedBounds.width, scene.closedBounds.depth))
+      if (angle === 0 && scene.closedBounds) {
+        const { width, depth, shrink } = scene.closedBounds
+        errors.push(...inspectClosedLayout(shrink ? deployPaper(result, planPaperStow(result, width, depth), 0) : result, width, depth))
+      }
       if (angle > .001) {
         const faces = [...new Map(roots.flatMap((port) => port.kind === 'surface' ? [port.face] : [port.a, port.b]).map((face) => [face.id, face])).values()]
         const withParents = { ...result, faces: [...result.faces, ...faces] }

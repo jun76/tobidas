@@ -2,9 +2,9 @@ import { Vector3 } from 'three'
 import type { PaperEvaluation, PaperFace, PartPort } from './geometry'
 
 /** 材料座標も含めて単位を変換する。同じ面への参照と積層関係を保持する。 */
-export function paperSimilarity(center: Vector3, ratio: number) {
+export function paperSimilarity(center: Vector3, ratio: number, translation = new Vector3()) {
   const faces = new Map<PaperFace, PaperFace>()
-  const point = (value: Vector3) => value.clone().sub(center).multiplyScalar(ratio).add(center)
+  const point = (value: Vector3) => value.clone().sub(center).multiplyScalar(ratio).add(center).add(translation)
   const face = (source: PaperFace): PaperFace => {
     const existing = faces.get(source)
     if (existing) return existing
