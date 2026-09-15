@@ -59,7 +59,8 @@ export const contentAttachmentSchema = z.discriminatedUnion('type', [
 ])
 export const presentationSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('decal') }).strict(),
-  z.object({ kind: z.literal('fiction'), closing: z.literal('shrink-to-anchor') }).strict(),
+  // 閉じ方: 錨へ縮む (紙と同じく畳まれる) か、姿勢を保ったまま開き終わりで現れ、閉じ始めで消えるか。
+  z.object({ kind: z.literal('fiction'), closing: z.enum(['shrink-to-anchor', 'fade']) }).strict(),
 ])
 export const visualFields = {
     width: z.number().positive(),

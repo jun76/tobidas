@@ -20,7 +20,7 @@ export const partJsonDefinitions = {
     holes: { type: 'array', maxItems: 32, items: { type: 'array', items: tuple2, minItems: 3, maxItems: 256 } } }, ['outer']),
   contentAttachment: { oneOf: [object({ type: { const: 'surface' }, surface: ref('surfaceRef'), point: tuple2, side: { enum: ['front', 'back'] } }),
     object({ type: { const: 'visual' }, elementId: string })] },
-  presentation: { oneOf: [object({ kind: { const: 'decal' } }), object({ kind: { const: 'fiction' }, closing: { const: 'shrink-to-anchor' } })] },
+  presentation: { oneOf: [object({ kind: { const: 'decal' } }), object({ kind: { const: 'fiction' }, closing: { enum: ['shrink-to-anchor', 'fade'] } })] },
   contentMotion: { oneOf: [
     ...['bob', 'sway', 'pulse'].map((type) => object({ type: { const: type }, amplitude: number, period: number, phase: number,
       ...(type === 'bob' ? { axis: { enum: ['x', 'y', 'z'] } } : {}) }, ['type', 'amplitude', 'period'])),

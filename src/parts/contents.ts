@@ -70,6 +70,11 @@ export const contentExitScale = (angle: number, max: number): number => {
   const t = Math.max(0, Math.min(1, angle / Math.max(1e-9, max)))
   return t * t * (3 - 2 * t)
 }
+/** 開き角の 4〜8 割で現れ、閉じるときは逆順に消える。見えない間は紙との交差も検査しない。 */
+export const contentFadeOpacity = (angle: number, max: number): number => {
+  const t = Math.max(0, Math.min(1, (angle / Math.max(1e-9, max) - .4) / .4))
+  return t * t * (3 - 2 * t)
+}
 export function contentSurfaceFrame(face: PaperFace, point: [number, number], side: 'front' | 'back'): Matrix4 {
   const sign = side === 'front' ? 1 : -1, u = face.u.clone().multiplyScalar(sign), normal = u.clone().cross(face.v)
   return new Matrix4().makeBasis(u, face.v, normal).setPosition(pointOnFace(face, ...point))
@@ -97,7 +102,9 @@ export function evaluateContents(bindings: BoundPaperContent[], context: Content
     const anchor = attachment.type === 'surface' && face ? contentSurfaceFrame(face, [attachment.point[0] * unitScale, attachment.point[1] * unitScale], attachment.side)
       : parent!.matrix.clone()
     const time = context.clock(id, element.clock), motion = evaluateContentMotion(element.motion, time)
-    const fiction = element.presentation.kind === 'fiction', g = fiction && !parent ? contentExitScale(context.openingAngleDeg, context.maxOpeningAngleDeg) : 1
+    const fiction = element.presentation.kind === 'fiction', fading = element.presentation.kind === 'fiction' && element.presentation.closing === 'fade'
+    const g = fiction && !parent && !fading ? contentExitScale(context.openingAngleDeg, context.maxOpeningAngleDeg) : 1
+    const fade = fading && !parent ? contentFadeOpacity(context.openingAngleDeg, context.maxOpeningAngleDeg) : 1
     const ratio = parent ? unitScale / parent.unitScale : unitScale
     const position = new Vector3(...element.baseTransform.position).add(new Vector3(...motion.position)).multiplyScalar(ratio * g)
     const rotation = element.baseTransform.rotation.map((value, i) => (value + motion.rotationDeg[i] + motion.spinDeg[i]) * Math.PI / 180)
@@ -115,7 +122,7 @@ export function evaluateContents(bindings: BoundPaperContent[], context: Content
       matrix.compose(worldPosition, context.billboardQuaternion.clone().multiply(turn), worldScale)
     }
     if (matrix.elements.some((value) => !Number.isFinite(value))) throw new Error(`Non-finite content transform: ${id}`)
-    const opacity = element.opacity * (parent?.opacity ?? 1)
+    const opacity = element.opacity * (parent?.opacity ?? 1) * fade
     const item: EvaluatedContent = { id, ownerId: bound.ownerId, parentId: bound.parentId, element, matrix, anchor, face, opacity, time, unitScale,
       exitScale: parent?.exitScale ?? g, visible: element.visible && opacity > 0 && (parent?.visible ?? true)
         && !context.hidden?.(bound.ownerId) && (!fiction || g > 0) }
