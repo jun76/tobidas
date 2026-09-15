@@ -343,6 +343,8 @@ export const ja = {
   },
   viewport: {
     tools: 'ビューポート操作',
+    previousSpread: (name: string) => `前へ: ${name}`,
+    nextSpread: (name: string) => `次へ: ${name}`,
     scene: (title: string, mode: string, selection: string) => `${title}のビューポート、${mode}モード、選択 ${selection}`,
     translate: '平行移動 (W)',
     rotate: '回転 (E)',

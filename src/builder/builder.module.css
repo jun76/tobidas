@@ -292,6 +292,46 @@
   cursor: pointer;
 }
 
+/* 前後の見開きへ移る矢印。地も枠も持たず、端に大きく置く */
+.viewportNav {
+  position: absolute;
+  z-index: 5;
+  /* 下辺はタイムラインが覆うので、見えている場面の中ほどへ寄せる */
+  top: 42%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 96px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #ffffffb8;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 45%));
+  transition: color 0.12s ease, transform 0.12s ease;
+}
+
+.viewportNav:hover,
+.viewportNav:focus-visible {
+  color: #ffffff;
+  background: transparent;
+}
+
+.viewportNav:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.viewportNavPrevious {
+  left: 6px;
+}
+
+.viewportNavNext {
+  right: 6px;
+}
+
 /* 編集中の見開き名とスクリーンショット操作 */
 .viewportTitleBar {
   position: absolute;

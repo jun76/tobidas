@@ -340,6 +340,8 @@ export const en: Dict = {
   },
   viewport: {
     tools: 'Viewport tools',
+    previousSpread: (name: string) => `Previous: ${name}`,
+    nextSpread: (name: string) => `Next: ${name}`,
     scene: (title, mode, selection) => `${title} viewport, ${mode} mode, ${selection} selected`,
     translate: 'Move (W)',
     rotate: 'Rotate (E)',

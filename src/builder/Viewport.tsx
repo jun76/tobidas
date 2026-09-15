@@ -2,7 +2,7 @@ import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { Camera, Check, LoaderCircle, Maximize, Move, Pause, Play, RotateCcw, RotateCw, Scale3d, Video, Volume2, VolumeX } from 'lucide-react'
+import { Camera, Check, ChevronLeft, ChevronRight, LoaderCircle, Maximize, Move, Pause, Play, RotateCcw, RotateCw, Scale3d, Video, Volume2, VolumeX } from 'lucide-react'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { BookRuntime, type RuntimeSelection } from '../runtime/BookRuntime'
 import { VIEW_CLIP, VIEW_GL } from '../runtime/camera/view'
@@ -175,6 +175,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
     {store.mode === 'edit' && <PlacementBadge />}
     {store.mode === 'edit' && !placingPart && <><PartEditBadge />{contentError && <div role="status">{contentError}</div>}</>}
 
+    {store.mode === 'edit' && !placingPart && <SpreadNavButtons />}
     {store.mode === 'edit' && viewTitle && <div className={st.viewportTitleBar}>
       <div className={st.viewportTitle}>{viewTitle}</div>
       {onScreenshot && <button
@@ -271,3 +272,34 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
 }
 
 type ScreenshotState = 'idle' | 'saving' | 'saved'
+
+/** 表紙 → 各見開き → 裏表紙の順に前後へ移る。ビューポートの左右の端に、地なしの大きな矢印だけを置く。 */
+function SpreadNavButtons() {
+  const t = useT()
+  const spreads = useBuilderStore((state) => state.project.book.spreads)
+  const selection = useBuilderStore((state) => state.selection)
+  const activeSpreadId = useBuilderStore((state) => state.activeSpreadId)
+  const select = useBuilderStore((state) => state.select)
+  type Stop = { type: 'cover'; side: 'front' | 'back' } | { type: 'spread'; spreadId: string }
+  const stops: Stop[] = [
+    { type: 'cover', side: 'front' },
+    ...spreads.map((spread) => ({ type: 'spread' as const, spreadId: spread.id })),
+    { type: 'cover', side: 'back' },
+  ]
+  const current = selection.type === 'cover' ? (selection.side === 'front' ? 0 : stops.length - 1)
+    : Math.max(0, spreads.findIndex((spread) => spread.id === activeSpreadId)) + 1
+  const previous = stops[current - 1], next = stops[current + 1]
+  const label = (stop: Stop) => stop.type === 'cover'
+    ? (stop.side === 'front' ? t.navigator.frontCover : t.navigator.backCover)
+    : spreads.find((spread) => spread.id === stop.spreadId)?.name ?? ''
+  return <>
+    {previous && <button type="button" className={`${st.viewportNav} ${st.viewportNavPrevious}`}
+      aria-label={t.viewport.previousSpread(label(previous))} title={t.viewport.previousSpread(label(previous))} onClick={() => select(previous)}>
+      <Icon as={ChevronLeft} size={44} />
+    </button>}
+    {next && <button type="button" className={`${st.viewportNav} ${st.viewportNavNext}`}
+      aria-label={t.viewport.nextSpread(label(next))} title={t.viewport.nextSpread(label(next))} onClick={() => select(next)}>
+      <Icon as={ChevronRight} size={44} />
+    </button>}
+  </>
+}
