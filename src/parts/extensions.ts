@@ -14,6 +14,7 @@ export function extendPaperSurface(parent: PaperFace, bounds: PartExtension | un
     if (width < 1e-7 || height < 1e-7) return
     const face = makeFace(`${id}/${name}`, pointOnFace(parent, u, v), parent.u, parent.v, width, height, true)
     face.surfaceStack = surface.surfaceStack
+    if (parent.infinitePage) face.hidden = true
     face.outline = outline
     let edge = seam.map(([x, y]) => pointOnFace(parent, x, y))
     if (outline) {

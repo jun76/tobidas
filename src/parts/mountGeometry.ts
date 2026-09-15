@@ -9,18 +9,22 @@ export const materialPoint = (face: PaperFace, point: Vector3): [number, number]
 export function extensionFor(face: PaperFace, points: [number, number][], { hinge = [], margin = .04, footprint }: {
   hinge?: [number, number][]; margin?: number; footprint?: [number, number][]
 } = {}): PartExtension | undefined {
-  if (face.infinitePage && [...points, ...hinge].every(p => p[1] >= -1e-7)) return undefined
+  // 論理ページは奥・外側へ無限に続くので、その方向の支持紙は要らない。
+  // 綴じ目 (v < 0) を越えて向こうのページへ掛かる分だけ橋渡しの紙を足す。これも論理ページの一部として描かない。
+  const infinite = Boolean(face.infinitePage)
+  if (infinite && [...points, ...hinge].every(p => p[1] >= -1e-7)) return undefined
   const bounds = { min: [0, 0], max: [face.width, face.height] } as PartExtension
   const panels: NonNullable<PartExtension['panels']> = []
   if (points.length) {
     const u = Math.min(...points.map((p) => p[0])) - margin, v = Math.min(...points.map((p) => p[1])) - margin
     const endU = Math.max(...points.map((p) => p[0])) + margin, endV = Math.max(...points.map((p) => p[1])) + margin
     const lowV = Math.min(v, face.height - .08), highV = Math.max(endV, .08)
-    const lowU = Math.max(0, Math.min(u, face.width - .08)), highU = Math.min(face.width, Math.max(endU, .08))
-    if (points.some((p) => p[0] < -1e-7)) panels.push({ id: 'left', min: [u, lowV], max: [0, highV] })
-    if (points.some((p) => p[0] > face.width + 1e-7)) panels.push({ id: 'right', min: [face.width, lowV], max: [endU, highV] })
+    const lowU = infinite ? Math.min(u, face.width - .08) : Math.max(0, Math.min(u, face.width - .08))
+    const highU = infinite ? Math.max(endU, .08) : Math.min(face.width, Math.max(endU, .08))
+    if (!infinite && points.some((p) => p[0] < -1e-7)) panels.push({ id: 'left', min: [u, lowV], max: [0, highV] })
+    if (!infinite && points.some((p) => p[0] > face.width + 1e-7)) panels.push({ id: 'right', min: [face.width, lowV], max: [endU, highV] })
     if (points.some((p) => p[1] < -1e-7)) panels.push({ id: 'near', min: [lowU, v], max: [highU, 0] })
-    if (points.some((p) => p[1] > face.height + 1e-7)) panels.push({ id: 'far', min: [lowU, face.height], max: [highU, endV] })
+    if (!infinite && points.some((p) => p[1] > face.height + 1e-7)) panels.push({ id: 'far', min: [lowU, face.height], max: [highU, endV] })
   }
   if (footprint && margin === 0) for (const panel of panels) {
     const axis = panel.id === 'left' || panel.id === 'right' ? 0 : 1

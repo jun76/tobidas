@@ -9,7 +9,8 @@ export function PaperMeshes({ faces, assets, onSelect, selected, opacity = 1, pa
   paperSurfaces?: BookPaperSurface[]
   surfaceTarget?: { spreadId: string; nodeId: string }
 }) {
-  return <group>{faces.map((face) => <PaperMesh key={face.id} face={face} assets={assets} onSelect={onSelect}
+  // 論理ページを延長した支持紙は見えない紙面の一部なので描かない
+  return <group>{faces.filter((face) => !face.hidden).map((face) => <PaperMesh key={face.id} face={face} assets={assets} onSelect={onSelect}
     selected={selected !== undefined && (face.id === selected || face.id.startsWith(selected + '/'))} opacity={opacity} paperSurfaces={paperSurfaces} surfaceTarget={surfaceTarget} />)}</group>
 }
 function PaperMesh({ face, assets, onSelect, selected, opacity, paperSurfaces, surfaceTarget }: {

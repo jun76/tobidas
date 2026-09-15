@@ -10,6 +10,8 @@ export interface PaperFace {
   support: boolean; material: PartMaterial; outline?: [number, number][]; shape?: PaperShape
   /** 本の論理ページ。綴じ目の外側へ無限に延び、実紙の輪郭は描画・収納で別に扱う。 */
   infinitePage?: boolean
+  /** 論理ページを延長した支持紙。見えない紙面の一部なので描かない。 */
+  hidden?: boolean
   /** 一枚の絵を複数の剛体面へ分けるときの、画像横方向の担当範囲。 */
   artworkSpan?: [number, number]
   /** 仮想接続面を実際に覆う親面と支持紙。接着検査では空白を支持面とみなさない。 */
