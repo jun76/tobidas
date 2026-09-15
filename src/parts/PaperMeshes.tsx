@@ -52,10 +52,8 @@ function PaperMesh({ face, assets, onSelect, selected, opacity, paperSurfaces, s
   // 絵柄に映画用の色調圧縮を重ねず、拡散照明と実際の影で紙の明暗を付ける。
   const properties = { color: frontMap ? '#ffffff' : face.material.color ?? '#e3b476', roughness: .9, transparent: true, toneMapped: false,
     opacity, alphaTest: .1, polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -2 }
+  // 絵を貼った紙は絵の透明部分を紙色で埋めない。見える紙は印刷の不透明部分だけにする。
   return <group matrix={matrix} matrixAutoUpdate={false} onClick={(event) => { if (onSelect) { event.stopPropagation(); onSelect(face.id) } }}>
-    {face.shape && frontMap && <mesh geometry={geometry} renderOrder={renderOrder - 1} castShadow receiveShadow>
-      <meshStandardMaterial color={face.material.color ?? '#f3ecd9'} side={DoubleSide} roughness={.9} toneMapped={false} transparent opacity={opacity} />
-    </mesh>}
     <mesh geometry={geometry} renderOrder={renderOrder} castShadow receiveShadow userData={surfaceTarget ? { partSurfaceTarget: { ...surfaceTarget, faceId: face.id } } : {}}>
       <meshStandardMaterial key={`front-${Boolean(frontMap)}`} {...properties} side={FrontSide} shadowSide={FrontSide} map={frontMap} />
     </mesh>
