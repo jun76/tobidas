@@ -11,8 +11,8 @@
 .sidebar { overflow:auto; padding:16px; border-right:1px solid #41424f; }
 .inspector { overflow:auto; padding:16px; border-left:1px solid #41424f; }
 .sidebar h2,.inspector h2 { font-size:14px; margin: 0 0 14px; }
-.fields { display:flex; flex-direction:column; gap:10px; }
-.field { display:flex; flex-direction:column; gap:5px; font-size:12px; }
+.fields { display:flex; flex-direction:column; gap:14px; }
+.field { display:flex; flex-direction:column; gap:6px; font-size:12px; line-height:1.5; }
 .field>span { color:#b9bbc7; }
 .field input,.field select,.field textarea { width:100%; box-sizing:border-box; padding:7px 9px; min-height:32px; border:1px solid #4b4c59; border-radius:4px; background:#2b2c36; color:#ececf2; }
 .field input[type=color] { padding:3px; height:34px; }
@@ -35,6 +35,7 @@
 .previewControls output { min-width:42px; }
 .previewError { position:absolute; bottom:88px; left:16px; right:16px; padding:10px 12px; border-radius:5px; background:#6c292ae6; color:#fff1e8; font-size:12px; }
 .section { border-top:1px solid #41424f; padding-top:14px; margin-top:16px; }
+.section h3 { margin:0 0 14px; font-size:12px; font-weight:700; color:#c5c9d8; line-height:1.5; }
 .section summary { cursor:pointer; color:#c5c9d8; margin-bottom:12px; }
 .hint { font-size:11px; color:#a5a8b9; line-height:1.6; margin:8px 0; }
 .error { font-size:12px; white-space:pre-wrap; color:#ffaaa3; padding:8px 0; }
