@@ -1,5 +1,5 @@
 import { Diamond, Eye, EyeOff, Link } from 'lucide-react'
-import { useEffect, useId, useState, type FormEvent, type HTMLAttributes, type ReactNode } from 'react'
+import { useEffect, useId, useMemo, useState, type FormEvent, type HTMLAttributes, type ReactNode } from 'react'
 import { Icon } from '../../ui/Icon'
 import type { ParticleElement, StageElement, TextFont, VisualElement } from '../../schema/stageElement'
 import { DEFAULT_EMBEDDED_VIDEO_AUDIO, type EmbeddedVideoAudio } from '../../schema/audio'
@@ -289,8 +289,39 @@ function Page({ side, embedded = false }: { side: 'left' | 'right'; embedded?: b
   </PropertySection>
 }
 
-import { ContentAttachmentFields } from '../parts/ContentFields'
+import { placementSurfaces } from '../../parts/placement'
+import { editConnectedContentCommand } from '../parts/contentCommands'
 import { PlacedPartInspector } from '../parts/PartPalette'
+
+/** 面への取り付け。インスペクターの他の群と同じ折り畳みと行の並びで出す */
+function AttachmentGroup({ spreadId, element }: { spreadId: string; element: StageElement }) {
+  const t = useT().parts.content
+  const project = useBuilderStore((state) => state.project)
+  const [error, setError] = useState('')
+  const spread = project.book.spreads.find((item) => item.id === spreadId)!
+  const options = useMemo(() => placementSurfaces(project, spread).map(({ reference }) => [JSON.stringify(reference),
+    `${reference.nodeId === '$book' ? '' : spread.elements.find((item) => item.id === reference.nodeId)?.name ?? reference.nodeId} / ${reference.portId}`] as [string, string]), [project, spread])
+  const attachment = element.attachment
+  if (!attachment) return null
+  const change = (value: typeof attachment) => {
+    const result = editConnectedContentCommand({ spreadId, elementId: element.id, intent: { type: 'attachment', value } })
+    setError(result.ok ? '' : result.message)
+  }
+  return <InspectorGroup title={t.title} data-tobidas-kind="content-attachment">
+    {attachment.type === 'visual'
+      ? <Text label={t.surface} value={attachment.elementId} onChange={(elementId) => change({ type: 'visual', elementId })} />
+      : <>
+        <Select label={t.surface} value={JSON.stringify(attachment.surface)} options={options}
+          onChange={(value) => change({ ...attachment, surface: JSON.parse(value) })} />
+        <Select label={t.side} value={attachment.side} options={[['front', t.front], ['back', t.back]]}
+          onChange={(value) => change({ ...attachment, side: value as 'front' | 'back' })} />
+        {([0, 1] as const).map((axis) => <Num key={axis} label={`${t.anchor} ${axis === 0 ? 'X' : 'Y'}`} value={attachment.point[axis]}
+          onChange={(number) => { const point: [number, number] = [...attachment.point]; point[axis] = number; change({ ...attachment, point }) }} />)}
+      </>}
+    <div className={st.hintSmall}>{t.hint}</div>
+    {error && <div role="status" className={st.err}>{error}</div>}
+  </InspectorGroup>
+}
 
 function Element({ element, embedded = false }: { element: StageElement; embedded?: boolean }) {
   const t = useT()
@@ -306,7 +337,7 @@ function Element({ element, embedded = false }: { element: StageElement; embedde
     store.upsertTimelineKey(selection.spreadId, { type: 'element', elementId: element.id }, property, time, value)
 
   return <PropertySection title={t.properties.element(element.type === 'particle' ? t.presets['light-particles'] : element.type)} embedded={embedded}>
-    {element.attachment && <ContentAttachmentFields spreadId={selection.spreadId} elementId={element.id} />}
+    {element.attachment && <AttachmentGroup spreadId={selection.spreadId} element={element} />}
     <InspectorGroup title={t.app.inspectorBasic} action={!element.attachment && <button type="button" className={st.ghostBtn}
       data-tobidas-action="change-element-parent" aria-label={t.properties.changeParent}
       title={t.properties.changeParentHint} onClick={(event) => { event.preventDefault(); event.stopPropagation(); setParentDialogOpen(true) }}>
