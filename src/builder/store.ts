@@ -262,8 +262,9 @@ const initializeBuilder: StateCreator<EditorState> = (set, get) => {
       }
       if (!('spreadId' in selection)) return { selection, selectedKey: null }
       // 別の見開きへ移るなら進行値もその保持区間へ運ぶ。完全展開でない見開きは
-      // ギズモが出ないので、選んだのに触れない状態になってしまう
-      const hold = selection.spreadId === state.activeSpreadId ? undefined
+      // ギズモが出ないので、選んだのに触れない状態になってしまう。
+      // 表紙から戻るときは同じ見開きでも本が閉じているので、必ず保持区間へ運ぶ
+      const hold = selection.spreadId === state.activeSpreadId && state.selection.type !== 'cover' ? undefined
         : compileBookBeats(state.project.book).find(
           (beat) => beat.kind === 'hold' && beat.spreadId === selection.spreadId,
         )
