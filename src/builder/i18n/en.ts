@@ -149,6 +149,14 @@ export const en: Dict = {
     editActions: 'Edit',
     viewActions: 'View',
   },
+  busy: {
+    opening: 'Loading the book',
+    choosing: 'Choose a folder',
+    reading: 'Reading files',
+    assets: (done: number, total: number) => `Unpacking assets (${done} / ${total})`,
+    validating: (done: number, total: number) => total ? `Validating the book (${done} / ${total})` : 'Validating the book',
+    preparing: 'Preparing the view',
+  },
   dialog: {
     ok: 'OK',
     cancel: 'Cancel',

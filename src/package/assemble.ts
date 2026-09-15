@@ -3,9 +3,13 @@ import { bookProjectSchema } from '../schema/bookPackage'
 import { assetKindForFile, normalizeAssetPath, type AssembleResult, type AssetSource } from './model'
 import { verifyEmbeddedParts } from '../parts/package'
 
+/** 段階の通知。検証は同期で長いので、呼び手が描画を挟めるよう待てるようにしておく。 */
+export type AssembleProgress = (stage: 'assets' | 'validating', done: number, total: number) => void | Promise<void>
+
 export async function assemblePackage(
   projectJsonText: string,
   files: Map<string, AssetSource>,
+  progress?: AssembleProgress,
 ): Promise<AssembleResult> {
   const normalizedFiles = new Map<string, AssetSource>()
   for (const [path, source] of files) {
@@ -29,7 +33,10 @@ export async function assemblePackage(
   const notices: string[] = []
   const missing: string[] = []
   const assets: Asset[] = []
+  const total = file.assets.length + Math.max(0, normalizedFiles.size - file.assets.length)
+  let done = 0
   for (const meta of file.assets) {
+    progress?.('assets', done++, total)
     const source = normalizedFiles.get(normalizeAssetPath(meta.id))
     if (!source) {
       missing.push(meta.id)
@@ -55,6 +62,7 @@ export async function assemblePackage(
       continue
     }
     const base = relativePath.split('/').pop() ?? relativePath
+    progress?.('assets', done++, total)
     const data = await readAsset(source, kind.type, kind.mime)
     assertAssetSize(relativePath, kind.type, data, source.size)
     const inferred = await source.metadata?.(kind.type, data)
@@ -69,6 +77,7 @@ export async function assemblePackage(
     })
   }
 
+  await progress?.('validating', 0, 0)
   await verifyEmbeddedParts(file.partDefinitions ?? {}, assets)
   return { project: { ...file, assets }, notices }
 }

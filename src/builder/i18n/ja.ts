@@ -152,6 +152,14 @@ export const ja = {
     editActions: '編集',
     viewActions: '表示',
   },
+  busy: {
+    opening: '作品を読み込んでいます',
+    choosing: 'フォルダを選択してください',
+    reading: 'ファイルを読み取り中',
+    assets: (done: number, total: number) => `素材を展開中 (${done} / ${total})`,
+    validating: (done: number, total: number) => total ? `作品を検証中 (${done} / ${total})` : '作品を検証中',
+    preparing: '画面を準備中',
+  },
   dialog: {
     ok: 'OK',
     cancel: 'キャンセル',

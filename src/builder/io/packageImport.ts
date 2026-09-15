@@ -1,14 +1,19 @@
 import { t } from '../i18n'
-import { assemblePackage } from '../../package/assemble'
+import { assemblePackage, type AssembleProgress } from '../../package/assemble'
 import { normalizeAssetPath, type AssembleResult, type AssetSource } from '../../package/model'
 import { bytesToDataUrl } from '../../package/serialize'
 import { validateBookProject } from '../../schema/bookValidate'
+import { validateBookParts } from '../../parts/book'
 import type { PickerWindow } from './browserFiles'
 import { readMediaMetadata } from '../assets/ingest'
 import { readProjectArchive } from './projectArchive'
 
+/** 読み込みの段階を画面へ伝える。実体の展開は素材ごとに進み、その後に検証が続く。 */
+export type ImportProgress = AssembleProgress
+
 export async function importProjectZip(file: File): Promise<ImportResult> {
   if (file.size > MAX_IMPORT_BYTES) throw new Error(t().io.packageTooLarge)
+  // ZIP は Worker で一括展開するので、段階の通知はない。
   const result = await readProjectArchive(await file.arrayBuffer())
   await assertStorageCapacity(result.project.assets.reduce((sum, asset) => sum + (asset.bytes ?? 0), 0))
   return result
@@ -20,7 +25,7 @@ const MAX_IMPORT_FILES = 2000
 export type ImportResult = AssembleResult
 
 /** ピッカーを持たないブラウザ向けの経路。フォルダ選択の input が渡すファイル一覧から組む */
-export async function importPackageFileList(list: FileList | File[]): Promise<ImportResult> {
+export async function importPackageFileList(list: FileList | File[], progress?: ImportProgress): Promise<ImportResult> {
   const selected = Array.from(list)
   if (selected.length > MAX_IMPORT_FILES) throw new Error(t().io.tooManyFiles)
   if (selected.reduce((total, file) => total + file.size, 0) > MAX_IMPORT_BYTES) {
@@ -41,26 +46,27 @@ export async function importPackageFileList(list: FileList | File[]): Promise<Im
     if (files.has(assetPath)) throw new Error(t().io.duplicateAssetPath(assetPath))
     files.set(assetPath, fileAssetSource(file))
   }
-  return finishImport(await projectEntry.file.text(), files)
+  return finishImport(await projectEntry.file.text(), files, progress)
 }
 
 interface DirectoryHandleWithEntries extends FileSystemDirectoryHandle {
   entries(): AsyncIterableIterator<[string, FileSystemFileHandle | FileSystemDirectoryHandle]>
 }
 
-export async function importPackageViaDirectoryPicker(): Promise<ImportResult | 'aborted' | null> {
+export async function importPackageViaDirectoryPicker(progress?: ImportProgress, onChosen?: () => void): Promise<ImportResult | 'aborted' | null> {
   const picker = (window as PickerWindow).showDirectoryPicker
   if (!picker) return null
   try {
     const directory = await picker.call(window, { mode: 'read' })
-    return await importPackageDirectory(directory)
+    onChosen?.()
+    return await importPackageDirectory(directory, progress)
   } catch (error) {
     if ((error as DOMException).name === 'AbortError') return 'aborted'
     throw error
   }
 }
 
-async function importPackageDirectory(directory: FileSystemDirectoryHandle): Promise<ImportResult> {
+async function importPackageDirectory(directory: FileSystemDirectoryHandle, progress?: ImportProgress): Promise<ImportResult> {
   let projectText: string | null = null
   const files = new Map<string, AssetSource>()
   let totalBytes = 0
@@ -77,7 +83,7 @@ async function importPackageDirectory(directory: FileSystemDirectoryHandle): Pro
   if (files.size > MAX_IMPORT_FILES) throw new Error(t().io.tooManyFiles)
   if (totalBytes > MAX_IMPORT_BYTES) throw new Error(t().io.packageTooLarge)
   await assertStorageCapacity(totalBytes)
-  return finishImport(projectText, files)
+  return finishImport(projectText, files, progress)
 }
 
 async function collectDirectory(
@@ -124,8 +130,15 @@ async function assertStorageCapacity(bytes: number): Promise<void> {
   if (available < bytes * 1.2) throw new Error(t().io.storageTooSmall)
 }
 
-async function finishImport(projectJsonText: string, files: Map<string, AssetSource>): Promise<ImportResult> {
-  const result = await assemblePackage(projectJsonText, files)
+async function finishImport(projectJsonText: string, files: Map<string, AssetSource>, progress?: ImportProgress): Promise<ImportResult> {
+  const result = await assemblePackage(projectJsonText, files, progress)
+  // 紙の検査は同期で長い。見開きごとに区切って描画を挟み、全体の検証では同じ鍵の結果を再利用する。
+  const { spreads } = result.project.book
+  for (const [index, spread] of spreads.entries()) {
+    await progress?.('validating', index, spreads.length)
+    validateBookParts({ ...result.project, book: { ...result.project.book, spreads: [spread] } })
+  }
+  await progress?.('validating', spreads.length, spreads.length)
   const validation = validateBookProject(result.project)
   if (!validation.ok) throw new Error(t().io.validationFailed(validation.errors.slice(0, 8).join('\n')))
   return result

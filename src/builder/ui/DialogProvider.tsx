@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react'
 import { MessageDialog } from './MessageDialog'
+import { BusyOverlay } from './BusyOverlay'
 
 interface MessageRequest {
   id: number
@@ -32,6 +33,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
   return <DialogContext.Provider value={value}>
     {children}
     {current && <MessageDialog key={current.id} title={current.title} body={current.body} onClose={closeCurrent} />}
+    <BusyOverlay />
   </DialogContext.Provider>
 }
 

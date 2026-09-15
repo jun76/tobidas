@@ -5,7 +5,8 @@ import { LOCALES, useLocaleStore, useT, type Locale } from '../i18n'
 import { Icon, ICON } from '../../ui/Icon'
 import { createLocalizedBookProject, useBuilderStore } from '../store'
 import { supportsDirectoryPicker } from '../io/browserFiles'
-import type { ImportResult } from '../io/packageImport'
+import type { ImportProgress, ImportResult } from '../io/packageImport'
+import { nextPaint, runBusy, type BusyReporter } from '../ui/busy'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { useDialogs } from '../ui/DialogProvider'
 import { requestElementDelete } from '../elementDelete'
@@ -300,21 +301,33 @@ function OpenButton({ onInvoke }: { onInvoke?: () => void } = {}) {
   const dialogs = useDialogs()
   const setProject = useBuilderStore((state) => state.setProject)
   const dirRef = useRef<HTMLInputElement>(null), zipRef = useRef<HTMLInputElement>(null)
-  const apply = (result: ImportResult) => {
-    setProject(result.project, 'import')
-    if (result.notices.length) dialogs.showMessage(t.dialog.importNoticeTitle, result.notices.join('\n'))
-  }
-  const run = async (work: () => Promise<ImportResult | 'aborted' | null>) => {
+  // 読み込みは数秒かかり、最後の適用は描画を止める。全画面の表示で状況を見せ、操作を受け付けない。
+  const run = async (work: (progress: ImportProgress, report: BusyReporter) => Promise<ImportResult | 'aborted' | null>) => {
     try {
-      const result = await work()
-      if (result === null) dirRef.current?.click()
-      else if (result !== 'aborted') apply(result)
+      await runBusy(t.busy.opening, async (report) => {
+        report(t.busy.reading)
+        const progress: ImportProgress = async (stage, done, total) => {
+          report(stage === 'validating' ? t.busy.validating(done, total) : t.busy.assets(done, total), total ? done / total : undefined)
+          if (stage === 'validating') await nextPaint()
+        }
+        const result = await work(progress, report)
+        if (result === null) dirRef.current?.click()
+        else if (result !== 'aborted') {
+          report(t.busy.preparing)
+          await nextPaint()
+          setProject(result.project, 'import')
+          if (result.notices.length) dialogs.showMessage(t.dialog.importNoticeTitle, result.notices.join('\n'))
+        }
+      })
     } catch (error) { dialogs.showMessage(t.dialog.errorTitle, String(error)) }
   }
   return <>
     <button title={t.toolbar.openHint} onClick={() => {
       onInvoke?.()
-      void run(async () => (await import('../io/packageImport')).importPackageViaDirectoryPicker())
+      void run(async (progress, report) => {
+        report(t.busy.choosing)
+        return (await import('../io/packageImport')).importPackageViaDirectoryPicker(progress, () => report(t.busy.reading))
+      })
     }}>
       {t.toolbar.open}
     </button>
@@ -327,7 +340,7 @@ function OpenButton({ onInvoke }: { onInvoke?: () => void } = {}) {
       // 入力欄のリセットでFileListが空になる前に、非同期読み込み用の一覧を確保する。
       const files = Array.from(event.target.files ?? [])
       if (files.length) {
-        void run(async () => (await import('../io/packageImport')).importPackageFileList(files))
+        void run(async (progress) => (await import('../io/packageImport')).importPackageFileList(files, progress))
       }
       event.target.value = ''
     }} />
