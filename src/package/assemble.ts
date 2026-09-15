@@ -35,38 +35,43 @@ export async function assemblePackage(
   const assets: Asset[] = []
   const total = file.assets.length + Math.max(0, normalizedFiles.size - file.assets.length)
   let done = 0
-  for (const meta of file.assets) {
-    progress?.('assets', done++, total)
+  // 実体の読み取りはブラウザ側で待つだけなので、数本まとめて進める。順序は宣言どおりに保つ。
+  const loaded = await mapConcurrently(file.assets, 4, async (meta): Promise<Asset | undefined> => {
     const source = normalizedFiles.get(normalizeAssetPath(meta.id))
     if (!source) {
       missing.push(meta.id)
-      continue
+      return undefined
     }
     if (meta.type === 'video') assertVideoDeclaration(meta.id, meta.mime, source.mime)
     const data = await readAsset(source, meta.type, meta.mime)
     assertAssetSize(meta.id, meta.type, data, source.size)
-    const inferred = await source.metadata?.(meta.type, data)
-    assets.push({ ...inferred, ...meta, bytes: meta.bytes ?? source.size, data })
-  }
+    // 寸法や長さが project.json にある素材は復号して測り直さない。動画だけは再生できるかを毎回確かめる。
+    const declared = meta.type === 'audio' ? meta.duration !== undefined
+      : meta.type === 'video' ? false : meta.width !== undefined && meta.height !== undefined
+    const inferred = declared ? undefined : await source.metadata?.(meta.type, data)
+    await progress?.('assets', ++done, total)
+    return { ...inferred, ...meta, bytes: meta.bytes ?? source.size, data }
+  })
+  assets.push(...loaded.filter((asset): asset is Asset => asset !== undefined))
   if (missing.length) {
     throw new Error('declared assets are missing from assets/:\n'
       + missing.map((id) => `  assets/${id}`).join('\n'))
   }
 
-  const declared = new Set(file.assets.map((asset) => asset.id))
-  for (const [relativePath, source] of normalizedFiles) {
-    if (declared.has(relativePath)) continue
+  const declaredIds = new Set(file.assets.map((asset) => asset.id))
+  const extras = [...normalizedFiles].filter(([relativePath]) => !declaredIds.has(relativePath))
+  const extraAssets = await mapConcurrently(extras, 4, async ([relativePath, source]): Promise<Asset | undefined> => {
     const kind = assetKindForFile(relativePath)
     if (!kind) {
       notices.push(`ignored, unsupported format: assets/${relativePath}`)
-      continue
+      return undefined
     }
     const base = relativePath.split('/').pop() ?? relativePath
-    progress?.('assets', done++, total)
     const data = await readAsset(source, kind.type, kind.mime)
     assertAssetSize(relativePath, kind.type, data, source.size)
     const inferred = await source.metadata?.(kind.type, data)
-    assets.push({
+    await progress?.('assets', ++done, total)
+    return {
       ...inferred,
       id: relativePath,
       name: base.replace(/\.[^.]+$/, ''),
@@ -74,12 +79,23 @@ export async function assemblePackage(
       mime: kind.mime,
       bytes: source.size,
       data,
-    })
-  }
+    }
+  })
+  assets.push(...extraAssets.filter((asset): asset is Asset => asset !== undefined))
 
   await progress?.('validating', 0, 0)
   await verifyEmbeddedParts(file.partDefinitions ?? {}, assets)
   return { project: { ...file, assets }, notices }
+}
+
+async function mapConcurrently<T, R>(items: readonly T[], limit: number, work: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array(items.length)
+  let next = 0
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (next < items.length) { const index = next++; results[index] = await work(items[index]) }
+  })
+  await Promise.all(workers)
+  return results
 }
 
 async function readAsset(source: AssetSource, type: AssetMeta['type'], mime: string): Promise<AssetData> {

@@ -41,9 +41,8 @@ export async function readMediaMetadata(file: File, type: Asset['type'], data: A
         element.onerror = reject
         element.src = url
       })
-      let alphaBounds: { x: number; y: number; width: number; height: number } | undefined
-      if (type === 'image') alphaBounds = readAlphaBounds(image)
-      return { width: image.naturalWidth, height: image.naturalHeight, alphaBounds }
+      // 寸法だけを読む。透明部分の範囲は使う先がなく、全画素の走査は読み込みを何倍も遅くする。
+      return { width: image.naturalWidth, height: image.naturalHeight }
     } finally {
       if (type === 'svg') URL.revokeObjectURL(url)
     }
@@ -80,33 +79,6 @@ export async function readMediaMetadata(file: File, type: Asset['type'], data: A
     }
   }
   return {}
-}
-
-function readAlphaBounds(image: HTMLImageElement) {
-  const canvas = document.createElement('canvas')
-  canvas.width = image.naturalWidth
-  canvas.height = image.naturalHeight
-  const context = canvas.getContext('2d', { willReadFrequently: true })
-  context?.drawImage(image, 0, 0)
-  const pixels = context?.getImageData(0, 0, canvas.width, canvas.height).data
-  if (!pixels) return undefined
-  let minX = canvas.width, minY = canvas.height, maxX = -1, maxY = -1
-  for (let y = 0; y < canvas.height; y++) for (let x = 0; x < canvas.width; x++) {
-    if (pixels[(y * canvas.width + x) * 4 + 3] <= 8) continue
-    minX = Math.min(minX, x)
-    minY = Math.min(minY, y)
-    maxX = Math.max(maxX, x)
-    maxY = Math.max(maxY, y)
-  }
-  if (maxX < minX || minX === 0 && minY === 0 && maxX === canvas.width - 1 && maxY === canvas.height - 1) {
-    return undefined
-  }
-  return {
-    x: minX / canvas.width,
-    y: minY / canvas.height,
-    width: (maxX - minX + 1) / canvas.width,
-    height: (maxY - minY + 1) / canvas.height,
-  }
 }
 
 function uniqueAssetId(fileName: string, existing: ReadonlySet<string>): string {

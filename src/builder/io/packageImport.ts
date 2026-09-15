@@ -1,9 +1,10 @@
 import { t } from '../i18n'
 import { assemblePackage, type AssembleProgress } from '../../package/assemble'
 import { normalizeAssetPath, type AssembleResult, type AssetSource } from '../../package/model'
-import { bytesToDataUrl } from '../../package/serialize'
 import { validateBookProject } from '../../schema/bookValidate'
-import { validateBookParts } from '../../parts/book'
+import { seedSpreadInspection, validateBookParts } from '../../parts/book'
+import type { SpreadInspectionRequest } from './spreadInspectionWorker'
+import type { BookProject } from '../../schema/bookPackage'
 import type { PickerWindow } from './browserFiles'
 import { readMediaMetadata } from '../assets/ingest'
 import { readProjectArchive } from './projectArchive'
@@ -111,7 +112,13 @@ function fileAssetSource(file: File): AssetSource {
     size: file.size,
     mime: file.type,
     text: () => file.text(),
-    dataUrl: async (mime) => bytesToDataUrl(await file.arrayBuffer(), mime),
+    // base64 化はブラウザ組み込みに任せる。JS で文字列を組むより大きな画像で桁違いに速い。
+    dataUrl: (mime) => new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = () => reject(reader.error ?? new Error('Could not read the asset'))
+      reader.readAsDataURL(new Blob([file], { type: mime }))
+    }),
     blob: async (mime) => new Blob([file], { type: mime }),
     metadata: (type, data) => readMediaMetadata(file, type, data),
   }
@@ -132,15 +139,45 @@ async function assertStorageCapacity(bytes: number): Promise<void> {
 
 async function finishImport(projectJsonText: string, files: Map<string, AssetSource>, progress?: ImportProgress): Promise<ImportResult> {
   const result = await assemblePackage(projectJsonText, files, progress)
-  // 紙の検査は同期で長い。見開きごとに区切って描画を挟み、全体の検証では同じ鍵の結果を再利用する。
-  const { spreads } = result.project.book
-  for (const [index, spread] of spreads.entries()) {
-    await progress?.('validating', index, spreads.length)
-    validateBookParts({ ...result.project, book: { ...result.project.book, spreads: [spread] } })
-  }
-  await progress?.('validating', spreads.length, spreads.length)
+  await inspectSpreads(result.project, progress)
   const validation = validateBookProject(result.project)
   if (!validation.ok) throw new Error(t().io.validationFailed(validation.errors.slice(0, 8).join('\n')))
   return result
 }
 
+
+/**
+ * 紙の検査は見開きごとに 1〜2 秒かかる。Worker があれば数見開きを並列に検査して結果を検査キャッシュへ入れ、
+ * 続く全体検証では同じ設計内容の再計算を省く。Worker がなければ見開きごとに区切って描画を挟む。
+ */
+async function inspectSpreads(project: BookProject, progress?: ImportProgress): Promise<void> {
+  const { spreads } = project.book
+  await progress?.('validating', 0, spreads.length)
+  if (typeof Worker === 'undefined') {
+    for (const [index, spread] of spreads.entries()) {
+      validateBookParts({ ...project, book: { ...project.book, spreads: [spread] } })
+      await progress?.('validating', index + 1, spreads.length)
+    }
+    return
+  }
+  // 素材の実体は検査に要らない。ID と種類だけを渡して転送を軽くする。
+  const light = { ...project, assets: project.assets.map(({ data: _data, ...meta }) => meta) } as unknown as BookProject
+  let done = 0, next = 0
+  const lanes = Math.max(1, Math.min(6, (navigator.hardwareConcurrency ?? 2) - 1, spreads.length))
+  // Worker の起動とモジュール読み込みは見開き 1 つ分の検査に匹敵する。レーンごとに 1 つを使い回す。
+  const inspectWith = (worker: Worker, index: number) => new Promise<string[]>((resolve, reject) => {
+    worker.onmessage = ({ data }) => { if (data.ok) resolve(data.errors as string[]); else reject(new Error(data.message)) }
+    worker.onerror = (event) => reject(new Error(event.message))
+    worker.postMessage({ project: light, index } satisfies SpreadInspectionRequest)
+  })
+  await Promise.all(Array.from({ length: lanes }, async () => {
+    const worker = new Worker(new URL('./spreadInspectionWorker.ts', import.meta.url), { type: 'module' })
+    try {
+      while (next < spreads.length) {
+        const index = next++
+        seedSpreadInspection(project, spreads[index], await inspectWith(worker, index))
+        await progress?.('validating', ++done, spreads.length)
+      }
+    } finally { worker.terminate() }
+  }))
+}

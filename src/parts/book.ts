@@ -90,13 +90,24 @@ export function validateBookParts(project: BookProject): string[] {
           pageWidth / pageAspect, input.rayA).map((message) => `${spread.name}: ${message}`))
       }
     } catch (error) { errors.push(`${spread.name}: ${error instanceof Error ? error.message : String(error)}`) }
-    // 大きな入力や過去の編集を無制限に保持しない。
-    if (key.length < 256 * 1024) {
-      spreadInspections.set(key, errors.slice(firstError))
-      while (spreadInspections.size > 32) spreadInspections.delete(spreadInspections.keys().next().value!)
-    }
+    rememberSpreadInspection(key, errors.slice(firstError))
   }
   return [...new Set(errors)]
+}
+// 大きな入力や過去の編集を無制限に保持しない。
+function rememberSpreadInspection(key: string, errors: string[]): void {
+  if (key.length >= 2 * 1024 * 1024) return
+  spreadInspections.set(key, errors)
+  let retained = [...spreadInspections.keys()].reduce((sum, key) => sum + key.length, 0)
+  while (spreadInspections.size > 32 || retained > 8 * 1024 * 1024) {
+    const oldest = spreadInspections.keys().next().value!
+    retained -= oldest.length; spreadInspections.delete(oldest)
+  }
+}
+/** 別スレッドで検査した結果を受け入れる。同じ設計内容の検査を描画スレッドで繰り返さない。 */
+export function seedSpreadInspection(project: Pick<BookProject, 'book' | 'partDefinitions'>, spread: Spread, errors: string[]): void {
+  const key = inspectionKey([project.book.format, project.partDefinitions ?? {}]) + '\n' + inspectionKey(spread)
+  rememberSpreadInspection(key, errors)
 }
 export function partIsVisible(spread: Spread, id: string, hidden?: (id: string) => boolean, seen = new Set<string>()): boolean {
   if (id === '$book') return true
