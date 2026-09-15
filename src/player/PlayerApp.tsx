@@ -11,6 +11,7 @@ import { VIEW_CLIP, VIEW_GL } from '../runtime/camera/view'
 import { AudioBank, AudioPlayback, audioGate } from '../audio/playback'
 import { playbackDurationSeconds } from '../runtime/signals'
 import { crossedSoundCues, soundCueAssetIds } from '../runtime/soundCues'
+import { crossedSpeechCues, hasSpeechCues, SpeechNarrator } from '../runtime/speech'
 
 /**
  * 書き出した作品の再生画面。
@@ -36,6 +37,7 @@ export function PlayerApp() {
   const drag = useRef<number | null>(null)
   const bgm = useMemo(() => new AudioPlayback(), [])
   const bank = useMemo(() => new AudioBank(), [])
+  const narrator = useMemo(() => new SpeechNarrator(), [])
   /** audioMuted の即値。消した後に操作しても BGM を鳴らし直させない */
   const audioMutedRef = useRef(false)
   /** 初回は再生ボタンかシークバーに触れるまでBGMを開始しない */
@@ -78,6 +80,7 @@ export function PlayerApp() {
         // 消音は上の useEffect も掛けるが、あちらは再描画ぶん遅れるので位置を先に見る
         if (project && playingRef.current && !audioMutedRef.current) {
           for (const hit of crossedSoundCues(project.book, value, next)) bank.fire(hit.assetId)
+          narrator.speak(crossedSpeechCues(project.book, value, next))
         }
         return next
       })
@@ -115,7 +118,10 @@ export function PlayerApp() {
     bgm.setMuted(gate.bgmMuted, gate.bgmMuted ? 0 : .25)
     bgm.setPaused(gate.bgmPaused)
     bank.setCuesMuted(gate.cuesMuted)
-  }, [playing, audioMuted, bgm, bank])
+    // 読み上げは効果音と同じ扱い。止めたり消音したりした時点で残りを打ち切る
+    narrator.setMuted(gate.cuesMuted)
+  }, [playing, audioMuted, bgm, bank, narrator])
+  useEffect(() => () => narrator.cancel(), [narrator])
 
   // 効果音は跨いだ瞬間に鳴らすので、待たせないよう先に読み込んでおく
   useEffect(() => {
@@ -139,7 +145,7 @@ export function PlayerApp() {
   if (error) return <pre style={{ padding: 20, color: '#c33', whiteSpace: 'pre-wrap' }}>{error}</pre>
   if (!project) return <div style={{ padding: 20, fontFamily: 'sans-serif' }}>Loading…</div>
   // 音声ボタンはBGMと効果音の両方を消すので、どちらかを持つ作品なら出す
-  const hasAudio = Boolean(project.audio) || soundCueAssetIds(project.book).length > 0
+  const hasAudio = Boolean(project.audio) || soundCueAssetIds(project.book).length > 0 || hasSpeechCues(project.book)
     || hasEmbeddedVideoAudio(project.book, new Map(project.assets.map((asset) => [asset.id, asset])))
   const pause = () => { playingRef.current = false; setPlaying(false) }
   const add = (pixels: number) => {

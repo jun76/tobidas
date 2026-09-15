@@ -416,6 +416,9 @@ function TextStyleFields({ element, update }: {
     <Select label={t.properties.align} value={element.align}
       options={[['left', t.properties.alignLeft], ['center', t.properties.alignCenter], ['right', t.properties.alignRight]]}
       onChange={(value) => edit((item) => { item.align = value as VisualElement['align'] })} />
+    <Select label={t.properties.speech} value={element.speech}
+      options={[['none', t.properties.speechNone], ['ja', t.properties.speechJa], ['en', t.properties.speechEn]]}
+      onChange={(value) => edit((item) => { item.speech = value as VisualElement['speech'] })} />
     {toggle(t.properties.bold, 'bold')}
     {toggle(t.properties.italic, 'italic')}
     {toggle(t.properties.underline, 'underline')}

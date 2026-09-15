@@ -75,6 +75,8 @@ export const visualFields = {
     text: z.string().default(''),
     fontSize: z.number().positive().default(.35),
     align: z.enum(['left', 'center', 'right']).default('center'),
+    /** 本文の読み上げ。見開きが開き切ったときに Web Speech API で読む。言語で合成音声の指定も変える */
+    speech: z.enum(['none', 'ja', 'en']).default('none'),
     ...textStyleFields,
     particles: particleLayerSchema.default(() => ({
       enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11,

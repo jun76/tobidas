@@ -64,6 +64,7 @@ const elementUpdateSchema = z.object({
   bold: z.boolean().optional(),
   italic: z.boolean().optional(),
   underline: z.boolean().optional(),
+  speech: z.enum(['none', 'ja', 'en']).optional(),
   particles: z.object({
     enabled: z.boolean().optional(),
     color: z.string(),

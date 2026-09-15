@@ -48,7 +48,7 @@ export function createStageElement(
   if (type === 'visual') return {
     ...common, type, width: 2, height: 2, billboard: false,
     backgroundColor: '#00000000', foregroundColor: '#2e241b', text: '', fontSize: .35,
-    align: 'center', font: 'rounded', bold: true, italic: false, underline: false,
+    align: 'center', speech: 'none', font: 'rounded', bold: true, italic: false, underline: false,
     particles: { enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
   }
   if (type === 'particle') return {

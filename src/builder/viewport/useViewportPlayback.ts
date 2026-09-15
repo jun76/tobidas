@@ -2,9 +2,13 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { playbackDurationSeconds } from '../../runtime/signals'
 import { crossedSoundCues, soundCueAssetIds } from '../../runtime/soundCues'
+import { crossedSpeechCues, SpeechNarrator } from '../../runtime/speech'
 import { audioGate } from '../../audio/playback'
 import { useBuilderStore } from '../store'
 import { builderBank, builderBgm } from '../audio'
+
+/** 読み上げはビルダーで一つ。再生モードの間だけ使い、編集へ戻ると消音側で打ち切られる */
+const builderNarrator = new SpeechNarrator()
 import { hasEmbeddedVideoAudio, unlockVideoAudio } from '../../runtime/videoAudio'
 
 export function useViewportPlayback() {
@@ -115,6 +119,7 @@ export function useViewportPlayback() {
     builderBgm.setMuted(gate.bgmMuted, gate.bgmMuted ? 0 : .25)
     builderBgm.setPaused(gate.bgmPaused)
     builderBank.setCuesMuted(gate.cuesMuted)
+    builderNarrator.setMuted(gate.cuesMuted)
   }, [mode, isAutoPlaying, audioMuted])
 
   /**
@@ -139,6 +144,7 @@ export function useViewportPlayback() {
     const fireCues = (from: number, to: number) => {
       if (!autoPlayingRef.current || audioMutedRef.current) return
       for (const hit of crossedSoundCues(book, from, to)) builderBank.fire(hit.assetId)
+      builderNarrator.speak(crossedSpeechCues(book, from, to))
     }
     const tick = (time: number) => {
       const elapsed = Math.min(0.1, Math.max(0, (time - previousTime) / 1000))

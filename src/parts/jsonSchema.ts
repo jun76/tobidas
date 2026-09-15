@@ -30,7 +30,7 @@ export const partJsonDefinitions = {
   connectedContent: { oneOf: [
     object({ ...contentCommon, type: { const: 'visual' }, width: number, height: number, billboard: boolean,
       image: string, backImage: string, backgroundColor: string, foregroundColor: string, text: string, fontSize: number,
-      align: { enum: ['left', 'center', 'right'] }, font: { enum: ['rounded', 'sans', 'serif', 'mono'] }, bold: boolean, italic: boolean, underline: boolean,
+      align: { enum: ['left', 'center', 'right'] }, speech: { enum: ['none', 'ja', 'en'] }, font: { enum: ['rounded', 'sans', 'serif', 'mono'] }, bold: boolean, italic: boolean, underline: boolean,
       particles: object({ ...particleProperties, enabled: boolean }, []),
       videoAudio: ref('videoAudio'), backVideoAudio: ref('videoAudio') }, [...contentRequired, 'width', 'height']),
     object({ ...contentCommon, type: { const: 'particle' }, width: number, height: number, billboard: boolean,

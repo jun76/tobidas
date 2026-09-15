@@ -159,7 +159,7 @@ export function migrateStageElementInput(value: unknown, pageWidth = 8): unknown
       image: typeof input.asset === 'string' && input.asset ? input.asset : undefined,
       backImage: input.backAsset,
       backgroundColor: '#00000000', foregroundColor: '#2e241b', text: '',
-      fontSize: .35, align: 'center', font: 'rounded', bold: true, italic: false, underline: false,
+      fontSize: .35, align: 'center', speech: 'none', font: 'rounded', bold: true, italic: false, underline: false,
       particles: { enabled: false, color: '#fff3a0', count: 6, size: .45, drift: .05, period: 11 },
     }
   }
