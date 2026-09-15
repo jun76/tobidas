@@ -3,7 +3,8 @@ import type { Spread } from '../schema/book'
 import type { PartElement } from '../schema/stageElement'
 import { evaluatePartGraph } from './evaluate'
 import { bindingDependencies, type PartNode, type PartMaterial } from './schema'
-import { bindBookContents } from './contents'
+import { bindBookContents, evaluateContents } from './contents'
+import { contentMeshData } from './contentDisplay'
 import { inspectContentBindings, inspectContentsAt, inspectContentMotion } from './contentValidation'
 import { faceCorners, logicalPagePorts as pagePorts } from './geometry'
 import { deployPaper, planPaperStow, type PaperStowFit } from './deployment'
@@ -25,11 +26,22 @@ export function deployBookParts(project: Pick<BookProject, 'book' | 'partDefinit
   const angle = Math.abs(left - right) * 180 / Math.PI
   if (angle >= 180 - 1e-8) return result
   const { pageWidth: width, pageAspect } = project.book.format, depth = width / pageAspect
-  const key = JSON.stringify([width, depth, spreadPartNodes(spread), Object.keys(project.partDefinitions ?? {})])
+  const prints = spread.elements.filter(element => element.presentation?.kind === 'decal' && element.attachment?.type === 'surface' && element.attachment.surface.nodeId !== '$book')
+  const key = JSON.stringify([width, depth, spreadPartNodes(spread), prints, Object.keys(project.partDefinitions ?? {})])
   let fits = stowFits.get(key)
   if (!fits) {
-    fits = [planPaperStow(evaluateBookParts(project, spread, 0, 0), width, depth),
-      planPaperStow(evaluateBookParts(project, spread, Math.PI, Math.PI), width, depth, new Vector3(-1, 0, 0))]
+    const fit = (left: number, right: number, direction: Vector3) => {
+      const closed = evaluateBookParts(project, spread, left, right)
+      const contents = evaluateContents(bindBookContents(project, spread, closed, left, right), {
+        openingAngleDeg: 0, maxOpeningAngleDeg: 180, holdTime: 0, clock: () => 0,
+      })
+      const positions = contents.filter(content => content.element.presentation.kind === 'decal' && content.face?.infinitePage
+        && content.element.attachment.type === 'surface' && content.element.attachment.surface.nodeId !== '$book')
+        .flatMap(content => contentMeshData(content).positions)
+      const points = Array.from({ length: positions.length / 3 }, (_, i) => new Vector3(...positions.slice(i * 3, i * 3 + 3)))
+      return planPaperStow(closed, width, depth, direction, points)
+    }
+    fits = [fit(0, 0, new Vector3(1, 0, 0)), fit(Math.PI, Math.PI, new Vector3(-1, 0, 0))]
     stowFits.set(key, fits)
     while (stowFits.size > 16) stowFits.delete(stowFits.keys().next().value!)
   }

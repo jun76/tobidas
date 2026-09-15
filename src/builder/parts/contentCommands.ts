@@ -1,3 +1,4 @@
+import { cloneProject } from '../../schema/cloneProject'
 import { z } from 'zod'
 import { connectedContentSchema, partContentSchema, type ConnectedContent } from '../../schema/content'
 import { createStageElement } from '../../schema/bookDefaults'
@@ -22,7 +23,7 @@ export function placeContentCommand(value: z.input<typeof placeContentSchema>): 
   try {
     const parsed = placeContentSchema.parse(value), state = useBuilderStore.getState()
     if (state.mode !== 'edit') throw new Error(t().operations.readOnly)
-    const candidate = structuredClone(state.project), spread = candidate.book.spreads.find((item) => item.id === parsed.spreadId)
+    const candidate = cloneProject(state.project), spread = candidate.book.spreads.find((item) => item.id === parsed.spreadId)
     if (!spread || spread.elements.some((item) => item.id === parsed.element.id)) throw new Error('Spread missing or content ID already exists')
     const element = contentAsStage(parsed.element); spread.elements.push(element)
     replanAutomaticSupports(candidate, spread, { preserveConnections: true, floatingIds: new Set([element.id]) })

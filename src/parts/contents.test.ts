@@ -29,6 +29,23 @@ const binding = (id = 'rotor'): BoundPaperContent => ({ id, ownerId: id, element
 const context = (angle = 180, time = 0) => ({ openingAngleDeg: angle, maxOpeningAngleDeg: 180, holdTime: 0, clock: () => time })
 
 describe('paper shape and attached content', () => {
+  it('左右反転した印刷も指定した紙の表側へ向き、絵柄だけを鏡映する', () => {
+    const face = makeFace('paper', new Vector3(), new Vector3(1, 0, 0), new Vector3(0, 1, 0), 4, 4)
+    for (const side of ['front', 'back'] as const) for (const sign of [1, -1]) {
+      const bound = binding(); bound.face = face
+      bound.element.presentation = { kind: 'decal' }
+      bound.element.attachment = { type: 'surface', surface: { nodeId: 'paper', portId: 'face' }, point: [2, 2], side }
+      bound.element.baseTransform = { position: [0, 0, 0], rotation: [0, 0, 0], scale: [sign, 1, 1] }
+      const item = evaluateContents([bound], context())[0], data = contentMeshData(item)
+      expect(data.positions.length).toBeGreaterThan(0)
+      for (let i = 0; i < data.positions.length; i += 9) {
+        const [a, b, c] = [0, 3, 6].map(j => new Vector3(...data.positions.slice(i + j, i + j + 3)))
+        expect(b.sub(a).cross(c.sub(a)).z * (side === 'front' ? 1 : -1)).toBeGreaterThan(0)
+      }
+      const triangle = contentTriangles(item)[0], du = triangle[1].uv.x - triangle[0].uv.x
+      expect((triangle[1].point.x - triangle[0].point.x) * du * sign * (side === 'front' ? 1 : -1)).toBeGreaterThan(0)
+    }
+  })
   it('印刷の層番号や裏面指定で紙厚を増やさず、貼り紙の下に収まる', () => {
     const face = makeFace('paper', new Vector3(3, 2, -4), new Vector3(1, 0, 0), new Vector3(0, 1, 0), 4, 4)
     for (const side of ['front', 'back'] as const) {

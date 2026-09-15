@@ -7,7 +7,7 @@ import type { Vector3 } from 'three'
 import { extendPaperSurface } from './extensions'
 import { paperSimilarity } from './similarity'
 import { inspectShape } from './shape'
-import { rootPanelShape } from './rootUpright'
+import { fitRootFoldContacts, rootPanelShape } from './rootUpright'
 
 export interface EvaluatedPartGraph extends PaperEvaluation { nodes: Record<string, PaperEvaluation> }
 
@@ -180,6 +180,7 @@ export function evaluatePartGraph(nodes: PartNode[], definitions: PartDefinition
     }
     if ('builtin' in node.definition && node.definition.builtin === 'upright') fitUprightGroundContacts(result)
     if ('builtin' in node.definition && node.definition.builtin === 'root-upright') {
+      fitRootFoldContacts(result)
       for (const [panelId, groundId] of [['panel', 'ground'], ['panel-b', 'ground-b']]) {
         const panel = result.ports[panelId], ground = result.ports[groundId]
         if (panel?.kind !== 'surface' || ground?.kind !== 'surface' || !result.connections.some(edge => edge.parentFace === ground.face.id && edge.childFace === panel.face.id)) continue

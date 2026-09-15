@@ -182,7 +182,6 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
     if (placement.surfaces && !(same(source.a, placement.surfaces[0]) && same(source.b, placement.surfaces[1]))) continue
     const distance = target.clone().sub(pair.origin).dot(pair.rayA)
     if (distance < .065 || Math.abs(target.clone().sub(pair.origin).dot(pair.rayA.clone().cross(pair.axis))) > 1e-5) continue
-    rearCandidate = true
     const origin = pair.origin.clone().addScaledVector(pair.axis, target.clone().sub(pair.origin).dot(pair.axis))
     const foot = origin.clone().addScaledVector(pair.rayA, distance)
     const panel = makeFace(element.id + '/panel', foot.clone().addScaledVector(pair.axis, -width / 2), pair.axis, pair.rayB, width, height)
@@ -202,10 +201,13 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
         const offsets: { offset: number; extension: number }[] = []
         for (const a of parents) for (const b of children) {
           const lo = Math.max(a[0], b[0]) + supportWidth / 2 + 1e-5, hi = Math.min(a[1], b[1]) - supportWidth / 2 - 1e-5
-          if (lo <= hi) for (const offset of [Math.max(lo, Math.min(hi, 0)), (lo + hi) / 2, lo, hi]) offsets.push({ offset: round(offset), extension: 0 })
+          if (lo <= hi) {
+            rearCandidate = true
+            for (const offset of [Math.max(lo, Math.min(hi, 0)), (lo + hi) / 2, lo, hi]) offsets.push({ offset: round(offset), extension: 0 })
+          }
         }
         // 幅外にだけ延長する。穴や切り抜きの上に架空の接着先を作らない。
-        if (!offsets.length) for (const b of children) {
+        if (placement.surfaces && !offsets.length) for (const b of children) {
           const lo = b[0] + supportWidth / 2 + 1e-5, hi = b[1] - supportWidth / 2 - 1e-5
           if (lo > hi) continue
           const offset = Math.max(lo, Math.min(hi, 0)), point = parentCenter.clone().addScaledVector(pair.axis, offset)

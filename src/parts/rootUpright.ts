@@ -1,6 +1,36 @@
 import { Vector3 } from 'three'
-import { faceContainsLine, makeFace, openingAngle, pointOnFace, type FoldPair, type PaperEvaluation, type PaperFace } from './geometry'
+import { faceContains, faceContainsLine, faceShape, makeFace, openingAngle, pointOnFace, type FoldPair, type PaperEvaluation, type PaperFace } from './geometry'
 import type { PaperShape } from './shape'
+
+/** 山や樹冠の外周に合わせ、左右の材料が残る区間だけを中央の折り線にする。 */
+export function fitRootFoldContacts(result: PaperEvaluation): void {
+  const byId = new Map(result.faces.map(face => [face.id, face]))
+  result.connections = result.connections.flatMap(edge => {
+    const a = byId.get(edge.childFace), b = byId.get(edge.parentFace)
+    if (!a || !b || a.support || b.support || !a.artworkSpan || !b.artworkSpan) return [edge]
+    const start = edge.actual[0], end = edge.actual.at(-1)!, direction = end.clone().sub(start), length = direction.length()
+    if (length < 1e-8) return [edge]
+    direction.divideScalar(length)
+    const cuts = [0, length]
+    for (const face of [a, b]) for (const ring of [faceShape(face).outer, ...faceShape(face).holes]) {
+      for (const [u, v] of ring) cuts.push(Math.max(0, Math.min(length, pointOnFace(face, u * face.width, v * face.height).sub(start).dot(direction))))
+    }
+    cuts.sort((x, y) => x - y)
+    const intervals: [number, number][] = []
+    for (let i = 1; i < cuts.length; i++) {
+      const lo = cuts[i - 1], hi = cuts[i], middle = start.clone().addScaledVector(direction, (lo + hi) / 2)
+      if (hi - lo < 1e-7 || !faceContains(a, middle) || !faceContains(b, middle)) continue
+      const previous = intervals.at(-1)
+      if (previous && Math.abs(previous[1] - lo) < 1e-7) previous[1] = hi
+      else intervals.push([lo, hi])
+    }
+    if (!intervals.length) throw new Error('Root cutout removes its folding attachment')
+    return intervals.map(([lo, hi]) => {
+      const actual = [lo, hi].map(t => start.clone().addScaledVector(direction, t))
+      return { ...edge, actual, expected: actual.map(point => point.clone()) }
+    })
+  })
+}
 
 /** 一枚の材料輪郭を画像と同じ担当範囲へ分割する。折り線を切る穴は接続できない。 */
 export function rootPanelShape(shape: PaperShape, span: [number, number] = [0, 1]): PaperShape {

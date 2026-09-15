@@ -12,7 +12,10 @@ export function contentTriangles(content: EvaluatedContent, particles = false): 
   const rectangle = (x: number, y: number, w: number, h: number): DisplayVertex[][] => {
     const vertices = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([u, v]) => ({ uv: new Vector2(u, v),
       point: new Vector3(x + u * w, y + v * h, 0).applyMatrix4(matrix) }))
-    return [[vertices[0], vertices[1], vertices[2]], [vertices[0], vertices[2], vertices[3]]]
+    // ワールド座標へ焼き込んでも、鏡映によって印刷の表裏を取り違えない。
+    return matrix.determinant() < 0
+      ? [[vertices[0], vertices[2], vertices[1]], [vertices[0], vertices[3], vertices[2]]]
+      : [[vertices[0], vertices[1], vertices[2]], [vertices[0], vertices[2], vertices[3]]]
   }
   if (!particles) return rectangle(ox, oy, element.width, element.height)
   const settings = element.particles
@@ -29,18 +32,24 @@ export function contentMeshData(content: EvaluatedContent, surfaces: BookPaperSu
   let polygons = content.visible ? contentTriangles(content, particles) : []
   if (content.element.presentation.kind === 'decal' && content.face) {
     const face = content.face, normal = face.u.clone().cross(face.v)
-    const triangles = shapeTriangles(faceShape(face)).map((triangle) => triangle.map(([u, v]) => pointOnFace(face, u * face.width, v * face.height)))
-    polygons = polygons.flatMap((polygon) => triangles.flatMap((triangle) => {
-      let clipped = polygon
-      const center = triangle.reduce((sum, p) => sum.add(p), new Vector3()).multiplyScalar(1 / 3)
-      for (let i = 0; i < 3; i++) {
-        const a = triangle[i], edge = triangle[(i + 1) % 3].clone().sub(a)
-        const plane = new Plane().setFromNormalAndCoplanarPoint(normal.clone().cross(edge).normalize(), a)
-        if (plane.distanceToPoint(center) < 0) plane.negate()
-        clipped = clipDisplayPolygon(clipped, plane, 1)
-      }
-      return clipped.length >= 3 ? [clipped] : []
-    }))
+    if (face.infinitePage) {
+      // 論理ページは綴じ目だけで左右を分け、奥行きと外側の縁では印刷を切らない。
+      const halfPage = new Plane().setFromNormalAndCoplanarPoint(face.v, face.origin)
+      polygons = polygons.map(polygon => clipDisplayPolygon(polygon, halfPage, 1)).filter(polygon => polygon.length >= 3)
+    } else {
+      const triangles = shapeTriangles(faceShape(face)).map((triangle) => triangle.map(([u, v]) => pointOnFace(face, u * face.width, v * face.height)))
+      polygons = polygons.flatMap((polygon) => triangles.flatMap((triangle) => {
+        let clipped = polygon
+        const center = triangle.reduce((sum, p) => sum.add(p), new Vector3()).multiplyScalar(1 / 3)
+        for (let i = 0; i < 3; i++) {
+          const a = triangle[i], edge = triangle[(i + 1) % 3].clone().sub(a)
+          const plane = new Plane().setFromNormalAndCoplanarPoint(normal.clone().cross(edge).normalize(), a)
+          if (plane.distanceToPoint(center) < 0) plane.negate()
+          clipped = clipDisplayPolygon(clipped, plane, 1)
+        }
+        return clipped.length >= 3 ? [clipped] : []
+      }))
+    }
   }
   for (const surface of surfaces) polygons = polygons.flatMap((polygon) => subtractPaper(polygon, surface.occluded))
   const positions: number[] = [], uvs: number[] = []

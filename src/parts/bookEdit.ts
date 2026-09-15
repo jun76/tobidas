@@ -1,3 +1,4 @@
+import { cloneProject } from '../schema/cloneProject'
 import type { BookProject } from '../schema/bookPackage'
 import { spreadPartNodes } from './book'
 import { bindBookContents } from './contents'
@@ -36,7 +37,7 @@ export function bookEditScene(project: BookProject, spreadId: string): PartEditS
     closedBounds: { width, depth, shrink: true }, at: (angle) => ({ external: { $book: pagePorts(width, depth, angle * Math.PI / 180, 0) } }) }
 }
 export function applyBookEditPlan(project: BookProject, spreadId: string, plan: Extract<PartEditPlan, { ok: true }>): BookProject {
-  const next = structuredClone(project), spread = next.book.spreads.find((item) => item.id === spreadId)!
+  const next = cloneProject(project), spread = next.book.spreads.find((item) => item.id === spreadId)!
   for (const node of plan.nodes) {
     const element = spread.elements.find((item) => item.id === node.id)
     if (element?.type !== 'part') continue

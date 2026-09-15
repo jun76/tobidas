@@ -1,3 +1,4 @@
+import { cloneProject } from '../../schema/cloneProject'
 import { realPageAnchorIssues } from '../../schema/mechanismPlacement'
 import type { ContentMotion, ParentSpace, ParticleElement, StageElement, VisualElement } from '../../schema/stageElement'
 import { embeddedVideoAudioSchema, type EmbeddedVideoAudio } from '../../schema/audio'
@@ -359,7 +360,7 @@ export function addTimelineKeyCommand(input: {
   if (valueError) errors.value = valueError
   if (Object.keys(errors).length) return failure(action, t().operations.invalidInput, errors)
 
-  const candidate = structuredClone(state.project)
+  const candidate = cloneProject(state.project)
   upsertProjectTimelineKey(candidate, input.spreadId, input.target, input.property, input.time, input.value)
   const timeline = candidate.book.spreads.find((item) => item.id === input.spreadId)!.timeline
   const track = timeline.tracks.find((item) => timelineTargetKey(item.target) === timelineTargetKey(input.target) && item.property === input.property)!

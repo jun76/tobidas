@@ -5,8 +5,8 @@ import { paperSimilarity } from './similarity'
 export interface PaperStowFit { scale: number; radialShift: number; depthShift: number }
 
 /** 剛体機構の閉姿勢を測る。紙を寝かせる仕事は機構側に残す。 */
-export function planPaperStow(result: PaperEvaluation, width: number, depth: number, direction = new Vector3(1, 0, 0)): PaperStowFit {
-  const points = result.faces.flatMap(faceCorners)
+export function planPaperStow(result: PaperEvaluation, width: number, depth: number, direction = new Vector3(1, 0, 0), printPoints: Vector3[] = []): PaperStowFit {
+  const points = [...result.faces.flatMap(faceCorners), ...printPoints]
   if (!points.length) return { scale: 1, radialShift: 0, depthShift: 0 }
   const xs = points.map(p => p.dot(direction)), zs = points.map(p => p.z)
   const lowX = Math.min(0, ...xs), highX = Math.max(width, ...xs)

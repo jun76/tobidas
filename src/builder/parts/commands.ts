@@ -1,3 +1,4 @@
+import { cloneProject } from '../../schema/cloneProject'
 import { z } from 'zod'
 import type { BookProject } from '../../schema/bookPackage'
 import { createStageElement } from '../../schema/bookDefaults'
@@ -260,7 +261,7 @@ export function placePartCommand(value: z.input<typeof placePartSchema>): Builde
   try {
     const parsed = placePartSchema.parse(value), state = useBuilderStore.getState()
     if (state.mode !== 'edit') throw new Error(t().operations.readOnly)
-    const next = structuredClone(state.project), spread = next.book.spreads.find((item) => item.id === parsed.spreadId)
+    const next = cloneProject(state.project), spread = next.book.spreads.find((item) => item.id === parsed.spreadId)
     if (!spread) throw new Error('Spread was not found')
     embedDefinition(next, parsed.definition)
     const element = createStageElement('part', ownership(parsed.mount)) as PartElement
@@ -279,7 +280,7 @@ export const updatePlacedPartSchema = z.object({ spreadId: z.string(), elementId
 export function updatePlacedPartCommand(value: z.input<typeof updatePlacedPartSchema>): BuilderCommandResult {
   try {
     const parsed = updatePlacedPartSchema.parse(value), state = useBuilderStore.getState()
-    let next = structuredClone(state.project)
+    let next = cloneProject(state.project)
     if (state.mode !== 'edit') throw new Error(t().operations.readOnly)
     let element = next.book.spreads.find((item) => item.id === parsed.spreadId)?.elements.find((item) => item.id === parsed.elementId)
     if (element?.type !== 'part') throw new Error('Placed part was not found')

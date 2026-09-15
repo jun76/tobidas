@@ -1,4 +1,5 @@
 import { create, type StateCreator, type UseBoundStore, type StoreApi } from 'zustand'
+import { cloneProject } from '../schema/cloneProject'
 import type { BookProject } from '../schema/bookPackage'
 import { bookId, createBookProject, createSpread, createStageElement } from '../schema/bookDefaults'
 import { BACKGROUND_PANEL_SPEC } from '../schema/backgroundPanel'
@@ -31,19 +32,11 @@ export const hiddenKey = {
 const LIMIT = 60
 
 /**
- * Blobは不変なのでundo項目どうしで同じ実体を共有する。
- * structuredCloneだけに任せると編集のたびに別Blobオブジェクトとなり、自動保存が
- * 差し替えと誤認して100MB動画を再書き込みする。
+ * 素材本体はBlobも文字列も不変なので、undo項目どうしで同じ実体を共有する。
+ * data URLを履歴ごとに複製すると大量の画像がある作品でメモリを圧迫する。
+ * Blobも同一参照を保ち、自動保存による不要な再書き込みを防ぐ。
  */
-const clone = (project: BookProject) => {
-  const copied = structuredClone(project)
-  const bodies = new Map(project.assets.map((asset) => [asset.id, asset.data]))
-  for (const asset of copied.assets) {
-    const source = bodies.get(asset.id)
-    if (source instanceof Blob) asset.data = source
-  }
-  return copied
-}
+const clone = cloneProject
 const autosave = new ProjectAutosave(saveProject, 500, {
   scheduled: () => useBuilderStore.setState({ saveStatus: 'saving', saveError: undefined }),
   saved: () => useBuilderStore.setState({ saveStatus: 'saved', saveError: undefined }),

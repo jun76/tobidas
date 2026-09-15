@@ -12,6 +12,7 @@ import { planPartPlacement } from './placement'
 import { connectedContentSchema } from '../schema/content'
 import { bindBookContents, contentAsStage, evaluateContents } from './contents'
 import { rootPanelShape } from './rootUpright'
+import { contentMeshData } from './contentDisplay'
 
 const standing = (id: string, width = 2, height = 2): PartElement => ({ ...createStageElement('part'), id, type: 'part', part: {
   definition: { builtin: 'upright', version: 1 }, mount: { type: 'output', nodeId: '$book', portId: 'gutter' },
@@ -20,6 +21,56 @@ const standing = (id: string, width = 2, height = 2): PartElement => ({ ...creat
 const empty = () => { const project = createBookProject(); project.book.spreads[0].elements = []; return project }
 
 describe('無限紙面の機構と収納時の相似縮小', () => {
+  it('論理地面の印刷は全開時に縁で切らず、綴じ目で分けて紙と一緒に収納する', () => {
+    const project = empty(), spread = project.book.spreads[0]
+    spread.elements.push(planSupportedPart(project, spread, standing('rear'), { position: [2, 0, -10] }))
+    spread.elements.push(contentAsStage(connectedContentSchema.parse({
+      id: 'grass', name: '地面の草', type: 'visual', width: 30, height: 30, pivot: [0, 0],
+      attachment: { type: 'surface', surface: { nodeId: 'rear', portId: 'ground' }, point: [0, 1], side: 'front' },
+      presentation: { kind: 'decal' }, baseTransform: { position: [-10, -5, 0], rotation: [0, 0, 0], scale: [1, 1, 1] },
+    })))
+    const points = (left: number, right: number, deployed: boolean) => {
+      const raw = evaluateBookParts(project, spread, left, right), paper = deployed ? deployBookParts(project, spread, raw, left, right) : raw
+      const content = evaluateContents(bindBookContents(project, spread, paper, left, right), {
+        openingAngleDeg: Math.abs(left - right) * 180 / Math.PI, maxOpeningAngleDeg: 180, holdTime: 0, clock: () => 0,
+      }).find(c => c.id === 'grass')!
+      const positions = contentMeshData(content).positions
+      return Array.from({ length: positions.length / 3 }, (_, i) => new Vector3(...positions.slice(i * 3, i * 3 + 3)))
+    }
+    const opened = points(Math.PI, 0, true)
+    expect(Math.max(...opened.map(p => p.x))).toBeGreaterThan(8)
+    expect(Math.min(...opened.map(p => p.x))).toBeGreaterThanOrEqual(-1e-7)
+    for (const [left, right, sign] of [[0, 0, 1], [Math.PI, Math.PI, -1]]) {
+      const closed = points(left, right, true)
+      expect(closed.length).toBeGreaterThan(0)
+      for (const p of closed) {
+        expect(p.x * sign).toBeGreaterThanOrEqual(-1e-7)
+        expect(p.x * sign).toBeLessThanOrEqual(8 + 1e-7)
+        expect(Math.abs(p.z)).toBeLessThanOrEqual(3.2 + 1e-7)
+      }
+    }
+  })
+  it('背後の紙と横位置が離れた最奥部品は、空白を支持紙で埋めず独立起立する', () => {
+    const project = empty(), spread = project.book.spreads[0]
+    spread.elements.push(planSupportedPart(project, spread, standing('far-left'), { position: [-10, 0, -20] }))
+    const right = planSupportedPart(project, spread, standing('far-right'), { position: [10, 0, -10] })
+    expect(right.part.definition).toEqual({ builtin: 'root-upright', version: 1 })
+    spread.elements.push(right)
+    expect(validateBookParts(project)).toEqual([])
+  })
+  it('切り抜き遠景の中央折り線は両側の紙が残る高さで固定する', () => {
+    const project = empty(), spread = project.book.spreads[0], rear = standing('mountains', 18, 6)
+    rear.part.shapes = { panel: { outer: [[0, 0], [1, 0], [1, .5], [.75, 1], [.5, .4], [.2, .8], [0, .3]], holes: [] } }
+    spread.elements.push(planSupportedPart(project, spread, rear, { position: [0, 0, -10] }))
+    const inspect = createPaperMotionInspector()
+    for (const angle of [180, 120, 45, 0]) {
+      const result = evaluateBookParts(project, spread, angle * Math.PI / 180, 0)
+      expect(inspect(result, [logicalPagePorts(8, 6.4, angle * Math.PI / 180, 0).gutter])).toEqual([])
+      const fold = result.connections.find(edge => edge.childFace === 'mountains/panel' && edge.parentFace === 'mountains/panel-b')!
+      expect(fold.actual[0].distanceTo(fold.actual[1])).toBeCloseTo(2.4)
+    }
+    expect(validateBookParts(project)).toEqual([])
+  })
   it('二つ折りの左右で同じ絵と材料輪郭を分担し、折り線を切る穴を隠さない', () => {
     const shape = { outer: [[0, 0], [1, 0], [.8, 1], [.2, 1]] as [number, number][], holes: [] }
     expect(rootPanelShape(shape, [.5, 1]).outer).toEqual([[0, 0], [1, 0], [.6000000000000001, 1], [0, 1]])

@@ -1,3 +1,4 @@
+import { cloneProject } from '../schema/cloneProject'
 import { z } from 'zod'
 import type { BookProject } from '../schema/bookPackage'
 import { contentAttachmentSchema, type ConnectedContent } from '../schema/content'
@@ -27,7 +28,7 @@ export function editContentValue(element: ConnectedContent, intent: ContentEditI
 }
 /** 配置を動かす操作は軌道の基準だけを更新する。キーの変位はタイムライン操作が持つ。 */
 export function planContentEdit(project: BookProject, spreadId: string, id: string, intent: ContentEditIntent, thorough = true) {
-  const next = structuredClone(project), spread = next.book.spreads.find((item) => item.id === spreadId)
+  const next = cloneProject(project), spread = next.book.spreads.find((item) => item.id === spreadId)
   const element = spread?.elements.find((item) => item.id === id)
   if (!spread || !element?.attachment || !element.presentation || !['visual', 'particle', 'group'].includes(element.type)) throw new Error('Connected content was not found')
   editContentValue(element as ConnectedContent, contentEditIntentSchema.parse(intent))
