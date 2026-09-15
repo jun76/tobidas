@@ -60,7 +60,8 @@ export const partNodeSchema = z.object({
   outline: z.array(point2).min(3).max(128).optional(),
   shapes: z.record(paperShapeSchema).optional(),
 })
-export const partAssetSchema = assetSchema.extend({ hash: contentHashSchema })
+// 内容ハッシュは付いていれば保つが照合には使わない。
+export const partAssetSchema = assetSchema.extend({ hash: contentHashSchema.optional() })
 export const partDefinitionSchema = z.object({
   format: z.literal('tobidas-part'), schemaVersion: z.union([z.literal(1), z.literal(2)]), id, revision: z.number().int().positive(),
   name: id, description: z.string().default(''), author: z.string().default(''), license: z.string().default(''),

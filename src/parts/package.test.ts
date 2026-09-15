@@ -65,15 +65,15 @@ describe('portable part definitions', () => {
     source.definition.name = 'Changed original'
     expect(imported.definition.name).toBe('Garden')
   })
-  it('detects tampered dependencies, missing assets and traversal paths', async () => {
+  it('内容を書き換えた依存も読み込み、素材の欠落とパス走査は弾く', async () => {
     const files = await partBundleFiles(await example())
     const dependencyPath = [...files.keys()].find((path) => path.startsWith('definitions/'))!
-    const damaged = new Map(files), body = JSON.parse(new TextDecoder().decode(files.get(dependencyPath)))
-    body.name = 'Tampered'; damaged.set(dependencyPath, new TextEncoder().encode(JSON.stringify(body)))
-    await expect(importPartFiles(damaged)).rejects.toThrow('hash mismatch')
+    const edited = new Map(files), body = JSON.parse(new TextDecoder().decode(files.get(dependencyPath)))
+    body.name = 'Edited'; edited.set(dependencyPath, new TextEncoder().encode(JSON.stringify(body)))
+    expect(Object.values((await importPartFiles(edited)).definitions)[0].name).toBe('Edited')
     const missing = new Map(files)
     missing.delete([...files.keys()].find((path) => path.startsWith('assets/'))!)
-    await expect(importPartFiles(missing)).rejects.toThrow('Asset hash mismatch')
+    await expect(importPartFiles(missing)).rejects.toThrow('Missing part asset')
     await expect(importPartFiles(new Map([...files, ['../part.json', new Uint8Array()]]))).rejects.toThrow('Invalid part path')
   })
   it('preserves unknown builtin versions for inspection but does not mark them placeable', async () => {
@@ -84,7 +84,7 @@ describe('portable part definitions', () => {
     expect(restored.definition.nodes[0].definition).toEqual({ builtin: 'future-fold', version: 7 })
     expect(validatePartDefinition(restored.definition).ok).toBe(false)
   })
-  it('絵本の再読み込みでも、同梱した改訂と素材の変更を検出する', async () => {
+  it('絵本の再読み込みでは同梱した部品の参照だけを見て、内容の書き換えは受け入れる', async () => {
     const snapshot = await snapshotPartBundle(await example()), project = createBookProject('同梱部品の検査')
     project.partDefinitions = { ...snapshot.definitions, [snapshot.hash]: snapshot.definition }; project.assets = snapshot.assets
     const files = new Map(project.assets.map((asset) => [asset.id, {
@@ -93,9 +93,10 @@ describe('portable part definitions', () => {
     expect((await assemblePackage(projectFileJson(project), files)).project.partDefinitions).toEqual(project.partDefinitions)
     const changed = structuredClone(project)
     changed.partDefinitions![snapshot.hash].name = '内容を変更'
-    await expect(assemblePackage(projectFileJson(changed), files)).rejects.toThrow('definition hash mismatch')
-    const assetId = snapshot.assets[0].id
-    files.set(assetId, { text: async () => '<svg/>', dataUrl: async () => '', blob: async () => new Blob() })
-    await expect(assemblePackage(projectFileJson(project), files)).rejects.toThrow('asset hash or size mismatch')
+    expect((await assemblePackage(projectFileJson(changed), files)).project.partDefinitions![snapshot.hash].name).toBe('内容を変更')
+    const broken = structuredClone(project)
+    const withAsset = Object.values(broken.partDefinitions!).find((definition) => definition.assets.length)!
+    withAsset.assets[0].id = 'part-missing.svg'
+    await expect(assemblePackage(projectFileJson(broken), files)).rejects.toThrow('Missing or mismatched part asset')
   })
 })

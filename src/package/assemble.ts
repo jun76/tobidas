@@ -84,7 +84,7 @@ export async function assemblePackage(
   assets.push(...extraAssets.filter((asset): asset is Asset => asset !== undefined))
 
   await progress?.('validating', 0, 0)
-  await verifyEmbeddedParts(file.partDefinitions ?? {}, assets)
+  verifyEmbeddedParts(file.partDefinitions ?? {}, assets)
   return { project: { ...file, assets }, notices }
 }
 

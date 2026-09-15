@@ -16,22 +16,19 @@ export async function contentHash(value: string | Uint8Array): Promise<string> {
 }
 export const definitionHash = (definition: PartDefinition) => contentHash(canonicalJson(definition))
 
-/** 絵本へ同梱された改訂も、部品ファイルと同じ内容ハッシュで照合する。 */
-export async function verifyEmbeddedParts(definitions: PartDefinitions, assets: Asset[]): Promise<void> {
-  const byId = new Map(assets.map((asset) => [asset.id, asset])), checkedAssets = new Map<string, { hash: string; bytes: number }>()
-  for (const [hash, definition] of Object.entries(definitions)) {
-    if (await definitionHash(definition) !== hash) throw new Error(`Part definition hash mismatch: ${hash}`)
+/**
+ * 絵本へ同梱された部品の参照が揃っているかを見る。
+ * 内容ハッシュの照合はしない。ハッシュは識別子として使うだけで、スキーマの既定値が増えるたびに
+ * 保存済みの作品が開けなくなる照合は持たない。
+ */
+export function verifyEmbeddedParts(definitions: PartDefinitions, assets: Asset[]): void {
+  const byId = new Map(assets.map((asset) => [asset.id, asset]))
+  for (const definition of Object.values(definitions)) {
     for (const dependency of definition.dependencies) if (!definitions[dependency]) throw new Error(`Missing part dependency: ${dependency}`)
     for (const node of definition.nodes) if ('custom' in node.definition && !definition.dependencies.includes(node.definition.custom)) throw new Error('Undeclared custom dependency')
     for (const meta of definition.assets) {
       const asset = byId.get(meta.id)
       if (!asset || asset.type !== meta.type || asset.mime !== meta.mime) throw new Error(`Missing or mismatched part asset: ${meta.id}`)
-      let checked = checkedAssets.get(meta.id)
-      if (!checked) {
-        const bytes = await assetBytes(asset)
-        checked = { hash: await contentHash(bytes), bytes: bytes.length }; checkedAssets.set(meta.id, checked)
-      }
-      if (checked.hash !== meta.hash || checked.bytes !== meta.bytes) throw new Error(`Part asset hash or size mismatch: ${meta.id}`)
     }
     for (const id of materialAssetIds(definition)) if (!definition.assets.some((asset) => asset.id === id)) throw new Error(`Undeclared part asset: ${id}`)
   }
@@ -68,7 +65,7 @@ function remapMaterials(definition: PartDefinition, aliases: Map<string, string>
   for (const node of definition.nodes) Object.values(node.materials).forEach((material) => { if (!('slot' in material)) remap(material) })
 }
 
-/** 素材名と依存参照を内容ハッシュへ固定し、他の作品へ独立して持ち運べる形にする。 */
+/** 素材名と依存参照を内容から決めた識別子に付け替え、他の作品へ独立して持ち運べる形にする。 */
 export async function snapshotPartBundle(source: PartBundle): Promise<PartBundle & { hash: string }> {
   const aliases = new Map<string, string>(), assets = new Map<string, Asset>(), hashes = new Map<string, string>()
   // 作品全体から渡された素材のうち、この部品と依存部品が実際に使うものだけを同梱する。
@@ -156,18 +153,14 @@ export async function importPartFiles(files: Map<string, Uint8Array>): Promise<P
       const path = `definitions/${hash}.json`
       if (!files.has(path)) throw new Error(`Missing dependency: ${hash}`)
       const child = parse(path)
-      if (await definitionHash(child) !== hash) throw new Error(`Dependency hash mismatch: ${hash}`)
       visiting.add(hash); definitions[hash] = child; await inspect(child); visiting.delete(hash); read.add(hash)
     }
     for (const node of def.nodes) if ('custom' in node.definition && !def.dependencies.includes(node.definition.custom)) throw new Error('Undeclared custom dependency')
     for (const meta of def.assets) {
       const bytes = files.get(checkedPath(`assets/${meta.id}`))
-      if (!bytes || await contentHash(bytes) !== meta.hash) throw new Error(`Asset hash mismatch: ${meta.id}`)
+      if (!bytes) throw new Error(`Missing part asset: ${meta.id}`)
       if (!['image', 'svg', 'video'].includes(meta.type)) throw new Error('Unsupported part asset type')
-      const existing = assets.get(meta.id)
-      if (existing && await contentHash(await assetBytes(existing)) !== meta.hash) throw new Error(`Asset id conflict: ${meta.id}`)
       const { hash: _hash, ...assetMeta } = meta
-      if (meta.bytes !== bytes.length) throw new Error(`Asset size mismatch: ${meta.id}`)
       assets.set(meta.id, { ...assetMeta, bytes: bytes.length, data: meta.type === 'svg' ? decoder.decode(bytes) : bytesToDataUrl(Uint8Array.from(bytes).buffer, meta.mime) })
     }
     for (const id of materialAssetIds(def)) if (!def.assets.some((asset) => asset.id === id)) throw new Error(`Undeclared asset: ${id}`)
