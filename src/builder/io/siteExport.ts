@@ -58,7 +58,9 @@ async function fetchPlayer(): Promise<{ html: string; extras: { path: string; bo
   if (!manifestResponse.ok) {
     throw new Error(t().io.playerMissing)
   }
-  const manifest = (await manifestResponse.json()) as { files: string[] }
+  const manifest = (await manifestResponse.json()) as { files: string[]; engine?: string }
+  // 同梱プレイヤーはビルド時の成果物。本体のエンジンと違えば、直したはずの描画が書き出しに残る
+  if (manifest.engine !== __TOBIDAS_ENGINE_HASH__) throw new Error(t().io.playerStale)
   const read = async (file: string): Promise<Response> => {
     const response = await fetch(base + file, { cache: 'no-store' })
     if (!response.ok) throw new Error(t().io.playerFileFailed(file))

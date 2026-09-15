@@ -6,6 +6,7 @@
 // ブラウザ内で fetch し、作品データを注入して .site.zip に束ねる。
 import fs from 'node:fs'
 import path from 'node:path'
+import { engineHash } from './lib/engineHash.mjs'
 
 const src = 'dist-player'
 const dest = 'public/player'
@@ -75,5 +76,6 @@ function listFiles(from, rel) {
     else files.push(rel + e.name)
   }
 }
-fs.writeFileSync(path.join(dest, 'manifest.json'), JSON.stringify({ files }, null, 2))
+// engine はビルド時点のエンジン内容の印。ビルダーは自分のエンジンと照合し、古い同梱物で書き出さない
+fs.writeFileSync(path.join(dest, 'manifest.json'), JSON.stringify({ files, engine: engineHash() }, null, 2))
 console.log(`プレイヤー同梱: ${dest} (${files.length} ファイル, インライン化: ${inlined.length})`)

@@ -539,6 +539,7 @@ export const ja = {
       + '配布ビルド (npm run build) から実行してください。',
     playerFileFailed: (file: string) => `プレイヤーファイルの取得に失敗: ${file}`,
     playerOutdated: '同梱プレイヤーが古い形式です。\n配布ビルド (npm run build) を作り直してください。',
+    playerStale: '同梱プレイヤーが本体のエンジンと一致しません。\n配布ビルド (npm run build) を作り直してから書き出してください。',
     playerNotSingleFile: (file: string) =>
       `同梱プレイヤーが単一HTMLになっていません: ${file}\n配布ビルド (npm run build) を作り直してください。`,
     playerAssetConflict: (file: string) =>

@@ -1,6 +1,7 @@
 import { createPublicKey, verify } from 'node:crypto'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import { engineHash } from './scripts/lib/engineHash.mjs'
 
 const WEBMCP_ORIGIN_TRIAL_ENV = 'WEBMCP_ORIGIN_TRIAL_TOKEN'
 const WEBMCP_EDGE_ORIGIN_TRIAL_ENV = 'WEBMCP_EDGE_ORIGIN_TRIAL_TOKEN'
@@ -96,6 +97,8 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), ...(tokens.length ? [webMcpOriginTrial(tokens)] : [])],
+    // 起動・ビルド時点のエンジン内容。サイト書き出しが同梱プレイヤーの manifest と照合する
+    define: { __TOBIDAS_ENGINE_HASH__: JSON.stringify(engineHash()) },
     server: {
       port: 5174,
       strictPort: true,

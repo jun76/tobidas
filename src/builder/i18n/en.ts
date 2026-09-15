@@ -536,6 +536,7 @@ export const en: Dict = {
       + 'Run it from a distribution build (npm run build).',
     playerFileFailed: (file) => `could not fetch a player file: ${file}`,
     playerOutdated: 'The bundled player is in an old format.\nRebuild the distribution build (npm run build).',
+    playerStale: 'The bundled player does not match this build of the engine.\nRebuild the distribution build (npm run build) before exporting.',
     playerNotSingleFile: (file) =>
       `The bundled player is not a single HTML file: ${file}\n`
       + 'Rebuild the distribution build (npm run build).',
