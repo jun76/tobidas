@@ -20,8 +20,38 @@ export interface SpeechCueHit {
   progress: number
 }
 
-/** from から to へ進んだときに開き切った見開きの読み上げ。見開きごとに本文の順で並ぶ */
+/** 見開き1つの読み上げ本文。要素順に並び、読み上げ指定のない文字や不可視の要素は含めない */
+export interface SpreadSpeechItem {
+  elementId: string
+  text: string
+  lang: string
+}
+
+/**
+ * 見開きの読み上げ本文を要素順に返す。
+ *
+ * Web Speech の読み上げと、再生画面が外部TTS向けに公開する本文一覧の両方がここを使う。
+ * 対象と順序の正本はこの関数だけとし、作品全体の `readAloud` はここでは見ない
+ * (外部TTSは読み上げOFFの作品からこの一覧を取る)。
+ */
+export function spreadSpeechCues(book: Book, spreadId: string): SpreadSpeechItem[] {
+  const spread = book.spreads.find((item) => item.id === spreadId)
+  if (!spread) return []
+  const items: SpreadSpeechItem[] = []
+  for (const element of spread.elements) {
+    if (element.type !== 'visual' || element.speech === 'none' || !element.visible) continue
+    const text = element.text.replace(/\s+/g, ' ').trim()
+    if (text) items.push({ elementId: element.id, text, lang: LANGUAGE[element.speech] })
+  }
+  return items
+}
+
+/**
+ * from から to へ進んだときに開き切った見開きの読み上げ。見開きごとに本文の順で並ぶ。
+ * 作品の `readAloud` が切られていれば何も返さない (Web Speech は鳴らさない)。
+ */
 export function crossedSpeechCues(book: Book, from: number, to: number): SpeechCueHit[] {
+  if (!book.readAloud) return []
   if (!(to > from) || to - from > CONTINUOUS_LIMIT) return []
   const duration = playbackDurationSeconds(book)
   if (duration <= 0) return []
@@ -32,18 +62,14 @@ export function crossedSpeechCues(book: Book, from: number, to: number): SpeechC
     if (!hold) continue
     const progress = hold.startSeconds / duration
     if (!(progress > from && progress <= to)) continue
-    for (const element of spread.elements) {
-      if (element.type !== 'visual' || element.speech === 'none' || !element.visible) continue
-      const text = element.text.replace(/\s+/g, ' ').trim()
-      if (text) hits.push({ spreadId: spread.id, text, lang: LANGUAGE[element.speech], progress })
-    }
+    for (const item of spreadSpeechCues(book, spread.id)) hits.push({ spreadId: spread.id, text: item.text, lang: item.lang, progress })
   }
   return hits.sort((left, right) => left.progress - right.progress)
 }
 
-/** 作品に読み上げ指定の本文があるか (音声操作の有無を決める) */
+/** 作品が Web Speech で読む本文を持つか (音声操作の有無を決める)。読み上げOFFの作品は持たない */
 export function hasSpeechCues(book: Book): boolean {
-  return book.spreads.some((spread) => spread.elements.some((element) => element.type === 'visual' && element.speech !== 'none' && element.text.trim()))
+  return book.readAloud && book.spreads.some((spread) => spreadSpeechCues(book, spread.id).length > 0)
 }
 
 /**

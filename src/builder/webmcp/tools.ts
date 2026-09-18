@@ -14,6 +14,7 @@ import {
   addTimelineKeyCommand,
   assignBgmCommand,
   clearBgmCommand,
+  setReadAloudCommand,
   clearPageBackgroundCommand,
   createVisualCommand,
   deleteElementCommand,
@@ -656,6 +657,12 @@ function makeTools(): WebMcpTool[] {
       name: 'tobidas-clear-bgm', title: 'Clear tobidas BGM',
       description: 'Clear the project BGM through the normal edit, validation, and undo path.', inputSchema: { type: 'object', properties: {} },
       execute: async (_input, options) => { checkAborted(options?.signal); return resultFromCommand(clearBgmCommand()) },
+    },
+    {
+      name: 'tobidas-set-read-aloud', title: 'Set tobidas read-aloud',
+      description: 'Enable or disable browser speech (Web Speech API) for the whole book. Per-element speech marks stay as they are and still define which text is listed for an external narrator in the exported player. Disable it for books narrated by an external TTS.',
+      inputSchema: { type: 'object', properties: { enabled: { type: 'boolean', description: 'true to let the browser read marked text, false to keep it silent.' } }, required: ['enabled'] },
+      execute: async (input, options) => { checkAborted(options?.signal); return resultFromCommand(setReadAloudCommand(input.enabled as boolean)) },
     },
     {
       name: 'tobidas-add-spread', title: 'Change tobidas spreads',

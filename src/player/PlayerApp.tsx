@@ -1,7 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { Pause, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react'
 import { Icon } from '../ui/Icon'
 import { bookProjectSchema, type BookProject } from '../schema/bookPackage'
 import { validateBookProject } from '../schema/bookValidate'
@@ -11,7 +11,16 @@ import { VIEW_CLIP, VIEW_GL } from '../runtime/camera/view'
 import { AudioBank, AudioPlayback, audioGate } from '../audio/playback'
 import { playbackDurationSeconds } from '../runtime/signals'
 import { crossedSoundCues, soundCueAssetIds } from '../runtime/soundCues'
-import { crossedSpeechCues, hasSpeechCues, SpeechNarrator } from '../runtime/speech'
+import { crossedSpeechCues, hasSpeechCues, SpeechNarrator, spreadSpeechCues } from '../runtime/speech'
+import { currentSpreadIndex, pageTurnPlan, pageTurnTarget } from '../runtime/pageTurn'
+
+/**
+ * 再生の状態。
+ * - auto: 再生ボタンで末尾までシームレスに進む
+ * - manual: 静止。起動時、ページ送りの到着、一時停止で入る
+ * - turning: Prev・Next で見開き単位の目的地まで作者の速度で順・逆再生し、到着で manual へ戻る
+ */
+type Playback = 'auto' | 'manual' | 'turning'
 
 /**
  * 書き出した作品の再生画面。
@@ -30,9 +39,12 @@ export function PlayerApp() {
   const [progress, setProgress] = useState(initialProgress)
   /** 音声ボタンで消したか。BGMも効果音もまとめて黙らせる */
   const [audioMuted, setAudioMuted] = useState(false)
-  const [playing, setPlaying] = useState(false)
+  const [playback, setPlayback] = useState<Playback>('manual')
   const [contentTime, setContentTime] = useState<number | undefined>()
-  const playingRef = useRef(false)
+  const playbackRef = useRef<Playback>('manual')
+  /** turning の目的地と向き。到着で manual へ戻るときに消す */
+  const turn = useRef<{ target: number; direction: 1 | -1 } | null>(null)
+  const progressRef = useRef(initialProgress)
   const target = useRef(initialProgress)
   const drag = useRef<number | null>(null)
   const bgm = useMemo(() => new AudioPlayback(), [])
@@ -42,6 +54,13 @@ export function PlayerApp() {
   const audioMutedRef = useRef(false)
   /** 初回は再生ボタンかシークバーに触れるまでBGMを開始しない */
   const bgmArmedRef = useRef(false)
+  /** 自動再生・ページ送りを止めて手動モードへ戻す。到着、一時停止、つまみやホイールの操作で呼ぶ */
+  const settle = () => {
+    turn.current = null
+    if (playbackRef.current === 'manual') return
+    playbackRef.current = 'manual'
+    setPlayback('manual')
+  }
 
   useEffect(() => {
     try {
@@ -65,20 +84,25 @@ export function PlayerApp() {
       previous = now
       setProgress((value) => {
         let next: number
-        if (playingRef.current && project) {
-          next = Math.min(1, value + delta / playbackDurationSeconds(project.book))
+        const step = project ? delta / playbackDurationSeconds(project.book) : 0
+        if (playbackRef.current === 'auto' && project) {
+          next = Math.min(1, value + step)
           target.current = next
-          if (next >= 1) {
-            playingRef.current = false
-            setPlaying(false)
-          }
+          if (next >= 1) settle()
+        } else if (playbackRef.current === 'turning' && project && turn.current) {
+          // 目的地を跨いだら目的地で止める。作者の速度で進むので、めくりと演出は自動再生と同じ見え方になる
+          const { target: goal, direction } = turn.current
+          next = direction > 0 ? Math.min(goal, value + step) : Math.max(goal, value - step)
+          target.current = next
+          if (next === goal) settle()
         } else {
           next = THREE.MathUtils.damp(value, target.current, 12, delta)
         }
+        progressRef.current = next
         // 進んだぶんで跨いだ効果音を鳴らす。逆行と飛ばしは crossedSoundCues が弾き、
         // 止まっている間 (つまみ・ホイール・drag での移動) はここで弾く。
         // 消音は上の useEffect も掛けるが、あちらは再描画ぶん遅れるので位置を先に見る
-        if (project && playingRef.current && !audioMutedRef.current) {
+        if (project && playbackRef.current !== 'manual' && !audioMutedRef.current) {
           for (const hit of crossedSoundCues(project.book, value, next)) bank.fire(hit.assetId)
           narrator.speak(crossedSpeechCues(project.book, value, next))
         }
@@ -92,9 +116,9 @@ export function PlayerApp() {
 
   useEffect(() => {
     ;(window as unknown as { __tobiSetScroll?: (value: number) => void }).__tobiSetScroll = (value) => {
-      playingRef.current = false
-      setPlaying(false)
+      settle()
       target.current = THREE.MathUtils.clamp(value, 0, 1)
+      progressRef.current = target.current
       setProgress(target.current)
     }
   }, [])
@@ -114,13 +138,14 @@ export function PlayerApp() {
     ;(window as unknown as { __tobiSetContentTime?: (value?: number) => void }).__tobiSetContentTime = (value) => {
       if (value === undefined || Number.isFinite(value) && value >= 0) setContentTime(value)
     }
-    const gate = audioGate({ active: true, playing, muted: audioMuted })
+    // ページ送りの間も作者の速度で進んでいるので、効果音は自動再生と同じく鳴らす
+    const gate = audioGate({ active: true, playing: playback !== 'manual', muted: audioMuted })
     bgm.setMuted(gate.bgmMuted, gate.bgmMuted ? 0 : .25)
     bgm.setPaused(gate.bgmPaused)
     bank.setCuesMuted(gate.cuesMuted)
     // 読み上げは効果音と同じ扱い。止めたり消音したりした時点で残りを打ち切る
     narrator.setMuted(gate.cuesMuted)
-  }, [playing, audioMuted, bgm, bank, narrator])
+  }, [playback, audioMuted, bgm, bank, narrator])
   useEffect(() => () => narrator.cancel(), [narrator])
 
   // 効果音は跨いだ瞬間に鳴らすので、待たせないよう先に読み込んでおく
@@ -147,7 +172,7 @@ export function PlayerApp() {
   // 音声ボタンはBGMと効果音の両方を消すので、どちらかを持つ作品なら出す
   const hasAudio = Boolean(project.audio) || soundCueAssetIds(project.book).length > 0 || hasSpeechCues(project.book)
     || hasEmbeddedVideoAudio(project.book, new Map(project.assets.map((asset) => [asset.id, asset])))
-  const pause = () => { playingRef.current = false; setPlaying(false) }
+  const pause = () => settle()
   const add = (pixels: number) => {
     unlockVideoAudio()
     pause()
@@ -164,16 +189,39 @@ export function PlayerApp() {
   const togglePlayback = () => {
     unlockVideoAudio()
     startBgm(true)
-    if (playingRef.current) {
+    if (playbackRef.current === 'auto') {
       pause()
       return
     }
+    // 手動モードやページ送りの途中からは、その位置から自動再生へ移る
+    turn.current = null
     if (progress >= 1) {
       target.current = 0
+      progressRef.current = 0
       setProgress(0)
     }
-    playingRef.current = true
-    setPlaying(true)
+    playbackRef.current = 'auto'
+    setPlayback('auto')
+  }
+  /**
+   * 見開き単位のページ送り。自動再生中なら止めて手動モードへ移り、目的地まで作者の速度で進める。
+   * 保持の途中なら残りの演出を待たず、めくりが始まるフレームへ直ちに飛んでから進める。
+   * 目的地は保持区間の終端なので、めくった先の演出を見終えた姿勢で止まる。
+   */
+  const turnPage = (direction: 1 | -1) => {
+    const plan = pageTurnPlan(project.book, progressRef.current, direction)
+    if (!plan) return
+    unlockVideoAudio()
+    startBgm(true)
+    if (plan.start !== progressRef.current) {
+      // 飛ばした区間の効果音は鳴らさない (跨ぎ判定を通さず位置だけ変える)
+      progressRef.current = plan.start
+      target.current = plan.start
+      setProgress(plan.start)
+    }
+    turn.current = { target: plan.target, direction }
+    playbackRef.current = 'turning'
+    setPlayback('turning')
   }
   /**
    * 音声ボタンは消音の切り替え。BGMも効果音もまとめて消す。
@@ -188,7 +236,7 @@ export function PlayerApp() {
     audioMutedRef.current = muted
     // Reactのeffectを待たず、このクリック内で音源と効果音を閉じる。
     bgm.setMuted(muted, 0)
-    bank.setCuesMuted(muted || !playingRef.current)
+    bank.setCuesMuted(muted || playbackRef.current === 'manual')
     setAudioMuted(muted)
     // 消音を解いた時点でまだ鳴っていなければ、ここが最初のユーザー操作になる
     if (!muted) startBgm()
@@ -212,13 +260,18 @@ export function PlayerApp() {
     <Canvas dpr={[1, 2]} shadows gl={VIEW_GL}
       camera={{ position: project.book.camera.position, fov: project.book.camera.fov, ...VIEW_CLIP }}
       onCreated={({ camera }) => camera.lookAt(...project.book.camera.target)}>
-      <BookRuntime project={project} progress={progress} playing={playing} contentTime={contentTime} audioActive audioMuted={audioMuted} />
+      <BookRuntime project={project} progress={progress} playing={playback !== 'manual'} contentTime={contentTime} audioActive audioMuted={audioMuted} />
     </Canvas>
     <style>{BAR_CSS}</style>
+    <PlayerState project={project} progress={progress} playback={playback} />
     <div className="tobiBar" data-audio={hasAudio ? '' : 'none'}>
-      <button className="tobiKey" aria-label={playing ? 'Pause' : progress >= 1 ? 'Replay from start' : 'Play'}
+      <button className="tobiKey" aria-label="Previous page" disabled={pageTurnTarget(project.book, progress, -1) === undefined}
+        onClick={() => turnPage(-1)}>
+        <Icon as={ChevronLeft} size={16} />
+      </button>
+      <button className="tobiKey" aria-label={playback === 'auto' ? 'Pause' : progress >= 1 ? 'Replay from start' : 'Play'}
         onClick={togglePlayback}>
-        <Icon as={playing ? Pause : progress >= 1 ? RotateCcw : Play} size={16} />
+        <Icon as={playback === 'auto' ? Pause : progress >= 1 ? RotateCcw : Play} size={16} />
       </button>
       <div className="tobiTrack">
         <input aria-label="Book progress" type="range" min={0} max={1} step={0.001} value={progress}
@@ -230,7 +283,34 @@ export function PlayerApp() {
         onClick={toggleAudio}>
         <Icon as={audioMuted ? VolumeX : Volume2} size={16} />
       </button>}
+      <button className="tobiKey" aria-label="Next page" disabled={pageTurnTarget(project.book, progress, 1) === undefined}
+        onClick={() => turnPage(1)}>
+        <Icon as={ChevronRight} size={16} />
+      </button>
     </div>
+  </div>
+}
+
+/**
+ * ブラウザを操作するエージェント向けの意味付きDOM。画面には出さない。
+ *
+ * 外部TTSで読ませる作品は `readAloud` を切って書き出し、エージェントは Next を押して
+ * `data-tobidas-playback` が manual に戻るのを待ち、ここの本文一覧を読む。
+ * 本文は Web Speech と同じ `spreadSpeechCues` から作るので、読む対象と順序は一致する。
+ * 表紙を開いている間は見開きが無いので添字を付けず、一覧も空にする。
+ */
+function PlayerState({ project, progress, playback }: { project: BookProject; progress: number; playback: Playback }) {
+  const index = currentSpreadIndex(project.book, progress)
+  const spread = project.book.spreads[index]
+  const items = useMemo(() => spread ? spreadSpeechCues(project.book, spread.id) : [], [project, spread])
+  return <div data-tobidas-kind="player-state" data-tobidas-playback={playback}
+    data-tobidas-spread-index={index >= 0 ? index : undefined}
+    data-tobidas-spread-count={project.book.spreads.length}
+    data-tobidas-read-aloud={project.book.readAloud ? 'true' : 'false'}
+    style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>
+    <ol aria-label="Current spread text">
+      {items.map((item) => <li key={item.elementId} data-tobidas-element={item.elementId} lang={item.lang}>{item.text}</li>)}
+    </ol>
   </div>
 }
 
@@ -251,7 +331,7 @@ const BAR_CSS = `
   width: min(720px, calc(100% - 40px));
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: 34px 34px minmax(0, 1fr) auto 34px;
   align-items: center;
   gap: 10px;
   padding: 9px 14px;
@@ -261,7 +341,7 @@ const BAR_CSS = `
   color: #fff;
   font-size: 12px;
 }
-.tobiBar[data-audio='none'] { grid-template-columns: 34px minmax(0, 1fr); }
+.tobiBar[data-audio='none'] { grid-template-columns: 34px 34px minmax(0, 1fr) 34px; }
 .tobiKey {
   display: inline-flex;
   align-items: center;
@@ -278,6 +358,8 @@ const BAR_CSS = `
   line-height: 1;
 }
 .tobiKey:hover { border-color: #6bb6ff; background: #414152; }
+.tobiKey:disabled { opacity: .4; cursor: default; }
+.tobiKey:disabled:hover { border-color: #626270; background: #343440; }
 .tobiTrack { position: relative; display: flex; min-width: 0; }
 .tobiBar input[type='range'] {
   appearance: none;

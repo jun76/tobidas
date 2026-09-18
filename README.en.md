@@ -72,6 +72,39 @@ Temporary detail-form values and operation results are not stored in project dat
 Project-specific production guidance is available and editable per language in the **Authoring guide** pane below the Inspector.
 This setting is the source of truth for picture-book know-how. WebMCP clients read the selected language with `tobidas-get-authoring-guide` and update it with `tobidas-update-authoring-guide` only when the user explicitly requests a change.
 
+### Narrate an exported player
+
+The exported player has neither WebMCP nor any network feature. An agent that drives the browser directly advances the book with the playback bar buttons and reads the text from a visually hidden semantic region.
+For a book narrated by an external TTS, turn off "Read text with the browser voice" in the Sound section of the builder before exporting. Such a book never calls Web Speech. Per-element speech marks (Japanese / English) remain as the definition of what to read and in which language.
+
+`Previous page` and `Next page` at both ends of the playback bar turn one spread at a time. The destination is the end of the hold interval of the next (previous) spread, so the player stops after the pop-up motion of that spread has finished. The player starts with the cover closed, so press `Next page` once to read the first spread.
+Pressing a page button during autoplay or in the middle of a hold jumps immediately to the frame where the turn starts, without waiting for the rest of the motion, and turns from there. Autoplay stops and the player enters manual mode. Pressing the play button in manual mode resumes autoplay from that position.
+The play mode of the builder has the same page buttons, so the stopping points can be checked while authoring.
+
+The player exposes the following region. Its attributes change only when the state or the current spread changes.
+
+```html
+<div data-tobidas-kind="player-state"
+     data-tobidas-playback="manual"        <!-- auto | manual | turning -->
+     data-tobidas-spread-index="2"         <!-- absent while the cover is opening -->
+     data-tobidas-spread-count="8"
+     data-tobidas-read-aloud="false">
+  <ol aria-label="Current spread text">
+    <li data-tobidas-element="el_12" lang="ja">Once upon a time…</li>
+  </ol>
+</div>
+```
+
+The text list follows the same rule as browser speech: only visible text with a speech mark, in element order.
+
+The standard agent procedure is:
+
+1. Open the player exported with read-aloud turned off.
+2. Click `Next page`.
+3. Re-read the accessibility tree until `data-tobidas-playback` returns to `manual`. `data-tobidas-spread-index` advances as soon as the spread is fully open, so wait for that instead to start reading during the motion.
+4. Pass the items of `Current spread text` to the TTS in order and finish playback.
+5. Repeat from step 2 until `Next page` is disabled.
+
 ### Use WebMCP
 
 When the browser exposes WebMCP, tobidas registers structured tools when the page starts.
@@ -160,6 +193,7 @@ When WebMCP is available, tobidas registers these imperative tools when the page
 | Edit | `tobidas-add-camera-key` | Save position, target, and field-of-view keys together at one spread hold time. |
 | Edit | `tobidas-assign-bgm` | Assign one already imported audio asset as the project BGM. Import the audio through the standard Assets panel before calling this tool. |
 | Edit | `tobidas-clear-bgm` | Clear the project BGM through the normal edit, validation, and undo path. |
+| Edit | `tobidas-set-read-aloud` | Enable or disable browser speech (Web Speech) for the whole book. Per-element speech marks stay and still define the text listed for an external narrator. |
 | Edit | `tobidas-add-spread` | Add, duplicate, or move a spread through the normal edit and undo path. The combined operation remains for compatibility. |
 | Edit | `tobidas-duplicate-spread` | Duplicate a spread while remapping element, track, and key IDs. |
 | Edit | `tobidas-reorder-spread` | Move a spread one position earlier or later. |

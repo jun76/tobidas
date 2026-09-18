@@ -206,6 +206,11 @@ function BookAudio({ showTitle = true }: { showTitle?: boolean } = {}) {
           if (project.audio) project.audio.volume = Math.min(1, Math.max(0, value))
         })} />
     </>}
+    <div className={st.subsectionTitle}>{t.properties.readAloud}</div>
+    <label><input type="checkbox" aria-label={t.properties.readAloudEnabled} checked={store.project.book.readAloud}
+      onChange={(event) => store.setReadAloud(event.target.checked)} />
+      {' '}{t.properties.readAloudEnabled}</label>
+    <div className={st.hintSmall}>{t.properties.readAloudHint}</div>
   </>
 }
 

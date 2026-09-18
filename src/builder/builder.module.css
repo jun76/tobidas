@@ -965,7 +965,7 @@
 /* 再生ボタン / 進行バー / 音楽ボタン。音楽ボタンはBGMのある作品にだけ出るので、
    3列目は auto にして無いときは潰れさせる (固定幅だと空白が残る) */
 .timelinePlayback {
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: 34px 34px minmax(0, 1fr) auto 34px;
   gap: 10px;
 }
 
@@ -995,6 +995,16 @@
 .playbackToggle:hover {
   border-color: #6bb6ff;
   background: #414152;
+}
+
+.playbackToggle:disabled {
+  opacity: .4;
+  cursor: default;
+}
+
+.playbackToggle:disabled:hover {
+  border-color: #626270;
+  background: #343440;
 }
 
 .cameraCues {

@@ -482,6 +482,15 @@ export function clearBgmCommand(): BuilderCommandResult {
   return success(action, t().operations.bgmCleared)
 }
 
+export function setReadAloudCommand(enabled: boolean): BuilderCommandResult {
+  const action = 'set-read-aloud'
+  const state = useBuilderStore.getState()
+  if (state.mode !== 'edit') return failure(action, t().operations.readOnly)
+  if (typeof enabled !== 'boolean') return failure(action, t().operations.invalidInput, { enabled: t().operations.invalidInput })
+  state.setReadAloud(enabled)
+  return success(action, enabled ? t().operations.readAloudEnabled : t().operations.readAloudDisabled)
+}
+
 export function addSpreadCommand(): BuilderCommandResult {
   const action = 'add-spread'
   const state = useBuilderStore.getState()

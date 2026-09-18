@@ -450,6 +450,7 @@ const initializeBuilder: StateCreator<EditorState> = (set, get) => {
       const index = project.assets.findIndex((item) => item.id === id)
       if (index >= 0) project.assets[index] = { ...asset, id }
     }),
+    setReadAloud: (enabled) => commit((project) => { project.book.readAloud = enabled }),
     removeAsset: (id) => commit((project) => {
       if (Object.values(project.partDefinitions ?? {}).some((definition) => definition.assets.some((item) => item.id === id))) return
       project.assets = project.assets.filter((asset) => asset.id !== id)

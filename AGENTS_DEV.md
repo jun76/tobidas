@@ -37,6 +37,7 @@ npx vitest run -t "keeps every part on the paper"
 
 ```bash
 node scripts/verify-player-controls.mjs forest_lantern
+node scripts/verify-player-page-turn.mjs forest_lantern
 ```
 
 `npm run qa:visual` は開発サーバーの起動中に実行します。
@@ -256,6 +257,14 @@ UIとWebMCPは `builder/parts/commands.ts` の型付き操作を共有し、`bui
 - **Content MotionまたはResident Time**：表示中に続く周期運動。Visibility Gateのmountとunmountを跨いで経過時間を保持する
 
 装飾トラック `stowFlourish` は `t=0` と `t=1` で必ず無効になります。
+
+本文の読み上げは `runtime/speech.ts` の `spreadSpeechCues` を正本にします。Web Speech の跨ぎ判定と、再生画面が外部TTS向けに公開する本文一覧は同じ関数を使います。
+作品全体の `book.readAloud` は Web Speech を止めるだけで、本文一覧の対象は変えません。作品は外部TTSの有無を知りません。
+
+再生画面とビルダーの再生モードの再生状態は `auto`、`manual`、`turning` の3つです。`turning` は Prev・Next の見開き単位の送りで、目的地は `runtime/pageTurn.ts` の `pageTurnTarget` が決めます。
+目的地は次または前の見開きの保持終端で、途中の位置からでも同じ目的地へ向かいます。保持の途中で押した場合は `pageTurnPlan` の `start` (めくりが始まるフレーム) へ直ちに飛び、飛ばした区間の効果音は鳴らしません。めくりの途中からの Prev はめくりかけた見開きの保持終端へ戻します。
+`turning` も作者の速度で進め、効果音と読み上げの跨ぎ判定は自動再生と同じ規則を通します。姿勢の評価器へ再生状態を持ち込みません。
+エージェント向けの意味付きDOMは `data-tobidas-kind="player-state"` に閉じ込め、ボタンは `Previous page` と `Next page` の `aria-label` で公開します。
 
 ## 包含検査
 

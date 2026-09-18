@@ -60,6 +60,11 @@ const currentBookSchema = z.object({
   sequence: z.object({
     coverOpenSeconds: z.number().positive(),
   }),
+  /**
+   * 作品全体の本文読み上げ。false なら要素の speech 指定があっても Web Speech を呼ばない。
+   * 外部TTSで読ませる作品はここを切り、読み上げ対象は再生画面の意味付きDOMから取る。
+   */
+  readAloud: z.boolean().default(true),
   format: z.object({
     pageAspect: z.number().positive(),
     pageWidth: z.number().positive(),

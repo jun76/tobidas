@@ -23,6 +23,7 @@ export function createSpread(name = 'Spread 1', partial: Partial<Spread> = {}): 
 export function createBook(partial: Partial<Book> = {}): Book {
   return {
     sequence: { coverOpenSeconds: 1.5 },
+    readAloud: true,
     format: { pageAspect: 1.25, pageWidth: 8, coverThickness: .18, pageThickness: .015, gutter: .08, binding: 'left' },
     appearance: { paperColor: '#f4ecd8', edgeColor: '#c9b99b', roughness: .9, background: '#efc45b', shadowOpacity: .35 },
     // 谷に沿う起立面と支持ブリッジを、新規作品の最初の視点から確認できるようにする。

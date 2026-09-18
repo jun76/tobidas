@@ -151,7 +151,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
         onSelect={store.mode === 'edit' ? select : undefined}
         audioActive={store.mode === 'play'}
         audioMuted={playback.audioMuted}
-        playing={store.mode === 'play' && playback.isAutoPlaying}
+        playing={store.mode === 'play' && playback.playback !== 'manual'}
       />
       {store.mode === 'edit' && <>
         <PageDropController />
@@ -234,6 +234,16 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
         <button
           type="button"
           className={st.playbackToggle}
+          aria-label={t.viewport.previousPage}
+          title={t.viewport.previousPage}
+          disabled={!playback.canTurn(-1)}
+          onClick={() => playback.turnPage(-1)}
+        >
+          <Icon as={ChevronLeft} size={ICON.bar} />
+        </button>
+        <button
+          type="button"
+          className={st.playbackToggle}
           aria-label={playbackLabel}
           title={playbackLabel}
           onClick={playback.toggle}
@@ -267,6 +277,16 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
         >
           <Icon as={playback.audioMuted ? VolumeX : Volume2} size={ICON.bar} />
         </button>}
+        <button
+          type="button"
+          className={st.playbackToggle}
+          aria-label={t.viewport.nextPage}
+          title={t.viewport.nextPage}
+          disabled={!playback.canTurn(1)}
+          onClick={() => playback.turnPage(1)}
+        >
+          <Icon as={ChevronRight} size={ICON.bar} />
+        </button>
       </div>}
   </div>
 }

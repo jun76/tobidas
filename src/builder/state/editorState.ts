@@ -107,6 +107,8 @@ export interface EditorState {
   /** 音声を取り込んで作品全体のBGMにする。取り込みと割り当てで1操作 */
   assignBgm(asset: Asset): void
   clearBgm(): void
+  /** 作品全体の本文読み上げ (Web Speech) の有効・無効 */
+  setReadAloud(enabled: boolean): void
   replaceAsset(id: string, asset: Asset): void
   removeAsset(id: string): void
 }

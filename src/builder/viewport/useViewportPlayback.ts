@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { playbackDurationSeconds } from '../../runtime/signals'
 import { crossedSoundCues, soundCueAssetIds } from '../../runtime/soundCues'
 import { crossedSpeechCues, SpeechNarrator } from '../../runtime/speech'
+import { pageTurnPlan, pageTurnTarget } from '../../runtime/pageTurn'
 import { audioGate } from '../../audio/playback'
 import { useBuilderStore } from '../store'
 import { builderBank, builderBgm } from '../audio'
@@ -10,6 +11,9 @@ import { builderBank, builderBgm } from '../audio'
 /** 読み上げはビルダーで一つ。再生モードの間だけ使い、編集へ戻ると消音側で打ち切られる */
 const builderNarrator = new SpeechNarrator()
 import { hasEmbeddedVideoAudio, unlockVideoAudio } from '../../runtime/videoAudio'
+
+/** 再生の状態。書き出した再生画面 (player/PlayerApp.tsx) と同じ3つ */
+export type ViewportPlayback = 'auto' | 'manual' | 'turning'
 
 export function useViewportPlayback() {
   const mode = useBuilderStore((state) => state.mode)
@@ -20,8 +24,18 @@ export function useViewportPlayback() {
   const setPreviewProgress = useBuilderStore((state) => state.setPreviewProgress)
   const [playProgress, setPlayProgress] = useState(0)
   const playProgressRef = useRef(0)
-  const [isAutoPlaying, setIsAutoPlaying] = useState(false)
-  const autoPlayingRef = useRef(false)
+  const [playbackState, setPlaybackState] = useState<ViewportPlayback>('manual')
+  const playbackRef = useRef<ViewportPlayback>('manual')
+  /** turning の目的地と向き。到着で manual へ戻るときに消す */
+  const turn = useRef<{ target: number; direction: 1 | -1 } | null>(null)
+  const isAutoPlaying = playbackState === 'auto'
+  /** 自動再生・ページ送りを止めて手動モードへ戻す */
+  const settle = () => {
+    turn.current = null
+    if (playbackRef.current === 'manual') return
+    playbackRef.current = 'manual'
+    setPlaybackState('manual')
+  }
   /** 音声ボタンで消したか。BGMも効果音もまとめて黙らせる。再生の開始・停止を跨いで覚える */
   const [audioMuted, setAudioMuted] = useState(false)
   const audioMutedRef = useRef(false)
@@ -67,8 +81,7 @@ export function useViewportPlayback() {
       setPlayProgress(0)
     }
     if (mode !== 'play') {
-      autoPlayingRef.current = false
-      setIsAutoPlaying(false)
+      settle()
       bgmArmedRef.current = false
     }
     previousMode.current = mode
@@ -115,12 +128,13 @@ export function useViewportPlayback() {
    */
   useEffect(() => {
     const active = mode === 'play'
-    const gate = audioGate({ active, playing: active && isAutoPlaying, muted: audioMuted })
+    // ページ送りの間も作者の速度で進んでいるので、効果音は自動再生と同じく鳴らす
+    const gate = audioGate({ active, playing: active && playbackState !== 'manual', muted: audioMuted })
     builderBgm.setMuted(gate.bgmMuted, gate.bgmMuted ? 0 : .25)
     builderBgm.setPaused(gate.bgmPaused)
     builderBank.setCuesMuted(gate.cuesMuted)
     builderNarrator.setMuted(gate.cuesMuted)
-  }, [mode, isAutoPlaying, audioMuted])
+  }, [mode, playbackState, audioMuted])
 
   /**
    * 効果音は再生モードでだけ鳴らす。編集中のスクラブでいちいち鳴っては
@@ -142,7 +156,7 @@ export function useViewportPlayback() {
     // 鳴らすのは自動再生で進んでいる間だけ。つまみやホイールで動かしたぶんでは鳴らさない
     // (上の useEffect も消音を掛けるが、あちらは再描画ぶん遅れるので位置を先に見る)
     const fireCues = (from: number, to: number) => {
-      if (!autoPlayingRef.current || audioMutedRef.current) return
+      if (playbackRef.current === 'manual' || audioMutedRef.current) return
       for (const hit of crossedSoundCues(book, from, to)) builderBank.fire(hit.assetId)
       builderNarrator.speak(crossedSpeechCues(book, from, to))
     }
@@ -150,7 +164,7 @@ export function useViewportPlayback() {
       const elapsed = Math.min(0.1, Math.max(0, (time - previousTime) / 1000))
       previousTime = time
       const current = playProgressRef.current
-      if (autoPlayingRef.current) {
+      if (playbackRef.current === 'auto') {
         const next = Math.min(1, current + elapsed / playbackDuration)
         playProgressRef.current = next
         target.current = next
@@ -158,8 +172,21 @@ export function useViewportPlayback() {
         fireCues(current, next)
         sync(next, 120)
         if (next >= 1) {
-          autoPlayingRef.current = false
-          setIsAutoPlaying(false)
+          settle()
+          sync(next)
+        }
+      } else if (playbackRef.current === 'turning' && turn.current) {
+        // 目的地を跨いだら目的地で止める。作者の速度で進むので、めくりと演出は自動再生と同じ見え方になる
+        const { target: goal, direction } = turn.current
+        const step = elapsed / playbackDuration
+        const next = direction > 0 ? Math.min(goal, current + step) : Math.max(goal, current - step)
+        playProgressRef.current = next
+        target.current = next
+        setPlayProgress(next)
+        fireCues(current, next)
+        sync(next, 120)
+        if (next === goal) {
+          settle()
           sync(next)
         }
       } else {
@@ -181,27 +208,48 @@ export function useViewportPlayback() {
   }, [mode, book, playbackDuration, setPreviewProgress])
 
   const pause = () => {
-    if (!autoPlayingRef.current) return
-    autoPlayingRef.current = false
-    setIsAutoPlaying(false)
+    if (playbackRef.current === 'manual') return
+    settle()
     setPreviewProgress(playProgressRef.current)
   }
 
   const toggle = () => {
     unlockVideoAudio()
     startBgm(true)
-    if (autoPlayingRef.current) {
+    if (playbackRef.current === 'auto') {
       pause()
       return
     }
     if (playProgressRef.current >= 1) {
       playProgressRef.current = 0
+    // 手動モードやページ送りの途中からは、その位置から自動再生へ移る
+    turn.current = null
       target.current = 0
       setPlayProgress(0)
       setPreviewProgress(0)
     }
-    autoPlayingRef.current = true
-    setIsAutoPlaying(true)
+    playbackRef.current = 'auto'
+    setPlaybackState('auto')
+  }
+
+  /**
+   * 見開き単位のページ送り (書き出した再生画面と同じ)。自動再生中なら止めて手動モードへ移り、
+   * 保持の途中ならめくりが始まるフレームへ飛んでから、目的地の保持終端まで作者の速度で進める。
+   */
+  const turnPage = (direction: 1 | -1) => {
+    const plan = pageTurnPlan(book, playProgressRef.current, direction)
+    if (!plan) return
+    unlockVideoAudio()
+    startBgm(true)
+    if (plan.start !== playProgressRef.current) {
+      // 保持の途中なら、めくりが始まるフレームへ直ちに飛ぶ。飛ばした区間の効果音は鳴らさない
+      playProgressRef.current = plan.start
+      target.current = plan.start
+      setPlayProgress(plan.start)
+    }
+    turn.current = { target: plan.target, direction }
+    playbackRef.current = 'turning'
+    setPlaybackState('turning')
   }
 
   /**
@@ -233,7 +281,7 @@ export function useViewportPlayback() {
     audioMutedRef.current = muted
     // Reactのeffectを待たず、このクリック内で音源と効果音を閉じる。
     builderBgm.setMuted(muted, 0)
-    builderBank.setCuesMuted(mode === 'play' && (muted || !autoPlayingRef.current))
+    builderBank.setCuesMuted(mode === 'play' && (muted || playbackRef.current === 'manual'))
     setAudioMuted(muted)
     if (!muted && bookAudio && !builderBgm.playing) {
       startBgm()
@@ -244,7 +292,10 @@ export function useViewportPlayback() {
     progress,
     isAutoPlaying,
     // 終端では再生ボタンが「最初から」の絵になる (書き出した再生画面と同じ)
+    playback: playbackState,
     atEnd,
+    canTurn: (direction: 1 | -1) => pageTurnTarget(book, progress, direction) !== undefined,
+    turnPage,
     // 音声ボタンはBGMと効果音の両方を消すので、どちらかを持つ作品なら出す
     hasAudio: Boolean(bookAudio) || soundCueAssetIds(book).length > 0
       || hasEmbeddedVideoAudio(book, new Map(assets.map((asset) => [asset.id, asset]))),
