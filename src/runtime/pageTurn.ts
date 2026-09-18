@@ -4,9 +4,9 @@ import { clamp01, compileBookBeats } from './signals'
 /**
  * 手動のページ送り。
  *
- * 自動再生はシームレスに進むが、再生画面の Prev・Next は見開き単位で止まる。
+ * 自動再生はシームレスに進むが、再生画面の見開きボタンは見開き単位で止まる。
  * 止まる位置は必ず「保持区間の終端」(次のめくりが始まる直前、演出を終えた姿勢) とし、
- * 途中で止めた位置からでも同じ目的地へ向かう。姿勢の評価には関わらず、進行値の目的地を
+ * どの位置からでも同じ目的地へ向かう。姿勢の評価には関わらず、進行値の目的地を
  * 決めるだけの純関数である。
  */
 
@@ -34,45 +34,22 @@ function spreadHold(book: Book, index: number) {
   return compileBookBeats(book).find((beat) => beat.kind === 'hold' && beat.spreadId === spread.id)
 }
 
-/** ページ送りの計画。start へ直ちに飛び、そこから target まで作者の速度で進める */
+/** 見開きへのジャンプの計画。start へ直ちに飛び、そこから target まで作者の速度で進める */
 export interface PageTurnPlan {
   start: number
   target: number
 }
 
 /**
- * Prev・Next の計画。動けないときは undefined (ボタンを無効にする)。
+ * 見開き index へのジャンプ。動けないときは undefined (ボタンを無効にする)。
  *
- * 保持区間の途中で押されたときは、残りの演出を待たずにめくりが始まるフレームへ直ちに飛ぶ。
- * Next なら現在の見開きの保持終端、Prev なら保持の始まり (逆再生のめくりが始まる位置) が start になる。
- * めくりの途中や表紙を開いている途中は、その位置からそのまま進める。
+ * どの位置からでも、その見開きのめくりが始まるフレーム (前の見開きの保持終端、最初の見開きなら閉じた表紙)
+ * へ直ちに飛び、めくりと演出を作者の速度で進めて保持終端で止まる。順番に押しても、離れた見開きへ
+ * 飛んでも、同じ見え方で同じ位置に止まる。同じ見開きを押し直すと、その見開きをもう一度めくる。
  */
-export function pageTurnPlan(book: Book, rawProgress: number, direction: 1 | -1): PageTurnPlan | undefined {
-  const progress = clamp01(rawProgress)
-  const target = pageTurnTarget(book, progress, direction)
+export function spreadJumpPlan(book: Book, index: number): PageTurnPlan | undefined {
+  const target = spreadHoldEnd(book, index)
   if (target === undefined) return undefined
-  const hold = spreadHold(book, currentSpreadIndex(book, progress))
-  let start = progress
-  if (hold && progress > hold.start && progress < hold.end) start = direction > 0 ? hold.end : hold.start
+  const start = index === 0 ? 0 : spreadHoldEnd(book, index - 1)!
   return { start, target }
-}
-
-/**
- * Prev・Next の目的地。動けないときは undefined (ボタンを無効にする)。
- * Next は次の見開きの保持終端、最後の見開きからは末尾。Prev は前の見開きの保持終端、
- * 最初の見開きからは先頭 (閉じた表紙)。表紙を開いている間は Next だけが効く。
- */
-export function pageTurnTarget(book: Book, rawProgress: number, direction: 1 | -1): number | undefined {
-  const progress = clamp01(rawProgress)
-  const index = currentSpreadIndex(book, progress)
-  if (direction > 0) {
-    if (progress >= 1) return undefined
-    const next = index + 1
-    return next < book.spreads.length ? spreadHoldEnd(book, next) : 1
-  }
-  if (index < 0) return undefined
-  // めくりの途中 (末尾で閉じた裏表紙も含む) からは、まずめくりかけた見開きの保持終端へ戻す
-  const holdEnd = spreadHoldEnd(book, index)
-  if (holdEnd !== undefined && progress > holdEnd) return holdEnd
-  return index === 0 ? 0 : spreadHoldEnd(book, index - 1)
 }

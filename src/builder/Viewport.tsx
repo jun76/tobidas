@@ -230,17 +230,20 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
 
     {store.mode === 'edit'
       ? (showEditTimeline && !coverSide ? <TimelinePanel /> : null)
-      : <div className={`${st.timeline} ${st.timelinePlayback}`} onPointerDown={(event) => event.stopPropagation()}>
-        <button
-          type="button"
-          className={st.playbackToggle}
-          aria-label={t.viewport.previousPage}
-          title={t.viewport.previousPage}
-          disabled={!playback.canTurn(-1)}
-          onClick={() => playback.turnPage(-1)}
-        >
-          <Icon as={ChevronLeft} size={ICON.bar} />
-        </button>
+      : <>
+        <div className={st.playbackPages} role="group" aria-label={t.viewport.pages} onPointerDown={(event) => event.stopPropagation()}
+          style={{ paddingRight: playback.hasAudio ? undefined : 14 }}>
+          {store.project.book.spreads.map((spread, index) => <button
+            key={spread.id}
+            type="button"
+            className={st.playbackPage}
+            aria-label={t.viewport.page(index + 1)}
+            title={spread.name}
+            aria-current={index === playback.spreadIndex ? 'page' : undefined}
+            onClick={() => playback.jumpToSpread(index)}
+          >{index + 1}</button>)}
+        </div>
+        <div className={`${st.timeline} ${st.timelinePlayback}`} onPointerDown={(event) => event.stopPropagation()}>
         <button
           type="button"
           className={st.playbackToggle}
@@ -277,17 +280,8 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
         >
           <Icon as={playback.audioMuted ? VolumeX : Volume2} size={ICON.bar} />
         </button>}
-        <button
-          type="button"
-          className={st.playbackToggle}
-          aria-label={t.viewport.nextPage}
-          title={t.viewport.nextPage}
-          disabled={!playback.canTurn(1)}
-          onClick={() => playback.turnPage(1)}
-        >
-          <Icon as={ChevronRight} size={ICON.bar} />
-        </button>
-      </div>}
+        </div>
+      </>}
   </div>
 }
 

@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { playbackDurationSeconds } from '../../runtime/signals'
 import { crossedSoundCues, soundCueAssetIds } from '../../runtime/soundCues'
 import { crossedSpeechCues, SpeechNarrator } from '../../runtime/speech'
-import { pageTurnPlan, pageTurnTarget } from '../../runtime/pageTurn'
+import { currentSpreadIndex, spreadJumpPlan } from '../../runtime/pageTurn'
 import { audioGate } from '../../audio/playback'
 import { useBuilderStore } from '../store'
 import { builderBank, builderBgm } from '../audio'
@@ -235,21 +235,19 @@ export function useViewportPlayback() {
   }
 
   /**
-   * 見開き単位のページ送り (書き出した再生画面と同じ)。自動再生中なら止めて手動モードへ移り、
-   * 保持の途中ならめくりが始まるフレームへ飛んでから、目的地の保持終端まで作者の速度で進める。
+   * 見開きボタンによるジャンプ (書き出した再生画面と同じ)。自動再生中なら止めて手動モードへ移り、
+   * その見開きのめくりが始まるフレームへ直ちに飛んでから、保持終端まで作者の速度で進める。
+   * 飛ばした区間の効果音は鳴らさない。
    */
-  const turnPage = (direction: 1 | -1) => {
-    const plan = pageTurnPlan(book, playProgressRef.current, direction)
+  const jumpToSpread = (index: number) => {
+    const plan = spreadJumpPlan(book, index)
     if (!plan) return
     unlockVideoAudio()
     startBgm(true)
-    if (plan.start !== playProgressRef.current) {
-      // 保持の途中なら、めくりが始まるフレームへ直ちに飛ぶ。飛ばした区間の効果音は鳴らさない
-      playProgressRef.current = plan.start
-      target.current = plan.start
-      setPlayProgress(plan.start)
-    }
-    turn.current = { target: plan.target, direction }
+    playProgressRef.current = plan.start
+    target.current = plan.start
+    setPlayProgress(plan.start)
+    turn.current = { target: plan.target, direction: 1 }
     playbackRef.current = 'turning'
     setPlaybackState('turning')
   }
@@ -294,8 +292,9 @@ export function useViewportPlayback() {
     progress,
     playback: playbackState,
     isAutoPlaying,
-    canTurn: (direction: 1 | -1) => pageTurnTarget(book, progress, direction) !== undefined,
-    turnPage,
+    /** 現在の見開きの添字。表紙を開いている間は -1 */
+    spreadIndex: currentSpreadIndex(book, progress),
+    jumpToSpread,
     // 終端では再生ボタンが「最初から」の絵になる (書き出した再生画面と同じ)
     atEnd,
     // 音声ボタンはBGMと効果音の両方を消すので、どちらかを持つ作品なら出す

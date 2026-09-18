@@ -1,7 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react'
+import { Pause, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react'
 import { Icon } from '../ui/Icon'
 import { bookProjectSchema, type BookProject } from '../schema/bookPackage'
 import { validateBookProject } from '../schema/bookValidate'
@@ -12,13 +12,13 @@ import { AudioBank, AudioPlayback, audioGate } from '../audio/playback'
 import { playbackDurationSeconds } from '../runtime/signals'
 import { crossedSoundCues, soundCueAssetIds } from '../runtime/soundCues'
 import { crossedSpeechCues, hasSpeechCues, SpeechNarrator, spreadSpeechCues } from '../runtime/speech'
-import { currentSpreadIndex, pageTurnPlan, pageTurnTarget } from '../runtime/pageTurn'
+import { currentSpreadIndex, spreadJumpPlan } from '../runtime/pageTurn'
 
 /**
  * 再生の状態。
  * - auto: 再生ボタンで末尾までシームレスに進む
  * - manual: 静止。起動時、ページ送りの到着、一時停止で入る
- * - turning: Prev・Next で見開き単位の目的地まで作者の速度で順・逆再生し、到着で manual へ戻る
+ * - turning: 見開きボタンで、その見開きのめくり開始へ飛んでから保持終端まで作者の速度で順再生し、到着で manual へ戻る
  */
 type Playback = 'auto' | 'manual' | 'turning'
 
@@ -204,25 +204,23 @@ export function PlayerApp() {
     setPlayback('auto')
   }
   /**
-   * 見開き単位のページ送り。自動再生中なら止めて手動モードへ移り、目的地まで作者の速度で進める。
-   * 保持の途中なら残りの演出を待たず、めくりが始まるフレームへ直ちに飛んでから進める。
-   * 目的地は保持区間の終端なので、めくった先の演出を見終えた姿勢で止まる。
+   * 見開きボタンによるジャンプ。自動再生中なら止めて手動モードへ移り、その見開きのめくりが始まる
+   * フレームへ直ちに飛んでから、めくりと演出を作者の速度で進めて保持終端で止まる。
+   * 飛ばした区間の効果音は鳴らさない (跨ぎ判定を通さず位置だけ変える)。
    */
-  const turnPage = (direction: 1 | -1) => {
-    const plan = pageTurnPlan(project.book, progressRef.current, direction)
+  const jumpToSpread = (index: number) => {
+    const plan = spreadJumpPlan(project.book, index)
     if (!plan) return
     unlockVideoAudio()
     startBgm(true)
-    if (plan.start !== progressRef.current) {
-      // 飛ばした区間の効果音は鳴らさない (跨ぎ判定を通さず位置だけ変える)
-      progressRef.current = plan.start
-      target.current = plan.start
-      setProgress(plan.start)
-    }
-    turn.current = { target: plan.target, direction }
+    progressRef.current = plan.start
+    target.current = plan.start
+    setProgress(plan.start)
+    turn.current = { target: plan.target, direction: 1 }
     playbackRef.current = 'turning'
     setPlayback('turning')
   }
+  const spreadIndex = currentSpreadIndex(project.book, progress)
   /**
    * 音声ボタンは消音の切り替え。BGMも効果音もまとめて消す。
    *
@@ -263,12 +261,13 @@ export function PlayerApp() {
       <BookRuntime project={project} progress={progress} playing={playback !== 'manual'} contentTime={contentTime} audioActive audioMuted={audioMuted} />
     </Canvas>
     <style>{BAR_CSS}</style>
-    <PlayerState project={project} progress={progress} playback={playback} />
+    <PlayerState project={project} playback={playback} spreadIndex={spreadIndex} />
+    <div className="tobiPages" role="group" aria-label="Pages" data-audio={hasAudio ? '' : 'none'}>
+      {project.book.spreads.map((spread, index) => <button key={spread.id} className="tobiPage"
+        aria-label={`Page ${index + 1}`} aria-current={index === spreadIndex ? 'page' : undefined}
+        onClick={() => jumpToSpread(index)}>{index + 1}</button>)}
+    </div>
     <div className="tobiBar" data-audio={hasAudio ? '' : 'none'}>
-      <button className="tobiKey" aria-label="Previous page" disabled={pageTurnTarget(project.book, progress, -1) === undefined}
-        onClick={() => turnPage(-1)}>
-        <Icon as={ChevronLeft} size={16} />
-      </button>
       <button className="tobiKey" aria-label={playback === 'auto' ? 'Pause' : progress >= 1 ? 'Replay from start' : 'Play'}
         onClick={togglePlayback}>
         <Icon as={playback === 'auto' ? Pause : progress >= 1 ? RotateCcw : Play} size={16} />
@@ -283,10 +282,6 @@ export function PlayerApp() {
         onClick={toggleAudio}>
         <Icon as={audioMuted ? VolumeX : Volume2} size={16} />
       </button>}
-      <button className="tobiKey" aria-label="Next page" disabled={pageTurnTarget(project.book, progress, 1) === undefined}
-        onClick={() => turnPage(1)}>
-        <Icon as={ChevronRight} size={16} />
-      </button>
     </div>
   </div>
 }
@@ -294,13 +289,12 @@ export function PlayerApp() {
 /**
  * ブラウザを操作するエージェント向けの意味付きDOM。画面には出さない。
  *
- * 外部TTSで読ませる作品は `readAloud` を切って書き出し、エージェントは Next を押して
+ * 外部TTSで読ませる作品は `readAloud` を切って書き出し、エージェントは見開きボタンを押して
  * `data-tobidas-playback` が manual に戻るのを待ち、ここの本文一覧を読む。
  * 本文は Web Speech と同じ `spreadSpeechCues` から作るので、読む対象と順序は一致する。
  * 表紙を開いている間は見開きが無いので添字を付けず、一覧も空にする。
  */
-function PlayerState({ project, progress, playback }: { project: BookProject; progress: number; playback: Playback }) {
-  const index = currentSpreadIndex(project.book, progress)
+function PlayerState({ project, playback, spreadIndex: index }: { project: BookProject; playback: Playback; spreadIndex: number }) {
   const spread = project.book.spreads[index]
   const items = useMemo(() => spread ? spreadSpeechCues(project.book, spread.id) : [], [project, spread])
   return <div data-tobidas-kind="player-state" data-tobidas-playback={playback}
@@ -331,7 +325,7 @@ const BAR_CSS = `
   width: min(720px, calc(100% - 40px));
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 34px 34px minmax(0, 1fr) auto 34px;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   padding: 9px 14px;
@@ -341,7 +335,36 @@ const BAR_CSS = `
   color: #fff;
   font-size: 12px;
 }
-.tobiBar[data-audio='none'] { grid-template-columns: 34px 34px minmax(0, 1fr) 34px; }
+.tobiBar[data-audio='none'] { grid-template-columns: 34px minmax(0, 1fr); }
+.tobiPages {
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(720px, calc(100% - 40px));
+  box-sizing: border-box;
+  display: flex;
+  gap: 4px;
+  /* 左右は再生ボタン・音声ボタンとその間隔のぶんを空け、進行バーと横幅を揃える */
+  padding: 0 58px;
+}
+.tobiPages[data-audio='none'] { padding-right: 14px; }
+.tobiPage {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #ffffff40;
+  border-radius: 6px;
+  background: #20202880;
+  color: #f4f4f8;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+}
+.tobiPage:hover { border-color: #6bb6ff; background: #414152c0; }
+.tobiPage[aria-current='page'] { border-color: #6bb6ffc0; background: #168af0b0; color: #fff; }
 .tobiKey {
   display: inline-flex;
   align-items: center;
@@ -358,8 +381,6 @@ const BAR_CSS = `
   line-height: 1;
 }
 .tobiKey:hover { border-color: #6bb6ff; background: #414152; }
-.tobiKey:disabled { opacity: .4; cursor: default; }
-.tobiKey:disabled:hover { border-color: #626270; background: #343440; }
 .tobiTrack { position: relative; display: flex; min-width: 0; }
 .tobiBar input[type='range'] {
   appearance: none;

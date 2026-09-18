@@ -1,4 +1,4 @@
-// 再生画面の見開き単位のページ送りと、エージェント向けの意味付きDOMを検査する。
+// 再生画面の見開きボタンによるジャンプと、エージェント向けの意味付きDOMを検査する。
 //
 // 作品は projects/<id>/ を埋め込み、読み上げを切った上で各見開きの先頭の本文へ読み上げ指定を付ける。
 // 目的地の計算は runtime/pageTurn.ts と同じ規則をここで再現し、到着位置を突き合わせる。
@@ -63,51 +63,57 @@ try {
   await page.goto(`http://localhost:${port}/player.html`, { waitUntil: 'networkidle' })
   const range = page.getByLabel('Book progress')
   const progress = () => range.inputValue().then(Number)
-  const next = page.getByLabel('Next page')
-  const prev = page.getByLabel('Previous page')
+  const pageButton = (index) => page.getByRole('button', { name: `Page ${index + 1}`, exact: true })
   const playButton = page.getByRole('button', { name: 'Play', exact: true })
+  const last = project.book.spreads.length - 1
 
-  // 起動直後: 表紙が閉じていて、手動モード、見開き無し、Prev 無効
+  // 起動直後: 表紙が閉じていて、手動モード、見開き無し、見開きボタンは全部で spreads 数
   if (await playback() !== 'manual') throw new Error('起動直後が手動モードではありません')
   if (await spreadIndex() !== null) throw new Error('表紙を開く前に見開きの添字が付いています')
   if (await state().getAttribute('data-tobidas-read-aloud') !== 'false') throw new Error('読み上げOFFがDOMへ出ていません')
-  if (!await prev.isDisabled()) throw new Error('表紙で Prev が無効になっていません')
   if ((await texts()).length) throw new Error('表紙で本文一覧が空ではありません')
+  const buttons = await page.getByRole('group', { name: 'Pages' }).getByRole('button').count()
+  if (buttons !== project.book.spreads.length) throw new Error(`見開きボタンの数が合いません: ${buttons} ≠ ${project.book.spreads.length}`)
+  if ((await page.locator('[aria-current="page"]').count()) !== 0) throw new Error('表紙で現在の見開きが強調されています')
 
-  // Next: turning を経て最初の見開きの保持終端で止まり、本文一覧が出る
-  await next.click()
-  if (await playback() !== 'turning') throw new Error('Next で turning へ移りません')
+  // 1見開き目: turning を経て保持終端で止まり、本文一覧が出て、ボタンが現在を示す
+  await pageButton(0).click()
+  if (await playback() !== 'turning') throw new Error('見開きボタンで turning へ移りません')
   await waitManual()
-  if (!near(await progress(), holdEnds[0])) throw new Error(`Next の到着位置が保持終端ではありません: ${await progress()} ≠ ${holdEnds[0]}`)
+  if (!near(await progress(), holdEnds[0])) throw new Error(`到着位置が保持終端ではありません: ${await progress()} ≠ ${holdEnds[0]}`)
   if (await spreadIndex() !== '0') throw new Error(`到着後の見開きの添字が 0 ではありません: ${await spreadIndex()}`)
+  if (await pageButton(0).getAttribute('aria-current') !== 'page') throw new Error('現在の見開きのボタンが aria-current になっていません')
   const listed = await texts()
-  if (JSON.stringify(listed) !== JSON.stringify(expectedTexts[0])) throw new Error(`本文一覧が一致しません:\n${JSON.stringify(listed)}\n${JSON.stringify(expectedTexts[0])}`)
+  if (JSON.stringify(listed) !== JSON.stringify(expectedTexts[0])) throw new Error(`本文一覧が一致しません:
+${JSON.stringify(listed)}
+${JSON.stringify(expectedTexts[0])}`)
 
-  // もう一度 Next: 2見開き目の保持終端。Prev: 1見開き目の保持終端へ逆再生で戻る
-  if (project.book.spreads.length > 1) {
-    await next.click()
+  // ランダムアクセス: 最後の見開きへ直接飛ぶ。前の保持終端から始まり、最後の保持終端で止まる
+  await pageButton(last).click()
+  const started = await progress()
+  if (last > 0 && !(started >= holdEnds[last - 1] - 5e-4)) throw new Error(`離れた見開きへのジャンプがめくり開始のフレームから始まりません: ${started} < ${holdEnds[last - 1]}`)
+  await waitManual()
+  if (!near(await progress(), holdEnds[last])) throw new Error(`最後の見開きへの到着位置が保持終端ではありません: ${await progress()}`)
+  if (await spreadIndex() !== String(last)) throw new Error('最後の見開きへ飛んだ後の添字が合いません')
+  if (JSON.stringify(await texts()) !== JSON.stringify(expectedTexts[last])) throw new Error('最後の見開きの本文一覧が一致しません')
+
+  // 戻る方向も同じ: 2見開き目へ飛ぶと 1見開き目の保持終端から順再生で 2見開き目の保持終端へ
+  if (last >= 1) {
+    await pageButton(1).click()
+    const back = await progress()
+    if (!near(back, holdEnds[0]) && !(back > holdEnds[0] && back < holdEnds[1])) throw new Error(`戻る方向のジャンプが前の保持終端から始まりません: ${back}`)
     await waitManual()
-    if (!near(await progress(), holdEnds[1])) throw new Error(`2回目の Next の到着位置が保持終端ではありません: ${await progress()}`)
-    if (await spreadIndex() !== '1') throw new Error('2回目の Next 後の添字が 1 ではありません')
-    await prev.click()
-    if (await playback() !== 'turning') throw new Error('Prev で turning へ移りません')
-    await waitManual()
-    if (!near(await progress(), holdEnds[0])) throw new Error(`Prev の到着位置が前の保持終端ではありません: ${await progress()}`)
+    if (!near(await progress(), holdEnds[1])) throw new Error(`戻る方向の到着位置が保持終端ではありません: ${await progress()}`)
   }
 
-  // 自動再生中の Next は自動再生を止めて turning へ、到着後は Play の絵に戻る
+  // 自動再生中の見開きボタンは自動再生を止めて turning へ、到着後は Play の絵に戻る
   await playButton.click()
   await page.waitForTimeout(200)
   if (await playback() !== 'auto') throw new Error('再生ボタンで auto へ移りません')
-  // 保持の途中で押すので、残りの演出を待たずに現在の見開きの保持終端へ直ちに飛ぶ
-  const spreadBefore = Number(await spreadIndex())
-  await next.click()
-  if (await playback() !== 'turning') throw new Error('自動再生中の Next が turning へ移りません')
-  const jumped = await progress()
-  if (!(jumped >= holdEnds[spreadBefore] - 5e-4)) throw new Error(`自動再生中の Next がめくり開始のフレームへ飛びません: ${jumped} < ${holdEnds[spreadBefore]}`)
+  await pageButton(Math.min(2, last)).click()
+  if (await playback() !== 'turning') throw new Error('自動再生中の見開きボタンが turning へ移りません')
   await page.getByRole('button', { name: 'Play', exact: true }).waitFor()
   await waitManual()
-  if (await spreadIndex() !== String(spreadBefore + 1)) throw new Error('自動再生中の Next の到着先が次の見開きではありません')
 
   // 手動モードからの再生ボタンはその位置から進む
   const before = await progress()
@@ -117,18 +123,14 @@ try {
   const after = await progress()
   if (!(after > before && after - before < .1)) throw new Error(`手動モードからの再生がその位置から進みません: ${before} → ${after}`)
 
-  // 末尾まで送ると Next が無効になり、Prev は最後の保持終端へ戻す
+  // __tobiSetScroll は手動モードへ戻す
   await page.evaluate(() => window.__tobiSetScroll?.(1))
   await page.waitForTimeout(100)
   if (await playback() !== 'manual') throw new Error('__tobiSetScroll で手動モードへ戻りません')
-  if (!await next.isDisabled()) throw new Error('末尾で Next が無効になっていません')
-  await prev.click()
-  await waitManual()
-  if (!near(await progress(), holdEnds.at(-1))) throw new Error(`末尾からの Prev が最後の保持終端へ戻りません: ${await progress()}`)
 } finally {
   await browser.close()
   await server.close()
 }
 
 if (errors.length) throw new Error(`プレイヤーのブラウザエラー:\n${errors.join('\n')}`)
-console.log(`${projectId}: ページ送り・逆戻し・自動再生との切り替え・本文一覧を確認`)
+console.log(`${projectId}: 見開きボタンのジャンプ・自動再生との切り替え・本文一覧を確認`)

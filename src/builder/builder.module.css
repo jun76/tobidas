@@ -965,8 +965,49 @@
 /* 再生ボタン / 進行バー / 音楽ボタン。音楽ボタンはBGMのある作品にだけ出るので、
    3列目は auto にして無いときは潰れさせる (固定幅だと空白が残る) */
 .timelinePlayback {
-  grid-template-columns: 34px 34px minmax(0, 1fr) auto 34px;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
   gap: 10px;
+}
+
+/* 見開きボタン。再生バーの枠には入れず、その上へ進行バーと同じ幅で均等に並べ、半透過で画面に直接置く
+   (書き出した再生画面と同じ)。押した見開きへ飛ぶ */
+.playbackPages {
+  position: absolute;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(720px, calc(100% - 40px));
+  box-sizing: border-box;
+  display: flex;
+  gap: 4px;
+  padding: 0 58px;
+  z-index: 6;
+}
+
+.playbackPage {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #ffffff40;
+  border-radius: 6px;
+  background: #20202880;
+  color: #f4f4f8;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.playbackPage:hover {
+  border-color: #6bb6ff;
+  background: #414152c0;
+}
+
+.playbackPage[aria-current='page'] {
+  border-color: #6bb6ffc0;
+  background: #168af0b0;
+  color: #fff;
 }
 
 .timelineTrack {
@@ -995,16 +1036,6 @@
 .playbackToggle:hover {
   border-color: #6bb6ff;
   background: #414152;
-}
-
-.playbackToggle:disabled {
-  opacity: .4;
-  cursor: default;
-}
-
-.playbackToggle:disabled:hover {
-  border-color: #626270;
-  background: #343440;
 }
 
 .cameraCues {

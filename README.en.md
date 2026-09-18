@@ -77,8 +77,9 @@ This setting is the source of truth for picture-book know-how. WebMCP clients re
 The exported player has neither WebMCP nor any network feature. An agent that drives the browser directly advances the book with the playback bar buttons and reads the text from a visually hidden semantic region.
 For a book narrated by an external TTS, turn off "Read text with the browser voice" in the Sound section of the builder before exporting. Such a book never calls Web Speech. Per-element speech marks (Japanese / English) remain as the definition of what to read and in which language.
 
-`Previous page` and `Next page` at both ends of the playback bar turn one spread at a time. The destination is the end of the hold interval of the next (previous) spread, so the player stops after the pop-up motion of that spread has finished. The player starts with the cover closed, so press `Next page` once to read the first spread.
-Pressing a page button during autoplay or in the middle of a hold jumps immediately to the frame where the turn starts, without waiting for the rest of the motion, and turns from there. Autoplay stops and the player enters manual mode. Pressing the play button in manual mode resumes autoplay from that position.
+Above the playback bar, outside its frame, one translucent button per spread (`Page 1` … `Page N`) is laid out with equal widths. Pressing one jumps immediately to the frame where that spread's turn starts (the hold end of the previous spread, or the closed cover for the first spread), plays the turn and the pop-up motion at the authored speed, and stops at the hold end of that spread. The stopping point is the same from anywhere, so a narrator can read in order or start from any spread. The button of the current spread carries `aria-current="page"`.
+The player starts with the cover closed, so press `Page 1` to read the first spread.
+Pressing a page button during autoplay stops autoplay and enters manual mode. Pressing the play button in manual mode resumes autoplay from that position.
 The play mode of the builder has the same page buttons, so the stopping points can be checked while authoring.
 
 The player exposes the following region. Its attributes change only when the state or the current spread changes.
@@ -100,10 +101,10 @@ The text list follows the same rule as browser speech: only visible text with a 
 The standard agent procedure is:
 
 1. Open the player exported with read-aloud turned off.
-2. Click `Next page`.
-3. Re-read the accessibility tree until `data-tobidas-playback` returns to `manual`. `data-tobidas-spread-index` advances as soon as the spread is fully open, so wait for that instead to start reading during the motion.
+2. Click the button of the spread to read (`Page k`).
+3. Re-read the accessibility tree until `data-tobidas-playback` returns to `manual`. `data-tobidas-spread-index` changes as soon as the spread is fully open, so wait for that instead to start reading during the motion.
 4. Pass the items of `Current spread text` to the TTS in order and finish playback.
-5. Repeat from step 2 until `Next page` is disabled.
+5. Repeat from step 2 for the next spread to read; in order that is `Page k+1`, up to `data-tobidas-spread-count`.
 
 ### Use WebMCP
 
