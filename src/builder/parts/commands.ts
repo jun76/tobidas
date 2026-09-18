@@ -4,7 +4,7 @@ import type { BookProject } from '../../schema/bookPackage'
 import { createStageElement } from '../../schema/bookDefaults'
 import type { PartElement } from '../../schema/stageElement'
 import { builtinPart } from '../../parts/catalog'
-import { elementDescendantIds } from '../hierarchy'
+import { partOwnership } from '../hierarchy'
 import { dependentPartIds } from '../../parts/evaluate'
 import { validateBookParts, spreadPartNodes, evaluateBookParts } from '../../parts/book'
 import { planSupportedPart } from '../../parts/supportPlanning'
@@ -34,9 +34,14 @@ export function editPlacedPartCommand(value: z.input<typeof editPlacedPartSchema
     const plan = planPartEdit(bookEditScene(state.project, parsed.spreadId), parsed.elementId, parsed.intent)
     if (!plan.ok) throw new Error(plan.detail)
     const next = applyBookEditPlan(state.project, parsed.spreadId, plan)
-    const errors = validateBookParts(next)
+    // 操作前からあった不備は、この操作の落ち度ではないので止めない。新たに生じたものだけで止める
+    const before = new Set(validateBookParts(state.project))
+    const errors = validateBookParts(next).filter((message) => !before.has(message))
     if (errors.length) throw new Error(errors[0])
-    state.commit((project) => { project.book.spreads.find((item) => item.id === parsed.spreadId)!.elements = next.book.spreads.find((item) => item.id === parsed.spreadId)!.elements })
+    state.commit((project) => {
+      const spread = project.book.spreads.find((item) => item.id === parsed.spreadId)!, edited = next.book.spreads.find((item) => item.id === parsed.spreadId)!
+      spread.elements = edited.elements; spread.timeline = edited.timeline
+    })
     return done('edit-placed-part', parsed.elementId)
   } catch (error) { return fail('edit-placed-part', error) }
 }
@@ -221,10 +226,7 @@ export async function openPartLibraryCommand(hash: string, copy = false) {
   } catch (error) { return fail('open-part-library', error) }
 }
 
-function ownership(binding: PartBinding): PartElement['parent'] {
-  const parent = bindingDependencies(binding).find((id) => id !== '$book')
-  return parent ? { type: 'element', elementId: parent } : { type: binding.type === 'output' && binding.portId === 'left-page' ? 'left-page' : 'right-page' }
-}
+const ownership = partOwnership
 function embedDefinition(project: BookProject, reference: PartReference) {
   if ('builtin' in reference) { builtinPart(reference.builtin, reference.version); return }
   if (project.partDefinitions?.[reference.custom]) return
@@ -327,14 +329,9 @@ export function deletePlacedPartCommand(spreadId: string, elementId: string) {
     const state = useBuilderStore.getState()
     if (state.mode !== 'edit') throw new Error(t().operations.readOnly)
     const spread = state.project.book.spreads.find((item) => item.id === spreadId)
-    if (!spread) throw new Error('Spread was not found')
-    const ids = new Set([elementId, ...elementDescendantIds(spread, elementId)])
-    state.commit((project) => {
-      const target = project.book.spreads.find((item) => item.id === spreadId)!
-      target.elements = target.elements.filter((element) => !ids.has(element.id))
-      target.timeline.tracks = target.timeline.tracks.filter((track) => (track.target.type !== 'element' && track.target.type !== 'part-content') || !ids.has(track.target.elementId))
-    })
-    state.select({ type: 'spread', spreadId }); return done('delete-placed-part', elementId)
+    if (!spread?.elements.some((item) => item.id === elementId)) throw new Error('Placed part was not found')
+    state.removeElement(spreadId, elementId)
+    return done('delete-placed-part', elementId)
   } catch (error) { return fail('delete-placed-part', error) }
 }
 export function referenceDefinition(reference: PartReference, definitions: Record<string, PartDefinition>) {

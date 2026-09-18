@@ -72,6 +72,20 @@ describe('paper shape and attached content', () => {
     // 保持時計を固定した開閉途中でも、表示経過時間で動く演出の全振幅を検査する。
     expect(inspectContentMotion([bound], [solid], { openingAngleDeg: 180, maxOpeningAngleDeg: 180 }, 7, 0)).toEqual(['Content crosses paper: rotor / inside'])
   })
+  it('動かない内容は回転を包む箱ではなく実際の矩形で検査し、斜めの面の隣の紙を偽の交差にしない', () => {
+    // 45° に振った板。軸に沿った箱なら隣の紙に触れるが、実体は触れない
+    const bound = binding(); bound.element.baseTransform.position = [0, 0, 0]; bound.element.baseTransform.rotation = [0, 45, 0]
+    const beside = makeFace('beside', new Vector3(1.1, -1, -.2), new Vector3(1, 0, 0), new Vector3(0, 1, 0), .3, 2)
+    const envelope = contentMotionEnvelopes(evaluateContents([bound], context()))[0]
+    expect(envelope.volume).toBeUndefined()
+    expect(inspectContentIntersections(evaluateContents([bound], context()), [beside], true)).toEqual([])
+    // 親に揺れがあれば子も包絡で検査する
+    const parent = binding('nest'); parent.element.motion = [{ type: 'drift', amplitude: [1, 0, 0], period: 3, phase: 0 }]
+    const child = binding('leaf'); child.parentId = 'nest'; child.element.attachment = { type: 'visual', elementId: 'nest' }
+    child.element.baseTransform.position = [0, 0, 0]; child.element.baseTransform.rotation = [0, 45, 0]
+    const nested = evaluateContents([parent, child], context())
+    expect(contentMotionEnvelopes(nested).find((item) => item.id === 'leaf')?.volume).toBeDefined()
+  })
   it('独立な周期と粒子の全振幅を包絡し、実測位相の頂点を取りこぼさない', () => {
     const bound = binding(); bound.element.motion = [{ type: 'drift', amplitude: [.2, .1, 0], period: 3.7, phase: .5 }, { type: 'sway', amplitude: 12, period: 5.3, phase: 1 }]
     if (bound.element.type === 'visual') bound.element.particles.enabled = true

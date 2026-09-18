@@ -45,21 +45,25 @@ function transform(e: ConnectedContent, ratio: number, g: number): Transform {
 }
 /** 各周期を独立な区間として合成する。周期の公倍数やランダム位相の一致に頼らない。 */
 export function contentMotionEnvelopes(contents: EvaluatedContent[]): { id: string; triangles: DisplayVertex[][]; volume?: { inverse: Matrix4; bounds: Box3 } }[] {
-  const byId = new Map(contents.map((item) => [item.id, item])), states = new Map<string, { t: Transform; anchor: Matrix4 }>()
-  const state = (item: EvaluatedContent): { t: Transform; anchor: Matrix4 } => {
+  const byId = new Map(contents.map((item) => [item.id, item])), states = new Map<string, { t: Transform; anchor: Matrix4; animated: boolean }>()
+  const state = (item: EvaluatedContent): { t: Transform; anchor: Matrix4; animated: boolean } => {
     const saved = states.get(item.id); if (saved) return saved
     const at = item.element.attachment
     // 評価済みIDから親を解決する。カスタム内部は同じ名前空間へ束縛済み。
     const parent = item.parentId ? byId.get(item.parentId) : undefined
     const own = transform(item.element, parent ? item.unitScale / parent.unitScale : item.unitScale, parent ? 1 : item.exitScale)
     const host = parent && state(parent)
-    const result = host ? { anchor: host.anchor, t: { m: mm(host.t.m, own.m), p: mv(host.t.m, own.p).map((v, i) => add(v, host.t.p[i])) } }
-      : { anchor: at.type === 'surface' && item.face ? contentSurfaceFrame(item.face, at.point.map((n) => n * item.unitScale) as [number, number], at.side) : item.anchor, t: own }
+    const animated = item.element.motion.length > 0 || (item.element.type !== 'group' && item.element.billboard) || Boolean(host?.animated)
+    const result = host ? { anchor: host.anchor, animated, t: { m: mm(host.t.m, own.m), p: mv(host.t.m, own.p).map((v, i) => add(v, host.t.p[i])) } }
+      : { anchor: at.type === 'surface' && item.face ? contentSurfaceFrame(item.face, at.point.map((n) => n * item.unitScale) as [number, number], at.side) : item.anchor, t: own, animated }
     states.set(item.id, result); return result
   }
   return contents.flatMap((item) => {
     if (!item.visible || item.element.type === 'group' || item.element.presentation.kind === 'decal') return []
-    const e = item.element, { t, anchor } = state(item)
+    const e = item.element, { t, anchor, animated } = state(item)
+    // 揺れも回転もしない内容は、回転を区間で包んだ箱ではなく実際の矩形そのもので検査する。
+    // 斜めに置いた面の箱は実体より大きく、隣の紙との偽の交差を生む。
+    if (!animated && e.type !== 'particle' && !e.particles.enabled) return [{ id: item.id, triangles: contentTriangles(item) }]
     const particles = e.type === 'particle' || e.particles.enabled
     const pad = particles ? e.particles.drift + e.particles.size / 2 : 0
     const bounds = [

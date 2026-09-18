@@ -6,7 +6,7 @@ import { useT } from './i18n'
 import { useBuilderStore } from './store'
 import { loadCurrentProject } from './persistence/projectRepository'
 import { CONTAINER_ELEMENTS_DELETE_REQUEST_EVENT, ELEMENT_DELETE_REQUEST_EVENT, SPREAD_DELETE_REQUEST_EVENT, type ContainerElementsDeleteRequest, type ElementDeleteRequest } from './elementDelete'
-import { containerElementIds, elementDescendantIds, type RootParentType } from './hierarchy'
+import { containerElementIds, elementRemovalIds, type RootParentType } from './hierarchy'
 import { saveViewportImage } from './capture/saveViewportImage'
 import { clampPanelWidth, loadPanelWidth, savePanelWidth } from './layout/panelSizing'
 import { Toolbar } from './panels/Toolbar'
@@ -97,7 +97,7 @@ export default function App() {
       const spread = store.project.book.spreads.find((item) => item.id === spreadId)
       const element = spread?.elements.find((item) => item.id === elementId)
       if (!spread || !element) return
-      const descendantCount = elementDescendantIds(spread, elementId).size
+      const descendantCount = elementRemovalIds(spread, elementId).size - 1
       if (!descendantCount) {
         store.removeElement(spreadId, elementId)
         return

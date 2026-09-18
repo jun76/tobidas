@@ -6,10 +6,11 @@ import { BACKGROUND_PANEL_SPEC } from '../schema/backgroundPanel'
 import { compileBookBeats, evaluateBookSignals } from '../runtime/signals'
 import { validateBookProject } from '../schema/bookValidate'
 import { measureTextBox } from '../runtime/textStyle'
+import { rehomeDependentParts } from '../parts/supportPlanning'
 import { t } from './i18n'
 import { ProjectAutosave } from './persistence/autosave'
 import { saveProject } from './persistence/projectRepository'
-import { containerElementIds, elementDescendantIds, reparentElement } from './hierarchy'
+import { containerElementIds, elementDescendantIds, elementRemovalIds, partOwnership, reparentElement } from './hierarchy'
 import type { EditorState } from './state/editorState'
 import { normalizeElementLayout } from './state/elementConstraints'
 import { PART_PRESETS, type VisualPresetId } from './presets'
@@ -413,8 +414,12 @@ const initializeBuilder: StateCreator<EditorState> = (set, get) => {
       commit((project) => {
         const spread = project.book.spreads.find((item) => item.id === spreadId)
         if (!spread) return
-        const removed = elementDescendantIds(spread, id)
-        removed.add(id)
+        const removed = elementRemovalIds(spread, id)
+        // 部品に乗っていた子部品は、外す部品の接続先か移動先の奥の紙へ繋ぎ直す (無ければ紙面へ孤立して立つ)
+        if (spread.elements.find((element) => element.id === id)?.type === 'part') {
+          spread.elements = rehomeDependentParts(project, spread, id).elements
+          for (const element of spread.elements) if (element.type === 'part') element.parent = partOwnership(element.part.mount)
+        }
         spread.elements = spread.elements.filter((element) => !removed.has(element.id))
         spread.timeline.tracks = spread.timeline.tracks.filter(
           (track) => (track.target.type !== 'element' && track.target.type !== 'part-content') || !removed.has(track.target.elementId),
@@ -445,12 +450,12 @@ const initializeBuilder: StateCreator<EditorState> = (set, get) => {
       project.audio = { bgmAsset: asset.id, volume: BGM_VOLUME, loop: true }
     }),
     clearBgm: () => commit((project) => { project.audio = undefined }),
+    setReadAloud: (enabled) => commit((project) => { project.book.readAloud = enabled }),
     replaceAsset: (id, asset) => commit((project) => {
       if (Object.values(project.partDefinitions ?? {}).some((definition) => definition.assets.some((item) => item.id === id))) return
       const index = project.assets.findIndex((item) => item.id === id)
       if (index >= 0) project.assets[index] = { ...asset, id }
     }),
-    setReadAloud: (enabled) => commit((project) => { project.book.readAloud = enabled }),
     removeAsset: (id) => commit((project) => {
       if (Object.values(project.partDefinitions ?? {}).some((definition) => definition.assets.some((item) => item.id === id))) return
       project.assets = project.assets.filter((asset) => asset.id !== id)

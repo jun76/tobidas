@@ -4,9 +4,9 @@ import { faceContains, faceShape, pointOnFace } from './geometry'
 import type { PartSurfaceRef } from './schema'
 import type { BookProject } from '../schema/bookPackage'
 import type { Spread } from '../schema/book'
-import { evaluateBookParts } from './book'
+import { bookContentHoldTime, evaluateBookParts } from './book'
 import { bindBookContents, evaluateContents } from './contents'
-import { contentSampleTimes, inspectContentIntersections } from './contentValidation'
+import { contentSampleTimes, inspectContentIntersections, inspectContentMotion } from './contentValidation'
 import { contentTriangles } from './contentDisplay'
 import { contentMotionEnvelopes } from './contentEnvelope'
 
@@ -76,4 +76,112 @@ export function clearFictionSupportCrossings(project: BookProject, spread: Sprea
     }
   }
   return [...changed]
+}
+
+/** 紙面を離れて浮遊し、揺れや移動で動く演出。部品を動かしたとき紙と交わるなら、押しのけて解決してよい相手 */
+export function floatingFictionIds(spread: Spread): Set<string> {
+  const ids = new Set<string>()
+  for (const element of spread.elements) {
+    if (element.type !== 'visual' || element.attachment?.type !== 'surface' || element.presentation?.kind !== 'fiction' || !element.visible) continue
+    const animated = element.motion.length > 0 || spread.timeline.tracks.some(t => t.target.type === 'element' && t.target.elementId === element.id && /^(position|scale|opacity|visible)/.test(t.property))
+    if (!animated || (element.pivot[1] === 0 && element.baseTransform.position[1] <= .05)) continue
+    ids.add(element.id)
+  }
+  return ids
+}
+
+type Opening = { side: 'left' | 'right'; angle: number }
+const OPENINGS: Opening[] = (['left', 'right'] as const).flatMap(side => [180, 150, 120, 90, 60, 30, 15, 0].filter(angle => !(side === 'right' && angle === 180)).map(angle => ({ side, angle })))
+const openingAngles = ({ side, angle }: Opening) => ({ left: side === 'left' ? angle * Math.PI / 180 : Math.PI, right: side === 'right' ? (180 - angle) * Math.PI / 180 : 0 })
+
+/** 紙の評価は演出を動かしても変わらないので、姿勢ごとに一度だけ行う */
+type PoseCache = Map<string, ReturnType<typeof evaluateBookParts>>
+function paperAt(cache: PoseCache, project: BookProject, spread: Spread, opening: Opening) {
+  const key = opening.side + opening.angle, { left, right } = openingAngles(opening)
+  let paper = cache.get(key)
+  if (!paper) { paper = evaluateBookParts(project, spread, left, right); cache.set(key, paper) }
+  return paper
+}
+
+/** 開閉の途中も含めて、演出が指定の部品の紙と交わる最初の姿勢 */
+function firstCrossing(cache: PoseCache, project: BookProject, spread: Spread, contentId: string, partIds: ReadonlySet<string>): Opening | undefined {
+  const hold = spread.sequence.holdSeconds
+  for (const opening of OPENINGS) {
+    const { left, right } = openingAngles(opening), result = paperAt(cache, project, spread, opening)
+    const faces = Object.entries(result.nodes).filter(([id]) => partIds.has(id)).flatMap(([, node]) => node.faces.filter(face => !face.support))
+    const bindings = bindBookContents(project, spread, result, left, right).filter(binding => binding.id === contentId)
+    if (inspectContentMotion(bindings, faces, { openingAngleDeg: opening.angle, maxOpeningAngleDeg: 180 }, hold, bookContentHoldTime(opening.angle, opening.side, hold)).length) return opening
+  }
+  return undefined
+}
+
+/** その姿勢で交わっている紙の枠から抜ける移動の候補 (演出の取り付け座標系)。小さい順 */
+function escapeCandidates(cache: PoseCache, project: BookProject, spread: Spread, contentId: string, partIds: ReadonlySet<string>, opening: Opening): Vector3[] {
+  const { left, right } = openingAngles(opening)
+  const paper = paperAt(cache, project, spread, opening)
+  const faces = Object.entries(paper.nodes).filter(([id]) => partIds.has(id)).flatMap(([, node]) => node.faces.filter(face => !face.support))
+  const bindings = bindBookContents(project, spread, paper, left, right)
+  const hold = spread.sequence.holdSeconds, holdTime = bookContentHoldTime(opening.angle, opening.side, hold)
+  const times = holdTime === undefined ? contentSampleTimes(bindings, hold).filter(t => t <= hold) : [holdTime]
+  const candidates = new Map<string, { amount: number; local: Vector3 }>()
+  for (const time of times) {
+    const contents = evaluateContents(bindings, { openingAngleDeg: opening.angle, maxOpeningAngleDeg: 180, holdTime: time, clock: () => time })
+    const content = contents.find(c => c.id === contentId)
+    if (!content || !content.visible) continue
+    const envelope = contentMotionEnvelopes([content])[0]
+    const points = (envelope?.triangles ?? contentTriangles(content)).flatMap(triangle => triangle.map(vertex => vertex.point))
+    const inverse = content.anchor.clone().invert()
+    for (const face of faces) {
+      if (!inspectContentIntersections([content], [face], true).length) continue
+      const normal = face.u.clone().cross(face.v).normalize(), margin = .03
+      const along = (axis: Vector3) => points.map(p => p.clone().sub(face.origin).dot(axis))
+      const u = along(face.u), v = along(face.v), n = along(normal)
+      const options: [number, Vector3][] = [
+        [-(Math.max(...u) + margin), face.u], [face.width + margin - Math.min(...u), face.u],
+        [-(Math.max(...n) + margin), normal], [margin - Math.min(...n), normal],
+        [face.height + margin - Math.min(...v), face.v],
+      ]
+      for (const [amount, axis] of options) {
+        const local = axis.clone().multiplyScalar(amount).transformDirection(inverse).multiplyScalar(Math.abs(amount))
+        candidates.set(local.toArray().map(n => n.toFixed(3)).join(','), { amount: Math.abs(amount), local })
+      }
+    }
+  }
+  return [...candidates.values()].sort((a, b) => a.amount - b.amount).map(c => c.local)
+}
+
+/**
+ * 動かした部品の紙を貫くことになった浮遊演出を押しのける。交わる姿勢ごとに、その紙の枠から
+ * 横・前後・上へ抜ける最小の移動を試し、開閉の全域で交わらなくなるまで重ねる。抜けなければ動かさない (検証が止める)。
+ * 支持紙との交差は clearFictionSupportCrossings が持ち上げで解く。
+ */
+export function clearFictionPaperCrossings(project: BookProject, spread: Spread, partIds: ReadonlySet<string>, allowed: ReadonlySet<string>): string[] {
+  const changed: string[] = [], cache: PoseCache = new Map()
+  for (const id of allowed) {
+    const element = spread.elements.find(e => e.id === id)
+    if (!element || !firstCrossing(cache, project, spread, id, partIds)) continue
+    const tracks = spread.timeline.tracks.filter(track => track.target.type === 'element' && track.target.elementId === id && /^position\.[xyz]$/.test(track.property))
+    const original = [...element.baseTransform.position] as [number, number, number], originalKeys = tracks.map(track => track.keys.map(key => key.value))
+    const place = (shift: Vector3) => {
+      element.baseTransform.position = new Vector3(...original).add(shift).toArray()
+      tracks.forEach((track, index) => track.keys.forEach((key, k) => { const value = originalKeys[index][k]; if (typeof value === 'number') key.value = value + shift.getComponent('xyz'.indexOf(track.property.at(-1)!)) }))
+    }
+    let shift = new Vector3(), solved = false
+    for (let pass = 0; pass < 4 && !solved; pass++) {
+      const crossing = firstCrossing(cache, project, spread, id, partIds)
+      if (!crossing) { solved = true; break }
+      let advanced = false
+      for (const local of escapeCandidates(cache, project, spread, id, partIds, crossing)) {
+        place(shift.clone().add(local))
+        const next = firstCrossing(cache, project, spread, id, partIds)
+        if (!next) { shift.add(local); solved = true; advanced = true; break }
+        // その姿勢は抜けたなら、残りの姿勢を次の回で解く
+        if (next.side !== crossing.side || next.angle !== crossing.angle) { shift.add(local); advanced = true; break }
+      }
+      if (!advanced) break
+    }
+    if (solved) changed.push(id)
+    else place(new Vector3())
+  }
+  return changed
 }

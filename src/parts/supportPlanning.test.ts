@@ -4,11 +4,11 @@ import type { PartElement } from '../schema/stageElement'
 import { evaluateBookParts, validateBookParts } from './book'
 import { pointOnFace } from './geometry'
 import { planPartPlacement } from './placement'
-import { planSupportedPart, replanAutomaticSupports } from './supportPlanning'
+import { planSupportedPart, rehomeDependentParts, replanAutomaticSupports } from './supportPlanning'
 import { applyBookEditPlan, bookEditScene } from './bookEdit'
-import { planPartEdit } from './edit'
+import { describePartEdit, planPartEdit } from './edit'
 import { partInstanceSchema } from './schema'
-import { nearestContentSurface, clearFictionSupportCrossings } from './contentPlacement'
+import { nearestContentSurface, clearFictionSupportCrossings, floatingFictionIds } from './contentPlacement'
 import { connectedContentSchema } from '../schema/content'
 import { contentAsStage, bindBookContents, evaluateContents } from './contents'
 import { inspectContentIntersections } from './contentValidation'
@@ -122,5 +122,97 @@ describe('配置時に設計する共通の支持紙', () => {
     const grounded = structuredClone(float.baseTransform)
     expect(clearFictionSupportCrossings(project, spread, new Set([float.id]))).toEqual([])
     expect(float.baseTransform).toEqual(grounded)
+  })
+})
+
+describe('動かした紙に当たる浮遊演出', () => {
+  it('部品の移動を止めず、確定時に演出を紙の枠から押し出す', () => {
+    const { project, spread, card } = fixture()
+    spread.elements.push(planSupportedPart(project, spread, card, { position: [2, 0, .6] }))
+    // 背景に貼った浮遊する花びら。カードの少し右で揺れている
+    const petal = contentAsStage(connectedContentSchema.parse({ ...createStageElement('visual'), id: 'petal', width: .3, height: .3, pivot: [.5, .5],
+      attachment: { type: 'surface', surface: { nodeId: 'scenery', portId: 'panel' }, point: [3.25, .01], side: 'front' },
+      presentation: { kind: 'fiction', closing: 'shrink-to-anchor' }, baseTransform: { position: [0, .8, 2.35], rotation: [0, 0, 0], scale: [1, 1, 1] },
+      motion: [{ type: 'drift', amplitude: [.1, .1, .1], period: 5, phase: 0 }],
+    }))
+    spread.elements.push(petal)
+    expect(validateBookParts(project)).toEqual([])
+    expect(floatingFictionIds(spread)).toEqual(new Set(['petal']))
+    const scene = bookEditScene(project, spread.id)
+    const plan = planPartEdit(scene, 'new-card', { type: 'translate', delta: [.6, 0] })
+    expect(plan.ok, plan.ok ? '' : plan.detail).toBe(true)
+    if (!plan.ok) return
+    const next = applyBookEditPlan(project, spread.id, plan)
+    const moved = next.book.spreads[0].elements.find((item) => item.id === 'petal')!
+    expect(moved.baseTransform.position).not.toEqual(petal.baseTransform.position)
+    expect(validateBookParts(next)).toEqual([])
+  })
+})
+
+describe('接続先を失った起立の繋ぎ直し', () => {
+  /** 奥に幅広の背景、その手前に幅の狭い背景。手前の背景へ起立を乗せる */
+  function stacked() {
+    const project = createBookProject(), spread = project.book.spreads[0]
+    const root = (id: string, width: number, offset: number): PartElement => ({ ...createStageElement('part'), id, type: 'part', part: {
+      definition: { builtin: 'root-upright', version: 1 }, mount: { type: 'output', nodeId: '$book', portId: 'gutter' },
+      parameters: { width, height: 3, centerX: 2, offset }, materials: {} } })
+    spread.elements = [root('far', 10, -5), root('near', 3, -3)]
+    const card: PartElement = { ...createStageElement('part'), id: 'card', type: 'part', part: {
+      definition: { builtin: 'upright', version: 1 }, mount: { type: 'output', nodeId: '$book', portId: 'gutter' },
+      parameters: { width: 1.5, height: 1.2 }, materials: {} } }
+    spread.elements.push(planSupportedPart(project, spread, card, { position: [2, 0, -2], surfaces: [{ nodeId: '$book', portId: 'right-page' }, { nodeId: 'near', portId: 'panel' }] }))
+    expect(validateBookParts(project)).toEqual([])
+    return { project, spread }
+  }
+  const parentOf = (spread: { elements: { id: string }[] }, id: string) => {
+    const element = spread.elements.find((item) => item.id === id) as PartElement
+    const mount = element.part.mount
+    return mount.type === 'pair' ? mount.b.nodeId : mount.type === 'output' ? mount.nodeId : '$input'
+  }
+
+  it('乗っていた部品を外すと、その奥にある紙へ同じ足元のまま掛け替える', () => {
+    const { project, spread } = stacked()
+    const before = evaluateBookParts(project, spread, Math.PI, 0).nodes.card.ports.panel
+    const after = rehomeDependentParts(project, spread, 'near')
+    expect(after.elements.map((item) => item.id)).toEqual(['far', 'card'])
+    expect(parentOf(after, 'card')).toBe('far')
+    const panel = evaluateBookParts(project, after, Math.PI, 0).nodes.card.ports.panel
+    if (before.kind !== 'surface' || panel.kind !== 'surface') throw new Error('panel missing')
+    expect(pointOnFace(panel.face, panel.face.width / 2, 0).distanceTo(pointOnFace(before.face, before.face.width / 2, 0))).toBeLessThan(1e-6)
+    expect(validateBookParts({ ...project, book: { ...project.book, spreads: [after] } })).toEqual([])
+  })
+
+  it('奥に紙が無ければ紙面へ孤立して立て、起立でない従属部品は残さない', () => {
+    const { project, spread } = stacked()
+    spread.elements = spread.elements.filter((item) => item.id !== 'far')
+    const fold: PartElement = { ...createStageElement('part'), id: 'fold', type: 'part', part: {
+      definition: { builtin: 'flat', version: 1 }, mount: { type: 'output', nodeId: 'near', portId: 'panel' }, parameters: { width: 1, height: 1, u: 1, v: 1 }, materials: {} } }
+    spread.elements.push(fold)
+    const after = rehomeDependentParts(project, spread, 'near')
+    expect(after.elements.map((item) => item.id)).toEqual(['card'])
+    const card = after.elements[0] as PartElement
+    expect(card.part.definition).toEqual({ builtin: 'root-upright', version: 1 })
+    expect(card.part.parameters.centerX).toBeCloseTo(2); expect(card.part.parameters.offset).toBeCloseTo(-2)
+    expect(validateBookParts({ ...project, book: { ...project.book, spreads: [after] } })).toEqual([])
+  })
+
+  it('移動で今の接続先に届かなくなった起立は、移動先の奥にある紙へ乗り換える', () => {
+    const { project, spread } = stacked()
+    const foot = evaluateBookParts(project, spread, Math.PI, 0).nodes.card.ports.panel
+    if (foot.kind !== 'surface') throw new Error('panel missing')
+    const scene = bookEditScene(project, spread.id), input = describePartEdit(scene, 'card').input
+    if (input.kind !== 'fold-pair') throw new Error('expected a two-surface mount')
+    const plan = planPartEdit(scene, 'card', { type: 'translate', delta: [0, -1.5] })
+    expect(plan.ok, plan.ok ? '' : plan.detail).toBe(true)
+    if (!plan.ok) return
+    const moved = plan.nodes.find((node) => node.id === 'card')!
+    expect(moved.mount.type === 'pair' && moved.mount.b.nodeId).toBe('far')
+    const next = applyBookEditPlan(project, spread.id, plan)
+    expect(validateBookParts(next)).toEqual([])
+    const panel = evaluateBookParts(next, next.book.spreads[0], Math.PI, 0).nodes.card.ports.panel
+    if (panel.kind !== 'surface') throw new Error('panel missing')
+    // 足元は元の折り線に沿って手前 (奥) へ 1.5 だけ動く
+    const expected = pointOnFace(foot.face, foot.face.width / 2, 0).addScaledVector(input.rayA, -1.5)
+    expect(pointOnFace(panel.face, panel.face.width / 2, 0).distanceTo(expected)).toBeLessThan(1e-6)
   })
 })

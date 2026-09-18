@@ -1,10 +1,11 @@
 import * as THREE from 'three'
 import type { Spread } from '../schema/book'
-import type { ParentSpace, Transform } from '../schema/stageElement'
+import type { ParentSpace, PartElement, Transform } from '../schema/stageElement'
 import { createBook } from '../schema/bookDefaults'
 import { surfaceFrame } from '../runtime/mechanisms/evaluate'
 import { evaluateAssemblyScene } from '../runtime/mechanisms/scene'
-import { bindingDependencies } from '../parts/schema'
+import { bindingDependencies, type PartBinding } from '../parts/schema'
+import { canRehomePart } from '../parts/supportPlanning'
 
 function transformMatrix(transform: Transform) {
   const matrix = new THREE.Matrix4()
@@ -66,6 +67,37 @@ export function elementDescendantIds(spread: Spread, id: string): Set<string> {
   }
   visit(id)
   return found
+}
+
+/** 部品の所属。接続先の部品があればその子、なければ接続したページ */
+export function partOwnership(binding: PartBinding): PartElement['parent'] {
+  const parent = bindingDependencies(binding).find((id) => id !== '$book')
+  return parent ? { type: 'element', elementId: parent } : { type: binding.type === 'output' && binding.portId === 'left-page' ? 'left-page' : 'right-page' }
+}
+
+/**
+ * 要素を外したときに一緒に消える要素。部品に乗っている子部品 (とその配下) は繋ぎ直して残すので含めない。
+ * 部品の面に貼った画像や文字は貼り先を失うので消える。
+ */
+export function elementRemovalIds(spread: Spread, id: string): Set<string> {
+  const removed = new Set([id, ...elementDescendantIds(spread, id)])
+  if (spread.elements.find((element) => element.id === id)?.type !== 'part') return removed
+  // 外す部品に乗る起立と、その上に乗る起立を親から順に拾う
+  const kept = new Set<string>()
+  for (let grown = true; grown;) {
+    grown = false
+    for (const element of spread.elements) {
+      if (kept.has(element.id) || !canRehomePart(element) || element.type !== 'part') continue
+      const deps = bindingDependencies(element.part.mount).filter((dep) => dep !== '$book')
+      if (deps.some((dep) => dep === id || kept.has(dep)) && deps.every((dep) => dep === id || kept.has(dep))) { kept.add(element.id); grown = true }
+    }
+  }
+  for (const element of spread.elements) {
+    if (!kept.has(element.id)) continue
+    removed.delete(element.id)
+    for (const descendant of elementDescendantIds(spread, element.id)) removed.delete(descendant)
+  }
+  return removed
 }
 
 export type RootParentType = 'left-page' | 'right-page'

@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import * as THREE from 'three'
 import { createBook, createSpread, createStageElement } from '../schema/bookDefaults'
 import { makeMechanism } from '../schema/mechanism'
-import type { AssemblyElement } from '../schema/stageElement'
+import type { AssemblyElement, PartElement } from '../schema/stageElement'
 import { evaluateAssemblyScene } from '../runtime/mechanisms/scene'
-import { containerElementIds, elementDescendantIds, reparentElement } from './hierarchy'
+import { containerElementIds, elementDescendantIds, elementRemovalIds, partOwnership, reparentElement } from './hierarchy'
 
 describe('階層ツリーの部品移動', () => {
   it('左右の紙面を移動しても開いた状態のワールド位置を保つ', () => {
@@ -44,6 +44,27 @@ describe('階層ツリーの部品移動', () => {
     spread.elements.push(parent, child, grandchild, sibling)
 
     expect(elementDescendantIds(spread, parent.id)).toEqual(new Set([child.id, grandchild.id]))
+  })
+
+  it('部品を外すとき、乗っている起立とその配下は残し、面に貼った内容と起立でない部品は消す', () => {
+    const spread = createSpread()
+    const part = (id: string, builtin: 'upright' | 'root-upright' | 'flat', mount: PartElement['part']['mount']): PartElement => ({
+      ...createStageElement('part'), id, type: 'part', parent: partOwnership(mount), part: { definition: { builtin, version: 1 }, mount, parameters: {}, materials: {} } })
+    const pair = (b: string): PartElement['part']['mount'] => ({ type: 'pair', a: { nodeId: '$book', portId: 'right-page' }, b: { nodeId: b, portId: 'panel' },
+      hingeA: [[0, 0], [1, 0]], hingeB: [[0, 0], [1, 0]], directionA: 'positive', directionB: 'positive', foldSign: 1 })
+    const base = part('base', 'root-upright', { type: 'output', nodeId: '$book', portId: 'gutter' })
+    const tree = part('tree', 'upright', pair('base')), bush = part('bush', 'upright', pair('tree'))
+    const card = part('card', 'flat', { type: 'output', nodeId: 'base', portId: 'panel' })
+    const sticker = createStageElement('visual', { type: 'element', elementId: 'base' })
+    sticker.attachment = { type: 'surface', surface: { nodeId: 'base', portId: 'panel' }, point: [0, 0], side: 'front' }
+    const leaf = createStageElement('visual', { type: 'element', elementId: 'tree' })
+    leaf.attachment = { type: 'surface', surface: { nodeId: 'tree', portId: 'panel' }, point: [0, 0], side: 'front' }
+    spread.elements.push(base, tree, bush, card, sticker, leaf)
+
+    expect(elementDescendantIds(spread, 'base')).toEqual(new Set(['tree', 'bush', 'card', sticker.id, leaf.id]))
+    expect(elementRemovalIds(spread, 'base')).toEqual(new Set(['base', 'card', sticker.id]))
+    expect(elementRemovalIds(spread, 'tree')).toEqual(new Set(['tree', leaf.id]))
+    expect(elementRemovalIds(spread, sticker.id)).toEqual(new Set([sticker.id]))
   })
 
   it('紙面直下から連なる全要素を列挙する', () => {

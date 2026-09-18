@@ -20,8 +20,10 @@ export interface PartEditScene {
   nodes: PartNode[]; definitions: PartDefinitions
   at: (angle: number) => { input?: PartPort; external?: Record<string, Record<string, PartPort>> }
   maxAngle: number; closedBounds?: { width: number; depth: number; shrink?: boolean }
-  validateContents?: (result: PaperEvaluation, nodes: PartNode[], angle: number) => string[]
-  redesignSupports?: (nodes: PartNode[], affected: Set<string>) => void
+  validateContents?: (result: PaperEvaluation, nodes: PartNode[], angle: number, affected: ReadonlySet<string>) => string[]
+  /** 編集後の支持を作り直す。edited は操作した部品で、接続先の乗り換えを許すのはこの部品だけ */
+  /** pending はまだ取り付け直していない (評価できないかもしれない) 追従部品 */
+  redesignSupports?: (nodes: PartNode[], affected: Set<string>, edited: string, intent: PartEditIntent, pending: Set<string>) => void
   parameters?: Record<string, number>; slots?: Record<string, PartMaterial>
 }
 export interface PartEditAngle {
@@ -243,7 +245,8 @@ function remount(scene: PartEditScene, node: PartNode, prior: PartNode, ready: P
   const rayB = nb.clone().cross(axis).normalize().multiplyScalar(dirB === 'positive' ? 1 : -1)
   if (p.offset !== undefined) { p.offset = 0; node.parameters.offset = 0 }
   if (upright) {
-    p.distance = (targetAtSample.clone().sub(origin).dot(rayA) + (edit?.type === 'translate' ? edit.delta[1] : 0)) / scale
+    // 親の後ろへ動かした場合は最小距離で仮に評価し、接続先の乗り換えは支持の再設計に任せる
+    p.distance = Math.max(.05, (targetAtSample.clone().sub(origin).dot(rayA) + (edit?.type === 'translate' ? edit.delta[1] : 0)) / scale)
     node.parameters.distance = p.distance
   }
   const line = (face: PaperFace, width: number): [[number, number], [number, number]] => [materialPoint(face, origin.clone().addScaledVector(axis, -width / 2)), materialPoint(face, origin.clone().addScaledVector(axis, width / 2))]
@@ -298,11 +301,14 @@ export function planPartEdit(scene: PartEditScene, id: string, raw: PartEditInte
           }
         }
         remount(scene, node, scene.nodes.find((item) => item.id === node.id)!, ready, original, node.id === id ? intent : undefined)
+        // 支持は子を辿る前に部品ごとに作り直す。接続先からはみ出した取り付けのままでは子の面が評価できない。
+        scene.redesignSupports?.(nodes, new Set([node.id]), id, intent, new Set([...affected].filter((item) => item !== node.id && !ready.some((done) => done.id === item))))
+        // 乗り換えた先の部品も評価済みにしておく
+        for (const dep of bindingDependencies(node.mount)) { const parent = nodes.find((item) => item.id === dep); if (parent) visit(parent) }
       }
       ready.push(node); visiting.delete(node.id)
     }
     nodes.forEach(visit)
-    scene.redesignSupports?.(nodes, affected)
     if (intent.type === 'rotate' && description.angles.find((angle) => angle.id === intent.handle)?.tilt) {
       const actual = describePartEdit({ ...scene, nodes }, id).angles.find((angle) => angle.id === intent.handle)!.value
       if (Math.abs(actual - intent.value) > 1e-5) throw new Error('The requested tilt is on a different folding branch')
@@ -323,10 +329,16 @@ export function planPartEdit(scene: PartEditScene, id: string, raw: PartEditInte
       if (angle > .001) {
         const faces = [...new Map(roots.flatMap((port) => port.kind === 'surface' ? [port.face] : [port.a, port.b]).map((face) => [face.id, face])).values()]
         const withParents = { ...result, faces: [...result.faces, ...faces] }
-        errors.push(...inspectIntersections(withParents, affected))
+        // 操作前から同じ二枚が交わっていたなら、この操作の落ち度ではない。新たに生じた交差だけで止める
+        const found = inspectIntersections(withParents, affected)
+        if (found.length) {
+          const original = evaluateEditScene(scene, scene.nodes, angle)
+          const before = new Set(inspectIntersections({ ...original, faces: [...original.faces, ...faces] }, affected))
+          errors.push(...found.filter((message) => !before.has(message)))
+        }
         if (thorough) nearby.set(angle, nearbyPaperPairs(withParents, affected))
       }
-      errors.push(...scene.validateContents?.(result, nodes, angle) ?? [])
+      errors.push(...scene.validateContents?.(result, nodes, angle, affected) ?? [])
       if (errors.length) throw new Error(errors[0])
       const points = result.faces.flatMap(faceCorners); checked.set(angle, points)
       return points

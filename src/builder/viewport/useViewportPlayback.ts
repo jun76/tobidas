@@ -97,12 +97,13 @@ export function useViewportPlayback() {
   }, [mode, previewProgress])
 
   /**
-   * BGMは再生モードの間だけ鳴らす。編集へ戻ったら止める。
+   * BGMは再生モードの間だけ鳴らす。編集へ戻ったら止める。読み上げの途中も打ち切る。
    * 初回は再生ボタンかシークバーの操作を待つ。再生モードへ入っただけでは鳴らさない。
    */
   useEffect(() => {
     if (mode !== 'play') {
       builderBgm.stop()
+      builderNarrator.cancel()
       return
     }
     const audio = bookAudio
@@ -118,6 +119,7 @@ export function useViewportPlayback() {
     return () => {
       cancelled = true
       builderBgm.stop()
+      builderNarrator.cancel()
     }
   }, [mode, bookAudio, assets])
 
@@ -220,10 +222,10 @@ export function useViewportPlayback() {
       pause()
       return
     }
-    if (playProgressRef.current >= 1) {
-      playProgressRef.current = 0
     // 手動モードやページ送りの途中からは、その位置から自動再生へ移る
     turn.current = null
+    if (playProgressRef.current >= 1) {
+      playProgressRef.current = 0
       target.current = 0
       setPlayProgress(0)
       setPreviewProgress(0)
@@ -290,12 +292,12 @@ export function useViewportPlayback() {
 
   return {
     progress,
-    isAutoPlaying,
-    // 終端では再生ボタンが「最初から」の絵になる (書き出した再生画面と同じ)
     playback: playbackState,
-    atEnd,
+    isAutoPlaying,
     canTurn: (direction: 1 | -1) => pageTurnTarget(book, progress, direction) !== undefined,
     turnPage,
+    // 終端では再生ボタンが「最初から」の絵になる (書き出した再生画面と同じ)
+    atEnd,
     // 音声ボタンはBGMと効果音の両方を消すので、どちらかを持つ作品なら出す
     hasAudio: Boolean(bookAudio) || soundCueAssetIds(book).length > 0
       || hasEmbeddedVideoAudio(book, new Map(assets.map((asset) => [asset.id, asset]))),

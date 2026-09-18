@@ -12,7 +12,7 @@ import { createPaperMotionInspector, inspectClosedLayout, validatePartDefinition
 import type { PartBinding, PartInstance, PartSurfaceRef, PartDefinition, PartDefinitions } from './schema'
 import { builtinPart } from './catalog'
 import { clearFictionSupportCrossings } from './contentPlacement'
-import { parameterValues, evaluateExpression } from './schema'
+import { bindingDependencies, parameterValues, evaluateExpression } from './schema'
 import { newPartDefinition } from './schema'
 import { connectedContentSchema } from '../schema/content'
 import { extensionFor, materialPoint } from './mountGeometry'
@@ -94,11 +94,27 @@ export interface SupportPlacement {
   position: [number, number, number]
   /** 面をクリックした場合はその二面を守る。省略時だけ既存の実面から接続先を探す。 */
   surfaces?: [PartSurfaceRef, PartSurfaceRef]
+  /** 交差を検査しない演出。動かした紙に当たる浮遊演出は、配置後に押しのけて解く */
+  ignoreContents?: ReadonlySet<string>
 }
 const same = (a: PartSurfaceRef, b: PartSurfaceRef) => a.nodeId === b.nodeId && a.portId === b.portId
+/** 指定の部品と、その面に貼った内容 (とそれに従う内容) を除いた見開き */
+export function withoutParts(spread: Spread, ids: Set<string>): Spread {
+  const dropped = new Set([...ids].filter(id => spread.elements.some(e => e.id === id && e.type === 'part')))
+  for (let grown = true; grown;) {
+    grown = false
+    for (const e of spread.elements) {
+      if (dropped.has(e.id)) continue
+      const follows = e.attachment?.type === 'surface' ? dropped.has(e.attachment.surface.nodeId) : e.attachment?.type === 'visual' ? dropped.has(e.attachment.elementId) : false
+      if (follows) { dropped.add(e.id); grown = true }
+    }
+  }
+  return { ...spread, elements: spread.elements.filter(e => !dropped.has(e.id)) }
+}
 
 function sources(project: BookProject, spread: Spread, excluded: Set<string>, selected?: [PartSurfaceRef, PartSurfaceRef], target?: Vector3): SupportSource[] {
-  const paper = evaluateBookParts(project, spread, Math.PI, 0)
+  // 設計し直す部品とその配下は候補にならない。動かした直後で評価できない取り付けのこともあるので、評価からも外す。
+  const paper = evaluateBookParts(project, withoutParts(spread, excluded), Math.PI, 0)
   const { pageWidth: w, pageAspect } = project.book.format, pages = pagePorts(w, w / pageAspect, Math.PI, 0)
   if (selected && target) {
     const face = (ref: PartSurfaceRef) => {
@@ -174,7 +190,11 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
   const parameters = parameterValues(builtinPart(element.part.definition.builtin, 1).parameters, element.part.parameters)
   const unit = element.part.uniformScale ?? 1, width = parameters.width * unit, height = parameters.height * unit
   const target = new Vector3(...placement.position), failures = new Set<string>()
-  const replace = (candidate: PartElement): Spread => ({ ...spread, elements: existing ? spread.elements.map(e => e.id === element.id ? candidate : e) : [...spread.elements, candidate] })
+  // 配下の部品は親の新しい位置に合わせて後から取り付け直すので、候補の検査には含めない。
+  const dependents = new Set([...excluded].filter(id => id !== element.id))
+  const replace = (candidate: PartElement): Spread => existing
+    ? { ...spread, elements: withoutParts(spread, dependents).elements.map(e => e.id === element.id ? candidate : e) }
+    : { ...spread, elements: [...spread.elements, candidate] }
   const choices: { candidate: PartElement; score: number }[] = []
   let rearCandidate = false
   for (const source of sources(project, spread, excluded, placement.surfaces, target)) {
@@ -225,7 +245,7 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
     }
   }
   if (!placement.surfaces) {
-    const paper = evaluateBookParts(project, spread, Math.PI, 0)
+    const paper = evaluateBookParts(project, withoutParts(spread, excluded), Math.PI, 0)
     // 同じ奥行きにある側方の紙は、水平の連結紙で親と一緒に寝かせる。
     for (const [nodeId, evaluated] of Object.entries(paper.nodes)) {
       if (excluded.has(nodeId)) continue
@@ -253,7 +273,7 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
         const result = evaluateBookParts(project, next, left, right), input = pagePorts(w, depth, left, right).gutter
         const errors = [...inspect(result, [input]), ...inspectIntersections(result).filter(s => s.includes(element.id + '/'))]
         if (angle === 0 && input.kind === 'fold-pair') errors.push(...inspectClosedLayout(deployBookParts(project, next, result, left, right).nodes[element.id], w, depth, input.rayA))
-        if (!errors.length) errors.push(...inspectContentMotion(bindBookContents(project, next, result, left, right), result.nodes[element.id].faces,
+        if (!errors.length) errors.push(...inspectContentMotion(bindBookContents(project, next, result, left, right).filter(b => !placement.ignoreContents?.has(b.id)), result.nodes[element.id].faces,
           { openingAngleDeg: angle, maxOpeningAngleDeg: 180 }, spread.sequence.holdSeconds, bookContentHoldTime(angle, side, spread.sequence.holdSeconds)))
         if (errors.length) throw new Error(errors[0])
       }
@@ -299,3 +319,124 @@ export function replanAutomaticSupports(project: BookProject, spread: Spread, op
     replanAutomaticSupports(project, spread, options, pass + 1)
   }
 }
+
+/**
+ * 二面へ掛けた起立部品の足元 (板の下辺の中央)。部品自身は評価せず、接続先の二面と保存した折り線から求める。
+ * 動かした直後の取り付けは接続先からはみ出して評価できないことがあるので、再設計の目標位置はこれで取る。
+ */
+export function supportedPartFoot(project: BookProject, spread: Spread, element: PartElement): [number, number, number] {
+  const mount = element.part.mount
+  if (mount.type !== 'pair') throw new Error('Expected a two-surface mount')
+  const nodes = spread.elements.filter((e): e is PartElement => e.type === 'part').map(e => ({ id: e.id, name: e.name, ...e.part }))
+  const skipped = dependentPartIds(nodes, element.id)
+  const paper = evaluateBookParts(project, { ...spread, elements: spread.elements.filter(e => !skipped.has(e.id)) }, Math.PI, 0)
+  const { pageWidth: w, pageAspect } = project.book.format, pages = pagePorts(w, w / pageAspect, Math.PI, 0)
+  const face = (ref: PartSurfaceRef) => {
+    const port = ref.nodeId === '$book' ? pages[ref.portId] : paper.nodes[ref.nodeId] && evaluatedOutput(paper.nodes[ref.nodeId], ref.portId, ref.nodeId)
+    if (port?.kind !== 'surface') throw new Error('Support surface is missing')
+    return port.face
+  }
+  const a = face(mount.a), pa = mount.hingeA.map(([u, v]) => pointOnFace(a, u, v))
+  const origin = pa[0].clone().add(pa[1]).multiplyScalar(.5), axis = pa[1].clone().sub(pa[0]).normalize()
+  const rayA = a.u.clone().cross(a.v).cross(axis).normalize().multiplyScalar(mount.directionA === 'positive' ? 1 : -1)
+  const parameters = parameterValues(builtinPart('upright', 1).parameters, element.part.parameters)
+  return origin.addScaledVector(rayA, parameters.distance * (element.part.uniformScale ?? 1)).toArray() as [number, number, number]
+}
+
+/** 配下を除いた見開きで、その部品の取り付けが評価できるか (はみ出した支持紙などで壊れていないか) */
+export function supportEvaluates(project: BookProject, spread: Spread, element: PartElement): boolean {
+  const nodes = spread.elements.filter((e): e is PartElement => e.type === 'part').map(e => ({ id: e.id, name: e.name, ...e.part }))
+  const dependents = new Set([...dependentPartIds(nodes, element.id)].filter(id => id !== element.id))
+  try { evaluateBookParts(project, withoutParts(spread, dependents), Math.PI, 0); return true } catch { return false }
+}
+
+/**
+ * 動かした起立部品の支持を作り直す。今の接続先で成り立つならそれを保ち (継ぎ足しで届く場合も含む)、
+ * 成り立たないときだけ移動先の奥にある紙へ乗り換える。どこにも乗れなければ元の失敗を返す。
+ */
+export function replanMovedSupport(project: BookProject, spread: Spread, element: PartElement, position: [number, number, number], ignoreContents?: ReadonlySet<string>): PartElement {
+  const mount = element.part.mount
+  let keptFailure: unknown
+  if (mount.type === 'pair') {
+    try { return planSupportedPart(project, spread, element, { position, surfaces: [mount.a, mount.b], ignoreContents }) }
+    catch (error) { keptFailure = error }
+  }
+  try { return planSupportedPart(project, spread, element, { position, ignoreContents }) }
+  catch (error) { throw keptFailure ?? error }
+}
+
+/** 接続先を失ったときに別の紙へ繋ぎ直せる部品か。支持を自動設計できる起立だけ */
+export function canRehomePart(element: { type: string; part?: { definition: PartInstance['definition'] } }): boolean {
+  return element.type === 'part' && element.part !== undefined && 'builtin' in element.part.definition && ['upright', 'side-upright'].includes(element.part.definition.builtin)
+}
+
+/**
+ * 部品を外すとき、その部品に乗っていた子部品を繋ぎ直す。
+ * 直接の子は外す部品の接続先 (その親) へ掛け替え、無理なら位置の奥にある紙を探し、
+ * それも無ければ紙面へ直接立てる孤立した起立にする。孫以下は同じ位置のまま、繋ぎ直した親へ取り付け直す。
+ */
+export function rehomeDependentParts(project: BookProject, spread: Spread, removedId: string): Spread {
+  const removed = spread.elements.find(e => e.id === removedId)
+  if (removed?.type !== 'part') return spread
+  const removedMount = removed.part.mount
+  const parentSurfaces = removedMount.type === 'pair' && removedMount.b.nodeId !== '$book' ? [removedMount.a, removedMount.b] as [PartSurfaceRef, PartSurfaceRef] : undefined
+  const nodes = spread.elements.filter((e): e is PartElement => e.type === 'part').map(e => ({ id: e.id, name: e.name, ...e.part }))
+  const paper = evaluateBookParts(project, spread, Math.PI, 0)
+  // 繋ぎ直せるのは外す部品に直接乗る起立とその配下の起立。折り機構などの他の部品は乗り先を失うので残さない
+  const feet = new Map<string, [number, number, number]>()
+  for (const id of [...dependentPartIds(nodes, removedId)].filter(id => id !== removedId)) {
+    const element = spread.elements.find(e => e.id === id)
+    if (!element || !canRehomePart(element)) continue
+    const deps = bindingDependencies(nodes.find(n => n.id === id)!.mount).filter(dep => dep !== '$book')
+    if (!deps.every(dep => dep === removedId || feet.has(dep))) continue
+    const panel = paper.nodes[id]?.ports.panel
+    if (panel?.kind === 'surface') feet.set(id, pointOnFace(panel.face, panel.face.width / 2, 0).toArray() as [number, number, number])
+  }
+  const orphanOf = (element: PartElement, position: [number, number, number]): PartElement => {
+    const unit = element.part.uniformScale ?? 1
+    const parameters = parameterValues(builtinPart('upright', 1).parameters, element.part.parameters)
+    return { ...element, part: { ...element.part, definition: { builtin: 'root-upright', version: 1 }, supportDesign: 'automatic',
+      mount: { type: 'output', nodeId: '$book', portId: 'gutter' },
+      parameters: { width: parameters.width, height: parameters.height, centerX: position[0] / unit, offset: position[2] / unit } } }
+  }
+  // 繋ぎ直す前の子部品は外した部品を参照したままで評価できないので、いったん見開きから外し、繋ぎ直した順に戻す
+  const dropped = new Set([...dependentPartIds(nodes, removedId)].filter(id => !feet.has(id)))
+  let next: Spread = withoutParts(spread, new Set([...dropped, ...feet.keys()]))
+  const contents = spread.elements.filter(e => !next.elements.includes(e) && !dropped.has(e.id) && !feet.has(e.id))
+  const restore = (planned: PartElement) => {
+    const elements = [...next.elements, planned]
+    // その部品の面に貼っていた内容も戻す
+    for (const e of contents) if (e.attachment?.type === 'surface' && e.attachment.surface.nodeId === planned.id && !elements.includes(e)) elements.push(e)
+    next = { ...next, elements }
+  }
+  // 親から順に繋ぎ直す
+  const done = new Set<string>(), order: string[] = []
+  while (order.length < feet.size) {
+    const ready = [...feet.keys()].find(id => !done.has(id) && bindingDependencies(nodes.find(n => n.id === id)!.mount).every(dep => dep === '$book' || dep === removedId || !feet.has(dep) || done.has(dep)))
+    if (!ready) break
+    done.add(ready); order.push(ready)
+  }
+  for (const id of order) {
+    const original = nodes.find(n => n.id === id)!, position = feet.get(id)!
+    const element = spread.elements.find(e => e.id === id)
+    if (element?.type !== 'part') continue
+    const direct = bindingDependencies(original.mount).includes(removedId)
+    const preferred = direct ? parentSurfaces : original.mount.type === 'pair' ? [original.mount.a, original.mount.b] as [PartSurfaceRef, PartSurfaceRef] : undefined
+    const staged = { ...next, elements: [...next.elements, element] }
+    let planned: PartElement | undefined
+    for (const surfaces of preferred ? [preferred, undefined] : [undefined]) {
+      try { planned = planSupportedPart(project, staged, element, { position, surfaces }); break }
+      catch { /* 次の候補へ */ }
+    }
+    if (!planned) {
+      // どこにも乗れない子は紙面へ孤立して立てる。輪郭が最奥のカードに合わなければ輪郭を外す
+      planned = orphanOf(element, position)
+      try { evaluateBookParts(project, { ...next, elements: [...next.elements, planned] }, Math.PI, 0) }
+      catch { planned = { ...planned, part: { ...planned.part, shapes: undefined } } }
+    }
+    restore(planned)
+  }
+  // 戻せなかった内容 (乗り先のない貼り付け) はここで落ちる
+  return next
+}
+
