@@ -25,7 +25,7 @@ export function BookPartsRenderer({ project, spread: source, spreadTime, leftAng
     return <group>{spread.elements.filter((element) => element.type === 'part' && partIsVisible(spread, element.id,
       (id) => Boolean(isHidden?.(spread.id, spread.elements.find((item) => item.id === id)!)))).map((element) => <PaperMeshes
         key={element.id} faces={(evaluated.nodes[element.id]?.faces ?? []).map((face) => displayed.get(face.id)!)}
-        paperSurfaces={paperDisplay.surfaces} assets={assets} opacity={element.opacity}
+        paperSurfaces={paperDisplay.surfaces} assets={assets} opacity={element.opacity} hideSupports={!project.book.appearance.showSupports}
         surfaceTarget={{ spreadId: spread.id, nodeId: element.id }}
         onSelect={onSelect ? () => onSelect({ type: 'element', spreadId: spread.id, elementId: element.id }) : undefined} />)}
       <ContentMeshes bindings={bindings} assets={assets} clocks={clocks} clockPrefix={project.id + '/' + spread.id} playing={playing}

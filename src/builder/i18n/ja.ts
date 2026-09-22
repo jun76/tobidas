@@ -258,6 +258,7 @@ export const ja = {
     videoAudioGlobal: '舞台背景の音は距離で減衰しない全体音として再生します。',
     coverColor: '表紙の地色',
     coverEdgeColor: '背表紙・表紙側面',
+    showSupports: '支持材を表示',
     camera: 'カメラ',
     cameraFrustum: 'カメラの錐台',
     position: '位置',

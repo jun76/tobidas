@@ -113,7 +113,7 @@ export function PlacedPartInspector({ element, spreadId }: { element: PartElemen
     {materialSlots.length > 0 && <>
       <label className={st.field}><span>{t.material}</span><select aria-label={t.material} value={active} onChange={(event) => setSurface(event.target.value)}>
         {materialSlots.map((name) => <option key={name} value={name}>{name === '*' ? t.title : portLabel(name)}</option>)}
-      </select></label><MaterialFields assets={store.project.assets} value={material} onChange={(value) => update({ materials: { ...element.part.materials, [active]: value } })} />
+      </select></label><MaterialFields paper assets={store.project.assets} value={material} onChange={(value) => update({ materials: { ...element.part.materials, [active]: value } })} />
     </>}
     <ShapeFields faceIds={evaluateBookParts(store.project, store.project.book.spreads.find((item) => item.id === spreadId)!, Math.PI, 0).nodes[element.id].faces.filter((face) => !face.support).map((face) => face.id.slice(element.id.length + 1))} shapes={element.part.shapes} onChange={(face, shape) => { const shapes = { ...element.part.shapes }; if (shape) shapes[face] = shape; else delete shapes[face]; update({ shapes }) }} />
     {'custom' in element.part.definition && <button type="button" onClick={() => {

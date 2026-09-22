@@ -27,6 +27,8 @@ export const partParameterSchema = z.object({
 export const partMaterialSchema = z.object({
   color: z.string().regex(/^#[\da-fA-F]{6}$/).optional(), image: id.optional(), backImage: id.optional(),
   text: z.string().max(4000).optional(), textColor: z.string().regex(/^#[\da-fA-F]{6}$/).optional(),
+  /** 紙そのものを描かない。画像・文字がない面は透明になり、貼った印刷だけが見える。評価・接着・収納は紙のまま */
+  transparent: z.boolean().optional(),
 }).strict()
 export const partMaterialValueSchema = z.union([partMaterialSchema, z.object({ slot: id }).strict()])
 export const partSurfaceRefSchema = z.object({ nodeId: id, portId: id }).strict()

@@ -14,6 +14,8 @@ import { hasEmbeddedVideoAudio, unlockVideoAudio } from '../../runtime/videoAudi
 
 /** 再生の状態。書き出した再生画面 (player/PlayerApp.tsx) と同じ3つ */
 export type ViewportPlayback = 'auto' | 'manual' | 'turning'
+/** 末尾に着いてからBGMを消し、表紙へ戻すまでの秒数 (再生画面と同じ) */
+const END_FADE_SECONDS = 2.5
 
 export function useViewportPlayback() {
   const mode = useBuilderStore((state) => state.mode)
@@ -36,6 +38,24 @@ export function useViewportPlayback() {
     playbackRef.current = 'manual'
     setPlaybackState('manual')
   }
+  /** 末尾で待ってから表紙へ戻す予約。操作があれば取り消す */
+  const returnTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const cancelReturn = () => { if (returnTimer.current) { clearTimeout(returnTimer.current); returnTimer.current = null } }
+  /** 再生またはページ送りで末尾に到達した。BGMをゆっくり消して止め、曲が消えたら閉じた表紙へ戻す (再生画面と同じ) */
+  const finish = () => {
+    settle()
+    builderBgm.stop(END_FADE_SECONDS)
+    cancelReturn()
+    returnTimer.current = setTimeout(() => {
+      returnTimer.current = null
+      if (playbackRef.current !== 'manual' || playProgressRef.current < 1) return
+      target.current = 0
+      playProgressRef.current = 0
+      setPlayProgress(0)
+      sync(0)
+    }, END_FADE_SECONDS * 1000)
+  }
+  useEffect(() => cancelReturn, [])
   /** 音声ボタンで消したか。BGMも効果音もまとめて黙らせる。再生の開始・停止を跨いで覚える */
   const [audioMuted, setAudioMuted] = useState(false)
   const audioMutedRef = useRef(false)
@@ -82,6 +102,7 @@ export function useViewportPlayback() {
     }
     if (mode !== 'play') {
       settle()
+      cancelReturn()
       bgmArmedRef.current = false
     }
     previousMode.current = mode
@@ -174,7 +195,7 @@ export function useViewportPlayback() {
         fireCues(current, next)
         sync(next, 120)
         if (next >= 1) {
-          settle()
+          finish()
           sync(next)
         }
       } else if (playbackRef.current === 'turning' && turn.current) {
@@ -188,7 +209,7 @@ export function useViewportPlayback() {
         fireCues(current, next)
         sync(next, 120)
         if (next === goal) {
-          settle()
+          if (goal >= 1) finish(); else settle()
           sync(next)
         }
       } else {
@@ -210,6 +231,7 @@ export function useViewportPlayback() {
   }, [mode, book, playbackDuration, setPreviewProgress])
 
   const pause = () => {
+    cancelReturn()
     if (playbackRef.current === 'manual') return
     settle()
     setPreviewProgress(playProgressRef.current)
@@ -217,6 +239,7 @@ export function useViewportPlayback() {
 
   const toggle = () => {
     unlockVideoAudio()
+    cancelReturn()
     startBgm(true)
     if (playbackRef.current === 'auto') {
       pause()
@@ -243,6 +266,7 @@ export function useViewportPlayback() {
     const plan = spreadJumpPlan(book, index)
     if (!plan) return
     unlockVideoAudio()
+    cancelReturn()
     startBgm(true)
     playProgressRef.current = plan.start
     target.current = plan.start

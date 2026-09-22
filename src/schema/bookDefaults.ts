@@ -25,7 +25,7 @@ export function createBook(partial: Partial<Book> = {}): Book {
     sequence: { coverOpenSeconds: 1.5 },
     readAloud: true,
     format: { pageAspect: 1.25, pageWidth: 8, coverThickness: .18, pageThickness: .015, gutter: .08, binding: 'left' },
-    appearance: { paperColor: '#f4ecd8', edgeColor: '#c9b99b', roughness: .9, background: '#efc45b', shadowOpacity: .35 },
+    appearance: { paperColor: '#f4ecd8', edgeColor: '#c9b99b', roughness: .9, background: '#efc45b', shadowOpacity: .35, showSupports: false },
     // 谷に沿う起立面と支持ブリッジを、新規作品の最初の視点から確認できるようにする。
     camera: { position: [8, 8, 14], target: [0, 1, 0], fov: 42 }, lights: structuredClone(DEFAULT_BOOK_LIGHTS),
     frontCover: {}, spreads: [createSpread()], backCover: {}, ...partial,

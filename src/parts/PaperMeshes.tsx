@@ -4,13 +4,15 @@ import type { Asset } from '../schema/assets'
 import { useImageTexture, useSvgTexture } from '../runtime/assets'
 import { paperMeshData, type BookPaperSurface, type DisplayPaperFace } from './paperDisplay'
 
-export function PaperMeshes({ faces, assets, onSelect, selected, opacity = 1, paperSurfaces, surfaceTarget }: {
+export function PaperMeshes({ faces, assets, onSelect, selected, opacity = 1, paperSurfaces, surfaceTarget, hideSupports = false }: {
   faces: DisplayPaperFace[]; assets: Map<string, Asset>; onSelect?: (id: string) => void; selected?: string; opacity?: number
   paperSurfaces?: BookPaperSurface[]
   surfaceTarget?: { spreadId: string; nodeId: string }
+  /** 支持紙を透明にする (作品の表示設定)。評価や接着はそのままで、描画と影だけを外す */
+  hideSupports?: boolean
 }) {
   // 論理ページを延長した支持紙は見えない紙面の一部なので描かない
-  return <group>{faces.filter((face) => !face.hidden).map((face) => <PaperMesh key={face.id} face={face} assets={assets} onSelect={onSelect}
+  return <group>{faces.filter((face) => !face.hidden && !(hideSupports && face.support)).map((face) => <PaperMesh key={face.id} face={face} assets={assets} onSelect={onSelect}
     selected={selected !== undefined && (face.id === selected || face.id.startsWith(selected + '/'))} opacity={opacity} paperSurfaces={paperSurfaces} surfaceTarget={surfaceTarget} />)}</group>
 }
 function PaperMesh({ face, assets, onSelect, selected, opacity, paperSurfaces, surfaceTarget }: {
@@ -49,17 +51,19 @@ function PaperMesh({ face, assets, onSelect, selected, opacity, paperSurfaces, s
   useEffect(() => () => textTexture?.dispose(), [textTexture])
   const normal = face.u.clone().cross(face.v)
   const renderOrder = face.renderOrder ?? 100
+  // 透明な紙: 画像も文字もなければ描かず影も落とさない。選択・面クリックのためにメッシュ自体は残す
+  const invisible = Boolean(face.material.transparent) && !frontMap && !backMap && !textTexture
   const matrix = new Matrix4().makeBasis(face.u, face.v, normal).setPosition(face.origin)
   // 絵柄に映画用の色調圧縮を重ねず、拡散照明と実際の影で紙の明暗を付ける。
   const properties = { color: frontMap ? '#ffffff' : face.material.color ?? '#e3b476', roughness: .9, transparent: true, toneMapped: false,
-    opacity, alphaTest: .1, polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -2 }
+    opacity: invisible ? 0 : opacity, colorWrite: !invisible, depthWrite: !invisible, alphaTest: .1, polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -2 }
   // 絵を貼った紙は絵の透明部分を紙色で埋めない。見える紙は印刷の不透明部分だけにする。
   return <group matrix={matrix} matrixAutoUpdate={false} onClick={(event) => { if (onSelect) { event.stopPropagation(); onSelect(face.id) } }}>
-    <mesh geometry={geometry} renderOrder={renderOrder} castShadow receiveShadow userData={surfaceTarget ? { partSurfaceTarget: { ...surfaceTarget, faceId: face.id } } : {}}>
-      <meshStandardMaterial key={`front-${Boolean(frontMap)}`} {...properties} side={FrontSide} shadowSide={FrontSide} map={frontMap} />
+    <mesh geometry={geometry} renderOrder={renderOrder} castShadow={!invisible} receiveShadow={!invisible} userData={surfaceTarget ? { partSurfaceTarget: { ...surfaceTarget, faceId: face.id } } : {}}>
+      <meshStandardMaterial key={`front-${Boolean(frontMap)}-${invisible}`} {...properties} side={FrontSide} shadowSide={FrontSide} map={frontMap} />
     </mesh>
-    <mesh geometry={geometry} renderOrder={renderOrder} castShadow receiveShadow userData={surfaceTarget ? { partSurfaceTarget: { ...surfaceTarget, faceId: face.id } } : {}}>
-      <meshStandardMaterial key={`back-${Boolean(backMap)}`} {...properties} side={BackSide} shadowSide={BackSide} map={backMap} />
+    <mesh geometry={geometry} renderOrder={renderOrder} castShadow={!invisible} receiveShadow={!invisible} userData={surfaceTarget ? { partSurfaceTarget: { ...surfaceTarget, faceId: face.id } } : {}}>
+      <meshStandardMaterial key={`back-${Boolean(backMap)}-${invisible}`} {...properties} side={BackSide} shadowSide={BackSide} map={backMap} />
     </mesh>
     {textTexture && <mesh geometry={geometry} renderOrder={renderOrder + 1}><meshBasicMaterial map={textTexture} side={DoubleSide}
       transparent opacity={opacity} toneMapped={false} depthWrite={false} polygonOffset polygonOffsetFactor={0} polygonOffsetUnits={-4} /></mesh>}

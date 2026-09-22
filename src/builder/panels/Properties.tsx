@@ -100,6 +100,9 @@ export function BookProperties({ embedded = false }: { embedded?: boolean } = {}
         onChange={(value) => store.commit((project) => { project.book.appearance.coverColor = value })} />
       <Color label={t.properties.coverEdgeColor} value={book.appearance.coverEdgeColor ?? '#2d2019'}
         onChange={(value) => store.commit((project) => { project.book.appearance.coverEdgeColor = value })} />
+      <label><input type="checkbox" aria-label={t.properties.showSupports} checked={book.appearance.showSupports}
+        onChange={(event) => store.commit((project) => { project.book.appearance.showSupports = event.target.checked })} />
+        {' '}{t.properties.showSupports}</label>
     </InspectorGroup>
     <InspectorGroup title={t.app.inspectorSound}><BookAudio showTitle={false} /></InspectorGroup>
     <InspectorGroup title={t.app.inspectorCamera}>

@@ -86,6 +86,8 @@ const currentBookSchema = z.object({
     coverColor: z.string().optional(),
     coverEdgeColor: z.string().optional(),
     shadowOpacity: z.number().min(0).max(1),
+    /** 支持紙 (補完した支持台や延長紙) を描くか。既定は描かず透明にし、部品と印刷だけを見せる。 */
+    showSupports: z.boolean().default(false),
   }),
   camera: cameraSchema,
   lights: lightsSchema.default(() => structuredClone(DEFAULT_BOOK_LIGHTS)),

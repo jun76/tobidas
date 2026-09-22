@@ -46,7 +46,9 @@ export function crossedSoundCues(book: Book, from: number, to: number): SoundCue
         // 保持区間の外へはみ出したキーは、その区間の端で鳴る
         const seconds = Math.min(spread.sequence.holdSeconds, Math.max(0, key.time))
         const progress = (hold.startSeconds + seconds) / duration
-        if (progress > from && progress <= to) hits.push({ assetId: track.target.assetId, progress })
+        // キューの位置を「出発した」ときに鳴らす。保持終端ちょうどのめくり音は、そこで止まったときではなく
+        // 次のめくりが動き出す最初のフレームで鳴る (見開きボタンで止めてから進める場合も同じ)
+        if (progress >= from && progress < to) hits.push({ assetId: track.target.assetId, progress })
       }
     }
   }

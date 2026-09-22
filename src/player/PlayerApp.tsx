@@ -21,6 +21,8 @@ import { currentSpreadIndex, spreadJumpPlan } from '../runtime/pageTurn'
  * - turning: 見開きボタンで、その見開きのめくり開始へ飛んでから保持終端まで作者の速度で順再生し、到着で manual へ戻る
  */
 type Playback = 'auto' | 'manual' | 'turning'
+/** 末尾に着いてからBGMを消し、表紙へ戻すまでの秒数 */
+const END_FADE_SECONDS = 2.5
 
 /**
  * 書き出した作品の再生画面。
@@ -61,6 +63,28 @@ export function PlayerApp() {
     playbackRef.current = 'manual'
     setPlayback('manual')
   }
+  /** 末尾で待ってから表紙へ戻す予約。操作があれば取り消す */
+  const returnTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const cancelReturn = () => { if (returnTimer.current) { clearTimeout(returnTimer.current); returnTimer.current = null } }
+  /**
+   * 再生またはページ送りで末尾 (裏表紙が閉じた状態) に到達した。
+   * BGMは2.5秒かけてゆっくり消して止める。ぶつっと切らず、次に鳴らすときは曲の頭から始める。
+   * 曲が消えたら閉じた表紙 (進行値0) へ戻し、次の鑑賞を頭から始められるようにする。その間に操作があれば戻さない。
+   * つまみやホイールで末尾へ動かした場合は鑑賞の途中なので、どちらもしない。
+   */
+  const finish = () => {
+    settle()
+    bgm.stop(END_FADE_SECONDS)
+    cancelReturn()
+    returnTimer.current = setTimeout(() => {
+      returnTimer.current = null
+      if (playbackRef.current !== 'manual' || progressRef.current < 1) return
+      target.current = 0
+      progressRef.current = 0
+      setProgress(0)
+    }, END_FADE_SECONDS * 1000)
+  }
+  useEffect(() => cancelReturn, [])
 
   useEffect(() => {
     try {
@@ -85,16 +109,18 @@ export function PlayerApp() {
       setProgress((value) => {
         let next: number
         const step = project ? delta / playbackDurationSeconds(project.book) : 0
+        // 到着のフレームで手動へ戻しても、そのフレームで跨いだ効果音は鳴らす (保持終端ちょうどのキューを落とさない)
+        const advancing = playbackRef.current !== 'manual'
         if (playbackRef.current === 'auto' && project) {
           next = Math.min(1, value + step)
           target.current = next
-          if (next >= 1) settle()
+          if (next >= 1) finish()
         } else if (playbackRef.current === 'turning' && project && turn.current) {
           // 目的地を跨いだら目的地で止める。作者の速度で進むので、めくりと演出は自動再生と同じ見え方になる
           const { target: goal, direction } = turn.current
           next = direction > 0 ? Math.min(goal, value + step) : Math.max(goal, value - step)
           target.current = next
-          if (next === goal) settle()
+          if (next === goal) { if (goal >= 1) finish(); else settle() }
         } else {
           next = THREE.MathUtils.damp(value, target.current, 12, delta)
         }
@@ -102,7 +128,7 @@ export function PlayerApp() {
         // 進んだぶんで跨いだ効果音を鳴らす。逆行と飛ばしは crossedSoundCues が弾き、
         // 止まっている間 (つまみ・ホイール・drag での移動) はここで弾く。
         // 消音は上の useEffect も掛けるが、あちらは再描画ぶん遅れるので位置を先に見る
-        if (project && playbackRef.current !== 'manual' && !audioMutedRef.current) {
+        if (project && advancing && !audioMutedRef.current) {
           for (const hit of crossedSoundCues(project.book, value, next)) bank.fire(hit.assetId)
           narrator.speak(crossedSpeechCues(project.book, value, next))
         }
@@ -117,6 +143,7 @@ export function PlayerApp() {
   useEffect(() => {
     ;(window as unknown as { __tobiSetScroll?: (value: number) => void }).__tobiSetScroll = (value) => {
       settle()
+      cancelReturn()
       target.current = THREE.MathUtils.clamp(value, 0, 1)
       progressRef.current = target.current
       setProgress(target.current)
@@ -172,7 +199,7 @@ export function PlayerApp() {
   // 音声ボタンはBGMと効果音の両方を消すので、どちらかを持つ作品なら出す
   const hasAudio = Boolean(project.audio) || soundCueAssetIds(project.book).length > 0 || hasSpeechCues(project.book)
     || hasEmbeddedVideoAudio(project.book, new Map(project.assets.map((asset) => [asset.id, asset])))
-  const pause = () => settle()
+  const pause = () => { settle(); cancelReturn() }
   const add = (pixels: number) => {
     unlockVideoAudio()
     pause()
@@ -188,6 +215,7 @@ export function PlayerApp() {
   }
   const togglePlayback = () => {
     unlockVideoAudio()
+    cancelReturn()
     startBgm(true)
     if (playbackRef.current === 'auto') {
       pause()
@@ -212,6 +240,7 @@ export function PlayerApp() {
     const plan = spreadJumpPlan(project.book, index)
     if (!plan) return
     unlockVideoAudio()
+    cancelReturn()
     startBgm(true)
     progressRef.current = plan.start
     target.current = plan.start

@@ -88,14 +88,19 @@ try {
 ${JSON.stringify(listed)}
 ${JSON.stringify(expectedTexts[0])}`)
 
-  // ランダムアクセス: 最後の見開きへ直接飛ぶ。前の保持終端から始まり、最後の保持終端で止まる
+  // ランダムアクセス: 最後の見開きへ直接飛ぶ。前の保持終端から始まり、裏表紙が閉じる末尾まで続けて止まる
   await pageButton(last).click()
   const started = await progress()
   if (last > 0 && !(started >= holdEnds[last - 1] - 5e-4)) throw new Error(`離れた見開きへのジャンプがめくり開始のフレームから始まりません: ${started} < ${holdEnds[last - 1]}`)
   await waitManual()
-  if (!near(await progress(), holdEnds[last])) throw new Error(`最後の見開きへの到着位置が保持終端ではありません: ${await progress()}`)
+  if (!near(await progress(), 1)) throw new Error(`最後の見開きへの到着位置が末尾ではありません: ${await progress()}`)
+  if (!(await page.getByLabel('Replay from start').count())) throw new Error('末尾で再生ボタンが「最初から」になっていません')
   if (await spreadIndex() !== String(last)) throw new Error('最後の見開きへ飛んだ後の添字が合いません')
   if (JSON.stringify(await texts()) !== JSON.stringify(expectedTexts[last])) throw new Error('最後の見開きの本文一覧が一致しません')
+  // 末尾で BGM が消えたあと、閉じた表紙へ自動で戻る
+  await page.waitForFunction(() => Number(document.querySelector('input[aria-label="Book progress"]')?.value) === 0, null, { timeout: 6000 })
+  if (await spreadIndex() !== null) throw new Error('表紙へ戻ったのに見開きの添字が残っています')
+  if (!(await page.getByRole('button', { name: 'Play', exact: true }).count())) throw new Error('表紙へ戻ったのに再生ボタンが「再生」になっていません')
 
   // 戻る方向も同じ: 2見開き目へ飛ぶと 1見開き目の保持終端から順再生で 2見開き目の保持終端へ
   if (last >= 1) {

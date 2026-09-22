@@ -37,7 +37,11 @@ describe('見開きへのジャンプ', () => {
   it('最初の見開きは閉じた表紙から、以降は前の保持終端から進めて保持終端で止まる', () => {
     expect(spreadJumpPlan(book, 0)).toEqual({ start: 0, target: holdEnd(0) })
     expect(spreadJumpPlan(book, 1)).toEqual({ start: holdEnd(0), target: holdEnd(1) })
-    expect(spreadJumpPlan(book, 2)).toEqual({ start: holdEnd(1), target: holdEnd(2) })
+  })
+
+  it('最後の見開きは保持終端で止まらず、裏表紙が閉じる末尾まで続ける', () => {
+    expect(spreadJumpPlan(book, 2)).toEqual({ start: holdEnd(1), target: 1 })
+    expect(spreadJumpPlan(bookWithSpreads(1), 0)).toEqual({ start: 0, target: 1 })
   })
 
   it('存在しない見開きは無効', () => {

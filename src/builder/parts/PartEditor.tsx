@@ -180,7 +180,7 @@ function NodeInspector({ node }: { node: PartNode }) {
     {active && <div className={st.section}><h2>{t.materials}</h2><label className={st.field}><span>{t.material}</span><select aria-label={t.material} value={active} onChange={(event) => setSurface(event.target.value)}>
       {ownSurfaces.map((name) => <option value={name} key={name}>{name === '*' ? t.title : portLabel(name)}</option>)}
     </select></label>
-      <MaterialFields value={material} assets={bundle.assets} onChange={(value) => slot
+      <MaterialFields paper value={material} assets={bundle.assets} onChange={(value) => slot
         ? exposePartMaterialCommand({ name: slot, nodeId: node.id, surface: active, material: value }) : update({ materials: { ...node.materials, [active]: value } })} />
       <details className={st.section}><summary>{t.exposeMaterial}</summary><TextField label={t.exposedMaterial} value={exposedName} onChange={setExposedName} />
         <button type="button" onClick={() => exposePartMaterialCommand({ name: exposedName, nodeId: node.id, surface: active, material })}>{t.expose}</button>

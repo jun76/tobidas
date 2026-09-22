@@ -254,6 +254,7 @@ export const en: Dict = {
     videoAudioRolloff: 'Distance rolloff',
     videoAudioGlobal: 'Stage-background audio plays globally without distance attenuation.',
     coverColor: 'Cover color',
+    showSupports: 'Show supports',
     coverEdgeColor: 'Spine and cover edge',
     camera: 'Camera',
     cameraFrustum: 'the camera frustum',

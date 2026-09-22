@@ -1,6 +1,6 @@
 import { Vector3 } from 'three'
 import { faceContains, faceContainsLine, faceShape, makeFace, openingAngle, pointOnFace, type FoldPair, type PaperEvaluation, type PaperFace } from './geometry'
-import type { PaperShape } from './shape'
+import { inspectShape, ringLocation, type PaperShape } from './shape'
 
 /** 山や樹冠の外周に合わせ、左右の材料が残る区間だけを中央の折り線にする。 */
 export function fitRootFoldContacts(result: PaperEvaluation): void {
@@ -35,7 +35,7 @@ export function fitRootFoldContacts(result: PaperEvaluation): void {
 /** 一枚の材料輪郭を画像と同じ担当範囲へ分割する。折り線を切る穴は接続できない。 */
 export function rootPanelShape(shape: PaperShape, span: [number, number] = [0, 1]): PaperShape {
   const [lo, hi] = span
-  let outer = shape.outer
+  let outer = shape.outer, silhouette = false
   for (const [edge, sign] of [[lo, 1], [hi, -1]]) {
     const clipped: [number, number][] = []
     for (let i = 0; i < outer.length; i++) {
@@ -45,7 +45,22 @@ export function rootPanelShape(shape: PaperShape, span: [number, number] = [0, 1
     }
     outer = clipped
   }
+  // 折り線を何度も横切る輪郭 (草の穂先など) は単純な切り取りでは自己交差する。その場合は各列の稜線の下を
+  // 地面まで満たした輪郭に置き換える。絵の透明部分は描かれないので見た目は変わらず、紙としては成立する。
+  if (outer.length < 3 || inspectShape({ outer, holes: [] }).some(error => error.includes('intersects'))) {
+    const samples = 96, top: [number, number][] = []
+    for (let i = 0; i <= samples; i++) {
+      const x = lo + (hi - lo) * i / samples
+      let y = 0
+      for (let k = 200; k >= 0; k--) { const yy = k / 200; if (ringLocation(shape.outer, [x, yy]) !== 'outside') { y = yy; break } }
+      top.push([x, Math.max(y, .02)])
+    }
+    outer = [[lo, 0], [hi, 0], ...top.reverse()]
+    silhouette = true
+  }
   const holes = shape.holes.filter(ring => {
+    // 置き換えた輪郭に収まらない穴は捨てる (稜線近くの穂先の隙間)
+    if (silhouette && !ring.every(p => ringLocation(outer, p) === 'inside')) return false
     const min = Math.min(...ring.map(p => p[0])), max = Math.max(...ring.map(p => p[0]))
     if (max <= lo || min >= hi) return false
     if (min <= lo || max >= hi) throw new Error('Root cutout crosses its folding attachment')

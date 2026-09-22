@@ -46,10 +46,12 @@ export interface PageTurnPlan {
  * どの位置からでも、その見開きのめくりが始まるフレーム (前の見開きの保持終端、最初の見開きなら閉じた表紙)
  * へ直ちに飛び、めくりと演出を作者の速度で進めて保持終端で止まる。順番に押しても、離れた見開きへ
  * 飛んでも、同じ見え方で同じ位置に止まる。同じ見開きを押し直すと、その見開きをもう一度めくる。
+ * 最後の見開きだけは保持終端で止まらず、裏表紙が閉じる末尾まで続ける。
  */
 export function spreadJumpPlan(book: Book, index: number): PageTurnPlan | undefined {
-  const target = spreadHoldEnd(book, index)
-  if (target === undefined) return undefined
+  const holdEnd = spreadHoldEnd(book, index)
+  if (holdEnd === undefined) return undefined
+  const target = index === book.spreads.length - 1 ? 1 : holdEnd
   const start = index === 0 ? 0 : spreadHoldEnd(book, index - 1)!
   return { start, target }
 }

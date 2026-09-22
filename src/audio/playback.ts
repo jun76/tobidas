@@ -25,8 +25,9 @@ export interface AudioGate {
  * 音声ボタンはBGMと効果音の両方を消す — スピーカーの絵で音楽だけ消えても、ページを
  * めくる音が鳴り続けたら消音に見えない。
  *
- * 終端でもBGMは流したままにする。最後の絵が出た瞬間に曲がぶつっと切れず、もう一度
- * 再生を押したときも音源を作り直さずに絵だけ頭から始められる。
+ * 終端に着いただけではこの規則は変えない (つまみで末尾へ動かした場合は鑑賞の途中)。
+ * 再生やページ送りで末尾に到達したときだけ、呼び出し側が `stop` でゆっくり消して止め、
+ * 次に再生したときは曲の頭から鳴らす。
  *
  * 効果音は跨いだ瞬間の出来事で「続きから」が無いので、終端でも切ってよい
  * (そもそも進んでいないので跨がない)。
@@ -79,6 +80,7 @@ function rampVolume(
   to: number,
   seconds: number,
   onDone?: () => void,
+  ease: (ratio: number) => number = (ratio) => ratio,
 ): () => void {
   const from = element.volume
   const start = performance.now()
@@ -87,7 +89,7 @@ function rampVolume(
   const step = () => {
     if (!alive) return
     const ratio = seconds <= 0 ? 1 : Math.min(1, (performance.now() - start) / (seconds * 1000))
-    element.volume = Math.max(0, Math.min(1, from + (to - from) * ratio))
+    element.volume = Math.max(0, Math.min(1, from + (to - from) * ease(ratio)))
     if (ratio >= 1) {
       alive = false
       onDone?.()
@@ -254,6 +256,10 @@ export class AudioPlayback {
     void (paused ? this.context.suspend() : this.context.resume())
   }
 
+  /**
+   * 止める。音量は直線ではなく余弦の曲線 (等パワー) で落とす。
+   * 直線で落とすと最初の一瞬で半分まで下がって「切れた」ように聞こえ、あとに弱い尾が残る。
+   */
   stop(fadeSeconds = 0.6): void {
     if (!this.playing) return
     this.muted = false
@@ -267,7 +273,7 @@ export class AudioPlayback {
     if (element) {
       this.playing = false
       this.cancelRamp?.()
-      this.cancelRamp = rampVolume(element, 0, fadeSeconds, () => element.pause())
+      this.cancelRamp = rampVolume(element, 0, fadeSeconds, () => element.pause(), (ratio) => 1 - Math.cos(ratio * Math.PI / 2))
       return
     }
     // 立ち上がりを待っている最中の停止。ここで降ろしておくと play が音源を作らずに戻る
@@ -277,7 +283,18 @@ export class AudioPlayback {
     }
     const gain = this.gain
     const source = this.source
-    gain.gain.linearRampToValueAtTime(0, this.context.currentTime + fadeSeconds)
+    const now = this.context.currentTime
+    // 立ち上がりや消音のランプが残っていると、そこからの直線になって今の音量から急に落ちる。
+    // 今の値で押さえてからフェードを引く (setMuted と同じ)
+    if (typeof gain.gain.cancelAndHoldAtTime === 'function') gain.gain.cancelAndHoldAtTime(now)
+    else {
+      gain.gain.cancelScheduledValues(now)
+      gain.gain.setValueAtTime(gain.gain.value, now)
+    }
+    const steps = 64, from = gain.gain.value
+    const curve = new Float32Array(steps)
+    for (let i = 0; i < steps; i++) curve[i] = from * Math.cos((i / (steps - 1)) * Math.PI / 2)
+    gain.gain.setValueCurveAtTime(curve, now, fadeSeconds)
     setTimeout(() => {
       try {
         source.stop()
