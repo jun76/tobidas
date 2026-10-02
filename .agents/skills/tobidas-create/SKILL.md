@@ -17,8 +17,8 @@ Do not automatically change the core application, deploy, push to GitHub, or cre
 ## Scope
 
 The default deliverable is a standalone work saved where the user requests.
-Only change `scripts/samples/`, `projects/`, or the catalog when the user explicitly asks to add a public sample to the repository.
-Do not edit generated `projects/*/project.json` files directly; update the public-sample definitions and assets, then regenerate them.
+Only change `scripts/samples/`, `projects/`, or the catalog when the user explicitly asks to add or replace a public sample in the repository.
+The four works in `projects/` are originals in the format that predates basic parts. Do not edit or regenerate `projects/*/project.json`.
 
 ## Start with the work's authoring guide
 
@@ -48,7 +48,7 @@ After design approval:
 2. Generate or obtain the required images, video, and audio. Check transparency, dimensions, aspect ratios, margins, size, and unintended duplication.
 3. Start the development server when working from a clone, then import assets together through the standard Assets panel.
 4. Select the target spread in the BOOK navigator before placing parts.
-5. Use page-background assignment for full-page artwork and visual-part presets for separate pop-up parts. Use the standard built-in page-turn audio; do not copy a page-turn file into the skill or work merely to replace that built-in asset.
+5. Use page-background assignment for full-page artwork. Place separate pop-up paper with basic or custom parts from the parts panel by clicking the real faces they connect to, and attach printed decorations, animated visuals, and particles to real paper faces. Use the standard built-in page-turn audio; do not copy a page-turn file into the skill or work merely to replace that built-in asset.
 6. Configure text, camera, lights, motion, timeline keys, BGM, and sound cues through the standard inspector and timeline, or through WebMCP when available.
 7. Save or export to the requested location.
 8. Read [references/verification.md](references/verification.md) and run the applicable checks.
@@ -59,11 +59,13 @@ Read operation results from `data-tobidas-kind="operation-result"`. Do not pass 
 
 ## Repository samples
 
-For a public sample, write structure in `scripts/samples/<work>.mjs`, assets in `scripts/samples/assets/<work>/`, and register the work in `scripts/generate-samples.mjs`.
-Use the repository's shared sample helpers and overrides. After changes, run:
+For a public sample, write structure in `scripts/samples/<work>.mjs`, overrides in `scripts/samples/overrides/<work>.json`, and assets in `scripts/samples/assets/<work>/`, and register the work in `BUILDERS` of `scripts/samples/registry.mjs`.
+The conversion to basic parts and attached content lives in `scripts/samples/connected.mjs`, `connected-layouts.mjs`, and `paper-shapes.json`.
+Use the repository's shared sample helpers and overrides. After changes, generate into `.tmp/022-samples` and check:
 
 ```bash
-npm run samples:generate
+npm run build
+npm run samples:generate -- --export
 npm run samples:check
 ```
 

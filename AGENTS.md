@@ -21,7 +21,7 @@ WebMCPが使えない場合は、標準ビルダーの制作ガイドペイン�
 1. 初回の依頼から設計シートを作り、未確定で結果が変わる事項だけ質問します。
 2. 制作ガイドと確認済みの設計シートから、必要な素材と見開き構成を決めます。
 3. 新規作品を作成し、素材は標準のアセットパネルから読み込みます。
-4. BOOKナビゲーターで対象の見開きを選び、プリセットまたは詳細操作で部品を配置します。
+4. BOOKナビゲーターで対象の見開きを選び、部品パネルの基本部品・カスタム部品・演出から選んで本の実面へ配置します。全面の絵はページ背景へ設定します。
 5. インスペクターとタイムラインで内容、演出、音を設定します。WebMCPが使える場合も同じ共通操作を使います。
 6. 保存後に、利用者が指定した場所へ作品フォルダを置きます。
 7. 標準ビルダーの再生とスクリーンショットで、作品全体を確認します。
@@ -40,24 +40,29 @@ WebMCPの編集ツールは `src/builder/operations/commands.ts` の共通コマ
 
 ## リポジトリ内の作品をコードで作る
 
-`projects/` の公開サンプルは生成物です。
-`projects/*/project.json` を直接編集すると次の生成で消えるため、定義または上書きを変更します。
+`projects/` の4作品は、基本部品の導入前の形式で作った比較用の原本です。
+`projects/*/project.json` を直接編集せず、再生成もしません。生成定義は新方式への移行に合わせて更新されており、`--legacy` で再生成すると原本と異なる結果になります。
+
+同じ4作品を基本部品と紙面の演出で組み直した版は、次の定義から `.tmp/022-samples` へ生成します。
 
 - 作品の構造は `scripts/samples/<work>.mjs` に書く
 - 画面で調整した位置や寸法は `scripts/samples/overrides/<work>.json` に書く
 - 素材の実体は `scripts/samples/assets/<work>/` に置く
-- 新しい公開サンプルを追加するときは `scripts/generate-samples.mjs` のimportと `BUILDERS` に登録する
+- 基本部品と演出への組み直しは `scripts/samples/connected.mjs`、`connected-layouts.mjs`、`paper-shapes.json` に書く
+- 新しいサンプルを追加するときは `scripts/samples/registry.mjs` の `BUILDERS` に登録する
 
 上書きファイルのキーは `見開きID/要素ID` です。
 値には `position`、`rotation`、`scale`、`width`、`height`、`layer`、`opacity`、`visible`、`asset`、`remove` を使えます。
 要素を削除すると、参照されなくなった素材も生成結果から除かれます。
 
 ```bash
-npm run samples:generate
+npm run build
+npm run samples:generate -- --export
 npm run samples:check
 ```
 
-生成後の `project.json` を直接直したり、包含検査を無効化したりしません。
+生成後の `project.json` を直接直したり、検査を無効化したりしません。
+`projects/` や公開サンプルの差し替えは、利用者から明示的に依頼された場合だけ行います。
 
 ## サンプル定義と素材の技術規約
 
@@ -79,10 +84,11 @@ npm run qa:holds -- --out shots/holds --phases 0.5 --turns
 node scripts/verify-stow-layout.mjs projects/<作品名> --strict
 ```
 
-公開サンプルの演出内容を変えた場合は、次も実行します。
+リポジトリのサンプル定義を変えた場合は、次も実行します。
 
 ```bash
-npm run samples:generate
+npm run build
+npm run samples:generate -- --export
 npm run samples:check
 ```
 

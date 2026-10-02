@@ -8,7 +8,8 @@ This reference lists the technical checks and the inspection order; it does not 
 For a public sample in the repository, run:
 
 ```powershell
-npm run samples:generate
+npm run build
+npm run samples:generate -- --export
 npm run samples:check
 npm run qa:semantic
 npm run qa:holds -- <sample-id> --out shots/<sample-id>-holds --phases 0,0.5,1 --turns

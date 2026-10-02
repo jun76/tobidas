@@ -9,6 +9,8 @@
 <p align="center">
   <a href="https://tobidas.9rsgy78c9c.workers.dev/">Open the online builder</a>
   ·
+  <a href="https://tobidas-demo.9rsgy78c9c.workers.dev/">See a published example</a>
+  ·
   <a href="./README.md">日本語</a>
 </p>
 
@@ -21,7 +23,7 @@
 ## What is tobidas?
 
 tobidas is a local-first browser builder for creating and playing landscape-oriented, pop-up-book-style web stories.
-You author each spread in its fully open state; tobidas derives how its pages and paper elements fold while the book opens and closes.
+You author each spread in its fully open state; tobidas derives how its pages and paper parts fold while the book opens and closes.
 
 You can start immediately at [tobidas.9rsgy78c9c.workers.dev](https://tobidas.9rsgy78c9c.workers.dev/).
 Project data and imported assets are processed in your browser and are not uploaded to the tobidas server.
@@ -29,23 +31,35 @@ You can also clone this repository and run it locally or deploy it to your own s
 
 ## Features
 
-- Page glue, standing parts, and automatic V-folds for artwork crossing the spine
-- Automatic outside routing for airborne parts inferred from their open pose
-- Images, SVG, audio, web fonts, text, and particles placed on transparent planes
+- Twelve basic parts that open and close while connected to real paper faces and folds (upright, angled upright, rear standing part, lateral connection, background panel, V-fold, platform, folding box, accordion, opposing fold, flat layer, and text)
+- Automatic support-paper design that follows placement and movement, with glue, stowing, and intersection checks across the whole opening range (support paper visibility is a per-project setting and is hidden by default)
+- Printed decorations, animated visuals, and light particles attached to real paper faces
+- Custom-part editing, a local library, and exchange as part folders or ZIP files
+- Images, SVG, video, audio, web fonts, and text
 - Timeline control for transforms, opacity, visibility, assets, backgrounds, lights, and cameras
-- Spread editing with 3D gizmos and property panels
+- 3D gizmos that move, angle, and scale parts while keeping their connections, plus detailed editing in the inspector
 - Background music and sound effects such as page turns
+- Text read aloud with the browser voice, and a text list for external text-to-speech
+- Per-spread page jumps shared by the exported player and the builder's play mode
 - Japanese and English UI
-- State and direct controls for user-side browser-use AI
+- State and direct controls for user-side browser-use AI, and structured WebMCP tools
 - Automatic browser-local saves
 - Export as a single HTML file or a ZIP for static hosting
+
+The start screen offers **Edit picture book**, **Edit custom part**, and **Settings** (display language).
+The custom-part library starts empty. [Exchange-part examples and test books](./examples/parts/README.md) are included.
+Each part has a maximum input opening angle: a 180° part attached to a 90° connection stops in an intermediate pose, and a part limited to 150° cannot be placed on a 180° connection.
+
+Printed decorations, spinning blades, moving characters, and light particles can be attached to real paper faces.
+Paper outlines and holes, decorations, motion, and materials can be bundled into a custom part and reused as a part ZIP.
+Whole projects can also be exchanged with **Export → Editable project ZIP** and **Open project ZIP**.
 
 ## Use the online builder
 
 1. Open [tobidas.9rsgy78c9c.workers.dev](https://tobidas.9rsgy78c9c.workers.dev/) in Chrome or Edge.
-2. Choose **New** to start a project, or **Open** to select an existing project folder.
-3. Import assets, choose a preset, and place elements on a spread.
-4. Use **Play** in the upper-right corner to preview the book and its animation.
+2. Choose **Edit picture book**, then **New** to start a project, **Open** to select a project folder, or **Open project ZIP** to select an editable project ZIP.
+3. Import assets, choose a basic or custom part in the parts panel on the left, and click faces of the book to place it.
+4. Use **Play** in the upper-right corner to preview the book opening and closing with its animation.
 5. Use **Save** for an editable project folder and **Export** for publishable files.
 
 Desktop Chrome or Edge is recommended because folder access uses the File System Access API.
@@ -56,9 +70,21 @@ Browser-use AI and people operate the same standard builder.
 The BOOK navigator, assets, inspector, and timeline expose ARIA and stable `data-tobidas-*` identifiers.
 Project, selection, active-spread, and preview state are available on the standard workspace element.
 
-Use **Precise placement (AI)** in the Part presets header when placement must avoid Canvas coordinates.
-It accepts the page side, preset, imported asset, and normalized page coordinates.
-The information button on an asset row reveals its stable ID, MIME type, exact byte size, and reference count.
+Press a basic- or custom-part button, then left-click connection face 1 and connection face 2 on the book.
+Single-face parts such as text are placed with one click.
+A badge in the upper left shows the current step; the hovered face is hatched blue, and faces that cannot hold the part are hatched red.
+Required support bridges are added during placement. Press Esc to cancel; right-drag to orbit the view.
+After placement, W moves along the connected face, E edits the matching design angle, and R scales uniformly.
+The gizmo and the inspector's **Adjust connected placement** use the same checks and update the support paper and connections of later children.
+While dragging, the paper and its supports follow immediately; paper intersections and conflicts with attached motion are checked in the background without stopping the view. An invalid position is shown in red, and releasing commits only a value that passes the full opening and closing check.
+Support-paper dimensions and glue positions are decided while placing or editing, and playback folds the same paper. Candidates whose paper shape or glue positions would change during opening and closing are not committed.
+Alt disables snapping and Esc cancels the whole drag. One drag is undone with one Undo.
+Uprights edit their tilt above the ground, and background panels edit their screen angle.
+The **Angled upright**, which changes direction on the ground, is driven by triangular support paper on the fold it shares with the background.
+The editable range follows from the connection and dimensions; candidates whose stowing or intermediate intersections cannot be verified are not committed.
+Edit detailed dimensions and connections after placement in the inspector's **Size and placement / Connection**, with an opening preview.
+Assign images and text in the inspector after placement.
+The information button on an asset row reveals its asset ID, MIME type, exact byte size, and reference count.
 BGM can be selected from imported audio, or cleared with **Not set**, directly in the Sound section.
 Changing a parent and adding a timeline key with an explicit value and time are available as standard detail actions.
 These detail forms are closed by default, so they do not add permanent fields or change the normal pane layout.
@@ -122,10 +148,19 @@ A WebMCP-capable AI or a Model Context Tool Inspector can discover them after op
 To inspect them from the browser console, run:
 
 ```js
-const context = document.modelContext ?? navigator.modelContext
-const tools = context ? await context.getTools() : []
-tools.map((tool) => tool.name)
+const context = document.modelContext ?? navigator.modelContext;
+const tools = context ? await context.getTools() : [];
+tools.map((tool) => tool.name);
 ```
+
+#### Minimal connection check for agents
+
+1. Open `http://localhost:5174/` in a browser with WebMCP enabled.
+2. Wait until the toolbar shows **AI tools available**.
+3. Retrieve the page-defined tools from the calling AI and confirm that `tobidas-get-state` is listed. The tool set differs between the start screen, picture-book editing, and part editing, so list the tools again after switching screens.
+4. Call `tobidas-get-state` once without arguments and confirm a successful response.
+
+Tools are registered asynchronously after the page starts. If the list is empty right after loading, do not treat it as a failure; list the tools again after **AI tools available** appears. If listing the tools or calling `tobidas-get-state` fails, check the browser setting and the calling AI's WebMCP support, then fall back to the standard builder's semantic DOM, ARIA, and detail actions.
 
 #### Access paths
 
@@ -149,9 +184,9 @@ WebMCP availability differs by browser.
 
 | Browser | WebMCP access path | Confirmed behavior |
 | --- | --- | --- |
-| Chrome | Origin Trial for the public app; Chrome setting for a local clone | The imperative tools listed below; declarative form tools are available where the browser supports them |
-| Edge | Edge Origin Trial or Edge setting | The imperative tools listed below; declarative form tools are available where the browser supports them |
-| Firefox | Enable `dom.modelcontext.enabled` and `dom.modelcontext.testing.enabled` in `about:config` | The imperative tools listed below through `navigator.modelContext`; `document.modelContext` and declarative form tools are not confirmed |
+| Chrome | Origin Trial for the public app; Chrome setting for a local clone | The imperative tools listed below |
+| Edge | Edge Origin Trial or Edge setting | The imperative tools listed below |
+| Firefox | Enable `dom.modelcontext.enabled` and `dom.modelcontext.testing.enabled` in `about:config` | The imperative tools listed below through `navigator.modelContext`; `document.modelContext` is not confirmed |
 
 For a local clone, enable the setting for the current browser and restart it. Chrome uses `chrome://flags/#enable-webmcp-testing`; Edge uses `edge://flags/#enable-webmcp-testing`.
 The public web app embeds an Origin Trial token issued for its exact origin and browser provider, so matching Chrome or Edge users do not need to change browser settings. A token cannot be reused for another origin or browser provider.
@@ -163,7 +198,10 @@ Availability is determined by the combination of browser support or Origin Trial
 
 #### Available tools
 
-When WebMCP is available, tobidas registers these imperative tools when the page starts:
+When WebMCP is available, tobidas registers the following imperative tools according to the visible workspace.
+Picture-book editing registers every group except **Part editing**, plus `tobidas-create-part-draft` and `tobidas-open-part-library`.
+Custom-part editing registers the **Parts**, **Content**, and **Part editing** groups, plus `tobidas-get-state`, `tobidas-enter-edit`, and `tobidas-enter-play`.
+The start and settings screens register only `tobidas-get-state`, `tobidas-enter-edit`, `tobidas-enter-play`, `tobidas-get-part-catalog`, `tobidas-create-part-draft`, and `tobidas-open-part-library`.
 
 | Group | Tool | Purpose |
 | --- | --- | --- |
@@ -179,10 +217,21 @@ When WebMCP is available, tobidas registers these imperative tools when the page
 | Session | `tobidas-set-preview` | Move the visible preview to a normalized book progress or a spread hold time. Provide progress, or provide spreadId with seconds within that spread hold interval. |
 | Session | `tobidas-enter-play` | Enter playback mode so the person can inspect the book. This changes only the visible editing session. |
 | Session | `tobidas-enter-edit` | Return to edit mode so structured book changes can be made. This changes only the visible editing session. |
-| Edit | `tobidas-place-asset` | Place an already imported image, SVG, or video with a tobidas visual preset and normalized page coordinates. Import the asset through the standard Assets panel first; placement is committed through normal validation and undo history. |
+| Parts | `tobidas-get-part-catalog` / `tobidas-get-part-mounts` | Read basic-part specifications, the custom library, and the real faces and connection ports. |
+| Parts | `tobidas-place-part` / `tobidas-update-placed-part` | Place or change a part after checking its connection, dimensions, opening angle, and stowing. Custom definitions and assets are bundled into the book. |
+| Parts | `tobidas-place-part-on-surfaces` | Specify one or two real faces and material coordinates, as on the canvas. Support paper is added automatically and placement goes through the common checks and undo path. |
+| Parts | `tobidas-get-part-edit-controls` / `tobidas-edit-placed-part` | Read the operation axes, angle handles, and scale along real faces, then move, change design angles, scale uniformly, or resize while keeping connections. |
+| Content | `tobidas-place-content` | Attach a printed decoration, animated visual, or light particles to a material point on a real face. Holes cannot hold content. |
+| Content | `tobidas-edit-connected-content` | Change the anchor, side, parent face, or local presentation transform of attached content. Animation keys are unchanged, and the whole connection path is validated. |
 | Edit | `tobidas-set-page-background` | Assign an imported image, SVG, or video directly to the page surface instead of creating an element. Use this, rather than a flat paper-stack element, for full-page artwork. |
 | Edit | `tobidas-clear-page-background` | Clear page-surface artwork and its background-video audio settings. |
-| Edit | `tobidas-create-visual` | Create a text or light-particle visual using an existing tobidas preset. The new element is committed through normal layout validation and undo history. |
+| Part editing | `tobidas-get-part-draft` / `tobidas-create-part-draft` / `tobidas-update-part-definition` | Read or create a draft independent of any book, and edit its description, input angle, and public dimensions. |
+| Part editing | `tobidas-add-part-node` / `tobidas-update-part-node` / `tobidas-delete-part-node` | Edit internal parts and the connection graph with typed commands. |
+| Part editing | `tobidas-edit-part-node` / `tobidas-expose-part-edit-handle` | Apply connection-preserving edits to internal parts, and expose angle controls of basic or nested parts. |
+| Part editing | `tobidas-expose-part-parameter` / `tobidas-expose-part-material` / `tobidas-expose-part-port` | Expose dimensions, materials, and faces or connection ports. |
+| Part editing | `tobidas-set-part-shape` | Set or clear the outer contour and holes of a material face in normalized 0–1 material coordinates. Existing glue lines and content anchors must stay on material. |
+| Part editing | `tobidas-upsert-part-content` / `tobidas-delete-part-content` | Add or edit internal decorations and motion with their tracks, or delete one together with its dependent content. |
+| Part editing | `tobidas-save-part-library` / `tobidas-open-part-library` / `tobidas-part-undo` / `tobidas-part-redo` | Save immutable revisions, open entries for editing or copying, and use the separate part-editing history. |
 | Edit | `tobidas-update-element` | Update one tobidas element through layout normalization and validation. The input is a full typed update, not an arbitrary JSON patch; omitted fields keep their current values. |
 | Edit | `tobidas-move-element` | Reparent one tobidas element to a page or another element while preserving normal constraints. The move is committed through the common edit, validation, and undo path. |
 | Edit | `tobidas-set-element-parent` | Explicit, discoverable alias for `move-element` that changes the parent to a page or another element. |
@@ -204,10 +253,11 @@ When WebMCP is available, tobidas registers these imperative tools when the page
 | Edit | `tobidas-redo` | Redo the last undone tobidas edit through the normal history. The result includes the current selection and preview state after redo. |
 
 Asset import, opening projects, saving, and single-HTML or ZIP export remain user-managed file operations because they require browser file permissions and destination choices. Use the standard Assets panel and toolbar; WebMCP does not add a binary transport.
+State for new paper parts includes the placed `part` and the bundled `partDefinitions`.
+Positions and poses follow from connections and dimensions; independent floating fold axes and free-transform tracks are not used.
 For final visual review, use `tobidas-set-preview` to prepare the view and capture the viewport with the calling Browser or Computer Use environment. `tobidas-audit-layout` reports deterministic structural issues, but it does not judge composition or visible overlap from an image.
 
-The asset placement form also carries `tobidas-place-asset-form` for declarative API testing.
-It keeps the normal submit path and does not set `toolautosubmit`, so form automation does not skip user confirmation.
+Reading and writing part files as binaries uses the standard UI. Saving to the library is an in-browser operation.
 
 ## Project folders
 
@@ -231,6 +281,10 @@ Two publishing formats are available:
 
 ## Sample projects
 
+[See Chasing the Forest Lantern in your browser](https://tobidas-demo.9rsgy78c9c.workers.dev/)
+— `forest_lantern` exported from tobidas as a single HTML file and published.
+Experience the opening pages, pop-up depth, animation, and sound without installing anything.
+
 The `projects/` directory contains four ready-to-open samples:
 
 - `forest_lantern` — Chasing the Forest Lantern
@@ -239,6 +293,17 @@ The `projects/` directory contains four ready-to-open samples:
 - `crooked_castle` — The Crooked Castle
 
 Download or clone the repository, then select one of these folders with **Open** in the builder.
+These are originals made in the format that predates basic parts (image parts folded by automatic stowing); they open, play, and edit as they are.
+
+Versions of the same four books rebuilt with basic parts and attached content are generated into `.tmp/022-samples` with the following commands.
+Open `022-samples-review/index.html` in the output to view them.
+
+```bash
+npm run build
+npm run samples:generate -- --export
+npm run samples:check
+```
+
 The samples and bundled assets have terms separate from the software license.
 See the [Asset License](./ASSET_LICENSE.md).
 
