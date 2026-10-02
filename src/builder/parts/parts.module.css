@@ -1,9 +1,3 @@
-.home { min-height: 100dvh; box-sizing: border-box; padding: clamp(32px,8vw,110px); color: #342d23; background: radial-gradient(ellipse at 70% 15%,#fffaf0,#e5ddca); display: flex; flex-direction: column; justify-content: center; gap: 28px; }
-.home h1 { font-size: clamp(48px,8vw,96px); font-weight: 550; letter-spacing: -.07em; margin: 0; line-height: 1; }
-.home p { color: #736959; font-size: 18px; margin: 0; }
-.homeMenu { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; margin-top: 22px; }
-.homeMenu button { padding: 30px 24px; min-height: 160px; display:flex; flex-direction:column; align-items:flex-start; gap: 28px; background: #ffffffac; border: 1px solid #c9bfac; color:#443627; border-radius: 14px; font-size: 19px; cursor:pointer; text-align:left; box-shadow: 0 8px 20px #74552b0a; }
-.homeMenu button:hover { background:#fffdf8; transform:translateY(-2px); border-color:#987c4b; }
 .editor { height:100dvh; display:flex; flex-direction:column; background:#22232b; color:#e5e5eb; overflow:hidden; }
 .toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:10px 14px; border-bottom:1px solid #41424f; }
 .toolbar strong { margin-right:auto; }
@@ -54,8 +48,7 @@
 .libraryItem strong { font-size:13px; }
 .compactGrid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 .status { padding:8px 14px; border-top:1px solid #41424f; font-size:11px; display:flex; gap:16px; }
-.settings { max-width:520px; }
 @media(max-width:1000px) { .layout { grid-template-columns:210px minmax(0,1fr) 280px; } }
-@media(max-width:760px) { .homeMenu { grid-template-columns:1fr; } .homeMenu button { min-height:90px; flex-direction:row; align-items:center; gap:20px; } .layout { overflow:auto; display:flex; flex-direction:column; } .preview { min-height:450px; order:-1; } .sidebar,.inspector { overflow:visible; } }
+@media(max-width:760px) { .layout { overflow:auto; display:flex; flex-direction:column; } .preview { min-height:450px; order:-1; } .sidebar,.inspector { overflow:visible; } }
 .parameterSpec { min-width: 0; margin: 0; padding: 10px; border: 1px solid #454550; border-radius: 6px; }
 .parameterSpec legend { padding: 0 5px; color: #ddd4c6; }
