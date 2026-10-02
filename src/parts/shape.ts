@@ -30,8 +30,31 @@ const segmentsMeet = (a: Point2, b: Point2, c: Point2, d: Point2) => {
     && Math.max(Math.min(a[0], b[0]), Math.min(c[0], d[0])) <= Math.min(Math.max(a[0], b[0]), Math.max(c[0], d[0])) + epsilon
     && Math.max(Math.min(a[1], b[1]), Math.min(c[1], d[1])) <= Math.min(Math.max(a[1], b[1]), Math.max(c[1], d[1])) + epsilon
 }
+/** 輪郭の内容を鍵にした小さな記憶域。評価のたびに複製された同じ輪郭を、角度や候補ごとに検査し直さない。 */
+export function shapeMemo<T>(limit = 512) {
+  const entries = new Map<string, T>()
+  return (key: string, compute: () => T): T => {
+    if (entries.has(key)) {
+      const value = entries.get(key)!
+      entries.delete(key); entries.set(key, value)
+      return value
+    }
+    const value = compute()
+    entries.set(key, value)
+    while (entries.size > limit) entries.delete(entries.keys().next().value!)
+    return value
+  }
+}
+const inspections = shapeMemo<readonly string[]>(), inspected = new WeakMap<PaperShape, readonly string[]>()
 /** 紙の輪郭は配置時に検証する。テクスチャの透明度から再生中に切り直さない。 */
 export function inspectShape(shape: PaperShape): string[] {
+  // 辺の総当たりは頂点数の二乗になる。編集中は同じ輪郭が角度や候補ごとに何度も届くので、
+  // 同じ物は参照で、複製された物は内容で結果を使い回す。輪郭は書き換えない値として扱う。
+  let errors = inspected.get(shape)
+  if (!errors) inspected.set(shape, errors = inspections(JSON.stringify(shape), () => inspectShapeNow(shape)))
+  return [...errors]
+}
+function inspectShapeNow(shape: PaperShape): string[] {
   const parsed = paperShapeSchema.safeParse(shape)
   if (!parsed.success) return ['Invalid material shape coordinates']
   const rings = shapeRings(shape), errors: string[] = []

@@ -32,10 +32,12 @@ export const usePartEditStore = create<EditState>((set, get) => ({
     const s = get().session
     set({ session: null })
     if (!s || !s.intent || s.source !== useBuilderStore.getState().project) return
-    const plan = planPartEdit(bookEditScene(s.source, s.spreadId), s.elementId, s.intent)
-    const intent = plan.ok ? s.intent : s.last
-    const result = intent && editPlacedPartCommand({ spreadId: s.spreadId, elementId: s.elementId, intent })
-    set({ error: result && !result.ok ? result.message : plan.ok ? '' : plan.detail })
+    // 確定の共通コマンドが全角度の検査を行う。同じ検査を事前に重ねず、通らなければ最後に成立した姿勢で確定する
+    const command = (intent: PartEditIntent) => editPlacedPartCommand({ spreadId: s.spreadId, elementId: s.elementId, intent })
+    const result = command(s.intent)
+    if (result.ok) { set({ error: '' }); return }
+    const fallback = s.last && s.last !== s.intent ? command(s.last) : undefined
+    set({ error: fallback && !fallback.ok ? fallback.message : result.message })
   },
   cancel: () => set({ session: null, error: '' }),
 }))
