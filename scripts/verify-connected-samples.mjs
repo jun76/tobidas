@@ -1,4 +1,5 @@
-// 022の成果物を標準UIと配布HTMLから読む受け入れ検査。編集用storeへ直接値を渡さない。
+// 公開サンプル (projects/) と確認用の単一HTML (.tmp/samples-review/) を、標準UIと配布HTMLから読む受け入れ検査。
+// 編集用storeへ直接値を渡さない。先に npm run build と npm run samples:generate -- --export を実行する。
 import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -7,15 +8,15 @@ import { createServer } from 'vite'
 import { isHmrNoise, QA_SERVER } from './lib/embedProject.mjs'
 
 const args = process.argv.slice(2), flag = (key, fallback) => args.includes(key) ? args[args.indexOf(key) + 1] : fallback
-const root = path.resolve(flag('--root', '.tmp/022-samples')), out = path.resolve(flag('--out', 'output/playwright/022/ui'))
+const root = path.resolve('projects'), review = path.resolve(flag('--review', '.tmp/samples-review')), out = path.resolve(flag('--out', 'output/playwright/samples/ui'))
 fs.mkdirSync(out, { recursive: true })
 const cases = [
-  { id: 'forest-lantern', spread: 'spread-1', child: 'spread-1-ember', liveSpread: 2, livePhase: .3 },
-  { id: 'morning-walk', spread: 'spread-2', child: 'spread-2-shutter-1', liveSpread: 2, livePhase: .15 },
-  { id: 'four-seasons', spread: 'spread-1', child: 'spread-1-particle-far', liveSpread: 4, livePhase: .15 },
-  { id: 'crooked-castle', spread: 'spread-1', child: 'back-left-1', liveSpread: 0, livePhase: .05 },
+  { id: 'forest_lantern', spread: 'spread-1', child: 'spread-1-ember', liveSpread: 2, livePhase: .3 },
+  { id: 'morning_walk', spread: 'spread-2', child: 'spread-2-shutter-1', liveSpread: 2, livePhase: .15 },
+  { id: 'four_seasons', spread: 'spread-1', child: 'spread-1-particle-far', liveSpread: 4, livePhase: .15 },
+  { id: 'crooked_castle', spread: 'spread-1', child: 'back-left-1', liveSpread: 0, livePhase: .05 },
 ].filter((work) => !args.includes('--work') || flag('--work').split(',').includes(work.id))
-if (args.includes('--classroom')) cases.push({ id: 'morning-walk', spread: 'spread-5', child: 'spread-5-sunbeam', liveSpread: 4, livePhase: .2 })
+if (args.includes('--classroom')) cases.push({ id: 'morning_walk', spread: 'spread-5', child: 'spread-5-sunbeam', liveSpread: 4, livePhase: .2 })
 const server = args.includes('--url') ? undefined : await createServer({ configFile: 'vite.config.ts', server: QA_SERVER })
 await server?.listen()
 const url = flag('--url', server && `http://localhost:${server.httpServer.address().port}/`), browser = await chromium.launch()
@@ -26,13 +27,14 @@ const monitor = (page, name) => {
   page.on('console', (message) => { if (message.type() === 'error' && !isHmrNoise(message.text())) errors.push(name + ': ' + message.text()) })
 }
 const row = (page, kind, id) => page.locator(`[data-tobidas-kind="${kind}"][data-tobidas-id="${id}"]`)
-const select = async (page, id) => { await row(page, 'element', id).click(); await page.locator(`[data-tobidas-selection-id="${id}"]`).waitFor() }
+// 選んだ部品の設定はサイドバーの「選択中」タブに出る。部品タブを開いている間は自動で切り替わらないので明示的に開く
+const select = async (page, id) => { await row(page, 'element', id).click(); await page.locator(`[data-tobidas-selection-id="${id}"]`).waitFor(); await page.getByRole('tab', { name: '選択中', exact: true }).click() }
 const valueIs = async (input, number) => {
   await input.page().waitForFunction(({ label, expected }) => [...document.querySelectorAll('input')].some((input) => input.getAttribute('aria-label') === label && Math.abs(Number(input.value) - expected) < 1e-5), { label: await input.getAttribute('aria-label'), expected: number })
 }
 try {
   for (const work of cases) {
-    const folder = path.join(root, '022-' + work.id), source = JSON.parse(fs.readFileSync(path.join(folder, 'project.json'), 'utf8'))
+    const folder = path.join(root, work.id), source = JSON.parse(fs.readFileSync(path.join(folder, 'project.json'), 'utf8'))
     const sourceSpread = source.book.spreads.find((spread) => spread.id === work.spread), child = sourceSpread.elements.find((element) => element.id === work.child)
     const parent = child.attachment.surface.nodeId
     const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, locale: 'ja-JP', acceptDownloads: true })
@@ -69,9 +71,9 @@ try {
     await page.screenshot({ path: path.join(out, work.id + '-builder.png') })
     if (parent !== '$book') await undo.click()
     // UIの書き出しを読み戻し、Undo後の基準点と参照が残っていることを確認する。
-    await page.getByRole('button', { name: 'エクスポート', exact: true }).click()
+    await page.getByRole('button', { name: '保存', exact: true }).click()
     const download = page.waitForEvent('download', { timeout: 60000 })
-    await page.getByRole('button', { name: '編集用の作品ZIP', exact: true }).click()
+    await page.getByRole('button', { name: '作品ZIPとして保存', exact: true }).click()
     const zip = await download, zipPath = path.join(out, work.id + '-roundtrip.tobidas.zip'); await zip.saveAs(zipPath)
     await page.getByLabel('作品ZIPを開く', { exact: true }).first().setInputFiles(zipPath)
     await page.locator('[data-tobidas-selection-kind="spread"]').waitFor({ timeout: 60000 })
@@ -85,7 +87,7 @@ try {
     monitor(offline, work.id + '/offline')
     const external = []
     await offline.route(/^https?:/, (route) => { external.push(route.request().url()); return route.abort() })
-    await offline.goto(pathToFileURL(path.join(root, '022-samples-review', work.id + '.html')).href)
+    await offline.goto(pathToFileURL(path.join(review, work.id + '.html')).href)
     await offline.waitForFunction(() => typeof window.__tobiSetScroll === 'function', { timeout: 30000 })
     await offline.locator('canvas').waitFor()
     const total = source.book.sequence.coverOpenSeconds + source.book.spreads.reduce((n, spread) => n + spread.sequence.holdSeconds + spread.sequence.turnSeconds, 0)

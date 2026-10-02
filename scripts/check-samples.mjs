@@ -5,8 +5,9 @@ import { embedProjectFolder } from './lib/embedProject.mjs'
 import { inspectSampleOverlaps, inspectSampleDimensions } from './lib/sampleSceneAudit.mjs'
 import { CONNECTED_LAYOUTS } from './samples/connected-layouts.mjs'
 
-const args = process.argv.slice(2), root = resolve(args.includes('--root') ? args[args.indexOf('--root') + 1] : '.tmp/022-samples')
-const report = JSON.parse(readFileSync(join(root, '022-samples-review/migration-report.json'), 'utf8'))
+// projects/ の公開サンプルを、生成時の台帳 (.tmp/samples-review/report.json) と照らして検査する。先に npm run samples:generate を実行する
+const args = process.argv.slice(2), flag = (name, fallback) => args.includes(name) ? args[args.indexOf(name) + 1] : fallback
+const root = resolve('projects'), report = JSON.parse(readFileSync(join(resolve(flag('--review', '.tmp/samples-review')), 'report.json'), 'utf8'))
 const runtime = await connectedRuntime()
 try {
   if (report.reports.length !== 4 || report.sourceElements !== 331) throw new Error('全4作品・331要素の台帳が必要です')
@@ -17,7 +18,7 @@ try {
     const overlaps = inspectSampleOverlaps(project, runtime.api), dimensions = inspectSampleDimensions(project, entry.entries, CONNECTED_LAYOUTS[entry.sourceId])
     if (overlaps.physicalOverlaps.length || dimensions.errors.length) throw new Error(`${entry.projectId}: ${JSON.stringify({ overlaps: overlaps.physicalOverlaps, errors: dimensions.errors })}`)
     await runtime.api.verifyEmbeddedParts(project.partDefinitions, project.assets)
-    if (project.book.spreads.some((spread) => spread.elements.some((element) => element.type !== 'part' && !element.attachment))) throw new Error('旧方式の要素が残っています')
+    if (project.book.spreads.some((spread) => spread.elements.some((element) => element.type !== 'part' && !element.attachment))) throw new Error('紙に接続していない要素が残っています')
     for (const spread of project.book.spreads) {
       if (spread.elements.some((element) => element.id.includes('support-row-'))) throw new Error(`${spread.id}: 作品を横切る接続帯が残っています`)
       for (const e of spread.elements) {

@@ -28,8 +28,8 @@ export function build(updatedAt) {
     }
   }
   return {
-    meta: { id: source.id, title: source.name, description: 'A crooked castle grows from the ground and shrinks back into the book.',
-      theme: 'crooked-castle', cover: { front: source.book.frontCover.frontAsset } },
+    meta: { id: source.id, title: source.name, description: 'A storm-lit castle of crooked spires, seen from under the open book.',
+      theme: 'spooky-cartoon', cover: { front: source.book.frontCover.frontAsset } },
     toProject: () => structuredClone(source),
     files: () => new Map(source.assets.map((asset) => [asset.id, readFileSync(new URL(`./assets/crooked_castle/${asset.id}`, import.meta.url))])),
   }

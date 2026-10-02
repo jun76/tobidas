@@ -37,37 +37,40 @@ You can also clone this repository and run it locally or deploy it to your own s
 - Custom-part editing, a local library, and exchange as part folders or ZIP files
 - Images, SVG, video, audio, web fonts, and text
 - Timeline control for transforms, opacity, visibility, assets, backgrounds, lights, and cameras
-- 3D gizmos that move, angle, and scale parts while keeping their connections, plus detailed editing in the inspector
+- 3D gizmos that move, angle, and scale parts while keeping their connections, plus detailed editing in the sidebar tabs
 - Background music and sound effects such as page turns
 - Text read aloud with the browser voice, and a text list for external text-to-speech
 - Per-spread page jumps shared by the exported player and the builder's play mode
 - Japanese and English UI
 - State and direct controls for user-side browser-use AI, and structured WebMCP tools
 - Automatic browser-local saves
-- Export as a single HTML file or a ZIP for static hosting
+- Export as a single HTML file or a static-host ZIP
 
-The start screen offers **Edit picture book**, **Edit custom part**, and **Settings** (display language and the light or dark theme).
+The HOME screen offers **Edit picture book**, **Edit custom part**, and **Settings** (display language and the light or dark theme).
 The custom-part library starts empty. [Exchange-part examples and test books](./examples/parts/README.md) are included.
 Each part has a maximum input opening angle: a 180° part attached to a 90° connection stops in an intermediate pose, and a part limited to 150° cannot be placed on a 180° connection.
 
 Printed decorations, spinning blades, moving characters, and light particles can be attached to real paper faces.
 Paper outlines and holes, decorations, motion, and materials can be bundled into a custom part and reused as a part ZIP.
-Whole projects can also be exchanged with **Export → Editable project ZIP** and **Open project ZIP**.
+Whole projects can also be exchanged with **Save → Save as project ZIP** and **Open → Open project ZIP**.
 
 ## Use the online builder
 
 1. Open [tobidas.9rsgy78c9c.workers.dev](https://tobidas.9rsgy78c9c.workers.dev/) in Chrome or Edge.
-2. Choose **Edit picture book**, then **New** to start a project, **Open** to select a project folder, or **Open project ZIP** to select an editable project ZIP.
+2. Choose **Edit picture book**, then **New** to start a project, or choose **Open folder** or **Open project ZIP** under **Open**.
 3. Import assets, choose a basic or custom part in the parts panel on the left, and click faces of the book to place it.
 4. Use **Play** in the upper-right corner to preview the book opening and closing with its animation.
-5. Use **Save** for an editable project folder and **Export** for publishable files.
+5. Use **Save as folder** or **Save as project ZIP** under **Save** for an editable project, and **Export** for publishable files.
 
 Desktop Chrome or Edge is recommended because folder access uses the File System Access API.
+Other browsers can still read and write project ZIPs and export a single HTML file or a static-host ZIP.
 
 ## Use with browser-use AI
 
 Browser-use AI and people operate the same standard builder.
-The BOOK navigator, assets, inspector, and timeline expose ARIA and stable `data-tobidas-*` identifiers.
+The left sidebar holds the BOOK navigator above and, below it, tabs switched with a vertical row of icons (Project, Parts, Assets, Selection, Sound, Camera, Lighting, and Authoring guide).
+Selecting a part, page, cover, or light switches to the **Selection** tab automatically; the **Parts** tab stays open so that parts can be placed one after another.
+The BOOK navigator, the sidebar tabs, and the timeline expose ARIA and stable `data-tobidas-*` identifiers.
 Project, selection, active-spread, and preview state are available on the standard workspace element.
 
 Press a basic- or custom-part button, then left-click connection face 1 and connection face 2 on the book.
@@ -75,15 +78,15 @@ Single-face parts such as text are placed with one click.
 A badge in the upper left shows the current step; the hovered face is hatched blue, and faces that cannot hold the part are hatched red.
 Required support bridges are added during placement. Press Esc to cancel; right-drag to orbit the view.
 After placement, W moves along the connected face, E edits the matching design angle, and R scales uniformly.
-The gizmo and the inspector's **Adjust connected placement** use the same checks and update the support paper and connections of later children.
+The gizmo and **Adjust connected placement** in the **Selection** tab use the same checks and update the support paper and connections of later children.
 While dragging, the paper and its supports follow immediately; paper intersections and conflicts with attached motion are checked in the background without stopping the view. An invalid position is shown in red, and releasing commits only a value that passes the full opening and closing check.
 Support-paper dimensions and glue positions are decided while placing or editing, and playback folds the same paper. Candidates whose paper shape or glue positions would change during opening and closing are not committed.
 Alt disables snapping and Esc cancels the whole drag. One drag is undone with one Undo.
 Uprights edit their tilt above the ground, and background panels edit their screen angle.
 The **Angled upright**, which changes direction on the ground, is driven by triangular support paper on the fold it shares with the background.
 The editable range follows from the connection and dimensions; candidates whose stowing or intermediate intersections cannot be verified are not committed.
-Edit detailed dimensions and connections after placement in the inspector's **Size and placement / Connection**, with an opening preview.
-Assign images and text in the inspector after placement.
+Edit detailed dimensions and connections after placement in **Size and placement / Connection** in the **Selection** tab, with an opening preview.
+Assign images and text in the **Selection** tab after placement.
 The information button on an asset row reveals its asset ID, MIME type, exact byte size, and reference count.
 BGM can be selected from imported audio, or cleared with **Not set**, directly in the Sound section.
 Changing a parent and adding a timeline key with an explicit value and time are available as standard detail actions.
@@ -95,7 +98,7 @@ The **AI operation tips** badge distinguishes tool registration, the public Orig
 tobidas does not add an AI service or external communication, so projects and assets remain in the browser.
 Temporary detail-form values and operation results are not stored in project data.
 
-Project-specific production guidance is available and editable per language in the **Authoring guide** pane below the Inspector.
+Project-specific production guidance is available and editable per language in the **Authoring guide** tab of the left sidebar.
 This setting is the source of truth for picture-book know-how. WebMCP clients read the selected language with `tobidas-get-authoring-guide` and update it with `tobidas-update-authoring-guide` only when the user explicitly requests a change.
 
 ### Narrate an exported player
@@ -276,8 +279,8 @@ Project-format compatibility is managed by the tobidas application release.
 
 Two publishing formats are available:
 
-- **Single HTML** — embeds every asset in one file that can be opened directly after download.
-- **Static host** — packages `index.html` and `assets/` as a ZIP for services such as Cloudflare Pages.
+- **Single HTML file** — embeds every asset in one file that can be opened directly after download.
+- **Static-host ZIP** — packages `index.html` and `assets/` as a ZIP; extract it and upload it to services such as Cloudflare Pages.
 
 ## Sample projects
 
@@ -292,11 +295,10 @@ The `projects/` directory contains four ready-to-open samples:
 - `four_seasons` — One Window, Four Seasons
 - `crooked_castle` — The Crooked Castle
 
-Download or clone the repository, then select one of these folders with **Open** in the builder.
-These are originals made in the format that predates basic parts (image parts folded by automatic stowing); they open, play, and edit as they are.
+Download or clone the repository, then select one of these folders with **Open → Open folder** in the builder.
+Each book is built from basic and custom parts connected to the pages and folds, with content attached to paper faces.
 
-Versions of the same four books rebuilt with basic parts and attached content are generated into `.tmp/022-samples` with the following commands.
-Open `022-samples-review/index.html` in the output to view them.
+The samples are generated from definitions. The following commands regenerate `projects/`; open `.tmp/samples-review/index.html` to view the single-HTML versions.
 
 ```bash
 npm run build

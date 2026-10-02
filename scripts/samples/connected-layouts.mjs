@@ -1,4 +1,4 @@
-/** 022の配置設計。高さは収納できる紙の寸法、演出の大きさは原作の値を保つ。 */
+/** 公開サンプルの配置設計。高さは収納できる紙の寸法、演出の大きさは原作の値を保つ。 */
 export const CONNECTED_LAYOUTS = {
   forest_lantern: {
     background: ['canopy', 'canopy', 'ridge', 'great-tree', 'canopy'],

@@ -69,7 +69,7 @@ node scripts/generate-part-examples.mjs
 
 `npm run build` の後に `node scripts/generate-gizmo-example.mjs` を実行すると、`.tmp/021-preview/` へ別の確認作品を生成します。
 移動と傾き、親の変更と貼り紙、箱の等比拡縮、交換した入れ子部品の4見開きです。
-`021-connected-gizmos/` フォルダーを絵本編集の「開く」で読み込み、`021-connected-gizmos.html` を再生画面で開けます。
+`021-connected-gizmos/` フォルダーを絵本編集の「開く → フォルダを開く」で読み込み、`021-connected-gizmos.html` を再生画面で開けます。
 `021-connected-gizmos.tobidas.zip` は同じ作品フォルダーをまとめたもので、展開してから読み込みます。
 `nested-panel.tobidas-part.zip` は公開した角度ハンドルと内部倍率を含む交換例です。
 アプリの初期ライブラリへは追加しません。

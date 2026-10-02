@@ -64,7 +64,7 @@ export async function remakeConnected(source, api) {
       if (['from', 'to', 'rotation'].some((key) => !Array.isArray(design.route[key]) || design.route[key].length !== 3 || design.route[key].some((n) => !Number.isFinite(n)))) throw new Error(`移動経路が不正です: ${id}`)
     }
   }
-  project.id = `022-${source.id.replaceAll('_', '-')}`
+  project.id = source.id
   project.partDefinitions = {}
   // 無照明の絵柄を前提にした旧光源を、拡散反射の紙を読むための明るい補助光へ移す。
   const fill = (n) => 2.35 + n * .4
@@ -104,7 +104,7 @@ export async function remakeConnected(source, api) {
         if (classroom) view.materials = { '*': { color: '#c8e2ed' } }
         const outputs = Object.fromEntries(['panel', 'panel-b', 'ground-backdrop', 'ground-backdrop-b'].map((portId) => [portId, { type: 'output', nodeId: 'frame', portId }]))
         outputs['view-left'] = { type: 'output', nodeId: 'view', portId: 'panel-b' }; outputs['view-right'] = { type: 'output', nodeId: 'view', portId: 'panel' }
-        background.part = { definition: await embedPart(project, api, { id: classroom ? '022-classroom-window' : '022-seasonal-room', name: classroom ? '教室の窓' : '季節の窓の部屋',
+        background.part = { definition: await embedPart(project, api, { id: classroom ? 'classroom-window' : 'seasonal-room', name: classroom ? '教室の窓' : '季節の窓の部屋',
           input: { kind: 'fold-pair', maxOpeningAngleDeg: 180 }, nodes: [view, frame], outputs, ...contents.length ? { contents } : {} }), mount: background.part.mount, parameters: {}, materials: {} }
       }
       elements.push(background); plans.set(bg.id, { element: background, scale: config.backgroundSize[index][1] / sizeOf(bg)[1], spanning: true })
@@ -186,7 +186,8 @@ export async function remakeConnected(source, api) {
         applyPaperContour(el, old.image && SHAPES[source.id][old.image])
         el = api.planSupportedPart(project, { ...spread, elements }, el, { position: [x, 0, z] })
       }
-      if (hasLayers) { el.id = `${old.id}-paper`; el.part.materials = { panel: { color: '#ead8b5' } } }
+      // 重ねた絵柄の台紙は紙自体を描かず、印刷だけを見せる
+      if (hasLayers) { el.id = `${old.id}-paper`; el.part.materials = { panel: { color: '#ead8b5', transparent: true } } }
       elements.push(el); plans.set(old.id, { element: el, scale: factor, merged: hasLayers }); merged.set(key, old.id)
       if (!hasLayers) remember(old, [el.id], 'paper', '地面と背後の実部品を固定長の支持紙でつなぐ。支持は絵の裏から奥へ伸ばす。', { after: el.part })
     }
@@ -397,7 +398,7 @@ export async function remakeConnected(source, api) {
       const content = api.connectedContentSchema.parse({ ...rotor, id: 'rotor', attachment: { ...rotor.attachment, surface: { nodeId: 'tower', portId: 'panel' } } })
       const internalTracks = tracks.filter((t) => t.target.type === 'element' && t.target.elementId === rotor.id).map((t) => ({ ...t, target: { type: 'element', elementId: 'rotor' } }))
       const outputs = Object.fromEntries(['panel', 'ground', 'ground-panel'].map((portId) => [portId, { type: 'output', nodeId: 'tower', portId }]))
-      const reference = await embedPart(project, api, { id: '022-paper-windmill', name: '回る羽根付き風車', input: { kind: 'fold-pair', maxOpeningAngleDeg: 90 },
+      const reference = await embedPart(project, api, { id: 'paper-windmill', name: '回る羽根付き風車', input: { kind: 'fold-pair', maxOpeningAngleDeg: 90 },
         nodes: [{ id: 'tower', name: '紙の塔と支持', ...tower.part, mount: { type: 'input' } }], outputs, contents: [{ element: content, tracks: internalTracks }] })
       tower.part = { definition: reference, mount: tower.part.mount, parameters: {}, materials: {} }
       spread.elements = elements.filter((e) => e.id !== rotor.id)

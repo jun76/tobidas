@@ -18,14 +18,14 @@ Do not automatically change the core application, deploy, push to GitHub, or cre
 
 The default deliverable is a standalone work saved where the user requests.
 Only change `scripts/samples/`, `projects/`, or the catalog when the user explicitly asks to add or replace a public sample in the repository.
-The four works in `projects/` are originals in the format that predates basic parts. Do not edit or regenerate `projects/*/project.json`.
+The works in `projects/` are generated from `scripts/samples/`. Do not edit `projects/*/project.json` directly.
 
 ## Start with the work's authoring guide
 
 Before designing, generating assets, placing parts, or reviewing a work, read its editable **Authoring guide**.
 
 - With WebMCP, call `tobidas-get-state`, then `tobidas-get-authoring-guide`.
-- Without WebMCP, read the standard builder's **Authoring guide** pane below the Inspector.
+- Without WebMCP, read the **Authoring guide** tab in the standard builder's left sidebar.
 - Treat the guide stored in the current work as the source of truth for creative defaults and constraints.
 - Do not recreate old defaults in this skill, a design sheet, or a prompt.
 - Change the guide only when the user explicitly requests a change, using the standard UI or `tobidas-update-authoring-guide`.
@@ -49,7 +49,7 @@ After design approval:
 3. Start the development server when working from a clone, then import assets together through the standard Assets panel.
 4. Select the target spread in the BOOK navigator before placing parts.
 5. Use page-background assignment for full-page artwork. Place separate pop-up paper with basic or custom parts from the parts panel by clicking the real faces they connect to, and attach printed decorations, animated visuals, and particles to real paper faces. Use the standard built-in page-turn audio; do not copy a page-turn file into the skill or work merely to replace that built-in asset.
-6. Configure text, camera, lights, motion, timeline keys, BGM, and sound cues through the standard inspector and timeline, or through WebMCP when available.
+6. Configure text, camera, lights, motion, timeline keys, BGM, and sound cues through the sidebar tabs (Selection, Project, Sound, Camera, Lighting) and the timeline of the standard builder, or through WebMCP when available.
 7. Save or export to the requested location.
 8. Read [references/verification.md](references/verification.md) and run the applicable checks.
 
@@ -60,8 +60,8 @@ Read operation results from `data-tobidas-kind="operation-result"`. Do not pass 
 ## Repository samples
 
 For a public sample, write structure in `scripts/samples/<work>.mjs`, overrides in `scripts/samples/overrides/<work>.json`, and assets in `scripts/samples/assets/<work>/`, and register the work in `BUILDERS` of `scripts/samples/registry.mjs`.
-The conversion to basic parts and attached content lives in `scripts/samples/connected.mjs`, `connected-layouts.mjs`, and `paper-shapes.json`.
-Use the repository's shared sample helpers and overrides. After changes, generate into `.tmp/022-samples` and check:
+The assembly into basic parts and attached content lives in `scripts/samples/connected.mjs`, `connected-layouts.mjs`, and `paper-shapes.json`.
+Use the repository's shared sample helpers and overrides. After changes, regenerate `projects/` (review output goes to `.tmp/samples-review/`) and check:
 
 ```bash
 npm run build

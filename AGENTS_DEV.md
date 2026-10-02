@@ -16,6 +16,25 @@ tobidasはReact 19、@react-three/fiber（three.js）、zustand、zod、Viteで�
 ビルダー本体をリリースするときは、バージョンを更新し、リリースタグを作成して GitHub へ push してからデプロイします。
 タグ付き push までを含む本体リリースの明示指示がない場合は、ローカルの検証と変更内容の報告までに留めます。
 
+### バージョンの更新
+
+バージョン番号の正本は `package.json` の `version` です。次のコマンドで `package.json` と `package-lock.json` の2か所 (ルートと `packages[""]`) を同時に更新し、手で書き換えません。
+
+```bash
+npm version 1.2.3 --no-git-tag-version
+npm run build
+```
+
+画面のバージョン表記は次の3か所で、どれも `package.json` を読むため個別の更新は要りません。
+
+- 編集画面のステータスバー (`src/builder/App.tsx`)
+- HOME右上のバージョン表示 (`src/builder/home/HomeScreens.tsx`)
+- 設定画面の「このアプリについて」 (同上)
+
+`package-lock.json` はエンジンハッシュ (`scripts/lib/engineHash.mjs`) の対象です。バージョンを上げると同梱プレイヤーとの照合が変わるため、更新後に `npm run build` で `public/player/` を作り直します。作り直さないと書き出しが「同梱プレイヤーが本体のエンジンと一致しません」で止まります。
+リリースタグはバージョンに `v` を付けた名前 (`v1.2.3`) にします。
+HOME右下の著作権表示の年 (`src/builder/home/HomeScreens.tsx` の `©2026 jun`) は固定の文字列なので、年が変わったら手で直します。
+
 ## 開発コマンド
 
 ```bash
@@ -172,7 +191,7 @@ UIとWebMCPは `builder/parts/commands.ts` の型付き操作を共有し、`bui
 確認作品は `node scripts/generate-gizmo-example.mjs` で `.tmp/021-preview/` へ生成します。
 生成器は共通編集計画、部品交換、作品の保存・再読み込み、単一HTMLの書き出しを通します。
 
-### 022の紙面の装飾とフィクション
+### 紙面の装飾とフィクション
 
 紙に印刷する内容は `presentation.kind: 'decal'`、自由な動きは `fiction` と明示し、どちらも実面へ到達する `attachment` を持ちます。
 支持紙の補完対象は紙部品だけです。出現・消失や自由な移動・拡縮をするフィクションのために、接着紙や支持棒を新設しません。attachmentは既存の実ページ・実部品を座標の基準にする参照で、支持材を要求しません。
@@ -188,7 +207,7 @@ UIとWebMCPは `builder/parts/commands.ts` の型付き操作を共有し、`bui
 周期の包絡とキー間を含めた検査を行いますが、有限角度の結果を連続した無衝突証明とは呼びません。
 絵本の保持時計は再生器とそろえ、全開時にキー間を、開き途中は冒頭、閉じ途中は末尾を検査します。周期演出の包絡は各姿勢で検査し、単体部品の交換検査では角度と保持時刻の全組み合わせを維持します。
 
-022のサンプルは `scripts/samples/connected.mjs`、`connected-layouts.mjs`、`paper-shapes.json` から生成します。
+公開サンプルは `scripts/samples/<work>.mjs` の定義を `scripts/samples/connected.mjs`、`connected-layouts.mjs`、`paper-shapes.json` で組み立てて生成します。
 支持設計は `src/parts/supportPlanning.ts` を使い、標準画面の二面選択・再編集・サンプル生成で共用します。
 作品固有の支持台、親ID、支持高さ・横位置・上限の指定をサンプル定義へ戻しません。
 支持は高さ50%を基準とし、実紙の輪郭と穴から接着可能な幅と横位置を探します。親の高さが不足する場合は上端へ収め、可動部との干渉がある場合は入力角と演出位相を検査して位置を設計します。
@@ -198,9 +217,8 @@ UIとWebMCPは `builder/parts/commands.ts` の型付き操作を共有し、`bui
 演出の判定は `src/parts/presentation.ts`、演出の接続先と支持紙への干渉回避は `src/parts/contentPlacement.ts` に置きます。アニメーションのためだけの支持台は作りません。
 高い位置の演出は同じ高さの実面を優先します。支持紙の再設計でも干渉が解けない浮遊演出は、配置時に基準位置と移動キーを同量ずらします。既存作品の編集では対象外の演出と接続先を変更しません。
 共有カスタム部品の自動支持は、特定の本の保持時計だけで合格にせず、部品単体の入力角と内部演出でも検査します。
-`npm run samples:generate -- --export` の既定出力は `.tmp/022-samples` です。比較用の `projects/` 原本を上書きしません。
-指定先への実験出力には `--out-root`、確認画像の同梱には `--shots` を使います。
-標準画面の受け入れ検査は `scripts/verify-connected-samples.mjs` と `scripts/verify-connected-part.mjs`、新方式の構造検査は `npm run samples:check` を使います。
+`npm run samples:generate` は `projects/<作品ID>/` と `projects/catalog.json` を書き換えます。`--export` で単一HTML・作品ZIP・部品ZIPを、`--shots` で確認画像を `.tmp/samples-review/` へ出力し、`--work` で対象作品を絞ります。
+標準画面の受け入れ検査は `scripts/verify-connected-samples.mjs` と `scripts/verify-connected-part.mjs`、構造検査は `npm run samples:check` を使います。
 サンプルの検査は貫通だけでなく、全開時の共面の紙の重複と、原作に対する寸法比も比較します。小物を一律に縮小せず、収納用の寸法変更は景観ごとに明示します。フィクションと印刷の重なりは描画順で合成するため別に記録し、全見開きの展開途中・保持中・収納途中を目視します。
 公開サンプルの差し替えを明示された場合だけ、配布先の更新へ進みます。
 
@@ -304,7 +322,7 @@ DOMやWebMCPから作品オブジェクトを直接変更したり、検証、un
 トラックが支配する軸はキーへ、それ以外は `baseTransform` へ書きます。
 トラックがある軸の `baseTransform` は描画に現れず収納コンパイラの入力だけを変えるため、そこへ書きません。
 
-公開用の書き出しは単一HTMLと静的ホスト用ZIPの2種類です。
+公開用の書き出しは単一HTMLファイルと静的ホスト用ZIPの2種類です。
 どちらも `public/player/` の同梱プレイヤーを読み、Bookデータを `<script id="tobidas-project">` へ注入します。
 このファイルは `npm run build` の3段のビルドで生成します。
 
@@ -333,7 +351,8 @@ DOMやWebMCPから作品オブジェクトを直接変更したり、検証、un
 取り付けで補完した支持紙はインスタンスのmountへ保存し、ライブラリの定義を変更しません。
 仮想延長した面の空白には接着させず、親の実面と補完した支持紙が覆う範囲を検査します。
 配置後の寸法と接続の詳細編集には、既存の開閉プレビュー付きフォームを使います。
-配置した部品の表裏の画像、色、文字はインスペクターから指定します。
+配置した部品の表裏の画像、色、文字はサイドバーの「選択中」タブから指定します。
+編集画面の設定欄は左サイドバーの `panels/SidebarTabs.tsx` に集め、縦並びのアイコンで切り替えます。切り替えても中身は作り直さず隠すだけにし、入力途中の値と自動検査が参照する項目を保ちます。
 効果音は音声素材のドラッグ、パーティクルは演出ボタンから追加します。
 紙の面の素材は `transparent: true` で紙自体を描かず、影も落としません。画像・文字を持たない台紙に印刷だけを見せるための設定で、評価・接着・収納は紙のまま扱います。その面に貼った印刷は紙の代わりに深度を書き、影を落とします。カスタム部品の定義に含めると内容ハッシュが変わります。
 支持紙の表示は作品の `appearance.showSupports` で決め、既定では描きません。非表示でも支持の評価、接着、収納の検査は変えず、`PaperMeshes` が `support` の面を描画と影から外すだけです。
