@@ -58,6 +58,22 @@ function validateChromeWebMcpToken(token: string): ChromeOriginTrialPayload {
   return payload
 }
 
+/** 開発サーバーの書き出し照合用。エンジンを編集しても再起動せずに、その時点の内容と同梱プレイヤーを照らし合わせる */
+const ENGINE_HASH_PATH = '/__tobidas/engine-hash'
+function currentEngineHash(): Plugin {
+  return {
+    name: 'tobidas-current-engine-hash',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use(ENGINE_HASH_PATH, (_request, response) => {
+        response.setHeader('Content-Type', 'application/json')
+        response.setHeader('Cache-Control', 'no-store')
+        response.end(JSON.stringify({ engine: engineHash() }))
+      })
+    },
+  }
+}
+
 /**
  * Origin Trialトークンは配信HTMLへ公開される値であり、秘密情報ではない。
  * 期限更新をソース変更から切り離すため、公開ビルド時の環境変数からmetaへ注入する。
@@ -96,8 +112,8 @@ export default defineConfig(({ mode }) => {
   ]
 
   return {
-    plugins: [react(), ...(tokens.length ? [webMcpOriginTrial(tokens)] : [])],
-    // 起動・ビルド時点のエンジン内容。サイト書き出しが同梱プレイヤーの manifest と照合する
+    plugins: [react(), currentEngineHash(), ...(tokens.length ? [webMcpOriginTrial(tokens)] : [])],
+    // ビルド時点のエンジン内容。サイト書き出しが同梱プレイヤーの manifest と照合する。開発時は currentEngineHash が都度計算する
     define: { __TOBIDAS_ENGINE_HASH__: JSON.stringify(engineHash()) },
     server: {
       port: 5174,

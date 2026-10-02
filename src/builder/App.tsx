@@ -10,38 +10,20 @@ import { containerElementIds, elementRemovalIds, type RootParentType } from './h
 import { saveViewportImage } from './capture/saveViewportImage'
 import { clampPanelWidth, loadPanelWidth, savePanelWidth } from './layout/panelSizing'
 import { Toolbar } from './panels/Toolbar'
-import { BookNavigator, PartPresets } from './panels/Hierarchy'
-import { AssetsPanel } from './panels/AssetsPanel'
-import { AuthoringGuide, Inspector } from './panels/Properties'
+import { BookNavigator } from './panels/Hierarchy'
+import { SidebarTabs } from './panels/SidebarTabs'
 import { Viewport, viewportGlRef } from './Viewport'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 import { SplitStack } from './ui/SplitStack'
+import { Splitter } from './ui/Menu'
 import { WebMcpBridge } from './webmcp/WebMcpBridge'
 import { useOperationResultStore } from './operations/result'
 import type { BookSelection } from './state/editorState'
 import st from './builder.module.css'
 
-const RIGHT_PANEL_DEFAULT = 340
+// 右のインスペクターを左へ統合したので、旧来の細い左幅は引き継がず別の名前で覚える。
+const SIDEBAR_DEFAULT = 380
 let projectRestored = false
-
-function loadRightPanelWidth(): number {
-  const saved = localStorage.getItem('tobidas4.panelW.right')
-  // 旧既定値だけを移行し、ユーザーが手動で決めた幅は保持する。
-  if (saved === '320') return RIGHT_PANEL_DEFAULT
-  return loadPanelWidth('right', RIGHT_PANEL_DEFAULT)
-}
-
-function Splitter({ onDelta }: { onDelta: (delta: number) => void }) {
-  const last = useRef(0)
-  return <div className={st.splitter} onPointerDown={(event) => {
-    last.current = event.clientX
-    event.currentTarget.setPointerCapture(event.pointerId)
-  }} onPointerMove={(event) => {
-    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
-    onDelta(event.clientX - last.current)
-    last.current = event.clientX
-  }} />
-}
 
 export default function App() {
   const t = useT()
@@ -71,10 +53,8 @@ export default function App() {
     parentType: RootParentType
     elementCount: number
   } | null>(null)
-  const [leftWidth, setLeftWidth] = useState(() => loadPanelWidth('left', 280))
-  const [rightWidth, setRightWidth] = useState(loadRightPanelWidth)
-  useEffect(() => { savePanelWidth('left', leftWidth) }, [leftWidth])
-  useEffect(() => { savePanelWidth('right', rightWidth) }, [rightWidth])
+  const [leftWidth, setLeftWidth] = useState(() => loadPanelWidth('sidebar', SIDEBAR_DEFAULT))
+  useEffect(() => { savePanelWidth('sidebar', leftWidth) }, [leftWidth])
   useEffect(() => useBuilderStore.subscribe(() => setStateVersion((value) => value + 1)), [])
   useEffect(() => {
     setPendingElementDelete(null)
@@ -173,21 +153,13 @@ export default function App() {
       data-tobidas-preview-progress={String(previewProgress)}
       data-tobidas-state-version={String(stateVersion)}>
       {mode === 'edit' && <aside className={st.left} style={{ '--panel-width': `${leftWidth}px` } as CSSProperties}>
-        <SplitStack storageKey="left" initial={[280, 210]} mobileAccordion panes={[
+        <SplitStack storageKey="sidebar" initial={[260]} mobileAccordion panes={[
           { key: 'navigator', label: t.app.panelNavigator, node: <BookNavigator /> },
-          { key: 'presets', label: t.app.panelPresets, node: <PartPresets /> },
-          { key: 'assets', label: t.app.panelAssets, node: <AssetsPanel /> },
+          { key: 'tabs', label: t.app.panelSidebar, node: <SidebarTabs /> },
         ]} />
       </aside>}
       {mode === 'edit' && <Splitter onDelta={(delta) => setLeftWidth((value) => clampPanelWidth(value + delta))} />}
       <Viewport onScreenshot={screenshot} />
-      {mode === 'edit' && <Splitter onDelta={(delta) => setRightWidth((value) => clampPanelWidth(value - delta))} />}
-      {mode === 'edit' && <aside className={st.right} style={{ '--panel-width': `${rightWidth}px` } as CSSProperties}>
-        <SplitStack storageKey="right" initial={[700]} mobileAccordion panes={[
-          { key: 'inspector', label: t.app.panelInspector, node: <Inspector /> },
-          { key: 'authoring-guide', label: t.authoringGuide.title, node: <AuthoringGuide /> },
-        ]} />
-      </aside>}
     </div>
     <StatusBar key={`status-${projectSession}`} />
   </div>

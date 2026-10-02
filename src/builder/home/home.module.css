@@ -150,7 +150,10 @@
 .card:hover .cardArrow { transform: translateX(4px); background: var(--tone); color: #fff; }
 @keyframes cardIn { from { transform: translateY(18px); opacity: 0; } to { transform: none; opacity: 1; } }
 
-.footer { display: flex; align-items: center; justify-content: center; gap: 8px; text-align: center; margin-top: auto; color: var(--muted); font-size: 13px; }
+.footer { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px 16px; margin-top: auto; color: var(--muted); font-size: 13px; }
+.footerNote { grid-column: 2; display: flex; align-items: center; justify-content: center; gap: 8px; text-align: center; }
+/* 右下の著作権表示。中央の一文と重ならないよう、同じ行の右端に置く */
+.copyright { grid-column: 3; justify-self: end; font-size: 12px; letter-spacing: .04em; }
 
 /* 設定 */
 .sheet {
@@ -213,6 +216,8 @@
   .cards { grid-template-columns: 1fr; }
 }
 @media (max-width: 520px) {
+  .footer { grid-template-columns: 1fr; }
+  .footerNote, .copyright { grid-column: 1; justify-self: center; }
   .card { grid-template-columns: 1fr; padding: 22px 22px 60px; row-gap: 10px; }
   .cardIcon { grid-row: auto; width: 56px; height: 56px; border-radius: 16px; }
   .choices, .facts { grid-template-columns: 1fr; }

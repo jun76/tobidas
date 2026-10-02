@@ -26,28 +26,13 @@ const FONT_LABEL_KEY: Record<TextFont, 'fontRounded' | 'fontSans' | 'fontSerif' 
   mono: 'fontMono',
 }
 
-export function Inspector() {
+/** サイドバーの「選択中」タブ。作品そのもの以外を選んでいるときだけ中身を出す */
+export function SelectionPanel() {
   const t = useT()
-  const store = useBuilderStore()
-  const selection = store.selection
-  const selectionLabel = selection.type === 'light'
-    ? t.properties.directionalLight
-    : selection.type === 'cover'
-      ? (selection.side === 'front' ? t.properties.frontCover : t.properties.backCover)
-      : selection.type === 'spread'
-        ? (selectSpreadById(store, selection.spreadId)?.name ?? t.properties.spread)
-        : selection.type === 'page'
-          ? (selection.side === 'left' ? t.properties.leftPage : t.properties.rightPage)
-          : selection.type === 'element'
-            ? (selectSelectedElement(store)?.name ?? t.properties.element(''))
-            : ''
-  return <Panel title={t.app.panelInspector}>
-    <div className={st.inspectorScopeTitle}>{t.app.inspectorProject}</div>
-    <BookProperties embedded />
-    {selection.type !== 'book' && <>
-      <div className={st.inspectorScopeTitle}>{t.app.inspectorSelection(selectionLabel)}</div>
-      <SelectionDetails embedded />
-    </>}
+  const selection = useBuilderStore((state) => state.selection)
+  // 対象の名前は中の設定欄が見出しに出すので、ここでは「選択中」とだけ示す
+  return <Panel title={t.app.panelSelection} data-tobidas-kind="selection-inspector">
+    {selection.type === 'book' ? <div className={st.hintSmall}>{t.properties.empty}</div> : <SelectionDetails embedded />}
   </Panel>
 }
 
@@ -69,15 +54,21 @@ export function SelectionDetails({ embedded = false }: { embedded?: boolean } = 
   return element ? <Element element={element} embedded={embedded} /> : embedded ? null : empty
 }
 
-export function BookProperties({ embedded = false }: { embedded?: boolean } = {}) {
+function useEnvironmentKey() {
+  const store = useBuilderStore()
+  const spreadId = store.activeSpreadId
+  const time = activeSpreadTime()
+  return (property: TimelineProperty, value: TimelineValue) =>
+    store.upsertTimelineKey(spreadId, { type: 'environment' }, property, time, value)
+}
+
+/** サイドバーの「作品」タブ。名前と判型、舞台の背景と表紙 */
+export function BookPanel() {
   const t = useT()
   const store = useBuilderStore()
   const book = store.project.book
-  const spreadId = store.activeSpreadId
-  const time = activeSpreadTime()
-  const environmentKey = (property: TimelineProperty, value: TimelineValue) =>
-    store.upsertTimelineKey(spreadId, { type: 'environment' }, property, time, value)
-  return <PropertySection title="BOOK" embedded={embedded}>
+  const environmentKey = useEnvironmentKey()
+  return <Panel title={t.app.inspectorProject} data-tobidas-kind="book-inspector">
     <InspectorGroup title={t.app.inspectorBasic}>
       <Text label={t.properties.bookName} value={store.project.name} onChange={(value) => store.commit((project) => { project.name = value })} />
       <Num label={t.properties.pageWidth} value={book.format.pageWidth} onChange={(value) => store.commit((project) => { project.book.format.pageWidth = value })} />
@@ -104,32 +95,52 @@ export function BookProperties({ embedded = false }: { embedded?: boolean } = {}
         onChange={(event) => store.commit((project) => { project.book.appearance.showSupports = event.target.checked })} />
         {' '}{t.properties.showSupports}</label>
     </InspectorGroup>
-    <InspectorGroup title={t.app.inspectorSound}><BookAudio showTitle={false} /></InspectorGroup>
-    <InspectorGroup title={t.app.inspectorCamera}>
-      <div className={st.inspectorGroupTitle}><span>{t.properties.camera}</span><OverlayEye hiddenId={hiddenKey.camera} label={t.properties.cameraFrustum} /></div>
-      <Vec3 label={t.properties.position} value={book.camera.position} onChange={(value) => store.commit((project) => { project.book.camera.position = value })} />
-      <Vec3 label={t.properties.target} value={book.camera.target} onChange={(value) => store.commit((project) => { project.book.camera.target = value })} />
-      <Num label={t.properties.fov} value={book.camera.fov} onChange={(value) => store.commit((project) => { project.book.camera.fov = Math.min(179, Math.max(1, value)) })} />
-      <div className={st.cameraViewStatus}>{t.properties.cameraKeyHint}</div>
-    </InspectorGroup>
-    <InspectorGroup title={t.app.inspectorLighting}>
-      <div className={st.inspectorGroupTitle}><span>{t.properties.lights}</span><OverlayEye hiddenId={hiddenKey.light} label={t.properties.lightMarker} /></div>
-      <Color label={t.properties.ambientColor} value={book.lights.ambient.color}
-        onChange={(value) => store.commit((project) => { project.book.lights.ambient.color = value })}
-        onKey={() => environmentKey('ambient.color', book.lights.ambient.color)} />
-      <Num label={t.properties.ambientIntensity} value={book.lights.ambient.intensity}
-        onChange={(value) => store.commit((project) => { project.book.lights.ambient.intensity = Math.max(0, value) })}
-        onKey={() => environmentKey('ambient.intensity', book.lights.ambient.intensity)} />
-      <Color label={t.properties.directionalColor} value={book.lights.directional.color}
-        onChange={(value) => store.commit((project) => { project.book.lights.directional.color = value })}
-        onKey={() => environmentKey('directional.color', book.lights.directional.color)} />
-      <Num label={t.properties.directionalIntensity} value={book.lights.directional.intensity}
-        onChange={(value) => store.commit((project) => { project.book.lights.directional.intensity = Math.max(0, value) })}
-        onKey={() => environmentKey('directional.intensity', book.lights.directional.intensity)} />
-      <Vec3 label={t.properties.directionalPosition} value={book.lights.directional.position}
-        onChange={(value) => store.commit((project) => { project.book.lights.directional.position = value })} />
-    </InspectorGroup>
-  </PropertySection>
+  </Panel>
+}
+
+/** サイドバーの「サウンド」タブ。BGMと本文の読み上げ */
+export function SoundPanel() {
+  const t = useT()
+  return <Panel title={t.app.inspectorSound} data-tobidas-kind="sound-inspector"><BookAudio showTitle={false} /></Panel>
+}
+
+/** サイドバーの「カメラ」タブ。カメラキーのない見開きで使う作者カメラ */
+export function CameraPanel() {
+  const t = useT()
+  const store = useBuilderStore()
+  const book = store.project.book
+  return <Panel title={t.app.inspectorCamera} data-tobidas-kind="camera-inspector">
+    <div className={st.inspectorGroupTitle}><span>{t.properties.camera}</span><OverlayEye hiddenId={hiddenKey.camera} label={t.properties.cameraFrustum} /></div>
+    <Vec3 label={t.properties.position} value={book.camera.position} onChange={(value) => store.commit((project) => { project.book.camera.position = value })} />
+    <Vec3 label={t.properties.target} value={book.camera.target} onChange={(value) => store.commit((project) => { project.book.camera.target = value })} />
+    <Num label={t.properties.fov} value={book.camera.fov} onChange={(value) => store.commit((project) => { project.book.camera.fov = Math.min(179, Math.max(1, value)) })} />
+    <div className={st.cameraViewStatus}>{t.properties.cameraKeyHint}</div>
+  </Panel>
+}
+
+/** サイドバーの「ライト」タブ。環境光と平行光 */
+export function LightingPanel() {
+  const t = useT()
+  const store = useBuilderStore()
+  const book = store.project.book
+  const environmentKey = useEnvironmentKey()
+  return <Panel title={t.app.inspectorLighting} data-tobidas-kind="lighting-inspector">
+    <div className={st.inspectorGroupTitle}><span>{t.properties.lights}</span><OverlayEye hiddenId={hiddenKey.light} label={t.properties.lightMarker} /></div>
+    <Color label={t.properties.ambientColor} value={book.lights.ambient.color}
+      onChange={(value) => store.commit((project) => { project.book.lights.ambient.color = value })}
+      onKey={() => environmentKey('ambient.color', book.lights.ambient.color)} />
+    <Num label={t.properties.ambientIntensity} value={book.lights.ambient.intensity}
+      onChange={(value) => store.commit((project) => { project.book.lights.ambient.intensity = Math.max(0, value) })}
+      onKey={() => environmentKey('ambient.intensity', book.lights.ambient.intensity)} />
+    <Color label={t.properties.directionalColor} value={book.lights.directional.color}
+      onChange={(value) => store.commit((project) => { project.book.lights.directional.color = value })}
+      onKey={() => environmentKey('directional.color', book.lights.directional.color)} />
+    <Num label={t.properties.directionalIntensity} value={book.lights.directional.intensity}
+      onChange={(value) => store.commit((project) => { project.book.lights.directional.intensity = Math.max(0, value) })}
+      onKey={() => environmentKey('directional.intensity', book.lights.directional.intensity)} />
+    <Vec3 label={t.properties.directionalPosition} value={book.lights.directional.position}
+      onChange={(value) => store.commit((project) => { project.book.lights.directional.position = value })} />
+  </Panel>
 }
 
 export function AuthoringGuide() {

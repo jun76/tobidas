@@ -51,6 +51,19 @@ export async function exportSiteHtml(project: BookProject): Promise<void> {
   await saveBlobAs(blob, `${safeFileName(project.name)}.html`, t().io.siteHtmlName)
 }
 
+/**
+ * 照合先のエンジン内容。配布ビルドは焼き込んだ値を使う。
+ * 開発サーバーは起動後もソースが変わるので、その時点の内容を開発サーバーに計算させる。
+ */
+async function expectedEngineHash(): Promise<string> {
+  if (!import.meta.env.DEV) return __TOBIDAS_ENGINE_HASH__
+  try {
+    const response = await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, '')}/__tobidas/engine-hash`, { cache: 'no-store' })
+    if (response.ok) return ((await response.json()) as { engine: string }).engine
+  } catch { /* 取れなければ起動時の値で照合する */ }
+  return __TOBIDAS_ENGINE_HASH__
+}
+
 /** 同梱プレイヤーを読む。index.html 以外が残っていれば単一HTMLではない */
 async function fetchPlayer(): Promise<{ html: string; extras: { path: string; body: ArrayBuffer }[] }> {
   const base = `${import.meta.env.BASE_URL}player/`
@@ -60,7 +73,7 @@ async function fetchPlayer(): Promise<{ html: string; extras: { path: string; bo
   }
   const manifest = (await manifestResponse.json()) as { files: string[]; engine?: string }
   // 同梱プレイヤーはビルド時の成果物。本体のエンジンと違えば、直したはずの描画が書き出しに残る
-  if (manifest.engine !== __TOBIDAS_ENGINE_HASH__) throw new Error(t().io.playerStale)
+  if (manifest.engine !== await expectedEngineHash()) throw new Error(t().io.playerStale)
   const read = async (file: string): Promise<Response> => {
     const response = await fetch(base + file, { cache: 'no-store' })
     if (!response.ok) throw new Error(t().io.playerFileFailed(file))

@@ -17,8 +17,7 @@
   min-width: 0;
 }
 
-.left,
-.right {
+.left {
   width: var(--panel-width, 250px);
   min-width: var(--panel-width, 250px);
   display: flex;
@@ -64,12 +63,6 @@
   background: var(--ui-accent-line);
 }
 
-.right {
-  width: var(--panel-width, 340px);
-  min-width: var(--panel-width, 340px);
-  border-right: none;
-  border-left: 1px solid var(--ui-line);
-}
 
 .viewport {
   flex: 1;
@@ -230,7 +223,75 @@
   font-weight: 700;
 }
 
+/* 左サイドバーの下段。縦並びのアイコンで、部品・アセット・各設定・制作ガイドを切り替える */
+.sidebarTabs {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+}
+
+.sidebarTabList {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 44px;
+  padding: 8px 5px;
+  background: var(--ui-bar);
+  border-right: 1px solid var(--ui-line);
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.sidebarTab {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ui-muted);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.sidebarTab:hover {
+  background: var(--ui-hover);
+  color: var(--ui-ink);
+}
+
+.sidebarTab[aria-selected='true'] {
+  background: var(--ui-accent-soft);
+  border-color: var(--ui-accent-line);
+  color: var(--ui-accent-strong);
+}
+
+.sidebarTab:focus-visible {
+  outline: 2px solid var(--ui-accent);
+  outline-offset: 1px;
+}
+
+.sidebarTabPanel {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.sidebarTabPanel[hidden] {
+  display: none;
+}
+
 /* --- toolbar --- */
+.toolbarTitle {
+  color: var(--ui-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 .toolbar {
   display: flex;
   align-items: center;
@@ -280,17 +341,6 @@
 .toolbar button.active {
   background: var(--ui-accent);
   border-color: var(--ui-accent);
-}
-
-/* 表示言語。ツールバーのボタンと同じ見た目に揃える */
-.localePicker {
-  background: var(--ui-raised);
-  color: var(--ui-ink);
-  border: 1px solid var(--ui-line-strong);
-  border-radius: 7px;
-  padding: 3px 6px;
-  font-size: 12px;
-  cursor: pointer;
 }
 
 /* 前後の見開きへ移る矢印。場面を隠さないよう、端に置いた半透明の丸いボタンにする */
@@ -1654,8 +1704,8 @@
   }
 
   .mainEdit {
-    grid-template-areas: 'viewport' 'left' 'right';
-    grid-template-rows: max(300px, 52dvh) max-content max-content;
+    grid-template-areas: 'viewport' 'left';
+    grid-template-rows: max(300px, 52dvh) max-content;
   }
 
   .mainPlay {
@@ -1672,16 +1722,11 @@
     grid-area: left;
   }
 
-  .mainEdit > .right {
-    grid-area: right;
-  }
-
   .mainEdit > .splitter {
     display: none;
   }
 
-  .mainEdit > .left,
-  .mainEdit > .right {
+  .mainEdit > .left {
     width: auto;
     min-width: 0;
     min-height: 0;
@@ -1692,8 +1737,7 @@
     border-top: 1px solid var(--ui-line);
   }
 
-  .mainEdit > .left .splitStack,
-  .mainEdit > .right .splitStack {
+  .mainEdit > .left .splitStack {
     min-height: 0;
     flex: none;
     height: auto;

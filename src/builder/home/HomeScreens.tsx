@@ -75,7 +75,10 @@ export function HomeScreen() {
       <MenuCard tone="coral" icon={BookOpen} title={t.bookEditor} hint={t.bookEditorHint} id="home-book" onClick={() => setScreen('book')} />
       <MenuCard tone="mint" icon={Blocks} title={t.partEditor} hint={t.partEditorHint} id="home-part" onClick={() => setScreen('part')} />
     </nav>
-    <footer className={st.footer}><Icon as={Lock} size={15} />{t.localFirst}</footer>
+    <footer className={st.footer}>
+      <span className={st.footerNote}><Icon as={Lock} size={15} />{t.localFirst}</span>
+      <small className={st.copyright}>©2026 jun</small>
+    </footer>
   </main>
 }
 

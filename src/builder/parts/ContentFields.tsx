@@ -55,7 +55,7 @@ export function ShapeFields({ faceIds, shapes, onChange }: { faceIds: string[]; 
     <button type="button" onClick={() => onChange(face, null)}>{t.remove}</button>{error && <p role="status">{error}</p>}
   </details>
 }
-export function PartContentEditor() {
+export function PartContentEditor({ open = false }: { open?: boolean } = {}) {
   const store = usePartEditorStore(), { bundle } = store, t = useT().parts
   const selected = store.selectedId?.startsWith('content:') ? store.selectedId.slice(8) : ''
   const setSelected = (id: string) => store.select(id ? 'content:' + id : null)
@@ -66,18 +66,24 @@ export function PartContentEditor() {
   ]
   const current = bundle.definition.contents?.find((item) => item.element.id === selected)
   const update = (content: PartContent) => { const result = upsertPartContentCommand({ content }); setError(result.ok ? '' : result.message) }
-  return <details className={st.section} data-tobidas-kind="part-contents" open={!!current || undefined}><summary>{t.content.contents}</summary>
-    <div className={st.buttons}>{(['decal', 'fiction', 'particle'] as const).map((kind) => <button key={kind} type="button" onClick={() => {
-      usePartContentPlacementStore.getState().start(kind)
-    }}>{t.content[kind]}</button>)}</div>
-    <select aria-label={t.content.contents} value={selected} onChange={(event) => setSelected(event.target.value)}><option value="">{t.choose}</option>
-      {bundle.definition.contents?.map(({ element }) => <option key={element.id} value={element.id}>{element.name}</option>)}
-    </select>
+  return <details className={st.section} data-tobidas-kind="part-contents" open={open || !!current || undefined}><summary>{t.content.contents}</summary>
+    <div className={`${st.fields} ${st.contentPicker}`}>
+      <div className={st.field}><span>{t.content.add}</span>
+        <div className={st.buttons}>{(['decal', 'fiction', 'particle'] as const).map((kind) => <button key={kind} type="button" onClick={() => {
+          usePartContentPlacementStore.getState().start(kind)
+        }}>{t.content[kind]}</button>)}</div>
+      </div>
+      <label className={st.field}><span>{t.content.editTarget}</span>
+        <select aria-label={t.content.contents} value={selected} onChange={(event) => setSelected(event.target.value)}><option value="">{t.choose}</option>
+          {bundle.definition.contents?.map(({ element }) => <option key={element.id} value={element.id}>{element.name}</option>)}
+        </select>
+      </label>
+    </div>
     {current && <>
       <ContentValueFields value={current.element} options={options} assets={bundle.assets} onChange={(element) => update({ ...current, element })} />
       <ContentTrackFields content={current} onChange={update} />
       <button type="button" onClick={() => { deletePartContentCommand(current.element.id); setSelected('') }}>{t.remove}</button>
-    </>}{error && <p role="status">{error}</p>}
+    </>}{error && <p role="status" className={st.error}>{error}</p>}
   </details>
 }
 function ContentValueFields({ value, options, assets, onChange }: { value: ConnectedContent; options: SurfaceOption[]; assets: Asset[]; onChange: (value: ConnectedContent) => void }) {

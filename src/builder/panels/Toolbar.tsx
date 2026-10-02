@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Check, ChevronDown, Copy as CopyIcon, Home, Pencil, Play, Redo2, Undo2 } from 'lucide-react'
+import { Check, Copy as CopyIcon, Home, Pencil, Play, Redo2, Undo2 } from 'lucide-react'
 import { useWorkspaceStore } from '../parts/store'
-import { LOCALES, useLocaleStore, useT, type Locale } from '../i18n'
+import { useT } from '../i18n'
 import { Icon, ICON } from '../../ui/Icon'
 import { createLocalizedBookProject, useBuilderStore } from '../store'
 import { supportsDirectoryPicker } from '../io/browserFiles'
@@ -9,6 +9,7 @@ import type { ImportProgress, ImportResult } from '../io/packageImport'
 import { nextPaint, runBusy, type BusyReporter } from '../ui/busy'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { useDialogs } from '../ui/DialogProvider'
+import { Dropdown, MenuGroup } from '../ui/Menu'
 import { requestElementDelete } from '../elementDelete'
 import st from '../builder.module.css'
 import { unlockVideoAudio } from '../../runtime/videoAudio'
@@ -56,8 +57,8 @@ export function Toolbar() {
       <button type="button" onClick={() => { store.setMode('edit'); useWorkspaceStore.getState().setScreen('home') }}><Icon as={Home} />{t.parts.home}</button>
       <div className={st.toolbarDesktop}>
         <button onClick={() => setConfirmNew(true)}>{t.toolbar.new}</button>
-        <OpenButton />
-        <SaveButton />
+        <OpenMenu />
+        <SaveMenu />
         <ExportMenu />
         <button aria-label={t.toolbar.undo} title={t.toolbar.undoHint}
           onClick={store.undo} disabled={!store.undoStack.length}><Icon as={Undo2} size={ICON.bar} /></button>
@@ -65,7 +66,6 @@ export function Toolbar() {
           onClick={store.redo} disabled={!store.redoStack.length}><Icon as={Redo2} size={ICON.bar} /></button>
         <span className={st.spacer} />
         <WebMcpHint />
-        <LocalePicker />
         <ModeButton />
       </div>
 
@@ -74,8 +74,8 @@ export function Toolbar() {
           <section className={st.toolbarMenuSection}>
             <h2>{t.toolbar.fileActions}</h2>
             <button onClick={() => { close(); setConfirmNew(true) }}>{t.toolbar.new}</button>
-            <OpenButton onInvoke={close} />
-            <SaveButton onInvoke={close} />
+            <OpenMenu inline onClose={close} />
+            <SaveMenu inline onClose={close} />
             <ExportMenu inline onClose={close} />
           </section>
           <section className={st.toolbarMenuSection}>
@@ -86,10 +86,6 @@ export function Toolbar() {
             <button onClick={() => { close(); store.redo() }} disabled={!store.redoStack.length}>
               <Icon as={Redo2} size={ICON.bar} />{t.toolbar.redo}
             </button>
-          </section>
-          <section className={st.toolbarMenuSection}>
-            <h2>{t.toolbar.viewActions}</h2>
-            <LocalePicker />
           </section>
         </div>}</Dropdown>
         <WebMcpHint />
@@ -267,36 +263,12 @@ function ModeButton() {
   </button>
 }
 
-/** 表示言語の切り替え。作品データではなく編集セッションの設定なので、書き出しには入らない */
-function LocalePicker() {
-  const t = useT()
-  const { locale, setLocale } = useLocaleStore()
-  return <select className={st.localePicker} aria-label={t.toolbar.language} title={t.toolbar.language}
-    value={locale} onChange={(event) => setLocale(event.target.value as Locale)}>
-    {LOCALES.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
-  </select>
-}
-
-function Dropdown({ label, title, children }: { label: string; title?: string; children: (close: () => void) => ReactNode }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLSpanElement>(null)
-  useEffect(() => {
-    if (!open) return
-    const close = (event: PointerEvent) => !ref.current?.contains(event.target as Node) && setOpen(false)
-    document.addEventListener('pointerdown', close)
-    return () => document.removeEventListener('pointerdown', close)
-  }, [open])
-  return <span ref={ref} className={st.dropdown}>
-    <button title={title} onClick={() => setOpen(!open)} aria-expanded={open}>{label}<Icon as={ChevronDown} size={ICON.bar} /></button>
-    {open && <div className={st.dropdownMenu}>{children(() => setOpen(false))}</div>}
-  </span>
-}
-
 /**
  * 作業フォルダ、または同じ project.json と assets をまとめた作品ZIPを開く。
  * ピッカーを持たないブラウザだけ、フォルダ選択の input へ落とす。
+ * ファイル選択の input はメニューを閉じても残るよう、メニューの外に置く。
  */
-function OpenButton({ onInvoke }: { onInvoke?: () => void } = {}) {
+function OpenMenu({ inline = false, onClose }: { inline?: boolean; onClose?: () => void } = {}) {
   const t = useT()
   const dialogs = useDialogs()
   const setProject = useBuilderStore((state) => state.setProject)
@@ -322,16 +294,16 @@ function OpenButton({ onInvoke }: { onInvoke?: () => void } = {}) {
     } catch (error) { dialogs.showMessage(t.dialog.errorTitle, String(error)) }
   }
   return <>
-    <button title={t.toolbar.openHint} onClick={() => {
-      onInvoke?.()
-      void run(async (progress, report) => {
-        report(t.busy.choosing)
-        return (await import('../io/packageImport')).importPackageViaDirectoryPicker(progress, () => report(t.busy.reading))
-      })
-    }}>
-      {t.toolbar.open}
-    </button>
-    <button onClick={() => zipRef.current?.click()}>{t.toolbar.openZip}</button>
+    <MenuGroup label={t.toolbar.open} title={t.toolbar.openHint} inline={inline} onClose={onClose}>{(close) => <>
+      <button onClick={() => {
+        close()
+        void run(async (progress, report) => {
+          report(t.busy.choosing)
+          return (await import('../io/packageImport')).importPackageViaDirectoryPicker(progress, () => report(t.busy.reading))
+        })
+      }}>{t.toolbar.openFolder}</button>
+      <button onClick={() => { close(); zipRef.current?.click() }}>{t.toolbar.openZip}</button>
+    </>}</MenuGroup>
     <input ref={zipRef} type="file" hidden accept=".zip" aria-label={t.toolbar.openZip} onChange={(event) => {
       const file = event.target.files?.[0]; event.target.value = ''
       if (file) void run(async () => (await import('../io/packageImport')).importProjectZip(file))
@@ -347,20 +319,26 @@ function OpenButton({ onInvoke }: { onInvoke?: () => void } = {}) {
   </>
 }
 
-/** 保存先フォルダへ `project.json` + `assets/` を書く。書ける口を持たないブラウザでは断る */
-function SaveButton({ onInvoke }: { onInvoke?: () => void } = {}) {
+/** 編集用の作品を、フォルダ (`project.json` + `assets/`) か同じ構成の作品ZIPとして保存する */
+function SaveMenu({ inline = false, onClose }: { inline?: boolean; onClose?: () => void } = {}) {
   const t = useT()
   const dialogs = useDialogs()
   const project = useBuilderStore((state) => state.project)
-  return <button title={t.toolbar.saveHint} onClick={() => {
-    onInvoke?.()
-    if (!supportsDirectoryPicker()) {
-      dialogs.showMessage(t.dialog.unsupportedTitle, t.io.folderSaveUnsupported)
-      return
-    }
-    void (async () => (await import('../io/packageExport')).exportPackageToDirectory(project))()
-      .catch((error) => dialogs.showMessage(t.dialog.errorTitle, String(error)))
-  }}>{t.toolbar.save}</button>
+  const run = (work: () => Promise<unknown>) => {
+    void work().catch((error) => dialogs.showMessage(t.dialog.errorTitle, String(error)))
+  }
+  return <MenuGroup label={t.toolbar.save} title={t.toolbar.saveHint} inline={inline} onClose={onClose}>{(close) => <>
+    <button onClick={() => {
+      close()
+      // フォルダへ書ける口を持たないブラウザでは断り、作品ZIPを案内する
+      if (!supportsDirectoryPicker()) {
+        dialogs.showMessage(t.dialog.unsupportedTitle, t.io.folderSaveUnsupported)
+        return
+      }
+      run(async () => (await import('../io/packageExport')).exportPackageToDirectory(project))
+    }}>{t.toolbar.saveFolder}</button>
+    <button onClick={() => { close(); run(async () => (await import('../io/packageExport')).exportProjectZip(project)) }}>{t.toolbar.saveZip}</button>
+  </>}</MenuGroup>
 }
 
 function ExportMenu({ inline = false, onClose }: { inline?: boolean; onClose?: () => void } = {}) {
@@ -394,16 +372,10 @@ function ExportMenu({ inline = false, onClose }: { inline?: boolean; onClose?: (
         <button onClick={() => runAndClose(async () => (await import('../io/siteExport')).exportSiteZip(project))}>
           {t.toolbar.exportSiteZip}
         </button>
-        <button onClick={() => runAndClose(async () => (await import('../io/packageExport')).exportProjectZip(project))}>{t.toolbar.projectZip}</button>
     </>
   }
   return <>
-    {inline
-      ? <div className={st.toolbarMenuSubgroup}>
-        <h3>{t.toolbar.export}</h3>
-        {actions(onClose ?? (() => {}))}
-      </div>
-      : <Dropdown label={t.toolbar.export}>{actions}</Dropdown>}
+    <MenuGroup label={t.toolbar.export} inline={inline} onClose={onClose}>{actions}</MenuGroup>
     {confirmVideoHtml && <ConfirmDialog
       title={t.toolbar.videoHtmlTitle}
       body={t.toolbar.videoHtmlBody(estimatedMegabytes)}
