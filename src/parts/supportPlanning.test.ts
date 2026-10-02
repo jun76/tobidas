@@ -59,6 +59,17 @@ describe('配置時に設計する共通の支持紙', () => {
     expect(tall.part.parameters.supportHeight).toBe(.97)
   })
 
+  it('背後の紙の幅の外では、最奥の起立部品が成立しないときに延長した支持紙で立てる', () => {
+    const { project, spread, card } = fixture()
+    spread.elements[0].type === 'part' && Object.assign(spread.elements[0].part.parameters, { width: 6 })
+    // 左右の縁の中ほどを切り欠き、綴じ目からの橋渡し紙を接着できない輪郭にする
+    const notched = { ...card, part: { ...card.part, shapes: { panel: { outer: [[0, 0], [1, 0], [1, .3], [.8, .3], [.8, .7], [1, .7], [1, 1], [0, 1], [0, .7], [.2, .7], [.2, .3], [0, .3]] as [number, number][], holes: [] } } } }
+    const planned = planSupportedPart(project, spread, notched, { position: [-5.5, 0, .6] })
+    expect(planned.part.definition).toEqual({ builtin: 'upright', version: 1 })
+    expect(planned.part.mount.type === 'pair' && planned.part.mount.b.nodeId).toBe('scenery')
+    expect(validateBookParts({ ...project, book: { ...project.book, spreads: [{ ...spread, elements: [...spread.elements, planned] }] } })).toEqual([])
+  })
+
   it('輪郭の穴を避け、再生中の収納で紙の寸法を変更しない', () => {
     const { project, spread, card } = fixture()
     const shaped: PartElement = { ...card, part: { ...card.part, shapes: { panel: {

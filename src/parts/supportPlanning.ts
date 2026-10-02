@@ -213,7 +213,9 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
   const replace = (candidate: PartElement): Spread => existing
     ? { ...spread, elements: withoutParts(spread, dependents).elements.map(e => e.id === element.id ? candidate : e) }
     : { ...spread, elements: [...spread.elements, candidate] }
-  const choices: { candidate: PartElement; score: number; height?: number; distance?: number }[] = []
+  type Choice = { candidate: PartElement; score: number; height?: number; distance?: number }
+  // 幅外へ延長する支持は、二面を明示した配置では通常の候補に混ぜ、自動探索では最奥の起立部品も成立しないときの最後の候補にする
+  const choices: Choice[] = [], farChoices: Choice[] = []
   for (const source of sources(project, spread, excluded, placement.surfaces, target)) {
     const { pair } = source
     if (placement.surfaces && !(same(source.a, placement.surfaces[0]) && same(source.b, placement.surfaces[1]))) continue
@@ -240,7 +242,7 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
           }
         }
         // 幅外にだけ延長する。穴や切り抜きの上に架空の接着先を作らない。
-        if (placement.surfaces && !offsets.length) for (const b of children) {
+        if (!offsets.length) for (const b of children) {
           const lo = b[0] + supportWidth / 2 + 1e-5, hi = b[1] - supportWidth / 2 - 1e-5
           if (lo > hi) continue
           const offset = Math.max(lo, Math.min(hi, 0)), point = parentCenter.clone().addScaledVector(pair.axis, offset)
@@ -253,7 +255,7 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
             parameters: { width: width / unit, height: height / unit, distance: distance / unit, offset: 0, supportHeight: h / unit, supportWidth: supportWidth / unit, supportOffset: offset / unit },
             mount: mountAt(source, target, width, h, supportWidth, offset) }
           const candidate = { ...element, part: instance }
-          choices.push({ candidate, score: (extension > 0 ? 10000 : 0) + Math.abs(h - baseline) * 20 + distance + Math.abs(offset) * .25 + extension * 4,
+          ;(extension > 0 && !placement.surfaces ? farChoices : choices).push({ candidate, score: (extension > 0 ? 10000 : 0) + Math.abs(h - baseline) * 20 + distance + Math.abs(offset) * .25 + extension * 4,
             ...attachedMotion ? { height: h, distance } : {} })
         }
       }
@@ -286,26 +288,30 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
     const ceiling = ceilings.get(distance)
     return ceiling === undefined ? !!placement.unchecked : ceiling !== null && height <= ceiling * unit + 1e-8
   }
-  choices.sort((a, b) => a.score - b.score)
-  for (const { candidate, height, distance } of choices) {
-    if (height !== undefined && distance !== undefined && !underCeiling(height, distance)) continue
-    const key = JSON.stringify(candidate.part); if (seen.has(key)) continue; seen.add(key)
-    if (placement.unchecked) return isolated(candidate)
-    try {
-      const next = replace(candidate), inspect = createPaperMotionInspector()
-      // 全開時の衝突で候補を絞ってから、両側の開閉と演出の包絡を検査する。
-      for (const angle of [180, 120, 60, 15, 0]) for (const side of angle === 180 ? ['left'] as const : ['left', 'right'] as const) {
-        const left = side === 'left' ? angle * Math.PI / 180 : Math.PI, right = side === 'right' ? (180 - angle) * Math.PI / 180 : 0
-        const result = evaluateBookParts(project, next, left, right), input = pagePorts(w, depth, left, right).gutter
-        const errors = [...inspect(result, [input]), ...inspectIntersections(result).filter(s => s.includes(element.id + '/'))]
-        if (angle === 0 && input.kind === 'fold-pair') errors.push(...inspectClosedLayout(deployBookParts(project, next, result, left, right).nodes[element.id], w, depth, input.rayA))
-        if (!errors.length) errors.push(...inspectContentMotion(bindBookContents(project, next, result, left, right).filter(b => !placement.ignoreContents?.has(b.id)), result.nodes[element.id].faces,
-          { openingAngleDeg: angle, maxOpeningAngleDeg: 180 }, spread.sequence.holdSeconds, bookContentHoldTime(angle, side, spread.sequence.holdSeconds)))
-        if (errors.length) throw new Error(errors[0])
-      }
-      return isolated(candidate)
-    } catch (error) { failures.add(error instanceof Error ? error.message : String(error)) }
+  const firstValid = (list: Choice[]): PartElement | undefined => {
+    list.sort((a, b) => a.score - b.score)
+    for (const { candidate, height, distance } of list) {
+      if (height !== undefined && distance !== undefined && !underCeiling(height, distance)) continue
+      const key = JSON.stringify(candidate.part); if (seen.has(key)) continue; seen.add(key)
+      if (placement.unchecked) return isolated(candidate)
+      try {
+        const next = replace(candidate), inspect = createPaperMotionInspector()
+        // 全開時の衝突で候補を絞ってから、両側の開閉と演出の包絡を検査する。
+        for (const angle of [180, 120, 60, 15, 0]) for (const side of angle === 180 ? ['left'] as const : ['left', 'right'] as const) {
+          const left = side === 'left' ? angle * Math.PI / 180 : Math.PI, right = side === 'right' ? (180 - angle) * Math.PI / 180 : 0
+          const result = evaluateBookParts(project, next, left, right), input = pagePorts(w, depth, left, right).gutter
+          const errors = [...inspect(result, [input]), ...inspectIntersections(result).filter(s => s.includes(element.id + '/'))]
+          if (angle === 0 && input.kind === 'fold-pair') errors.push(...inspectClosedLayout(deployBookParts(project, next, result, left, right).nodes[element.id], w, depth, input.rayA))
+          if (!errors.length) errors.push(...inspectContentMotion(bindBookContents(project, next, result, left, right).filter(b => !placement.ignoreContents?.has(b.id)), result.nodes[element.id].faces,
+            { openingAngleDeg: angle, maxOpeningAngleDeg: 180 }, spread.sequence.holdSeconds, bookContentHoldTime(angle, side, spread.sequence.holdSeconds)))
+          if (errors.length) throw new Error(errors[0])
+        }
+        return isolated(candidate)
+      } catch (error) { failures.add(error instanceof Error ? error.message : String(error)) }
+    }
   }
+  const planned = firstValid(choices)
+  if (planned) return planned
   // 背後や側方に候補があるのに接続が不成立の場合は、勝手に支持を切らない。
   if (!placement.surfaces && !choices.some(c => c.height === undefined || c.distance === undefined || underCeiling(c.height, c.distance))) {
     const candidate: PartElement = { ...element, part: { ...element.part, definition: { builtin: 'root-upright', version: 1 },
@@ -316,6 +322,8 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
     if (!errors.length) return candidate
     errors.forEach(error => failures.add(error))
   }
+  const extended = firstValid(farChoices)
+  if (extended) return extended
   throw new Error(`${element.name}: No valid automatic support at ${placement.position.join(', ')}\n${[...failures].slice(0, 6).join('\n')}`)
 }
 
