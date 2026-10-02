@@ -1,5 +1,5 @@
 import { TransformControls } from '@react-three/drei'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Euler, MathUtils, Object3D, Quaternion, Vector3 } from 'three'
 import type { TransformControls as Controls } from 'three-stdlib'
 import { bindBookContents, evaluateContents, type EvaluatedContent } from '../../parts/contents'
@@ -25,7 +25,8 @@ export function ContentGizmo({ spreadId, elementId }: { spreadId: string; elemen
 /** 本とカスタム部品で、材料座標へ戻す操作を共有する。保存とUndoは呼び出し側の共通コマンドが担う。 */
 export function ContentTransformGizmo({ source, mode, error, begin, preview, finish, cancel: abort }: {
   source: EvaluatedContent; mode: 'translate' | 'rotate' | 'scale'; error: string
-  begin: () => void; preview: (intent: ContentEditIntent) => void; finish: () => void; cancel: () => void
+  /** 確定できたら true。確定後の位置が届くまでギズモを放した位置に残す */
+  begin: () => void; preview: (intent: ContentEditIntent) => void; finish: () => boolean; cancel: () => void
 }) {
   const object = useMemo(() => new Object3D(), [])
   const [controls, setControls] = useState<Controls | null>(null), [alt, setAlt] = useState(false), dragging = useRef(false)
@@ -39,7 +40,8 @@ export function ContentTransformGizmo({ source, mode, error, begin, preview, fin
     object.position.y += .015
     object.scale.set(...(mode === 'scale' ? source.element.baseTransform.scale : [1, 1, 1]) as [number, number, number])
   }
-  useEffect(() => { if (!dragging.current) reset() }, [source, mode])
+  // 確定後の新しい位置へ描画前に合わせる
+  useLayoutEffect(() => { if (!dragging.current) reset() }, [source, mode])
   useEffect(() => { if (controls) { emphasizeHoveredAxis(controls); fixFlippedTranslationArrows(controls) } }, [controls])
   useEffect(() => {
     const cancel = () => { dragging.current = false; abort(); if (controls) { controls.reset(); (controls as unknown as { dragging: boolean }).dragging = false }; reset() }
@@ -68,6 +70,6 @@ export function ContentTransformGizmo({ source, mode, error, begin, preview, fin
       showX={!decal || mode !== 'rotate'} showY={!decal || mode !== 'rotate'} showZ={!decal || mode === 'rotate'}
       translationSnap={alt ? null : .1} rotationSnap={alt ? null : MathUtils.degToRad(5)} scaleSnap={alt ? null : .05}
       onMouseDown={() => { markGizmoPress(); dragging.current = true; begin() }} onObjectChange={change}
-      onMouseUp={() => { if (!dragging.current) return; dragging.current = false; finish(); reset() }} />
+      onMouseUp={() => { if (!dragging.current) return; dragging.current = false; if (!finish()) reset() }} />
   </>
 }

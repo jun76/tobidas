@@ -1,5 +1,5 @@
 import { TransformControls } from '@react-three/drei'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Euler, Line, LineBasicMaterial, MathUtils, Matrix4, Object3D, Quaternion } from 'three'
 import type { TransformControls as Controls } from 'three-stdlib'
 import { describePartEdit, type PartEditDescription, type PartEditIntent } from '../../parts/edit'
@@ -22,7 +22,8 @@ export function PartGizmo({ spreadId, elementId }: { spreadId: string; elementId
 }
 export function ConnectedPartGizmo({ description, mode, angleId, active, invalid, begin, preview, finish, cancel }: {
   description: PartEditDescription; mode: 'translate' | 'rotate' | 'scale'; angleId?: string; active: boolean; invalid: boolean
-  begin: () => void; preview: (intent: PartEditIntent) => void; finish: () => void; cancel: () => void
+  /** 確定できたら true。確定後の位置が届くまでギズモを放した位置に残す */
+  begin: () => void; preview: (intent: PartEditIntent) => void; finish: () => boolean; cancel: () => void
 }) {
   const [controls, setControls] = useState<Controls | null>(null), [alt, setAlt] = useState(false)
   const object = useMemo(() => new Object3D(), []), dragging = useRef(false)
@@ -39,7 +40,8 @@ export function ConnectedPartGizmo({ description, mode, angleId, active, invalid
     return new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(x, y, z))
   }, [description, mode, angle])
   const reset = () => { object.position.copy(mode === 'rotate' && angle?.pivot ? angle.pivot : description.pivot); object.quaternion.copy(rotation); object.scale.setScalar(1) }
-  useEffect(() => { if (!active) dragging.current = false; if (!dragging.current) reset() }, [description, rotation, mode, active])
+  // 確定後の新しい位置へ描画前に合わせる
+  useLayoutEffect(() => { if (!active) dragging.current = false; if (!dragging.current) reset() }, [description, rotation, mode, active])
   useEffect(() => {
     if (!controls) return
     fixFlippedTranslationArrows(controls); emphasizeHoveredAxis(controls)
@@ -100,6 +102,10 @@ export function ConnectedPartGizmo({ description, mode, angleId, active, invalid
           const values = object.scale.toArray(), ratio = values.reduce((a, b) => Math.abs(b - 1) > Math.abs(a - 1) ? b : a, 1)
           callbacks.current.preview({ type: 'scale', value: description.scale * ratio })
         }
-      }} onMouseUp={() => { dragging.current = false; callbacks.current.finish(); reset() }} />
+      }} onMouseUp={() => {
+        dragging.current = false
+        // 確定前の位置へ戻すと、新しい位置が届くまでの描画で一瞬古い位置が映る。戻すのは確定できなかったときだけ
+        if (!callbacks.current.finish()) reset()
+      }} />
   </>
 }

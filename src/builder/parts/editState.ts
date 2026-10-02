@@ -14,7 +14,8 @@ interface EditState {
   session: PartEditSession | null; angleId: string; error: string
   begin: (spreadId: string, elementId: string) => void
   preview: (intent: PartEditIntent) => void
-  finish: () => void; cancel: () => void; chooseAngle: (id: string) => void
+  /** 確定できたら true */
+  finish: () => boolean; cancel: () => void; chooseAngle: (id: string) => void
 }
 export const usePartEditStore = create<EditState>((set, get) => ({
   session: null, angleId: '', error: '', chooseAngle: (angleId) => set({ angleId, session: null, error: '' }),
@@ -34,13 +35,14 @@ export const usePartEditStore = create<EditState>((set, get) => ({
   finish: () => {
     const s = get().session
     queued = undefined; set({ session: null })
-    if (!s || !s.intent || s.source !== useBuilderStore.getState().project) return
+    if (!s || !s.intent || s.source !== useBuilderStore.getState().project) return false
     // 確定の共通コマンドが全角度の検査を行う。同じ検査を事前に重ねず、通らなければ最後に成立した姿勢で確定する
     const command = (intent: PartEditIntent) => editPlacedPartCommand({ spreadId: s.spreadId, elementId: s.elementId, intent })
     const result = command(s.intent)
-    if (result.ok) { set({ error: '' }); return }
+    if (result.ok) { set({ error: '' }); return true }
     const fallback = s.last && s.last !== s.intent ? command(s.last) : undefined
     set({ error: fallback && !fallback.ok ? fallback.message : result.message })
+    return !!fallback?.ok
   },
   cancel: () => { queued = undefined; set({ session: null, error: '' }) },
 }))

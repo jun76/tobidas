@@ -109,7 +109,8 @@ export function PartPreview({ bundle, selected, onSelect, editable = false }: { 
               evaluateContents(evaluated.contents ?? [], { openingAngleDeg: 180, maxOpeningAngleDeg: 180, holdTime: 0, clock: () => 0 })
               editingContent.current = content; setPreviewContents(next); setEditError('') }
             catch (error) { setEditError(String(error)) }
-          }} finish={() => { const content = editingContent.current; cancel(); if (content) { const result = upsertPartContentCommand({ content }); setEditError(result.ok ? '' : result.message) } }} cancel={cancel} />}
+          }} finish={() => { const content = editingContent.current; cancel(); if (!content) return false
+            const result = upsertPartContentCommand({ content }); setEditError(result.ok ? '' : result.message); return result.ok }} cancel={cancel} />}
         {editable && selected && description && !playing && Math.abs(angle - scene.maxAngle) < .001 && <ConnectedPartGizmo
           description={description} mode={mode} angleId={angleId} active={!!editing.current} invalid={!!editError}
           begin={() => { editing.current = { source: bundle }; setPreviewNodes(bundle.definition.nodes); setEditError('') }}
@@ -121,10 +122,11 @@ export function PartPreview({ bundle, selected, onSelect, editable = false }: { 
             if (plan.ok) { current.last = intent; setPreviewNodes(plan.nodes); setEditError('') } else setEditError(plan.detail)
           }} finish={() => {
             const current = editing.current; cancel()
-            if (!current || current.source !== bundle || !current.intent) return
+            if (!current || current.source !== bundle || !current.intent) return false
             const check = planPartEdit(scene, selected, current.intent)
             const intent = check.ok ? current.intent : current.last
-            if (intent) { const result = editPartNodeCommand({ nodeId: selected, intent }); setEditError(result.ok ? '' : result.message) }
+            if (!intent) return false
+            const result = editPartNodeCommand({ nodeId: selected, intent }); setEditError(result.ok ? '' : result.message); return result.ok
           }} cancel={cancel} />}
         <OrbitControls target={[2, 1, 0]} makeDefault />
       </Canvas>
