@@ -262,7 +262,7 @@ export function Viewport({ showEditTimeline = true, onScreenshot }: {
             step={0.001}
             value={playback.progress}
             style={{
-              background: `linear-gradient(to right, #168af0 0%, #168af0 ${playback.progress * 100}%, #d6d6dd ${playback.progress * 100}%, #d6d6dd 100%)`,
+              background: `linear-gradient(to right, var(--ui-accent) 0%, var(--ui-accent) ${playback.progress * 100}%, var(--ui-line-strong) ${playback.progress * 100}%, var(--ui-line-strong) 100%)`,
             }}
             onPointerDown={() => {
               playback.pause()
@@ -309,11 +309,11 @@ function SpreadNavButtons() {
   return <>
     {previous && <button type="button" className={`${st.viewportNav} ${st.viewportNavPrevious}`}
       aria-label={t.viewport.previousSpread(label(previous))} title={t.viewport.previousSpread(label(previous))} onClick={() => select(previous)}>
-      <Icon as={ChevronLeft} size={44} />
+      <Icon as={ChevronLeft} size={28} />
     </button>}
     {next && <button type="button" className={`${st.viewportNav} ${st.viewportNavNext}`}
       aria-label={t.viewport.nextSpread(label(next))} title={t.viewport.nextSpread(label(next))} onClick={() => select(next)}>
-      <Icon as={ChevronRight} size={44} />
+      <Icon as={ChevronRight} size={28} />
     </button>}
   </>
 }

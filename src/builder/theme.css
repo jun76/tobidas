@@ -1,0 +1,106 @@
+/*
+ * ビルダーの配色。入口画面と同じ紙・インク・切り紙の色を、役割ごとの名前で全画面に配る。
+ * ダイアログは .app の外へ描くため :root に置く。再生画面はこのファイルを読まない。
+ * ダークは <html data-theme="dark"> で、従来の暗い編集画面の色へ差し替える。
+ */
+:root {
+  --ui-bg: #f3ead9;
+  --ui-panel: #fffaf2;
+  --ui-bar: #fbf3e4;
+  --ui-sunken: #f6eddd;
+  --ui-field: #ffffff;
+  --ui-raised: #f6ebd8;
+  --ui-raised-hover: #efe0c5;
+  --ui-hover: #f8eedc;
+  --ui-hover-ink: rgb(59 49 39 / 7%);
+  --ui-tag: #f1e5cf;
+
+  --ui-line: #ece0c8;
+  --ui-line-strong: #dccaa9;
+
+  --ui-ink: #3b3127;
+  --ui-ink-soft: #5c4f40;
+  --ui-muted: #85755f;
+  --ui-faint: #b4a48c;
+
+  --ui-accent: #e4775d;
+  --ui-accent-strong: #c95f47;
+  --ui-accent-soft: #fde6dc;
+  --ui-accent-line: #f0b29f;
+  --ui-info: #7a5fb8;
+  --ui-focus-ring: rgb(228 119 93 / 32%);
+  --ui-drop: rgb(228 119 93 / 16%);
+
+  --ui-success: #3f8f68;
+  --ui-warning: #b7791f;
+  --ui-danger: #cf4b3b;
+  --ui-danger-strong: #b53d2f;
+  --ui-danger-soft: #fbe3de;
+  --ui-key: #d99a12;
+  --ui-camera: #d9534a;
+  --ui-camera-hover: #ea6a5f;
+
+  --ui-glass: rgb(255 250 242 / 94%);
+  --ui-glass-soft: rgb(255 250 242 / 78%);
+  /* タイムラインの編集欄。後ろの場面が透けて見える濃さに留める */
+  --ui-glass-clear: rgb(255 250 242 / 58%);
+  --ui-overlay: rgb(59 49 39 / 34%);
+  --ui-shadow-soft: rgb(110 72 30 / 14%);
+  --ui-shadow: rgb(110 72 30 / 22%);
+  --ui-shadow-strong: rgb(110 72 30 / 30%);
+
+  --ui-font: 'Hiragino Maru Gothic ProN', 'Hiragino Kaku Gothic ProN', 'BIZ UDPGothic', 'Yu Gothic UI', 'Meiryo', sans-serif;
+  color-scheme: light;
+  /* スライダー、チェックボックス、スクロールバーもブラウザ既定の青や灰ではなく紙の色調にそろえる */
+  accent-color: var(--ui-accent);
+  scrollbar-color: var(--ui-line-strong) transparent;
+}
+
+/* ダーク。変更前の暗い編集画面の色を、同じ役割の名前へ割り当てる */
+:root[data-theme='dark'] {
+  --ui-bg: #1c1c22;
+  --ui-panel: #232329;
+  --ui-bar: #2a2a32;
+  --ui-sunken: #26262e;
+  --ui-field: #1a1a20;
+  --ui-raised: #3a3a46;
+  --ui-raised-hover: #4a4a5a;
+  --ui-hover: #30303a;
+  --ui-hover-ink: rgb(255 255 255 / 10%);
+  --ui-tag: #4a4a58;
+
+  --ui-line: #3a3a44;
+  --ui-line-strong: #4a4a58;
+
+  --ui-ink: #e0e0e6;
+  --ui-ink-soft: #c6c6d2;
+  --ui-muted: #a6a6b6;
+  --ui-faint: #777784;
+
+  --ui-accent: #5a68d8;
+  --ui-accent-strong: #aeb8ff;
+  --ui-accent-soft: #3d4a80;
+  --ui-accent-line: #7a88f0;
+  --ui-info: #a3aeff;
+  --ui-focus-ring: rgb(115 130 255 / 40%);
+  --ui-drop: rgb(76 93 160 / 33%);
+
+  --ui-success: #7ad07a;
+  --ui-warning: #f0c060;
+  --ui-danger: #e06a6a;
+  --ui-danger-strong: #b85050;
+  --ui-danger-soft: rgb(255 90 90 / 15%);
+  --ui-key: #f1ca58;
+  --ui-camera: #e43d3d;
+  --ui-camera-hover: #ff5a52;
+
+  --ui-glass: rgb(32 32 40 / 94%);
+  --ui-glass-soft: rgb(32 32 40 / 62%);
+  --ui-glass-clear: rgb(21 21 27 / 50%);
+  --ui-overlay: rgb(0 0 0 / 66%);
+  --ui-shadow-soft: rgb(0 0 0 / 22%);
+  --ui-shadow: rgb(0 0 0 / 30%);
+  --ui-shadow-strong: rgb(0 0 0 / 45%);
+
+  color-scheme: dark;
+}

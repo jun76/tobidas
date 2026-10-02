@@ -46,7 +46,7 @@ You can also clone this repository and run it locally or deploy it to your own s
 - Automatic browser-local saves
 - Export as a single HTML file or a ZIP for static hosting
 
-The start screen offers **Edit picture book**, **Edit custom part**, and **Settings** (display language).
+The start screen offers **Edit picture book**, **Edit custom part**, and **Settings** (display language and the light or dark theme).
 The custom-part library starts empty. [Exchange-part examples and test books](./examples/parts/README.md) are included.
 Each part has a maximum input opening angle: a 180° part attached to a 90° connection stops in an intermediate pose, and a part limited to 150° cannot be placed on a 180° connection.
 

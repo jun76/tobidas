@@ -1,11 +1,12 @@
 .app {
+  font-family: var(--ui-font);
   display: flex;
   flex-direction: column;
   height: 100vh;
   min-height: 100vh;
   height: 100dvh;
-  background: #1c1c22;
-  color: #d8d8de;
+  background: var(--ui-bg);
+  color: var(--ui-ink);
   font-size: 12px;
 }
 
@@ -22,9 +23,9 @@
   min-width: var(--panel-width, 250px);
   display: flex;
   flex-direction: column;
-  background: #232329;
+  background: var(--ui-panel);
   overflow: hidden;
-  border-right: 1px solid #333;
+  border-right: 1px solid var(--ui-line);
 }
 
 /* 縦に積んだ領域と、その境界のハンドル (SplitStack) */
@@ -53,21 +54,21 @@
 .splitStackHandle {
   flex: none;
   height: 8px;
-  background: #1c1c22;
+  background: var(--ui-bg);
   cursor: row-resize;
   touch-action: none;
 }
 
 .splitStackHandle:hover,
 .splitStackHandle:active {
-  background: #5a68d8aa;
+  background: var(--ui-accent-line);
 }
 
 .right {
   width: var(--panel-width, 340px);
   min-width: var(--panel-width, 340px);
   border-right: none;
-  border-left: 1px solid #333;
+  border-left: 1px solid var(--ui-line);
 }
 
 .viewport {
@@ -81,14 +82,14 @@
   content: '';
   position: absolute;
   inset: 2px;
-  border: 2px solid #9aa6ff;
+  border: 2px solid var(--ui-accent);
   border-radius: 6px;
-  box-shadow: inset 0 0 24px #7382ff33;
+  box-shadow: inset 0 0 24px var(--ui-focus-ring);
   pointer-events: none;
 }
 
 .panel {
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--ui-line);
   padding: 12px 12px 16px;
 }
 
@@ -101,10 +102,10 @@
   font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.08em;
-  color: #c6c6d2;
+  color: var(--ui-ink-soft);
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #3a3a44;
+  border-bottom: 1px solid var(--ui-line);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -125,8 +126,8 @@
   gap: 8px;
   margin: 16px 0 10px;
   padding-top: 12px;
-  border-top: 1px solid #34343e;
-  color: #b9bed2;
+  border-top: 1px solid var(--ui-line);
+  color: var(--ui-muted);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -135,17 +136,17 @@
 .inspectorScopeTitle {
   margin: 2px 0 4px;
   padding: 6px 0 8px;
-  color: #e0e1ec;
+  color: var(--ui-ink);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  border-bottom: 1px solid #454552;
+  border-bottom: 1px solid var(--ui-line);
 }
 
 .inspectorGroup {
   margin: 0;
   padding: 0 0 4px;
-  border-bottom: 1px solid #34343e;
+  border-bottom: 1px solid var(--ui-line);
 }
 
 .inspectorGroup + .inspectorGroup {
@@ -157,7 +158,7 @@
   align-items: center;
   gap: 6px;
   min-height: 30px;
-  color: #b9bed2;
+  color: var(--ui-muted);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -175,7 +176,7 @@
 
 .inspectorGroup > summary::before {
   content: '▾';
-  color: #9298b5;
+  color: var(--ui-faint);
   font-size: 11px;
 }
 
@@ -190,7 +191,7 @@
 .authoringGuideLabel {
   display: block;
   margin-bottom: 4px;
-  color: #d0d0dc;
+  color: var(--ui-ink-soft);
   font-size: 11px;
   font-weight: 700;
 }
@@ -203,10 +204,10 @@
   margin-top: 6px;
   padding: 7px;
   resize: vertical;
-  background: #1a1a20;
-  border: 1px solid #3a3a46;
-  border-radius: 4px;
-  color: #e0e0e6;
+  background: var(--ui-field);
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 7px;
+  color: var(--ui-ink);
   font: inherit;
   font-size: 12px;
   line-height: 1.45;
@@ -214,8 +215,8 @@
 
 .authoringGuideField textarea:focus {
   outline: none;
-  border-color: #7382ff;
-  box-shadow: 0 0 0 1px #7382ff66;
+  border-color: var(--ui-accent);
+  box-shadow: 0 0 0 1px var(--ui-focus-ring);
 }
 
 .inspectorGroupTitle {
@@ -224,7 +225,7 @@
   justify-content: space-between;
   gap: 8px;
   margin: 4px 0 8px;
-  color: #aeb2c8;
+  color: var(--ui-muted);
   font-size: 11px;
   font-weight: 700;
 }
@@ -235,8 +236,8 @@
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  background: #2a2a32;
-  border-bottom: 1px solid #3a3a44;
+  background: var(--ui-bar);
+  border-bottom: 1px solid var(--ui-line);
   flex-wrap: wrap;
 }
 
@@ -253,10 +254,10 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: #3a3a46;
-  color: #e0e0e6;
-  border: 1px solid #4a4a58;
-  border-radius: 4px;
+  background: var(--ui-raised);
+  color: var(--ui-ink);
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 7px;
   padding: 3px 9px;
   font-size: 12px;
   cursor: pointer;
@@ -273,26 +274,26 @@
 
 .toolbar button:hover,
 .panel button:hover {
-  background: #4a4a5a;
+  background: var(--ui-raised-hover);
 }
 
 .toolbar button.active {
-  background: #5a68d8;
-  border-color: #7a88f0;
+  background: var(--ui-accent);
+  border-color: var(--ui-accent);
 }
 
 /* 表示言語。ツールバーのボタンと同じ見た目に揃える */
 .localePicker {
-  background: #3a3a46;
-  color: #e0e0e6;
-  border: 1px solid #4a4a58;
-  border-radius: 4px;
+  background: var(--ui-raised);
+  color: var(--ui-ink);
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 7px;
   padding: 3px 6px;
   font-size: 12px;
   cursor: pointer;
 }
 
-/* 前後の見開きへ移る矢印。地も枠も持たず、端に大きく置く */
+/* 前後の見開きへ移る矢印。場面を隠さないよう、端に置いた半透明の丸いボタンにする */
 .viewportNav {
   position: absolute;
   z-index: 5;
@@ -302,22 +303,23 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 96px;
+  width: 52px;
+  height: 52px;
   padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: #ffffffb8;
+  border: 2px solid var(--ui-line);
+  border-radius: 50%;
+  background: var(--ui-glass-soft);
+  color: var(--ui-ink-soft);
   cursor: pointer;
-  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 45%));
-  transition: color 0.12s ease, transform 0.12s ease;
+  box-shadow: 0 6px 16px -6px var(--ui-shadow);
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
 }
 
 .viewportNav:hover,
 .viewportNav:focus-visible {
-  color: #ffffff;
-  background: transparent;
+  color: var(--ui-accent-strong);
+  border-color: var(--ui-accent-line);
+  background: var(--ui-glass);
 }
 
 .viewportNav:active {
@@ -325,11 +327,11 @@
 }
 
 .viewportNavPrevious {
-  left: 6px;
+  left: 14px;
 }
 
 .viewportNavNext {
-  right: 6px;
+  right: 14px;
 }
 
 /* 編集中の見開き名とスクリーンショット操作 */
@@ -354,15 +356,15 @@
   flex: 1 1 auto;
   overflow: hidden;
   padding: 6px 11px;
-  border: 1px solid #4a4a58;
+  border: 1px solid var(--ui-line-strong);
   border-radius: 8px;
-  background: #202028f2;
-  color: #eee;
+  background: var(--ui-glass);
+  color: var(--ui-ink);
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
   pointer-events: none;
-  box-shadow: 0 3px 10px rgb(0 0 0 / 22%);
+  box-shadow: 0 3px 10px var(--ui-shadow-soft);
 }
 
 .viewportScreenshot {
@@ -372,17 +374,17 @@
   width: 44px;
   min-width: 44px;
   padding: 0;
-  border: 1px solid #525260;
-  border-radius: 5px;
-  background: #3a3a46;
-  color: #e8e8ee;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 8px;
+  background: var(--ui-raised);
+  color: var(--ui-ink);
   cursor: pointer;
   pointer-events: auto;
-  box-shadow: 0 3px 10px rgb(0 0 0 / 22%);
+  box-shadow: 0 3px 10px var(--ui-shadow-soft);
 }
 
 .viewportScreenshot:hover {
-  background: #4a4a5a;
+  background: var(--ui-raised-hover);
 }
 
 .viewportScreenshot:disabled {
@@ -407,23 +409,23 @@
   width: 44px;
   height: 40px;
   padding: 0;
-  border: 1px solid #525260;
-  border-radius: 5px;
-  background: #3a3a46;
-  color: #e8e8ee;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 8px;
+  background: var(--ui-raised);
+  color: var(--ui-ink);
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgb(0 0 0 / 22%);
+  box-shadow: 0 3px 10px var(--ui-shadow-soft);
 }
 
 .transformTools button:hover {
-  background: #4a4a5a;
+  background: var(--ui-raised-hover);
 }
 
 .transformTools button.active {
-  border-color: #8996ff;
-  background: #5a68d8;
+  border-color: var(--ui-accent);
+  background: var(--ui-accent);
   color: #fff;
 }
 
@@ -439,17 +441,17 @@
   min-height: 24px;
   box-sizing: border-box;
   padding: 3px 4px;
-  border-radius: 3px;
+  border-radius: 5px;
   cursor: pointer;
   user-select: none;
 }
 
 .treeRow:hover {
-  background: #30303a;
+  background: var(--ui-hover);
 }
 
 .treeRow.selected {
-  background: #3d4a80;
+  background: var(--ui-accent-soft);
 }
 
 .treeRow[draggable='true'] {
@@ -461,16 +463,16 @@
 }
 
 .treeDropTarget {
-  outline: 1px dashed #8b98ff;
+  outline: 1px dashed var(--ui-accent);
   outline-offset: -1px;
-  background: #4c5da055;
+  background: var(--ui-drop);
 }
 
 /* 編集できない値の表示 (割り当て済みのアセット名など) */
 .rowValue {
   min-width: 0;
   overflow: hidden;
-  color: #d0d0d8;
+  color: var(--ui-ink-soft);
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -480,8 +482,8 @@
 .presetGroupTitle {
   margin: 10px 0 6px;
   padding-top: 8px;
-  border-top: 1px solid #33333d;
-  color: #8f8f9c;
+  border-top: 1px solid var(--ui-line);
+  color: var(--ui-muted);
   font-size: 11px;
   letter-spacing: .04em;
 }
@@ -498,17 +500,17 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
-  color: #aaaab5;
+  color: var(--ui-muted);
   font-size: 11px;
 }
 
 .presetAsset select {
   min-width: 0;
   width: 100%;
-  background: #1a1a20;
-  border: 1px solid #3a3a46;
-  color: #e0e0e6;
-  border-radius: 4px;
+  background: var(--ui-field);
+  border: 1px solid var(--ui-line-strong);
+  color: var(--ui-ink);
+  border-radius: 7px;
   padding: 5px 7px;
 }
 
@@ -521,9 +523,9 @@
 
 .panel button.presetButtonActive,
 .panel button.presetButtonActive:hover {
-  border-color: #9aa6ff;
-  background: #4c5da0;
-  box-shadow: 0 0 0 1px #9aa6ff, 0 0 10px #7382ff55;
+  border-color: var(--ui-accent);
+  background: var(--ui-accent-soft);
+  box-shadow: 0 0 0 1px var(--ui-accent-line), 0 0 10px var(--ui-focus-ring);
 }
 
 .presetIdentity {
@@ -533,27 +535,27 @@
   gap: 8px;
   margin: 2px 0 12px;
   padding: 8px 10px;
-  border: 1px solid #5966a8;
-  border-radius: 4px;
-  background: #303961;
+  border: 1px solid var(--ui-accent);
+  border-radius: 7px;
+  background: var(--ui-accent-soft);
 }
 
 .presetIdentity span {
-  color: #aab2da;
+  color: var(--ui-muted);
   font-size: 10px;
 }
 
 .presetIdentity strong {
-  color: #eef0ff;
+  color: var(--ui-ink);
   font-size: 12px;
 }
 
 .typeTag {
   font-size: 9px;
   padding: 0 4px;
-  border-radius: 3px;
-  background: #4a4a58;
-  color: #b8b8c8;
+  border-radius: 5px;
+  background: var(--ui-tag);
+  color: var(--ui-muted);
   flex-shrink: 0;
 }
 
@@ -575,16 +577,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
-  color: #8a8a96;
+  border-radius: 5px;
+  color: var(--ui-muted);
   font-size: 11px;
   line-height: 1;
   cursor: pointer;
 }
 
 .panel button.ghostBtn:hover {
-  background: #ffffff1a;
-  color: #fff;
+  background: var(--ui-hover-ink);
+  color: var(--ui-ink);
 }
 
 .panel button.twisty {
@@ -593,14 +595,14 @@
   padding: 0;
   background: none;
   border: none;
-  color: #777783;
+  color: var(--ui-muted);
   font-size: 12px;
   line-height: 1;
 }
 
 .panel button.twisty:hover {
   background: none;
-  color: #b8b8c8;
+  color: var(--ui-muted);
 }
 
 .twistySpacer {
@@ -611,20 +613,20 @@
 /* 削除系は常に赤。行ホバーで現れた時点で「消す操作」と分かるようにする */
 .panel button.ghostDanger,
 .timelineRow button.ghostDanger {
-  color: #e07a7a;
+  color: var(--ui-danger);
 }
 
 .panel button.ghostDanger:hover,
 .timelineRow button.ghostDanger:hover {
-  background: #ff5a5a26;
-  color: #ff9a9a;
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger);
 }
 
 /* 無効時まで赤いと押せそうに見えるので、色を戻して沈める */
 .panel button.ghostDanger:disabled,
 .timelineRow button.ghostDanger:disabled {
   background: none;
-  color: #8a8a96;
+  color: var(--ui-muted);
 }
 
 /* 行のボタンは普段は潜め、行ホバー時に現れる (開閉アイコンは構造情報なので常時表示) */
@@ -653,7 +655,7 @@
 .rowLabel {
   width: 84px;
   min-width: 84px;
-  color: #aaaab5;
+  color: var(--ui-muted);
   font-size: 11px;
   line-height: 1.35;
 }
@@ -662,12 +664,12 @@
 .row textarea,
 .row select,
 .numField input {
-  background: #1a1a20;
-  border: 1px solid #3a3a46;
-  color: #e0e0e6;
+  background: var(--ui-field);
+  border: 1px solid var(--ui-line-strong);
+  color: var(--ui-ink);
   box-sizing: border-box;
   min-height: 28px;
-  border-radius: 4px;
+  border-radius: 7px;
   padding: 5px 7px;
   font-size: 12px;
   width: 100%;
@@ -679,8 +681,8 @@
 .row select:focus,
 .numField input:focus {
   outline: none;
-  border-color: #7382ff;
-  box-shadow: 0 0 0 1px #7382ff66;
+  border-color: var(--ui-accent);
+  box-shadow: 0 0 0 1px var(--ui-focus-ring);
 }
 
 .row select {
@@ -691,8 +693,8 @@
   width: 50px;
   height: 28px;
   padding: 0;
-  border: 1px solid #3a3a46;
-  border-radius: 4px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 7px;
   background: none;
 }
 
@@ -711,7 +713,7 @@
 }
 
 .numField span {
-  color: #777;
+  color: var(--ui-muted);
   font-size: 10px;
 }
 
@@ -720,11 +722,11 @@
 }
 
 .partCard {
-  border: 1px solid #3a3a46;
-  border-radius: 5px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 8px;
   padding: 6px;
   margin: 6px 0;
-  background: #26262e;
+  background: var(--ui-sunken);
 }
 
 .partHead {
@@ -732,7 +734,7 @@
   align-items: center;
   justify-content: space-between;
   font-weight: 700;
-  color: #c0c8f0;
+  color: var(--ui-ink-soft);
   margin-bottom: 4px;
 }
 
@@ -743,7 +745,7 @@
   gap: 8px;
   margin: 2px 0;
   padding: 6px;
-  border-radius: 4px;
+  border-radius: 7px;
 }
 
 .assetDraggable {
@@ -756,7 +758,7 @@
 }
 
 .assetRow:hover {
-  background: #30303a;
+  background: var(--ui-hover);
 }
 
 /* 見本の画像。ドラッグを吸わないよう当たり判定を持たせない */
@@ -764,8 +766,8 @@
   width: 32px;
   height: 32px;
   object-fit: contain;
-  background: #fff2;
-  border-radius: 3px;
+  background: var(--ui-sunken);
+  border-radius: 5px;
   flex-shrink: 0;
   pointer-events: none;
   user-select: none;
@@ -802,8 +804,8 @@
 .assetSectionTitle {
   margin: 18px 0 8px;
   padding-bottom: 6px;
-  border-bottom: 1px solid #3a3a44;
-  color: #c2c2cf;
+  border-bottom: 1px solid var(--ui-line);
+  color: var(--ui-ink-soft);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -811,13 +813,13 @@
 
 .assetEmpty {
   padding: 8px 6px 12px;
-  color: #777784;
+  color: var(--ui-muted);
   font-size: 11px;
 }
 
 .cameraViewStatus {
   margin: 10px 0 8px;
-  color: #aeb4cf;
+  color: var(--ui-muted);
   font-size: 11px;
 }
 
@@ -839,7 +841,7 @@
 .cameraViewRow > span {
   text-align: right;
   font-variant-numeric: tabular-nums;
-  color: #c9c9d4;
+  color: var(--ui-ink-soft);
 }
 
 .panel button.cameraViewIndex {
@@ -853,26 +855,26 @@
 
 .panel button.cameraViewIndexActive,
 .panel button.cameraViewIndexActive:hover {
-  border-color: #7f8cff;
-  background: #4d5aa0;
-  box-shadow: 0 0 0 1px rgb(127 140 255 / 45%);
+  border-color: var(--ui-accent);
+  background: var(--ui-accent);
+  box-shadow: 0 0 0 1px var(--ui-focus-ring);
   color: #fff;
 }
 
 .cameraViewProgress {
   width: 100%;
   min-width: 0;
-  accent-color: #e43d3d;
+  accent-color: var(--ui-camera);
   cursor: pointer;
 }
 
 .panel button {
   min-height: 28px;
   padding: 5px 10px;
-  border: 1px solid #4a4a58;
-  border-radius: 4px;
-  background: #3a3a46;
-  color: #e0e0e6;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 7px;
+  background: var(--ui-raised);
+  color: var(--ui-ink);
   font-size: 12px;
   cursor: pointer;
 }
@@ -880,7 +882,7 @@
 .panel button.cameraViewDelete {
   padding-right: 0;
   padding-left: 0;
-  color: #ff9b9b;
+  color: var(--ui-danger);
 }
 
 /* --- status bar --- */
@@ -888,8 +890,8 @@
   display: flex;
   gap: 14px;
   padding: 4px 10px;
-  background: #2a2a32;
-  border-top: 1px solid #3a3a44;
+  background: var(--ui-bar);
+  border-top: 1px solid var(--ui-line);
   font-size: 11px;
   align-items: center;
 }
@@ -917,15 +919,15 @@
 }
 
 .err {
-  color: #ff7a7a;
+  color: var(--ui-danger);
 }
 
 .warn {
-  color: #f0c060;
+  color: var(--ui-warning);
 }
 
 .ok {
-  color: #7ad07a;
+  color: var(--ui-success);
 }
 
 .issueList {
@@ -935,8 +937,8 @@
   right: 10px;
   max-height: 40vh;
   overflow-y: auto;
-  background: #26262ef0;
-  border: 1px solid #444;
+  background: var(--ui-glass);
+  border: 1px solid var(--ui-line);
   border-radius: 6px;
   padding: 10px;
   z-index: 30;
@@ -954,10 +956,10 @@
   align-items: center;
   box-sizing: border-box;
   padding: 9px 14px;
-  border: 1px solid #4a4a58;
+  border: 1px solid var(--ui-line-strong);
   border-radius: 20px;
-  background: #202028e8;
-  color: #fff;
+  background: var(--ui-glass);
+  color: var(--ui-ink);
   font-size: 12px;
   z-index: 6;
 }
@@ -990,23 +992,23 @@
   height: 20px;
   margin: 0;
   padding: 0;
-  border: 1px solid #ffffff40;
+  border: 1px solid var(--ui-line-strong);
   border-radius: 6px;
-  background: #20202880;
-  color: #f4f4f8;
+  background: var(--ui-glass-soft);
+  color: var(--ui-ink);
   cursor: pointer;
   font-size: 11px;
   line-height: 1;
 }
 
 .playbackPage:hover {
-  border-color: #6bb6ff;
-  background: #414152c0;
+  border-color: var(--ui-accent);
+  background: var(--ui-glass);
 }
 
 .playbackPage[aria-current='page'] {
-  border-color: #6bb6ffc0;
-  background: #168af0b0;
+  border-color: var(--ui-accent);
+  background: var(--ui-accent);
   color: #fff;
 }
 
@@ -1024,18 +1026,18 @@
   height: 26px;
   margin: 0;
   padding: 0;
-  border: 1px solid #626270;
+  border: 1px solid var(--ui-line-strong);
   border-radius: 7px;
-  background: #343440;
-  color: #f4f4f8;
+  background: var(--ui-raised);
+  color: var(--ui-ink);
   cursor: pointer;
   font-size: 13px;
   line-height: 1;
 }
 
 .playbackToggle:hover {
-  border-color: #6bb6ff;
-  background: #414152;
+  border-color: var(--ui-accent);
+  background: var(--ui-raised-hover);
 }
 
 .cameraCues {
@@ -1068,8 +1070,8 @@
   width: 3px;
   height: 14px;
   border-radius: 1px;
-  background: #e43d3d;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 45%);
+  background: var(--ui-camera);
+  box-shadow: 0 0 0 1px var(--ui-line);
   content: '';
 }
 
@@ -1077,12 +1079,12 @@
 .cameraCues button.cameraCueActive::before {
   left: 4px;
   width: 5px;
-  background: #ff5a52;
+  background: var(--ui-camera-hover);
 }
 
 .transformTools button.cameraViewSaved {
-  border-color: #b6bdff;
-  box-shadow: 0 0 0 2px rgb(109 124 255 / 45%);
+  border-color: var(--ui-accent);
+  box-shadow: 0 0 0 2px var(--ui-focus-ring);
 }
 
 .timeline input[type='range'] {
@@ -1092,7 +1094,7 @@
   min-width: 0;
   margin: 0;
   border-radius: 7px;
-  background: #d6d6dd;
+  background: var(--ui-line-strong);
   cursor: pointer;
 }
 
@@ -1100,10 +1102,10 @@
   appearance: none;
   width: 22px;
   height: 22px;
-  border: 2px solid #6bb6ff;
+  border: 2px solid var(--ui-accent);
   border-radius: 50%;
-  background: #168af0;
-  box-shadow: 0 1px 4px rgb(0 0 0 / 35%);
+  background: var(--ui-accent);
+  box-shadow: 0 1px 4px var(--ui-shadow);
 }
 
 .timeline input[type='range']::-moz-range-track {
@@ -1115,10 +1117,10 @@
 .timeline input[type='range']::-moz-range-thumb {
   width: 18px;
   height: 18px;
-  border: 2px solid #6bb6ff;
+  border: 2px solid var(--ui-accent);
   border-radius: 50%;
-  background: #168af0;
-  box-shadow: 0 1px 4px rgb(0 0 0 / 35%);
+  background: var(--ui-accent);
+  box-shadow: 0 1px 4px var(--ui-shadow);
 }
 
 /*
@@ -1138,32 +1140,32 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid #ffffff26;
+  border: 1px solid var(--ui-line);
   border-radius: 8px;
-  background: #15151b80;
+  background: var(--ui-glass-clear);
   backdrop-filter: blur(0px) saturate(1.1);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 28%);
-  color: #f0f0f5;
+  box-shadow: 0 8px 24px var(--ui-shadow);
+  color: var(--ui-ink);
 }
 
 .timelineResizeHandle {
   flex: none;
   height: 10px;
-  background: linear-gradient(#9a9aae, #9a9aae) center / 42px 2px no-repeat;
+  background: linear-gradient(var(--ui-faint), var(--ui-faint)) center / 42px 2px no-repeat;
   cursor: ns-resize;
   touch-action: none;
 }
 
 .timelineResizeHandle:hover {
-  background-color: #ffffff1a;
+  background-color: var(--ui-hover-ink);
 }
 
 .timelineRow button {
   min-height: 25px;
-  border: 1px solid #ffffff2e;
-  border-radius: 4px;
-  background: #3c3c48b8;
-  color: #eeeef4;
+  border: 1px solid var(--ui-line);
+  border-radius: 7px;
+  background: var(--ui-raised);
+  color: var(--ui-ink);
   cursor: pointer;
 }
 
@@ -1195,10 +1197,10 @@
   width: 100%;
   min-width: 0;
   min-height: 25px;
-  border: 1px solid #ffffff2e;
-  border-radius: 4px;
-  background: #24242cd9;
-  color: #eeeef4;
+  border: 1px solid var(--ui-line);
+  border-radius: 7px;
+  background: var(--ui-field);
+  color: var(--ui-ink);
   color-scheme: dark;
   font-size: 11px;
   cursor: pointer;
@@ -1218,11 +1220,11 @@
   align-items: center;
   gap: 10px;
   padding: 9px;
-  border-bottom: 1px solid #ffffff1f;
+  border-bottom: 1px solid var(--ui-line);
 }
 
 .timelineTime {
-  color: #c8c8d6;
+  color: var(--ui-ink-soft);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1232,7 +1234,7 @@
   width: 100%;
   min-width: 0;
   margin: 0;
-  accent-color: #168af0;
+  accent-color: var(--ui-accent);
 }
 
 /* 行の並びと、見出し境界のハンドルを重ねる器 */
@@ -1261,19 +1263,19 @@
   left: calc(10px + var(--timelineLabelWidth, 170px));
   width: 9px;
   transform: translateX(-50%);
-  border-radius: 3px;
+  border-radius: 5px;
   cursor: col-resize;
   touch-action: none;
 }
 
 .timelineLabelHandle:hover,
 .timelineLabelHandle:active {
-  background: #5a68d8aa;
+  background: var(--ui-accent-line);
 }
 
 .timelineEmpty {
   padding: 12px;
-  color: #a6a6b6;
+  color: var(--ui-muted);
   text-align: center;
 }
 
@@ -1299,18 +1301,18 @@
   align-items: center;
   gap: 6px;
   padding: 5px 7px;
-  border-right: 1px solid #ffffff26;
+  border-right: 1px solid var(--ui-line);
 }
 
 .timelineRowLabel span {
   overflow: hidden;
-  color: #dcdce6;
+  color: var(--ui-ink);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .timelineRowLabel strong {
-  color: #a3aeff;
+  color: var(--ui-info);
   font-size: 10px;
 }
 
@@ -1318,7 +1320,7 @@
   position: relative;
   min-height: 34px;
   margin: 0 12px;
-  background: linear-gradient(#ffffff2e 1px, transparent 1px) center / 100% 1px no-repeat;
+  background: linear-gradient(var(--ui-line) 1px, transparent 1px) center / 100% 1px no-repeat;
 }
 
 .timelineRow button.timelineKey {
@@ -1333,12 +1335,12 @@
   transform: translateX(-50%);
   border: 0;
   background: transparent;
-  color: #f1ca58;
+  color: var(--ui-key);
 }
 
 .timelineRow button.timelineKeySelected {
-  color: #ff725f;
-  filter: drop-shadow(0 0 3px #ff725f);
+  color: var(--ui-accent-strong);
+  filter: drop-shadow(0 0 3px var(--ui-accent-strong));
 }
 
 .panel button.keyButton {
@@ -1348,7 +1350,7 @@
   width: 26px;
   min-width: 26px;
   padding: 0;
-  color: #f1ca58;
+  color: var(--ui-key);
 }
 
 .dropdown {
@@ -1360,11 +1362,12 @@
   top: 100%;
   left: 0;
   z-index: 40;
-  background: #2e2e38;
-  border: 1px solid #4a4a58;
-  border-radius: 5px;
-  padding: 4px;
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 12px;
+  padding: 6px;
   min-width: 180px;
+  box-shadow: 0 12px 28px -10px var(--ui-shadow-strong);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1377,12 +1380,12 @@
 }
 
 .dropdownMenu button:hover {
-  background: #4a4a5a;
+  background: var(--ui-raised-hover);
 }
 
 .hintSmall {
   margin: 6px 0 10px;
-  color: #858590;
+  color: var(--ui-muted);
   font-size: 10.5px;
   line-height: 1.55;
 }
@@ -1403,7 +1406,7 @@
   position: relative;
   flex: 0 0 auto;
   align-self: center;
-  color: #c6c7d5;
+  color: var(--ui-ink-soft);
   font-size: 10px;
 }
 
@@ -1411,8 +1414,8 @@
   display: block;
   max-width: 150px;
   padding: 3px 5px;
-  border: 1px solid #4a4a58;
-  border-radius: 4px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 7px;
   cursor: help;
   white-space: nowrap;
   overflow: hidden;
@@ -1422,15 +1425,15 @@
 .webMcpLabel::before {
   content: '●';
   margin-right: 4px;
-  color: #858590;
+  color: var(--ui-muted);
 }
 
 .webMcpAvailable .webMcpLabel::before {
-  color: #79c98a;
+  color: var(--ui-success);
 }
 
 .webMcpUnavailable .webMcpLabel::before {
-  color: #e1ae63;
+  color: var(--ui-warning);
 }
 
 .webMcpPopover {
@@ -1440,11 +1443,11 @@
   z-index: 50;
   width: min(390px, calc(100vw - 16px));
   padding: 10px 12px;
-  color: #dedee8;
-  background: #2e2e38;
-  border: 1px solid #4a4a58;
-  border-radius: 5px;
-  box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+  color: var(--ui-ink);
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 14px;
+  box-shadow: 0 16px 32px -14px var(--ui-shadow-strong);
   line-height: 1.5;
   visibility: hidden;
   opacity: 0;
@@ -1473,7 +1476,7 @@
 
 .webMcpPopover dt {
   margin-top: 8px;
-  color: #aeb8ff;
+  color: var(--ui-info);
   font-weight: 700;
 }
 
@@ -1492,9 +1495,9 @@
   display: block;
   padding: 4px 6px;
   overflow-wrap: anywhere;
-  color: #f0d894;
-  background: #22222a;
-  border-radius: 3px;
+  color: var(--ui-ink);
+  background: var(--ui-sunken);
+  border-radius: 5px;
   font-size: 10px;
 }
 
@@ -1506,7 +1509,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #dedee8;
+  color: var(--ui-ink);
   cursor: pointer;
   justify-content: center;
 }
@@ -1514,7 +1517,7 @@
 .toolbar .webMcpCopyButton:hover,
 .toolbar .webMcpCopyButton:focus-visible {
   background: transparent;
-  color: #fff;
+  color: var(--ui-ink);
 }
 
 .assetName .hintSmall {
@@ -1582,7 +1585,7 @@
     flex-direction: column;
     gap: 4px;
     padding-bottom: 8px;
-    border-bottom: 1px solid #444451;
+    border-bottom: 1px solid var(--ui-line);
   }
 
   .toolbarMenuSection:last-child {
@@ -1593,7 +1596,7 @@
   .toolbarMenuSection h2,
   .toolbarMenuSubgroup h3 {
     margin: 0 0 2px;
-    color: #aeb8ff;
+    color: var(--ui-info);
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -1686,7 +1689,7 @@
     overflow: visible;
     border-right: 0;
     border-left: 0;
-    border-top: 1px solid #333;
+    border-top: 1px solid var(--ui-line);
   }
 
   .mainEdit > .left .splitStack,
@@ -1704,9 +1707,9 @@
     min-height: 46px;
     padding: 10px 12px;
     border: 0;
-    border-bottom: 1px solid #3a3a44;
-    background: #292932;
-    color: #d8d8e2;
+    border-bottom: 1px solid var(--ui-line);
+    background: var(--ui-bar);
+    color: var(--ui-ink);
     font-size: 12px;
     font-weight: 700;
     text-align: left;
@@ -1715,7 +1718,7 @@
 
   .mobileAccordionToggle:hover,
   .mobileAccordionToggle[aria-expanded='true'] {
-    background: #353542;
+    background: var(--ui-raised-hover);
   }
 
   .mobileAccordionPane {
@@ -1833,9 +1836,9 @@
 
 /* アセットのドロップ先ハイライト */
 .dropOver {
-  outline: 1px dashed #7a88f0;
+  outline: 1px dashed var(--ui-accent);
   outline-offset: -1px;
-  background: #3d4a8055;
+  background: var(--ui-drop);
 }
 
 /* --- modal (ブラウザダイアログの代替) --- */
@@ -1854,7 +1857,7 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: #000a;
+  background: var(--ui-overlay);
   z-index: 100;
   display: flex;
   align-items: center;
@@ -1862,13 +1865,13 @@
 }
 
 .modal {
-  background: #2e2e38;
-  border: 1px solid #4a4a58;
-  border-radius: 8px;
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 18px;
   padding: 16px 18px;
   min-width: 300px;
   max-width: 440px;
-  box-shadow: 0 8px 30px #0008;
+  box-shadow: 0 24px 48px -20px var(--ui-shadow-strong);
 }
 
 .busyOverlay {
@@ -1884,18 +1887,18 @@
   min-width: 260px;
   max-width: 420px;
   padding: 22px 26px;
-  background: #2e2e38;
-  border: 1px solid #4a4a58;
-  border-radius: 8px;
-  box-shadow: 0 8px 30px #0008;
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 18px;
+  box-shadow: 0 24px 48px -20px var(--ui-shadow-strong);
 }
 
 .busySpinner {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 3px solid #4a4a58;
-  border-top-color: #8ab4ff;
+  border: 3px solid var(--ui-line-strong);
+  border-top-color: var(--ui-accent);
   animation: busySpin 0.9s linear infinite;
 }
 
@@ -1909,7 +1912,7 @@
 }
 
 .busyDetail {
-  color: #b8b8c2;
+  color: var(--ui-muted);
   font-size: 12px;
   text-align: center;
   white-space: pre-wrap;
@@ -1918,14 +1921,14 @@
 .busyBar {
   width: 100%;
   height: 6px;
-  border-radius: 3px;
-  background: #4a4a58;
+  border-radius: 5px;
+  background: var(--ui-tag);
   overflow: hidden;
 }
 
 .busyBarFill {
   height: 100%;
-  background: #8ab4ff;
+  background: var(--ui-accent);
   transition: width 0.15s linear;
 }
 
@@ -1936,7 +1939,7 @@
 }
 
 .modalBody {
-  color: #b8b8c2;
+  color: var(--ui-muted);
   line-height: 1.6;
   margin-bottom: 14px;
   white-space: pre-wrap;
@@ -1948,17 +1951,17 @@
   align-items: center;
   gap: 10px;
   margin: 8px 0;
-  color: #b8b8c2;
+  color: var(--ui-muted);
   font-size: 12px;
 }
 
 .dialogField input,
 .dialogField select {
   min-width: 0;
-  color: #e5e5ec;
-  background: #1b1b22;
-  border: 1px solid #454552;
-  border-radius: 4px;
+  color: var(--ui-ink);
+  background: var(--ui-field);
+  border: 1px solid var(--ui-line);
+  border-radius: 7px;
   padding: 6px 8px;
 }
 
@@ -1967,13 +1970,13 @@
   align-items: center;
   gap: 8px;
   margin: 8px 0;
-  color: #b8b8c2;
+  color: var(--ui-muted);
   font-size: 12px;
 }
 
 .formError {
   margin: 0 0 12px;
-  color: #ff9a9a;
+  color: var(--ui-danger);
   font-size: 12px;
 }
 
@@ -1985,13 +1988,13 @@
 }
 
 .detailsList dt {
-  color: #9292a0;
+  color: var(--ui-muted);
 }
 
 .detailsList dd {
   margin: 0;
   overflow-wrap: anywhere;
-  color: #e0e0e8;
+  color: var(--ui-ink);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 
@@ -2002,27 +2005,27 @@
 }
 
 .modal button {
-  background: #3a3a46;
-  color: #e0e0e6;
-  border: 1px solid #4a4a58;
-  border-radius: 4px;
+  background: var(--ui-raised);
+  color: var(--ui-ink);
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 7px;
   padding: 5px 14px;
   font-size: 12px;
   cursor: pointer;
 }
 
 .modal button:hover {
-  background: #4a4a5a;
+  background: var(--ui-raised-hover);
 }
 
 /* 破壊的操作の実行ボタン */
 .modal button.modalDanger {
-  background: #a04444;
-  border-color: #c05a5a;
+  background: var(--ui-danger);
+  border-color: var(--ui-danger-strong);
 }
 
 .modal button.modalDanger:hover {
-  background: #b85050;
+  background: var(--ui-danger-strong);
 }
 
 @media (max-width: 520px) {
@@ -2055,5 +2058,5 @@
 
 .splitter:hover,
 .splitter:active {
-  background: #5a68d8aa;
+  background: var(--ui-accent-line);
 }

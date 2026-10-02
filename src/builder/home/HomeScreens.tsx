@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { ArrowLeft, ArrowRight, Blocks, BookOpen, Lock, Settings, type LucideIcon } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Blocks, BookOpen, Lock, Moon, Settings, Sun, type LucideIcon } from 'lucide-react'
 import packageJson from '../../../package.json'
 import { Icon } from '../../ui/Icon'
 import { LOCALES, useLocaleStore, useT } from '../i18n'
 import { useWorkspaceStore } from '../parts/store'
+import { THEMES, useThemeStore } from '../themeState'
 import { PopupBookArt } from './PopupBookArt'
 import st from './home.module.css'
 
@@ -31,8 +32,15 @@ function Wordmark() {
   </h1>
 }
 
-/** 背景に散らす紙片。装飾だけなので支援技術からは隠す。 */
+/** 背景に散らす紙片。夜は紙片の代わりに小さな星を散らす。装飾だけなので支援技術からは隠す。 */
 function Confetti() {
+  const night = useThemeStore((state) => state.theme === 'dark')
+  if (night) return <svg className={st.confetti} viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <g fill="#f7e7a1">
+      {[[120, 140, 3], [1290, 120, 2.5], [1195, 715, 2], [70, 760, 3], [660, 60, 2], [1380, 500, 2.5], [560, 840, 2], [318, 846, 2.5], [900, 120, 1.8], [980, 820, 2.2], [40, 420, 1.8], [760, 880, 1.6]]
+        .map(([x, y, r], index) => <circle key={index} cx={x} cy={y} r={r} className={st.dot} style={{ '--twinkle': `${2.4 + (index % 4) * .7}s` } as CSSProperties} />)}
+    </g>
+  </svg>
   return <svg className={st.confetti} viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
     <circle cx="120" cy="140" r="14" fill="#f6c95b" />
     <path d="M1290 120 l26 46 h-52 z" fill="#9fd4b8" />
@@ -46,7 +54,7 @@ function Confetti() {
 }
 
 export function HomeScreen() {
-  const t = useT().parts, setScreen = useWorkspaceStore((state) => state.setScreen)
+  const t = useT().parts, setScreen = useWorkspaceStore((state) => state.setScreen), night = useThemeStore((state) => state.theme === 'dark')
   return <main className={st.screen} data-tobidas-kind="entrance">
     <Confetti />
     <header className={st.topBar}>
@@ -61,7 +69,7 @@ export function HomeScreen() {
         <p className={st.tagline}>{t.homeTagline}</p>
         <p className={st.intro}>{t.homeIntro}</p>
       </div>
-      <PopupBookArt />
+      <PopupBookArt night={night} />
     </section>
     <nav className={st.cards}>
       <MenuCard tone="coral" icon={BookOpen} title={t.bookEditor} hint={t.bookEditorHint} id="home-book" onClick={() => setScreen('book')} />
@@ -84,7 +92,7 @@ function MenuCard({ tone, icon, title, hint, id, onClick }: {
 }
 
 export function SettingsScreen() {
-  const t = useT().parts, setScreen = useWorkspaceStore((state) => state.setScreen), locale = useLocaleStore()
+  const t = useT().parts, setScreen = useWorkspaceStore((state) => state.setScreen), locale = useLocaleStore(), theme = useThemeStore()
   return <main className={st.screen} data-tobidas-kind="settings">
     <Confetti />
     <header className={st.topBar}>
@@ -104,6 +112,17 @@ export function SettingsScreen() {
               onChange={() => locale.setLocale(language.id)} />
             <span className={st.choiceGlyph} aria-hidden="true">{language.id === 'ja' ? 'あ' : 'A'}</span>
             <span>{language.label}</span>
+          </label>)}
+        </div>
+      </fieldset>
+      <fieldset className={st.group}>
+        <legend>{t.theme}</legend>
+        <p className={st.groupHint}>{t.themeHint}</p>
+        <div className={st.choices}>
+          {THEMES.map((id) => <label key={id} className={st.choice}>
+            <input type="radio" name="tobidas-theme" value={id} checked={theme.theme === id} onChange={() => theme.setTheme(id)} />
+            <span className={st.choiceGlyph} aria-hidden="true"><Icon as={id === 'light' ? Sun : Moon} size={20} /></span>
+            <span>{id === 'light' ? t.themeLight : t.themeDark}</span>
           </label>)}
         </div>
       </fieldset>

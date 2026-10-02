@@ -10,6 +10,17 @@
   --mint: #4f9e78;
   --mint-soft: #dcf1e5;
   --lilac: #8a6bc7;
+  --pill: #ffffffb3;
+  --line-hover: #d8c6a2;
+  --shadow: #7a4f1f;
+  --choice: #fffaf1;
+  --checked-shadow: #f3c3b3;
+  --letter-shadow: #00000024;
+  --art-shadow: #6b4a2c1a;
+  --page-line: #e6d6b6;
+  --grain: #8a6a3a14;
+  --glow-a: #fffdf6;
+  --glow-b: #f6e7cc;
   position: relative;
   min-height: 100dvh;
   overflow-x: hidden;
@@ -19,21 +30,24 @@
   gap: clamp(20px, 3vw, 36px);
   color: var(--ink);
   background:
-    radial-gradient(circle at 1px 1px, #8a6a3a14 1px, transparent 0) 0 0 / 6px 6px,
-    radial-gradient(ellipse at 78% 18%, #fffdf6 0%, transparent 55%),
-    radial-gradient(ellipse at 10% 90%, #f6e7cc 0%, transparent 50%),
+    radial-gradient(circle at 1px 1px, var(--grain) 1px, transparent 0) 0 0 / 6px 6px,
+    radial-gradient(ellipse at 78% 18%, var(--glow-a) 0%, transparent 55%),
+    radial-gradient(ellipse at 10% 90%, var(--glow-b) 0%, transparent 50%),
     var(--paper);
   font-family: 'Hiragino Maru Gothic ProN', 'Hiragino Kaku Gothic ProN', 'BIZ UDPGothic', 'Yu Gothic UI', 'Meiryo', sans-serif;
+  /* 日本語を文節で折り返し、単語の途中で改行しない */
+  word-break: auto-phrase;
 }
 
 .confetti { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: .55; }
+.dot { transform-box: fill-box; transform-origin: 50% 50%; animation: twinkle var(--twinkle, 3s) ease-in-out infinite; }
 .screen > :not(.confetti) { position: relative; }
 
 /* 上の帯 */
 .topBar { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
 .topBar:has(> button:first-child) { justify-content: flex-start; }
 .versionPill {
-  padding: 5px 12px; border-radius: 999px; background: #ffffffb3; border: 1px solid var(--line);
+  padding: 5px 12px; border-radius: 999px; background: var(--pill); border: 1px solid var(--line);
   color: var(--muted); font-size: 12px; letter-spacing: .04em;
 }
 .roundButton {
@@ -41,7 +55,7 @@
   border: 2px solid var(--line); background: var(--card); color: var(--ink); font: inherit; font-size: 14px; font-weight: 600;
   cursor: pointer; box-shadow: 0 2px 0 var(--line); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-.roundButton:hover { transform: translateY(-2px); border-color: #d8c6a2; box-shadow: 0 4px 0 var(--line); }
+.roundButton:hover { transform: translateY(-2px); border-color: var(--line-hover); box-shadow: 0 4px 0 var(--line); }
 .roundButton:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--line); }
 .roundButton svg { transition: transform .3s ease; }
 .roundButton:hover svg { transform: rotate(-20deg); }
@@ -58,7 +72,7 @@
 .letter {
   display: inline-block; color: var(--letter);
   transform: rotate(var(--tilt)); transform-origin: 50% 90%;
-  text-shadow: 0 .05em 0 #00000024;
+  text-shadow: 0 .05em 0 var(--letter-shadow);
   animation: letterPop .7s cubic-bezier(.2, 1.6, .4, 1) both;
   animation-delay: calc(var(--index) * 70ms + 150ms);
 }
@@ -71,14 +85,29 @@
 .intro { margin: 0; max-width: 34em; color: var(--muted); font-size: 16px; line-height: 1.9; }
 
 .art { width: 100%; height: auto; max-height: 52vh; overflow: visible; }
-.artShadow { fill: #6b4a2c1a; animation: fadeIn .8s ease both; }
+.artShadow { fill: var(--art-shadow); animation: fadeIn .8s ease both; }
 .book { animation: bookRise .8s cubic-bezier(.2, 1, .3, 1) both; transform-box: fill-box; transform-origin: 50% 100%; }
-.pageLine { fill: none; stroke: #e6d6b6; stroke-width: 2; stroke-linecap: round; }
+.pageLine { fill: none; stroke: var(--page-line); stroke-width: 2; stroke-linecap: round; }
 .pop { transform-box: fill-box; transform-origin: 50% 100%; animation: popUp .9s cubic-bezier(.2, 1.5, .35, 1) var(--delay, 0s) both; }
 .sunRays { transform-box: fill-box; transform-origin: 50% 50%; animation: sunTurn 24s linear infinite; }
 .cloud { animation: drift 7s ease-in-out infinite; }
 .cloudSlow { animation: drift 9s ease-in-out -3s infinite; }
 .birds { fill: none; stroke: #6b5a48; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; animation: birds 10s ease-in-out infinite, fadeIn 1s ease 1.4s both; }
+.moon { transform-box: fill-box; transform-origin: 50% 50%; animation: moonRock 6s ease-in-out infinite; }
+.snore path { animation: snore 3.2s ease-in-out infinite; }
+.snore path + path { animation-delay: 1.6s; }
+.star { transform-box: fill-box; transform-origin: 50% 50%; animation: twinkle var(--twinkle, 3s) ease-in-out infinite, fadeIn 1s ease .8s both; }
+.windowGlow { animation: glow 3.6s ease-in-out infinite; }
+.fireflies { fill: #ffe27a; }
+.fireflies circle { animation: firefly 4.5s ease-in-out infinite; }
+.fireflies circle:nth-child(2) { animation-delay: -1.2s; animation-duration: 5.2s; }
+.fireflies circle:nth-child(3) { animation-delay: -2.4s; animation-duration: 4.1s; }
+.fireflies circle:nth-child(4) { animation-delay: -3.1s; animation-duration: 5.8s; }
+@keyframes moonRock { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(5deg); } }
+@keyframes snore { 0% { transform: translate(0, 6px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(8px, -14px); opacity: 0; } }
+@keyframes twinkle { 0%, 100% { transform: scale(.7); opacity: .45; } 50% { transform: scale(1.1); opacity: 1; } }
+@keyframes glow { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
+@keyframes firefly { 0%, 100% { transform: translate(0, 0); opacity: .2; } 40% { opacity: 1; } 50% { transform: translate(10px, -14px); opacity: .9; } 80% { opacity: .3; } }
 @keyframes bookRise { from { transform: translateY(24px) scaleY(.6); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes popUp { 0% { transform: scaleY(0); opacity: 0; } 30% { opacity: 1; } 100% { transform: scaleY(1); opacity: 1; } }
 @keyframes sunTurn { to { transform: rotate(360deg); } }
@@ -93,7 +122,7 @@
   position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 20px; row-gap: 6px;
   align-items: center; padding: 26px 64px 26px 26px; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
   background: var(--card); border: 2px solid var(--line); border-radius: 22px;
-  box-shadow: 0 3px 0 var(--line), 0 18px 36px -24px #7a4f1f66;
+  box-shadow: 0 3px 0 var(--line), 0 18px 36px -24px color-mix(in srgb, var(--shadow) 40%, transparent);
   transition: transform .25s cubic-bezier(.2, 1.4, .4, 1), box-shadow .25s ease, border-color .25s ease;
   animation: cardIn .7s cubic-bezier(.2, 1.2, .35, 1) both;
 }
@@ -104,7 +133,7 @@
   background: linear-gradient(225deg, var(--paper) 50%, var(--tone-soft) 50%); box-shadow: -2px 2px 0 var(--line);
 }
 .mint { --tone: var(--mint); --tone-soft: var(--mint-soft); }
-.card:hover { transform: translateY(-5px) rotate(-.4deg); border-color: var(--tone); box-shadow: 0 3px 0 var(--line), 0 26px 38px -22px #7a4f1f73; }
+.card:hover { transform: translateY(-5px) rotate(-.4deg); border-color: var(--tone); box-shadow: 0 3px 0 var(--line), 0 26px 38px -22px color-mix(in srgb, var(--shadow) 45%, transparent); }
 .card:active { transform: translateY(-1px); }
 .card:focus-visible, .roundButton:focus-visible, .choice:has(input:focus-visible) { outline: 3px solid var(--lilac); outline-offset: 3px; }
 .cardIcon {
@@ -126,7 +155,7 @@
 /* 設定 */
 .sheet {
   width: min(680px, 100%); margin: 0 auto; padding: clamp(24px, 4vw, 44px); display: flex; flex-direction: column; gap: 26px;
-  background: var(--card); border: 2px solid var(--line); border-radius: 28px; box-shadow: 0 4px 0 var(--line), 0 24px 48px -30px #7a4f1f80;
+  background: var(--card); border: 2px solid var(--line); border-radius: 28px; box-shadow: 0 4px 0 var(--line), 0 24px 48px -30px color-mix(in srgb, var(--shadow) 50%, transparent);
   animation: cardIn .6s cubic-bezier(.2, 1.2, .35, 1) both;
 }
 .sheetTitle { margin: 0; font-size: clamp(30px, 4vw, 40px); font-weight: 800; }
@@ -138,11 +167,11 @@
 .choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .choice {
   position: relative; display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 18px; cursor: pointer;
-  border: 2px solid var(--line); background: #fffaf1; font-weight: 700; transition: transform .2s ease, border-color .2s ease, background .2s ease;
+  border: 2px solid var(--line); background: var(--choice); font-weight: 700; transition: transform .2s ease, border-color .2s ease, background .2s ease;
 }
 .choice input { position: absolute; opacity: 0; pointer-events: none; }
-.choice:hover { transform: translateY(-2px); border-color: #d8c6a2; }
-.choice:has(input:checked) { border-color: var(--coral); background: var(--coral-soft); box-shadow: 0 3px 0 #f3c3b3; }
+.choice:hover { transform: translateY(-2px); border-color: var(--line-hover); }
+.choice:has(input:checked) { border-color: var(--coral); background: var(--coral-soft); box-shadow: 0 3px 0 var(--checked-shadow); }
 .choiceGlyph {
   display: grid; place-items: center; width: 42px; height: 42px; border-radius: 14px; background: var(--card); border: 2px solid var(--line);
   font-size: 20px; font-weight: 800; color: var(--coral);
@@ -151,6 +180,32 @@
 .facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 10px 20px; margin: 0; font-size: 14px; }
 .facts dt { color: var(--muted); }
 .facts dd { margin: 0; font-weight: 600; }
+
+
+/* 夜のホーム。ダークの配色のとき、紙の工作机を星空の下の机に変える */
+:global(:root[data-theme='dark']) .screen {
+  --paper: #1d2142;
+  --card: #272c54;
+  --ink: #f3ecdc;
+  --muted: #b4afca;
+  --line: #3a4074;
+  --coral: #f2917a;
+  --coral-soft: #4a3352;
+  --mint: #74cfa2;
+  --mint-soft: #22434b;
+  --lilac: #b9a6f0;
+  --pill: rgb(255 255 255 / 8%);
+  --line-hover: #5a63a0;
+  --shadow: #04061a;
+  --choice: #232850;
+  --checked-shadow: #2a1d36;
+  --letter-shadow: rgb(0 0 0 / 40%);
+  --art-shadow: rgb(0 0 0 / 28%);
+  --page-line: #cfc3a6;
+  --grain: rgb(255 255 255 / 6%);
+  --glow-a: #353c80;
+  --glow-b: #2b2148;
+}
 
 @media (max-width: 860px) {
   .hero { grid-template-columns: 1fr; }

@@ -97,6 +97,7 @@ React部品からは `useT()`、部品の外からは `t()` を使います。
 
 既定言語は日本語です。
 選択はlocalStorageの `tobidas.locale` に保存し、作品データや書き出しには含めません。
+ライト／ダークのテーマも同じ扱いで、`tobidas.theme` に保存し、`builder/theme.css` の色の変数を `<html data-theme>` で切り替えます。ビルダーのCSSへ色を直書きせず、役割ごとの変数を使います。
 
 検証と診断のメッセージは英語で固定し、辞書へ入れません。
 対象は `schema/bookValidate.ts`、`runtime/stow/`、`package/` などの純粋モジュールです。
