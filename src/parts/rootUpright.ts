@@ -1,6 +1,6 @@
 import { Vector3 } from 'three'
 import { faceContains, faceContainsLine, faceShape, makeFace, openingAngle, pointOnFace, type FoldPair, type PaperEvaluation, type PaperFace } from './geometry'
-import { inspectShape, ringLocation, shapeMemo, type PaperShape } from './shape'
+import { inspectShape, ringLocation, keyedMemo, type PaperShape } from './shape'
 
 /** 山や樹冠の外周に合わせ、左右の材料が残る区間だけを中央の折り線にする。 */
 export function fitRootFoldContacts(result: PaperEvaluation): void {
@@ -32,7 +32,7 @@ export function fitRootFoldContacts(result: PaperEvaluation): void {
   })
 }
 
-const panelShapes = shapeMemo<PaperShape>(), splitShapes = new WeakMap<PaperShape, Map<string, PaperShape>>()
+const panelShapes = keyedMemo<PaperShape>(), splitShapes = new WeakMap<PaperShape, Map<string, PaperShape>>()
 /** 一枚の材料輪郭を画像と同じ担当範囲へ分割する。折り線を切る穴は接続できない。 */
 export function rootPanelShape(shape: PaperShape, span: [number, number] = [0, 1]): PaperShape {
   // 稜線の走査は重いので、輪郭と担当範囲が同じなら前回の結果を共有する。輪郭は書き換えない値として扱う。

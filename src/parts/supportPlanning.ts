@@ -16,6 +16,7 @@ import { bindingDependencies, parameterValues, evaluateExpression } from './sche
 import { newPartDefinition } from './schema'
 import { connectedContentSchema } from '../schema/content'
 import { extensionFor, materialPoint } from './mountGeometry'
+import { keyedMemo } from './shape'
 
 const round = (n: number) => Math.round(n * 1e9) / 1e9
 type Interval = [number, number]
@@ -46,9 +47,23 @@ export function designAutomaticDefinitionSupports(definition: PartDefinition, de
   }
 }
 
-function attachedMotionCeiling(spread: Spread, element: PartElement, distance: number): number | undefined {
+const motionCeilings = keyedMemo<{ value: number } | { error: unknown }>(128)
+/** cachedOnly は操作中の表示用で、記憶済みの上限だけを返し、未計算なら undefined にする */
+function attachedMotionCeiling(spread: Spread, element: PartElement, distance: number, cachedOnly = false): number | undefined {
   const attached = spread.elements.filter(e => e.attachment?.type === 'surface' && e.attachment.surface.nodeId === element.id && e.motion.length > 0)
   if (!attached.length) return undefined
+  // 高さごとに試作定義を全角度で検証するので重い。ギズモ操作中は取り付け位置だけが変わり、設計と演出は同じなので結果を使い回す。
+  const tracks = spread.timeline.tracks.filter(t => t.target.type === 'element' && attached.some(e => t.target.type === 'element' && t.target.elementId === e.id))
+  const { mount: _mount, ...design } = element.part
+  const key = JSON.stringify([element.id, element.name, design, distance, attached, tracks])
+  const memo = cachedOnly ? motionCeilings.peek(key) : motionCeilings(key, () => {
+    try { return { value: designMotionCeiling(spread, element, distance, attached) } } catch (error) { return { error } }
+  })
+  if (!memo) return undefined
+  if ('error' in memo) throw memo.error
+  return memo.value
+}
+function designMotionCeiling(spread: Spread, element: PartElement, distance: number, attached: Spread['elements']): number {
   // 絵のファイルを要しない材料・演出の検査用定義。画像の寸法と輪郭は元の値を使う。
   const probe = newPartDefinition('Support design', { kind: 'fold-pair', maxOpeningAngleDeg: 90 })
   probe.requiredBuiltins = { upright: 1 }
@@ -96,6 +111,8 @@ export interface SupportPlacement {
   surfaces?: [PartSurfaceRef, PartSurfaceRef]
   /** 交差を検査しない演出。動かした紙に当たる浮遊演出は、配置後に押しのけて解く */
   ignoreContents?: ReadonlySet<string>
+  /** ギズモ操作中の表示用。開閉の検査を省いて最上位の候補を返す。確定時は必ず検査する */
+  unchecked?: boolean
 }
 const same = (a: PartSurfaceRef, b: PartSurfaceRef) => a.nodeId === b.nodeId && a.portId === b.portId
 /** 指定の部品と、その面に貼った内容 (とそれに従う内容) を除いた見開き */
@@ -182,6 +199,7 @@ function mountAt(source: SupportSource, target: Vector3, width: number, height: 
 }
 
 /** 寸法と接続先を配置時に決める。再生器は保存された一組の紙を折るだけ。 */
+const isolated = (element: PartElement): PartElement => ({ ...element, part: structuredClone(element.part) })
 export function planSupportedPart(project: BookProject, spread: Spread, element: PartElement, placement: SupportPlacement): PartElement {
   if (!('builtin' in element.part.definition) || !['upright', 'root-upright', 'side-upright'].includes(element.part.definition.builtin)) throw new Error('Automatic support requires an upright part')
   const existing = spread.elements.some(e => e.id === element.id)
@@ -195,8 +213,7 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
   const replace = (candidate: PartElement): Spread => existing
     ? { ...spread, elements: withoutParts(spread, dependents).elements.map(e => e.id === element.id ? candidate : e) }
     : { ...spread, elements: [...spread.elements, candidate] }
-  const choices: { candidate: PartElement; score: number }[] = []
-  let rearCandidate = false
+  const choices: { candidate: PartElement; score: number; height?: number; distance?: number }[] = []
   for (const source of sources(project, spread, excluded, placement.surfaces, target)) {
     const { pair } = source
     if (placement.surfaces && !(same(source.a, placement.surfaces[0]) && same(source.b, placement.surfaces[1]))) continue
@@ -209,11 +226,8 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
     // 上端の余白までを接着可能範囲とする。距離が長いという理由で取り付けを低くしない。
     const ceiling = Math.min(height - .03, pair.b.height - .03), baseline = Math.min(height * .5, ceiling)
     const attachedMotion = spread.elements.some(e => e.attachment?.type === 'surface' && e.attachment.surface.nodeId === element.id && e.motion.length > 0)
-    let motionCeiling: number | undefined
-    try { motionCeiling = attachedMotion ? attachedMotionCeiling(spread, element, distance / unit) : undefined }
-    catch (error) { failures.add(error instanceof Error ? error.message : String(error)); continue }
-    const heights = supportHeights(height, pair.b.height, attachedMotion).filter(h => motionCeiling === undefined || h <= motionCeiling * unit + 1e-8)
-    for (const h of heights) {
+    // 演出が届く高さの上限は重いので、候補を検査する直前に、その距離の分だけ求める
+    for (const h of supportHeights(height, pair.b.height, attachedMotion)) {
       const parentCenter = origin.clone().addScaledVector(pair.rayB, h), childCenter = foot.clone().addScaledVector(pair.rayB, h)
       const parents = attachmentIntervals(pair.b, parentCenter, pair.axis, pair.rayB)
       const children = attachmentIntervals(panel, childCenter, pair.axis, pair.rayB)
@@ -222,7 +236,6 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
         for (const a of parents) for (const b of children) {
           const lo = Math.max(a[0], b[0]) + supportWidth / 2 + 1e-5, hi = Math.min(a[1], b[1]) - supportWidth / 2 - 1e-5
           if (lo <= hi) {
-            rearCandidate = true
             for (const offset of [Math.max(lo, Math.min(hi, 0)), (lo + hi) / 2, lo, hi]) offsets.push({ offset: round(offset), extension: 0 })
           }
         }
@@ -235,11 +248,13 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
           if (uv[0] < 0 || uv[0] > pair.b.width) offsets.push({ offset, extension: Math.max(-uv[0], uv[0] - pair.b.width) })
         }
         for (const { offset, extension } of offsets) {
-          const instance: PartInstance = { ...structuredClone(element.part), supportDesign: 'automatic', definition: { builtin: 'upright', version: 1 },
+          // 候補は検査で読むだけなので元の設計を共有し、採用した一件だけを複製して返す
+          const instance: PartInstance = { ...element.part, supportDesign: 'automatic', definition: { builtin: 'upright', version: 1 },
             parameters: { width: width / unit, height: height / unit, distance: distance / unit, offset: 0, supportHeight: h / unit, supportWidth: supportWidth / unit, supportOffset: offset / unit },
             mount: mountAt(source, target, width, h, supportWidth, offset) }
           const candidate = { ...element, part: instance }
-          choices.push({ candidate, score: (extension > 0 ? 10000 : 0) + Math.abs(h - baseline) * 20 + distance + Math.abs(offset) * .25 + extension * 4 })
+          choices.push({ candidate, score: (extension > 0 ? 10000 : 0) + Math.abs(h - baseline) * 20 + distance + Math.abs(offset) * .25 + extension * 4,
+            ...attachedMotion ? { height: h, distance } : {} })
         }
       }
     }
@@ -261,10 +276,21 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
       }
     }
   }
-  const seen = new Set<string>()
+  const seen = new Set<string>(), ceilings = new Map<number, number | null | undefined>()
+  // 上限を求められない距離の候補は捨てる。表示用の幾何モードでは記憶済みの上限だけを使い、未計算なら確定時の検査に任せる
+  const underCeiling = (height: number, distance: number) => {
+    if (!ceilings.has(distance)) {
+      try { ceilings.set(distance, attachedMotionCeiling(spread, element, distance / unit, placement.unchecked)) }
+      catch (error) { failures.add(error instanceof Error ? error.message : String(error)); ceilings.set(distance, null) }
+    }
+    const ceiling = ceilings.get(distance)
+    return ceiling === undefined ? !!placement.unchecked : ceiling !== null && height <= ceiling * unit + 1e-8
+  }
   choices.sort((a, b) => a.score - b.score)
-  for (const { candidate } of choices) {
+  for (const { candidate, height, distance } of choices) {
+    if (height !== undefined && distance !== undefined && !underCeiling(height, distance)) continue
     const key = JSON.stringify(candidate.part); if (seen.has(key)) continue; seen.add(key)
+    if (placement.unchecked) return isolated(candidate)
     try {
       const next = replace(candidate), inspect = createPaperMotionInspector()
       // 全開時の衝突で候補を絞ってから、両側の開閉と演出の包絡を検査する。
@@ -277,14 +303,15 @@ export function planSupportedPart(project: BookProject, spread: Spread, element:
           { openingAngleDeg: angle, maxOpeningAngleDeg: 180 }, spread.sequence.holdSeconds, bookContentHoldTime(angle, side, spread.sequence.holdSeconds)))
         if (errors.length) throw new Error(errors[0])
       }
-      return candidate
+      return isolated(candidate)
     } catch (error) { failures.add(error instanceof Error ? error.message : String(error)) }
   }
   // 背後や側方に候補があるのに接続が不成立の場合は、勝手に支持を切らない。
-  if (!placement.surfaces && !choices.length && !rearCandidate) {
+  if (!placement.surfaces && !choices.some(c => c.height === undefined || c.distance === undefined || underCeiling(c.height, c.distance))) {
     const candidate: PartElement = { ...element, part: { ...element.part, definition: { builtin: 'root-upright', version: 1 },
       supportDesign: 'automatic', mount: { type: 'output', nodeId: '$book', portId: 'gutter' },
       parameters: { width: width / unit, height: height / unit, centerX: target.x / unit, offset: target.z / unit } } }
+    if (placement.unchecked) return candidate
     const next = replace(candidate), errors = validateBookParts({ ...project, book: { ...project.book, spreads: [next] } })
     if (!errors.length) return candidate
     errors.forEach(error => failures.add(error))
@@ -354,14 +381,14 @@ export function supportEvaluates(project: BookProject, spread: Spread, element: 
  * 動かした起立部品の支持を作り直す。今の接続先で成り立つならそれを保ち (継ぎ足しで届く場合も含む)、
  * 成り立たないときだけ移動先の奥にある紙へ乗り換える。どこにも乗れなければ元の失敗を返す。
  */
-export function replanMovedSupport(project: BookProject, spread: Spread, element: PartElement, position: [number, number, number], ignoreContents?: ReadonlySet<string>): PartElement {
+export function replanMovedSupport(project: BookProject, spread: Spread, element: PartElement, position: [number, number, number], ignoreContents?: ReadonlySet<string>, unchecked = false): PartElement {
   const mount = element.part.mount
   let keptFailure: unknown
   if (mount.type === 'pair') {
-    try { return planSupportedPart(project, spread, element, { position, surfaces: [mount.a, mount.b], ignoreContents }) }
+    try { return planSupportedPart(project, spread, element, { position, surfaces: [mount.a, mount.b], ignoreContents, unchecked }) }
     catch (error) { keptFailure = error }
   }
-  try { return planSupportedPart(project, spread, element, { position, ignoreContents }) }
+  try { return planSupportedPart(project, spread, element, { position, ignoreContents, unchecked }) }
   catch (error) { throw keptFailure ?? error }
 }
 

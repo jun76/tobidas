@@ -6,12 +6,14 @@ import { bindBookContents } from './contents'
 import { inspectContentsAt } from './contentValidation'
 import { logicalPagePorts as pagePorts } from './geometry'
 import { describePartEdit, type PartEditScene, type PartEditPlan } from './edit'
-import { partInstanceSchema } from './schema'
+import { partInstanceSchema, type PartInstance, type PartNode } from './schema'
 import { replanMovedSupport, supportedPartFoot, supportEvaluates, withoutParts } from './supportPlanning'
 import { evaluateBookParts } from './book'
 import { clearFictionPaperCrossings, floatingFictionIds } from './contentPlacement'
 import { pointOnFace } from './geometry'
 
+/** 計画途中の候補を評価するための部品。保存しないので検証付きの複製は省き、確定時の applyBookEditPlan で検証する */
+const candidatePart = ({ id: _id, name: _name, outline: _outline, ...part }: PartNode) => part as PartInstance
 export function bookEditScene(project: BookProject, spreadId: string): PartEditScene {
   const spread = project.book.spreads.find((item) => item.id === spreadId)
   if (!spread) throw new Error('Edited spread was not found')
@@ -23,9 +25,9 @@ export function bookEditScene(project: BookProject, spreadId: string): PartEditS
     return element?.attachment?.type === 'surface' && !affected.has(element.attachment.surface.nodeId)
   }))
   const scene: PartEditScene = { nodes: spreadPartNodes(spread), definitions: project.partDefinitions ?? {}, maxAngle: 180,
-    redesignSupports: (nodes, affected, edited, intent, pending) => {
+    redesignSupports: (nodes, affected, edited, intent, pending, checked) => {
       // まだ取り付け直していない追従部品は古い折り線のままで評価できないので、候補の検査から外す
-      const candidate = withoutParts({ ...spread, elements: spread.elements.map(element => element.type === 'part' ? { ...element, part: partInstanceSchema.parse(nodes.find(node => node.id === element.id)!) } : element) }, pending)
+      const candidate = withoutParts({ ...spread, elements: spread.elements.map(element => element.type === 'part' ? { ...element, part: candidatePart(nodes.find(node => node.id === element.id)!) } : element) }, pending)
       // 操作した部品を先に作り直す。子部品の足元は作り直した親から測る。
       for (const node of [...nodes].sort((a, b) => Number(b.id === edited) - Number(a.id === edited))) {
         if (!affected.has(node.id) || !('builtin' in node.definition) || node.definition.builtin !== 'upright') continue
@@ -38,13 +40,13 @@ export function bookEditScene(project: BookProject, spreadId: string): PartEditS
         // 移動は元の足元へ移動量を足して目標にする (親の後ろへ動かした取り付けは仮の距離になっているため)
         const position = node.id === edited && intent.type === 'translate' ? movedFoot(project, spread, scene, edited, intent.delta) : supportedPartFoot(project, candidate, element)
         // 今の接続先で成り立つならそれを保ち、届かなくなったときだけ移動先の奥にある紙へ乗り換える
-        const result = replanMovedSupport(project, candidate, element, position, ignoredContents(new Set([...affected, ...pending])))
+        const result = replanMovedSupport(project, candidate, element, position, ignoredContents(new Set([...affected, ...pending])), !checked)
         element.part = result.part
         Object.assign(node, result.part)
       }
     },
     validateContents: (result, nodes, angle, affected) => {
-      const candidate = { ...spread, elements: spread.elements.map((element) => element.type === 'part' ? { ...element, part: partInstanceSchema.parse(nodes.find((node) => node.id === element.id)!) } : element) }
+      const candidate = { ...spread, elements: spread.elements.map((element) => element.type === 'part' ? { ...element, part: candidatePart(nodes.find((node) => node.id === element.id)!) } : element) }
       const ignored = ignoredContents(affected)
       return inspectContentsAt(bindBookContents(project, candidate, result, angle * Math.PI / 180, 0).filter((binding) => !ignored.has(binding.id)), { openingAngleDeg: angle, maxOpeningAngleDeg: 180, holdTime: 0 })
     },

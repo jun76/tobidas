@@ -23,7 +23,8 @@ export interface PartEditScene {
   validateContents?: (result: PaperEvaluation, nodes: PartNode[], angle: number, affected: ReadonlySet<string>) => string[]
   /** 編集後の支持を作り直す。edited は操作した部品で、接続先の乗り換えを許すのはこの部品だけ */
   /** pending はまだ取り付け直していない (評価できないかもしれない) 追従部品 */
-  redesignSupports?: (nodes: PartNode[], affected: Set<string>, edited: string, intent: PartEditIntent, pending: Set<string>) => void
+  /** checked が偽のときは操作中の表示用で、支持候補の開閉検査を省く */
+  redesignSupports?: (nodes: PartNode[], affected: Set<string>, edited: string, intent: PartEditIntent, pending: Set<string>, checked: boolean) => void
   parameters?: Record<string, number>; slots?: Record<string, PartMaterial>
 }
 export interface PartEditAngle {
@@ -260,7 +261,11 @@ function remount(scene: PartEditScene, node: PartNode, prior: PartNode, ready: P
     extensions: { a: extensionFor(pa, contacts(pa), { hinge: hingeA }), b: extensionFor(pb, contacts(pb), { hinge: hingeB }) } }
 }
 
-export function planPartEdit(scene: PartEditScene, id: string, raw: PartEditIntent, thorough = true): PartEditPlan {
+/**
+ * thorough は確定用の全角度検査、false は代表角度だけの簡易検査。
+ * 'geometry' はギズモ操作中の表示用で、取り付けと支持の幾何だけを解き、紙の衝突や演出の検査を行わない。
+ */
+export function planPartEdit(scene: PartEditScene, id: string, raw: PartEditIntent, thorough: boolean | 'geometry' = true): PartEditPlan {
   try {
     const intent = partEditIntentSchema.parse(raw), description = describePartEdit(scene, id)
     if (intent.type === 'translate' && !description.translateY && Math.abs(intent.delta[1]) > 1e-7) throw new Error('This part moves along its input hinge only')
@@ -302,7 +307,7 @@ export function planPartEdit(scene: PartEditScene, id: string, raw: PartEditInte
         }
         remount(scene, node, scene.nodes.find((item) => item.id === node.id)!, ready, original, node.id === id ? intent : undefined)
         // 支持は子を辿る前に部品ごとに作り直す。接続先からはみ出した取り付けのままでは子の面が評価できない。
-        scene.redesignSupports?.(nodes, new Set([node.id]), id, intent, new Set([...affected].filter((item) => item !== node.id && !ready.some((done) => done.id === item))))
+        scene.redesignSupports?.(nodes, new Set([node.id]), id, intent, new Set([...affected].filter((item) => item !== node.id && !ready.some((done) => done.id === item))), thorough !== 'geometry')
         // 乗り換えた先の部品も評価済みにしておく
         for (const dep of bindingDependencies(node.mount)) { const parent = nodes.find((item) => item.id === dep); if (parent) visit(parent) }
       }
@@ -313,6 +318,7 @@ export function planPartEdit(scene: PartEditScene, id: string, raw: PartEditInte
       const actual = describePartEdit({ ...scene, nodes }, id).angles.find((angle) => angle.id === intent.handle)!.value
       if (Math.abs(actual - intent.value) > 1e-5) throw new Error('The requested tilt is on a different folding branch')
     }
+    if (thorough === 'geometry') return { ok: true, nodes, affected: [...affected], checkedAngles: [] }
     const angles = thorough ? validationAngles(scene.maxAngle).sort((a, b) => a - b) : [...new Set([0, scene.maxAngle / 2, scene.maxAngle])]
     const checked = new Map<number, Vector3[]>(), nearby = new Map<number, string>()
     const inspectMotion = createPaperMotionInspector()
