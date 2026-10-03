@@ -1,7 +1,7 @@
 # tobidas
 
 <p align="center">
-  <img src="./.github/assets/tobidas.png" alt="tobidasの飛び出す絵本ビルダー画面">
+  <img src="./.github/assets/tobidas-editor.png" alt="tobidasの飛び出す絵本ビルダー画面">
 </p>
 
 <p align="center"><strong>飛び出す絵本のようなWeb作品を、ブラウザで組み立てて公開する。</strong></p>

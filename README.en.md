@@ -1,7 +1,7 @@
 # tobidas
 
 <p align="center">
-  <img src="./.github/assets/tobidas.png" alt="The tobidas pop-up book builder interface">
+  <img src="./.github/assets/tobidas-editor.png" alt="The tobidas pop-up book builder interface">
 </p>
 
 <p align="center"><strong>Build and publish interactive web stories that unfold like pop-up books.</strong></p>
