@@ -309,11 +309,11 @@ function SpreadNavButtons() {
   return <>
     {previous && <button type="button" className={`${st.viewportNav} ${st.viewportNavPrevious}`}
       aria-label={t.viewport.previousSpread(label(previous))} title={t.viewport.previousSpread(label(previous))} onClick={() => select(previous)}>
-      <Icon as={ChevronLeft} size={28} />
+      <Icon as={ChevronLeft} size={44} strokeWidth={2.25} />
     </button>}
     {next && <button type="button" className={`${st.viewportNav} ${st.viewportNavNext}`}
       aria-label={t.viewport.nextSpread(label(next))} title={t.viewport.nextSpread(label(next))} onClick={() => select(next)}>
-      <Icon as={ChevronRight} size={28} />
+      <Icon as={ChevronRight} size={44} strokeWidth={2.25} />
     </button>}
   </>
 }

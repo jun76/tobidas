@@ -343,7 +343,7 @@
   border-color: var(--ui-accent);
 }
 
-/* 前後の見開きへ移る矢印。場面を隠さないよう、端に置いた半透明の丸いボタンにする */
+/* 前後の見開きへ移る矢印。地も枠も持たず、端に大きく置く */
 .viewportNav {
   position: absolute;
   z-index: 5;
@@ -353,23 +353,23 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 96px;
   padding: 0;
-  border: 2px solid var(--ui-line);
-  border-radius: 50%;
-  background: var(--ui-glass-soft);
-  color: var(--ui-ink-soft);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  /* 背景色は作品ごとに変わるので、テーマではなく影付きの白で読ませる */
+  color: #ffffffc8;
   cursor: pointer;
-  box-shadow: 0 6px 16px -6px var(--ui-shadow);
-  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 50%));
+  transition: color 0.12s ease, transform 0.12s ease;
 }
 
 .viewportNav:hover,
 .viewportNav:focus-visible {
-  color: var(--ui-accent-strong);
-  border-color: var(--ui-accent-line);
-  background: var(--ui-glass);
+  color: #ffffff;
+  background: transparent;
 }
 
 .viewportNav:active {
@@ -377,11 +377,11 @@
 }
 
 .viewportNavPrevious {
-  left: 14px;
+  left: 6px;
 }
 
 .viewportNavNext {
-  right: 14px;
+  right: 6px;
 }
 
 /* 編集中の見開き名とスクリーンショット操作 */
