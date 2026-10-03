@@ -101,7 +101,8 @@ export async function remakeConnected(source, api) {
         const frame = { id: 'frame', name: '窓枠', ...background.part, mount: { type: 'input' } }
         const contents = []
         const view = { id: 'view', name: '窓の外の紙', ...screen('', '', classroom ? 14.4 : 7.46, classroom ? 3.25 : 2.6, classroom ? -2.55 : -2.1).part, mount: { type: 'input' } }
-        if (classroom) view.materials = { '*': { color: '#c8e2ed' } }
+        // 季節の景色は透過の余白を持つ絵なので、紙自体は描かず印刷だけを窓越しに見せる
+        view.materials = classroom ? { '*': { color: '#c8e2ed' } } : { '*': { color: source.book.appearance.paperColor, transparent: true } }
         const outputs = Object.fromEntries(['panel', 'panel-b', 'ground-backdrop', 'ground-backdrop-b'].map((portId) => [portId, { type: 'output', nodeId: 'frame', portId }]))
         outputs['view-left'] = { type: 'output', nodeId: 'view', portId: 'panel-b' }; outputs['view-right'] = { type: 'output', nodeId: 'view', portId: 'panel' }
         background.part = { definition: await embedPart(project, api, { id: classroom ? 'classroom-window' : 'seasonal-room', name: classroom ? '教室の窓' : '季節の窓の部屋',
@@ -250,9 +251,13 @@ export async function remakeConnected(source, api) {
       if (source.id === 'four_seasons' && /^particle-/.test(suffix(old))) {
         const left = old.parent.type === 'left-page', portId = left ? 'view-left' : 'view-right'
         const transform = { position: [0, p[1] - 1.3, 0], rotation: [0, 0, 0], scale: old.baseTransform.scale.map((n) => n * .65) }
-        append(old, { type: 'surface', surface: { nodeId: background.id, portId }, point: [1.865, 1.3], side: 'front' }, transform,
+        // 窓ガラスは窓枠の各面で折り線から0.15〜2.96の範囲にある。景色の面 (幅3.73) の上で
+        // その中心へ取り付け、粒子の絵の幅がガラスの外へはみ出さない範囲だけを横に流す。
+        const glass = { from: .15, to: 2.96 }, center = (glass.from + glass.to) / 2
+        const reach = (glass.to - glass.from) / 2 - old.width * transform.scale[0] / 2 - .1
+        append(old, { type: 'surface', surface: { nodeId: background.id, portId }, point: [left ? 3.73 - center : center, 1.3], side: 'front' }, transform,
           'fiction', '窓外の実紙面に花びら・葉・雪を置き、実際の窓の穴を通して見せる。落下と画像切替の時刻を保持。', (track) => {
-            if (track.property === 'position.x') track.keys.forEach((key) => { key.value = (key.value - old.baseTransform.position[0]) * .45 })
+            if (track.property === 'position.x') track.keys.forEach((key) => { key.value = (key.value - old.baseTransform.position[0]) * .45 * reach / 1.8 })
             if (track.property === 'position.y') track.keys.forEach((key) => { key.value -= 1.3 })
             return track
           })
